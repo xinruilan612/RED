@@ -1,0 +1,23 @@
+flowchart TD
+    browser["用户浏览器 / 无需 CLI / API Key / 扩展"]
+    gateway["HTTPS 网关 / TLS / 请求大小 / SSE 代理"]
+    web["Web 服务 / Next.js"]
+    api["API 服务 / FastAPI / Session / 归属校验"]
+    redis["Redis / 任务传输 / 限额协调"]
+    jobs["Worker + Dispatcher / Celery / LangGraph / outbox"]
+    model["外部模型 API / 服务端密钥；有额度限制"]
+    db["PostgreSQL / 持久卷或托管数据库"]
+    renderer["隔离的模板渲染器 / 禁止任意 HTML 和外网访问"]
+    object["私有对象存储 / 用户图片 / 图文导出"]
+    backup["备份与恢复 / RPO 24h / RTO 4h 待验证"]
+    browser -->|"公网 HTTPS"| gateway
+    gateway -->|"页面"| web
+    gateway -->|"/api"| api
+    api -->|"任务通知"| redis
+    redis -->|"领取任务"| jobs
+    jobs -->|"调用"| model
+    api -->|"业务事务"| db
+    jobs -->|"检查点"| db
+    jobs -->|"渲染任务"| renderer
+    renderer -->|"上传"| object
+    db -->|"每日 / 演练"| backup

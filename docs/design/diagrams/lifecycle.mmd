@@ -1,0 +1,22 @@
+flowchart TD
+    QUEUED["QUEUED · 等待执行 / 任务和 outbox 已落库"]
+    RUNNING["RUNNING · 正在执行 / 租约 120s / 心跳 20s"]
+    WAITING_USER["WAITING_USER · 等待用户 / 保存检查点，释放 Worker"]
+    RETRY_WAIT["RETRY_WAIT · 等待重试 / 短暂故障，有界退避"]
+    SUCCEEDED["SUCCEEDED · 目标完成 / 成果可查询"]
+    EXPIRED["EXPIRED · 等待过期 / 7 天后关闭，保留草稿"]
+    CANCELLED["CANCELLED · 已取消 / 不接受迟到成果"]
+    FAILED["FAILED · 执行失败 / 配置 / 预算 / 不可恢复错误"]
+    QUEUED -->|"领取"| RUNNING
+    RUNNING -->|"需确认 / 补料"| WAITING_USER
+    WAITING_USER -.->|"用户恢复"| QUEUED
+    RUNNING -.->|"短暂故障"| RETRY_WAIT
+    RETRY_WAIT -.->|"重试"| QUEUED
+    RUNNING -->|"目标达成"| SUCCEEDED
+    RUNNING -.->|"取消请求"| CANCELLED
+    WAITING_USER -.->|"超期"| EXPIRED
+    RETRY_WAIT -.->|"不可继续"| FAILED
+    RUNNING -.->|"不可恢复"| FAILED
+    QUEUED -.-> CANCELLED
+    WAITING_USER -.-> CANCELLED
+    RETRY_WAIT -.-> CANCELLED

@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "status": "proposed_not_implemented",
+  "agents": ["planner", "writer", "designer", "reviewer"],
+  "modules": ["M01", "M02", "M03", "M04", "M05", "M06", "M07", "M08", "M09"],
+  "terminal_states": ["SUCCEEDED", "FAILED", "CANCELLED", "EXPIRED"],
+  "transitions": {
+    "QUEUED": ["RUNNING", "CANCELLED"],
+    "RUNNING": ["WAITING_USER", "RETRY_WAIT", "SUCCEEDED", "FAILED", "CANCELLED"],
+    "WAITING_USER": ["QUEUED", "CANCELLED", "EXPIRED"],
+    "RETRY_WAIT": ["QUEUED", "FAILED", "CANCELLED"],
+    "SUCCEEDED": [], "FAILED": [], "CANCELLED": [], "EXPIRED": []
+  },
+  "parameters": {
+    "user_active_runs": 1, "model_concurrency": 2,
+    "topic_count": 3, "pages_min": 1, "pages_max": 6, "pages_default": 4,
+    "image_width": 1080, "image_height": 1440,
+    "input_codepoints_max": 12000, "upload_mib_max": 10, "image_megapixels_max": 20,
+    "revision_rounds_max": 2, "transport_retries_max": 2, "schema_repairs_max": 1,
+    "model_timeout_s": 90, "run_active_timeout_s": 900,
+    "lease_s": 120, "heartbeat_s": 20, "wait_user_days": 7,
+    "sse_heartbeat_s": 15, "poll_s": 5, "autosave_ms": 800, "download_url_s": 300,
+    "output_tokens_max": 3000, "run_attempts_max": 16, "run_tokens_max": 40000,
+    "run_currency_budget": null, "user_daily_currency_budget": null,
+    "paid_provider_enabled": false
+  }
+}

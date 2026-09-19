@@ -10,3 +10,5 @@
 区分官网要求、待核实的截图材料与项目建议；未确认适用性的其他赛题规则不得作为本项目硬性要求。提交前复核最新官方通知，产品完成状态和测试结论必须有实际证据。
 
 文档检查命令：`python3 -m unittest discover -s tests -v`；空白检查命令：`git diff --check`。有产品代码后，还需执行对应的产品测试。
+
+软件设计入口：[架构、模块与流程](docs/design/README.md)；开源参考：[GitHub 项目调研](docs/research/GITHUB_PROJECTS.md)。这些是开发前方案，尚不能作为实现或性能证据。修改图件后运行 `python3 scripts/build_design_atlas.py` 并验证生成物一致。

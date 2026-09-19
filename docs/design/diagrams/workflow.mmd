@@ -1,0 +1,27 @@
+flowchart TD
+    input["填写需求与真实素材 / 账号定位 / 本次主题 / 图片"]
+    plan["策划 Agent · planner / 3 个角度 + 素材缺口"]
+    select["用户选择选题 / 持久化暂停，不占 Worker"]
+    write["写作 Agent · writer / 标题 / 正文 / 来源编号"]
+    design["编排 Agent · designer / 模板 / 分页 / 配图"]
+    review["审稿 Agent · reviewer / 内容依据 / 标题兑现 / 版式"]
+    supply["补充真实资料 / 更新快照后恢复请求节点"]
+    revise["返修路由 / 文案 → writer；排版 → designer"]
+    limit["达到 2 轮自动返修上限 / 暂停，请用户处理问题"]
+    confirm["用户编辑与定稿 / 候选稿和差异，明确接受"]
+    export["模板渲染与导出 / 有效审核版本 + 图文预览"]
+    done["获得可发布素材 / 用户手动发布；不预测爆款"]
+    input -->|"提交"| plan
+    plan -->|"资料充分"| select
+    plan -.->|"资料不足"| supply
+    select -->|"确认"| write
+    write -->|"候选稿"| design
+    design -->|"稿件 + 排版"| review
+    review -->|"通过"| confirm
+    review -.->|"缺少依据"| supply
+    review -.->|"有问题"| revise
+    revise -.->|"文案返修"| write
+    revise -.->|"排版返修"| design
+    revise -.->|"上限"| limit
+    confirm -->|"接受版本"| export
+    export -->|"成功"| done

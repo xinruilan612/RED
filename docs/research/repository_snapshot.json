@@ -1,0 +1,57 @@
+[
+  {
+    "repository": "HisMax/RedInk",
+    "url": "https://github.com/HisMax/RedInk",
+    "observed_at": "2026-09-20",
+    "pushed_at": "2026-06-30T14:28:30Z",
+    "stars": 5555,
+    "archived": false,
+    "license_api": "NOASSERTION",
+    "tree_sha": "427efb1da0e90d0343debc7bee77142f556da813",
+    "verification": "metadata_readme_license_where_available_not_runtime_tested"
+  },
+  {
+    "repository": "langchain-ai/social-media-agent",
+    "url": "https://github.com/langchain-ai/social-media-agent",
+    "observed_at": "2026-09-20",
+    "pushed_at": "2026-09-18T22:23:32Z",
+    "stars": 2796,
+    "archived": false,
+    "license_api": "MIT",
+    "tree_sha": "5c8792cb851008a4f6ea044be0c994465704bb7d",
+    "verification": "metadata_readme_license_where_available_not_runtime_tested"
+  },
+  {
+    "repository": "kvnZero/xhs-agent",
+    "url": "https://github.com/kvnZero/xhs-agent",
+    "observed_at": "2026-09-20",
+    "pushed_at": "2025-04-20T12:58:01Z",
+    "stars": 85,
+    "archived": false,
+    "license_api": null,
+    "tree_sha": null,
+    "verification": "metadata_readme_license_where_available_not_runtime_tested"
+  },
+  {
+    "repository": "EthanYoQ/agent-xiaohongshu-workbench",
+    "url": "https://github.com/EthanYoQ/agent-xiaohongshu-workbench",
+    "observed_at": "2026-09-20",
+    "pushed_at": "2026-09-07T01:57:32Z",
+    "stars": 141,
+    "archived": false,
+    "license_api": "MIT",
+    "tree_sha": "6e58278984cb891524ead60c9a5f116b6561b4cc",
+    "verification": "metadata_readme_license_where_available_not_runtime_tested"
+  },
+  {
+    "repository": "Aaronwn/ai-xiaohs",
+    "url": "https://github.com/Aaronwn/ai-xiaohs",
+    "observed_at": "2026-09-20",
+    "pushed_at": "2026-03-03T03:37:19Z",
+    "stars": 42,
+    "archived": false,
+    "license_api": null,
+    "tree_sha": null,
+    "verification": "metadata_readme_license_where_available_not_runtime_tested"
+  }
+]
