@@ -1,27 +1,35 @@
 flowchart TD
-    input["填写需求与真实素材 / 账号定位 / 本次主题 / 图片"]
-    plan["策划 Agent · planner / 3 个角度 + 素材缺口"]
-    select["用户选择选题 / 持久化暂停，不占 Worker"]
-    write["写作 Agent · writer / 标题 / 正文 / 来源编号"]
-    design["编排 Agent · designer / 模板 / 分页 / 配图"]
-    review["审稿 Agent · reviewer / 内容依据 / 标题兑现 / 版式"]
-    supply["补充真实资料 / 更新快照后恢复请求节点"]
-    revise["返修路由 / 文案 → writer；排版 → designer"]
-    limit["达到 2 轮自动返修上限 / 暂停，请用户处理问题"]
-    confirm["用户编辑与定稿 / 候选稿和差异，明确接受"]
-    export["模板渲染与导出 / 有效审核版本 + 图文预览"]
-    done["获得可发布素材 / 用户手动发布；不预测爆款"]
-    input -->|"提交"| plan
-    plan -->|"资料充分"| select
-    plan -.->|"资料不足"| supply
-    select -->|"确认"| write
-    write -->|"候选稿"| design
-    design -->|"稿件 + 排版"| review
-    review -->|"通过"| confirm
-    review -.->|"缺少依据"| supply
-    review -.->|"有问题"| revise
-    revise -.->|"文案返修"| write
-    revise -.->|"排版返修"| design
-    revise -.->|"上限"| limit
-    confirm -->|"接受版本"| export
-    export -->|"成功"| done
+    brief["用户 Brief + 输入快照 / 固定 Profile / Material / History"]
+    audience["① Audience · 受众洞察 / 历史分析 / 相似内容 / 画像与历史"]
+    research["② Research · 素材研究 / 素材检索 / 依据检查 / 证据缺口"]
+    join["Join · 同快照汇合 / 两分支有效成功；失败不当空结果"]
+    content["③ Content · 内容策划创作 / Strategy → Outline → Hook → Title → Body"]
+    reviewer["④ Reviewer · 主编审核 / 分项分数 / 阻断问题 / 修改指令"]
+    revise["Content.revise / 最早受影响阶段起重算"]
+    supply["补充资料 / 新快照 / 重新验证两分支；预算不静默清零"]
+    limit["自动返修上限 / 等待补料新运行或取消"]
+    human["人工确认当前已审版本 / 接受 / 请求改稿 / 取消"]
+    final["最终内容版本 / 用户接受后进入 History"]
+    export["模板工具导出 / 确认版本 / 图片 / manifest"]
+    done["完成交付 / 发布由人决定，指标手工回填"]
+    cancelled["取消 / 保留候选稿 / 不升级为最终内容"]
+    brief -->|"并行分支"| audience
+    brief -->|"并行分支"| research
+    audience -->|"AudienceInsight"| join
+    research -->|"ResearchNotes"| join
+    join -->|"完整性 / 版本通过"| content
+    join -.->|"关键资料不足"| supply
+    content -->|"Draft + 阶段产物"| reviewer
+    reviewer -.->|"不通过，有额度"| revise
+    revise -.->|"改稿"| content
+    reviewer -->|"通过门槛"| human
+    reviewer -.->|"关键证据不足"| supply
+    reviewer -.->|"返修 2 轮仍不过"| limit
+    limit -.->|"补料后明确新建 run"| supply
+    supply -.->|"新快照重新分析"| brief
+    limit -.->|"取消"| cancelled
+    human -.->|"用户请求改稿"| revise
+    human -.->|"取消"| cancelled
+    human -->|"接受且版本有效"| final
+    final -->|"有效审核版本"| export
+    export -->|"文件齐全"| done

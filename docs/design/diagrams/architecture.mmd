@@ -1,21 +1,13 @@
 flowchart TD
-    web["M01 网页工作台 / 定位 / 素材 / 编辑 / 预览 / 导出"]
-    api["M02 业务 API / 认证、权限、幂等、版本校验"]
-    project["M03 + M07 内容与版本 / 素材快照 / 用户稿 / 候选稿"]
-    queue["M04 调度与任务队列 / outbox → Redis / Celery"]
-    worker["M05 四 Agent 工作流 / 策划 → 写作 → 编排 → 审稿"]
-    model["M06 模型网关 / 额度预留 / API / 计量"]
-    render["M08 模板渲染与导出 / 固定模板 / PNG / ZIP"]
-    data["M09 PostgreSQL / 项目 / 任务 / 检查点 / 事件"]
-    files["M09 私有对象存储 / 原始图片 / 导出文件"]
-    observe["M09 运行观测 / 脱敏日志 / 指标 / 用量"]
-    web -->|"HTTPS / SSE"| api
-    api -->|"素材与版本"| project
-    api -->|"异步任务"| queue
-    queue -->|"领取与续跑"| worker
-    worker -->|"服务端调用"| model
-    worker -->|"确认版本"| render
-    project -->|"业务持久化"| data
-    worker -->|"检查点与状态"| data
-    render -->|"图片与清单"| files
-    model -->|"用量与错误"| observe
+    L1["L1 · UI / Runtime Console / Brief / 编辑 / 人工确认 / 状态与输入输出 / Tool calls / Memory reads / 耗时和成本"]
+    L2["L2 · Orchestrator / API / 快照 / 并行汇合 / 分支 / 有界返修 / 预算 / 暂停与恢复"]
+    L3["L3 · 四个 Agents / Audience 受众洞察 / Research 素材研究 / Content 策划创作 / Reviewer 主编审核"]
+    tools["L4 · Tools 能力 / 历史分析 / 素材检索 / 依据检查 / 渲染"]
+    skills["L4 · Skills 方法 / 分析方法 / 策略与写作 / 审核标准"]
+    L5["L5 · Memory / Profile 账号画像 / Material 真实素材 / History 历史内容与表现"]
+    L1 -->|"请求、确认；事件回传到 Console"| L2
+    L2 -->|"受控调度与结果校验"| L3
+    L3 -->|"获准工具调用"| tools
+    skills -->|"加载固定版本方法"| L3
+    tools -->|"按身份与来源版本读取"| L5
+    L2 -.->|"运行检查点 / 事件独立存储"| L5

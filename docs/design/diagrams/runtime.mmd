@@ -1,0 +1,11 @@
+flowchart TD
+    producer["Orchestrator / Agents / Tools / Memory / 统一 event_id / run_id / seq / agent / stage / snapshot_id"]
+    events["鉴权、脱敏与事件持久化 / PostgreSQL 先落库，再通知；call_id 用量去重"]
+    transport["API · SSE / 状态快照 / 15s 心跳 / Last-Event-ID 续读 / 5s 补偿轮询"]
+    console["UI · Runtime Console / 状态 / 输入输出 / Tool calls / Memory reads / 耗时 / Token成本 / 错误重试"]
+    action["允许的用户操作 → 服务端校验 / 补料 / 改稿 / 接受 / 取消；幂等键 + 状态与稿件版本"]
+    producer -->|"步骤、工具与记忆事件"| events
+    events -->|"按用户与游标读取"| transport
+    transport -->|"事件重放去重"| console
+    console -->|"allowed_actions"| action
+    action -.->|"恢复命令"| producer

@@ -1,14 +1,16 @@
-# 业务流程与任务状态设计
+# 四 Agent 业务流程与任务状态
 
-v0.1 · 2026-09-20 · 设计待实现。状态和参数基线：[design_contract.json](design_contract.json)。
+v0.2 · 目标设计，待实施。机器可读路由：[design_contract.json](design_contract.json)。
 
-## 1. 用户创作与 Agent 返修
+## 1. 主流程与返修
 
-![D2 创作及返修流程](diagrams/workflow.svg)
+![D2 四 Agent 并行与返修](diagrams/workflow.svg)
 
-主流程为：提交资料 → planner → 用户选择 → writer → designer → reviewer → 用户定稿 → 模板导出。审稿针对内容返回 writer，针对排版返回 designer；缺少资料则暂停。每次自动返修回到 reviewer，最多 2 轮后由用户决定，不自动降格为通过。
+Brief → 同一快照分发 → audience / research 并行 → Join 校验 → content 五阶段 → reviewer → 人工确认 → 最终版本 → 模板导出。
 
-用户最终确认时可以接受、要求修改或保留草稿。要求修改进入下一段执行，run 的累计时间、用量和调用上限不重置。达到上限只能结束当前 run，并由用户明确新建；不能自动循环创建 run 绕过日额度。
+reviewer 不通过 → content.revise → reviewer 再审；改稿不能直接成为最终内容。关键资料不足 → 用户补料 → 新快照 → 重新并行分析；返修次数耗尽 → 等待补料或取消，不能“降低分数标准后通过”。
+
+默认不再在生成前强制选题确认；用户仍可在 Brief 指定主题，在 Console 查看 Strategy，或取消后调整需求。未来若添加策略确认，必须作为显式 WAITING_USER 节点，不增加第五个 Agent。
 
 ## 2. 任务生命周期
 
@@ -27,81 +29,96 @@ v0.1 · 2026-09-20 · 设计待实现。状态和参数基线：[design_contract
 
 终态不可回退。FAILED 若希望再尝试，创建带 parent_run_id 的新 run，并继续受用户日额度约束。/retry 仅用于 RETRY_WAIT，不能重置失败终态。
 
-wait_reason：topic_selection、missing_material、final_confirmation、revision_limit、version_conflict。resume_node 从服务端已记录检查点读取，不由客户端任意设置。
+wait_reason：missing_material、final_confirmation、revision_limit、version_conflict。resume_node 从服务端已记录检查点读取，不由客户端任意设置。
 
-SUCCEEDED 对 full 请求表示成果被用户接受；导出是独立 export job，失败不会要求重复生成文案。对 rewrite/layout/review 请求，表示对应候选成果已生成并交付，是否接受由项目版本管理；界面必须区分“建议已生成”和“最终稿已确认”。
+SUCCEEDED 对 full/rewrite 请求均要求当前稿审核有效且用户接受；layout/review 辅助请求仅表示该项产物已生成，不能自动将项目稿件标为最终稿。导出是独立 export job，失败不需要重生成文案。
 
-## 3. 请求、执行、事件时序
+## 3. 并行分支与汇合屏障
+
+1. Orchestrator 冻结 Profile、Material、History 和 Brief 的 snapshot_id，预留两个分支的预算。
+2. audience、research 并行运行，各自记录输入/输出、Tool 调用和 Memory 读取；分别保存 branch_results，不能覆盖整个共享状态。
+3. Join 仅在两个结果都通过 Schema、权限、来源和快照版本校验后放行。历史样本为 0 可以是成功结果；资料不足触发人工补料，不是忽略 research。
+4. 单分支失败：只重试失败分支，保留同快照成功结果。不可恢复时取消另一分支后续操作并终止本 run；已发生的费用仍计入。
+5. 用户补料或改 Brief 导致快照变化，旧分支结果失效，两者重算；输入完全不变的传输重试才复用成功分支。
 
 ```mermaid
 sequenceDiagram
-    actor U as 创作者
-    participant W as 网页
-    participant A as API
-    participant D as PostgreSQL
-    participant Q as 调度队列
-    participant R as Worker
-    participant L as 模型网关
-    U->>W: 提交素材与需求
-    W->>A: 创建 run + 幂等键
-    A->>D: 事务写 run / snapshot / outbox
-    A-->>W: 202 + run_id
-    D-->>Q: dispatcher 领取 outbox 并投递
-    Q->>R: 至少一次投递
-    R->>D: 获取租约和 fencing_token
-    R->>L: 预留额度后调用 planner
-    L-->>R: 结构化选题和用量
-    R->>D: 提交步骤结果、检查点、等待状态与事件
-    W->>A: SSE 或查询快照
-    A-->>W: 等待选题确认
-    U->>W: 选择选题
-    W->>A: resume + 状态版本 + 幂等键
-    A->>D: 验证归属/版本，消费确认，写 outbox
-    D-->>Q: 投递恢复命令
-    Q->>R: 从检查点继续
-    R->>L: writer → designer → reviewer
-    R->>D: 候选版本与最终确认事件
-    A-->>W: 候选稿、排版与审稿意见
+    actor U as 用户
+    participant UI as UI / Console
+    participant O as Orchestrator
+    participant A as Audience
+    participant R as Research
+    participant C as Content
+    participant V as Reviewer
+    U->>UI: Brief 与真实资料
+    UI->>O: 创建 run + 幂等键
+    O-->>UI: 202 run_id
+    par 相同 snapshot_id
+        O->>A: Profile + History 工具权限
+        A-->>O: AudienceInsight
+    and 素材分支
+        O->>R: Material 工具权限
+        R-->>O: ResearchNotes
+    end
+    O->>O: Join 校验版本、完整性和资料缺口
+    O->>C: Strategy → Outline → Hook → Title → Body
+    C-->>O: 分阶段产物 + Draft
+    O->>V: 精确 Draft 和来源版本
+    V-->>O: 问题定位、分项分数、修改指令
+    alt 不通过且有返修额度
+        O->>C: revise，从最早受影响阶段开始
+        C-->>O: 新候选版本
+        O->>V: 必须再次审核
+    else 审核通过
+        O-->>UI: WAITING_USER / final_confirmation
+        U->>UI: 接受当前已审核版本
+        UI->>O: expected_status_version + reviewed_draft_version_id
+        O->>O: 再验审核和版本后设为最终稿
+    end
 ```
 
-时序图的 D→Q 为 outbox dispatcher 读取数据库后投递，不是数据库直接访问消息队列。SSE 仅用于通知；断线后 GET 快照与事件游标恢复，浏览器不驱动后台持续执行。
+时序图展示一次返修；循环条件和额度由状态机执行。所有阶段均发送 Console 事件，图中为清晰起见未重复画出。
 
-## 4. 人工暂停与恢复
+## 4. Content 阶段、返修与审核门槛
 
-1. 节点产出资料缺口或需要确认时，把 wait_reason、resume_node、候选版本和检查点持久化，释放 Worker。
-2. 用户恢复请求校验 owner、status_version、当前 WAITING_USER 状态及选题/版本归属。
-3. 同事务将状态更新为 QUEUED 并写恢复命令；重复点击返回原结果，旧版本 409。
-4. Worker 重新领取后恢复。暂停前的操作可能重放，因此成果保存与外部操作均要有幂等标识；不能把“恢复”理解成任意副作用只执行一次。
-5. missing_material 生成新快照并使下游成果失效；若资料改变选题依据则回 planner，否则从请求补料的节点继续，路由记录在审计中。
+Strategy 保存受众、角度、承诺、证据计划；Outline 保存段落结构；Hook 保存开头；Title 保存 5 个候选和选定标题；Body 保存段落、素材引用、标签与封面建议。每阶段只写自己的产物，下游引用上游版本。
 
-LangGraph 的动态中断和恢复参考：[官方 interrupts 文档](https://docs.langchain.com/oss/python/langgraph/interrupts)。
+一次正常流程预计 8 个模型调用，最多 2 轮自动返修；若策略问题需重算多个阶段，16 次总尝试或 40000 Token 预算可能先耗尽，应明确报告而非保证一定返修满 2 轮。每次格式修复、网络重试、模型型 Tool 内部调用都占同一预算。
 
-## 5. 模型错误与返修不是同一回事
+Reviewer 的分项分数由模型给出；总分及通过条件由程序复算。总分 >= 82、证据安全 >= 80 只是必要条件，还需无阻断项/关键证据缺口，规则与版本校验均通过。评审均分不能覆盖明显事实缺口。
 
-| 触发 | 决策 | 计数及结果 |
+## 5. 人工确认、补料和版本冲突
+
+WAITING_USER 不占 Worker。恢复必须校验身份、wait_reason、status_version、snapshot_id 和 draft_version_id。accept 仅在 final_confirmation 且审核有效时允许；重复点击按幂等键返回原结果。
+
+用户手工编辑任何已审核稿都会产生新 candidate，旧审核失效；重新经过 reviewer 后才可接受。请求改稿进入同一个 content.revise，累计预算不重置。达到自动返修上限后只有补料并重新开明确的新运行或取消；不能通过无限 resume 绕过上限。
+
+missing_material 补料产生新快照，当前 run 预算足够时从 Brief 分支重新执行；不足则结束并由用户明确新建 run。revision_limit 的补料结束旧 run，创建 parent_run_id 关联的新 run，继续受日额度约束。图中 supply → brief 是业务恢复路径，不表示重置旧 run 的计数。
+
+旧任务基于 v3 返回，但用户已保存 v4：保留为旧版本建议并进入 version_conflict，用户选择以当前稿新建运行或取消；不得自动覆盖。任何恢复动作来自服务端白名单，不接受模型输出任意节点名。
+
+## 6. 错误、取消与资源约束
+
+| 情况 | 处理 | 不允许 |
 | --- | --- | --- |
-| 429 / 临时 5xx / 网络失败 | 有限退避；Retry-After 若超过剩余时间则停止 | 同时计 attempt 与累计时限 |
-| 90s 超时 | 标记调用结果不确定，核对用量后有限重试 | 可能重复费用，预留额度未核对前不释放 |
-| 401 / 无效模型配置 | FAILED | 不自动重试 |
-| Schema 无效 | 最多一次格式修复调用 | 消耗总调用和 Token 预算，仍无效则 FAILED |
-| 审稿发现问题 | writer/designer 返修 | revision_round 加 1，最多 2 轮 |
-| 资料不足 | WAITING_USER | 不自动编造；不占用 Worker |
-| 用户版本已变化 | WAITING_USER(version_conflict) | 留存候选稿，禁止覆盖 |
-| 总预算/时限用尽 | FAILED | 保存已有成果，明确原因 |
+| Tool 无结果 | 返回空及缺口，按业务判断继续/补料 | 冒充成功搜索或历史结论 |
+| Tool 超时 | 有限只读重试，记录错误事件 | 用空结果掩盖失败 |
+| 模型 429/临时 5xx | 2 次额外退避重试，受总预算和时限约束 | SDK 与 Worker 叠加无限重试 |
+| 模型认证/配置错误 | FAILED | 自动重复请求 |
+| JSON 不合格 | 最多 1 次修复调用，再错 FAILED | 忽略结构校验 |
+| 并行一支失败 | 保留同快照成功分支，只恢复失败支 | 整段从头付费重跑 |
+| 用户取消 | 标记取消，阻止新 Tool/模型调用 | 迟到结果把 CANCELLED 改成功 |
+| Worker 崩溃 | 租约回收、检查点恢复、fencing 拒绝旧写入 | 假设队列天然恰好一次 |
+| 审稿不过/上限 | revise / WAITING_USER | 直接输出最终稿 |
 
-网络重试仅由 M06 调度；Celery 不对整个工作流开启无限 autoretry。Worker 丢失后的恢复从已提交节点开始，保留 run 的所有计数。Celery late ack 与 worker-lost 配置需要故障测试后启用，不能假设仅设置 late ack 即覆盖全部崩溃场景。
+供应商调用已经发出时取消不一定能撤销费用；记录 unknown 用量并保守保留额度。持久化节点输出和检查点不一致时，用唯一 step_key 对账重放，不能重复提交候选稿。
 
-## 6. 取消、并发与导出
+## 7. 导出、历史与反馈
 
-取消接口先持久化标记和状态；Worker 每次工具调用前后检查，供应商已经发出的请求可能无法中止，仍记录用量但不把迟到结果改成成功。租约过期后旧 Worker 不能写任何业务结果。
+正式 export_bundle 只允许 Orchestrator 在用户接受且审核版本有效时调用。模板溢出/缺图时返回错误或预览，不能标完整导出；修改稿件需复审。渲染失败只重试渲染。
 
-保存稿件使用 base_version_id 乐观锁；接受候选稿使用事务比较当前版本。review/layout/export 均关联精确版本 ID。render job 使用版本+配置哈希去重，输出 object_key、sha256、图片数量和尺寸到 manifest，缺页或文字溢出时不出“完整包”。
+最终稿进入 History 的 accepted 状态，并不代表已经发布。用户手工标记 published_at 并回填 observed_at 和指标后，才进入后续 audience 的历史分析视图；不把模型评分写成发布效果。
 
-## 7. 流程验收场景
+## 8. 验收重点
 
-- 正常创作、用户放弃选题、缺少资料、审稿文案返修、仅排版返修、达到返修上限。
-- 双击创建/恢复、断网重连、用户关闭页面、Worker 崩溃、Redis 重启、租约过期迟到写。
-- 生成期间用户手工修改、旧审核复用、新旧导出混淆、渲染溢出、项目删除期间模型返回。
-- 配额不足、总尝试上限、格式修复用量归集、未知费用处理、取消后不启动下一次模型调用。
-
-以上是测试计划，执行结果应在实际实现后关联 commit 和原始日志记录。
+并行乱序完成、单支超时、快照不一致、无历史冷启动、无素材、工具越权、注入内容、不同观察窗口不可比、五阶段局部失效、改稿复审、审核分数与风险冲突、过期确认、人工编辑、预算提前耗尽、取消后迟到结果、Console 断线与事件重放。测试结果在真实实现后记录。

@@ -1,27 +1,212 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "status": "proposed_not_implemented",
-  "agents": ["planner", "writer", "designer", "reviewer"],
-  "modules": ["M01", "M02", "M03", "M04", "M05", "M06", "M07", "M08", "M09"],
-  "terminal_states": ["SUCCEEDED", "FAILED", "CANCELLED", "EXPIRED"],
+  "agents": [
+    "audience",
+    "research",
+    "content",
+    "reviewer"
+  ],
+  "modules": [
+    "M01",
+    "M02",
+    "M03",
+    "M04",
+    "M05",
+    "M06",
+    "M07",
+    "M08",
+    "M09",
+    "M10",
+    "M11"
+  ],
+  "terminal_states": [
+    "SUCCEEDED",
+    "FAILED",
+    "CANCELLED",
+    "EXPIRED"
+  ],
   "transitions": {
-    "QUEUED": ["RUNNING", "CANCELLED"],
-    "RUNNING": ["WAITING_USER", "RETRY_WAIT", "SUCCEEDED", "FAILED", "CANCELLED"],
-    "WAITING_USER": ["QUEUED", "CANCELLED", "EXPIRED"],
-    "RETRY_WAIT": ["QUEUED", "FAILED", "CANCELLED"],
-    "SUCCEEDED": [], "FAILED": [], "CANCELLED": [], "EXPIRED": []
+    "QUEUED": [
+      "RUNNING",
+      "CANCELLED"
+    ],
+    "RUNNING": [
+      "WAITING_USER",
+      "RETRY_WAIT",
+      "SUCCEEDED",
+      "FAILED",
+      "CANCELLED"
+    ],
+    "WAITING_USER": [
+      "QUEUED",
+      "CANCELLED",
+      "EXPIRED"
+    ],
+    "RETRY_WAIT": [
+      "QUEUED",
+      "FAILED",
+      "CANCELLED"
+    ],
+    "SUCCEEDED": [],
+    "FAILED": [],
+    "CANCELLED": [],
+    "EXPIRED": []
   },
   "parameters": {
-    "user_active_runs": 1, "model_concurrency": 2,
-    "topic_count": 3, "pages_min": 1, "pages_max": 6, "pages_default": 4,
-    "image_width": 1080, "image_height": 1440,
-    "input_codepoints_max": 12000, "upload_mib_max": 10, "image_megapixels_max": 20,
-    "revision_rounds_max": 2, "transport_retries_max": 2, "schema_repairs_max": 1,
-    "model_timeout_s": 90, "run_active_timeout_s": 900,
-    "lease_s": 120, "heartbeat_s": 20, "wait_user_days": 7,
-    "sse_heartbeat_s": 15, "poll_s": 5, "autosave_ms": 800, "download_url_s": 300,
-    "output_tokens_max": 3000, "run_attempts_max": 16, "run_tokens_max": 40000,
-    "run_currency_budget": null, "user_daily_currency_budget": null,
-    "paid_provider_enabled": false
-  }
+    "user_active_runs": 1,
+    "model_concurrency": 2,
+    "pages_min": 1,
+    "pages_max": 6,
+    "pages_default": 4,
+    "image_width": 1080,
+    "image_height": 1440,
+    "input_codepoints_max": 12000,
+    "upload_mib_max": 10,
+    "image_megapixels_max": 20,
+    "revision_rounds_max": 2,
+    "transport_retries_max": 2,
+    "schema_repairs_max": 1,
+    "model_timeout_s": 90,
+    "run_active_timeout_s": 900,
+    "lease_s": 120,
+    "heartbeat_s": 20,
+    "wait_user_days": 7,
+    "sse_heartbeat_s": 15,
+    "poll_s": 5,
+    "autosave_ms": 800,
+    "download_url_s": 300,
+    "output_tokens_max": 3000,
+    "run_attempts_max": 16,
+    "run_tokens_max": 40000,
+    "run_currency_budget": null,
+    "user_daily_currency_budget": null,
+    "paid_provider_enabled": false,
+    "title_candidate_count": 5,
+    "history_days": 90,
+    "history_limit": 20,
+    "history_min_samples": 5,
+    "material_top_k": 5,
+    "tool_timeout_s": 10,
+    "tool_retries_max": 1,
+    "agent_tool_calls_max": 6,
+    "run_tool_calls_max": 24,
+    "review_threshold": 82,
+    "evidence_score_min": 80,
+    "console_preview_chars": 240,
+    "console_event_retention_days": 30
+  },
+  "design_version": "0.2",
+  "layers": {
+    "L1": [
+      "M01",
+      "M10"
+    ],
+    "L2": [
+      "M02",
+      "M04",
+      "M05"
+    ],
+    "L3": [
+      "audience",
+      "research",
+      "content",
+      "reviewer"
+    ],
+    "L4": [
+      "M08",
+      "M11"
+    ],
+    "L5": [
+      "M03",
+      "M07",
+      "M09"
+    ]
+  },
+  "cross_cutting_modules": [
+    "M06"
+  ],
+  "content_stages": [
+    "strategy",
+    "outline",
+    "hook",
+    "title",
+    "body"
+  ],
+  "parallel_branches": [
+    "audience",
+    "research"
+  ],
+  "tool_permissions": {
+    "audience": [
+      "analyze_history",
+      "find_similar_content"
+    ],
+    "research": [
+      "retrieve_material",
+      "check_claim_support"
+    ],
+    "content": [
+      "retrieve_material",
+      "measure_layout",
+      "render_preview"
+    ],
+    "reviewer": [
+      "check_claim_support",
+      "validate_draft",
+      "measure_layout"
+    ]
+  },
+  "workflow": {
+    "brief": [
+      "audience",
+      "research"
+    ],
+    "audience": [
+      "join"
+    ],
+    "research": [
+      "join"
+    ],
+    "join": [
+      "content",
+      "supply"
+    ],
+    "content": [
+      "reviewer"
+    ],
+    "reviewer": [
+      "revise",
+      "human",
+      "supply",
+      "limit"
+    ],
+    "revise": [
+      "content"
+    ],
+    "supply": [
+      "brief"
+    ],
+    "limit": [
+      "supply",
+      "cancelled"
+    ],
+    "human": [
+      "final",
+      "revise",
+      "cancelled"
+    ],
+    "final": [
+      "export"
+    ],
+    "export": [
+      "done"
+    ],
+    "done": [],
+    "cancelled": []
+  },
+  "join_requires": [
+    "audience",
+    "research"
+  ]
 }

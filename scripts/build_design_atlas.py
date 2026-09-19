@@ -16,62 +16,62 @@ def e(a, b, label, points, dashed=False):
     return dict(source=a, target=b, label=label, points=points, dashed=dashed)
 
 GRAPHS = [
- dict(id='architecture', title='软件总体架构', subtitle='D1 · 模块化服务 + 持久化的四 Agent 工作流', width=1200, height=1120,
+ dict(id='architecture', title='五层软件架构', subtitle='D1 · 职责分层，不是五台服务器；横向设施承载权限、模型和事件', width=1200, height=1140,
  nodes=[
- n('web',410,110,'M01 网页工作台','定位 / 素材 / 编辑 / 预览 / 导出','human'),
- n('api',410,270,'M02 业务 API','认证、权限、幂等、版本校验'),
- n('project',20,430,'M03 + M07 内容与版本','素材快照 / 用户稿 / 候选稿','data',340),
- n('queue',410,430,'M04 调度与任务队列','outbox → Redis / Celery'),
- n('worker',410,590,'M05 四 Agent 工作流','策划 → 写作 → 编排 → 审稿','agent'),
- n('model',860,590,'M06 模型网关','额度预留 / API / 计量','external',320),
- n('render',410,750,'M08 模板渲染与导出','固定模板 / PNG / ZIP'),
- n('data',20,910,'M09 PostgreSQL','项目 / 任务 / 检查点 / 事件','data',340),
- n('files',410,910,'M09 私有对象存储','原始图片 / 导出文件','data'),
- n('observe',860,910,'M09 运行观测','脱敏日志 / 指标 / 用量','data',320)],
+ n('L1',160,120,'L1 · UI / Runtime Console','Brief / 编辑 / 人工确认 / 状态与输入输出 / Tool calls / Memory reads / 耗时和成本','human',880),
+ n('L2',160,300,'L2 · Orchestrator','API / 快照 / 并行汇合 / 分支 / 有界返修 / 预算 / 暂停与恢复','service',880),
+ n('L3',160,480,'L3 · 四个 Agents','Audience 受众洞察 / Research 素材研究 / Content 策划创作 / Reviewer 主编审核','agent',880),
+ n('tools',160,660,'L4 · Tools 能力','历史分析 / 素材检索 / 依据检查 / 渲染','service',420),
+ n('skills',620,660,'L4 · Skills 方法','分析方法 / 策略与写作 / 审核标准','service',420),
+ n('L5',160,900,'L5 · Memory','Profile 账号画像 / Material 真实素材 / History 历史内容与表现','data',880)],
  edges=[
- e('web','api','HTTPS / SSE',[(600,188),(600,270)]),
- e('api','project','素材与版本',[(410,309),(190,309),(190,430)]),
- e('api','queue','异步任务',[(600,348),(600,430)]),
- e('queue','worker','领取与续跑',[(600,508),(600,590)]),
- e('worker','model','服务端调用',[(790,629),(860,629)]),
- e('worker','render','确认版本',[(600,668),(600,750)]),
- e('project','data','业务持久化',[(190,508),(190,910)]),
- e('worker','data','检查点与状态',[(410,629),(375,629),(375,869),(190,869),(190,910)]),
- e('render','files','图片与清单',[(600,828),(600,910)]),
- e('model','observe','用量与错误',[(1020,668),(1020,910)])],
- notes=['私有网络：API、Worker、数据库及队列均在服务端；仅 HTTPS 网关对外。',
-        '状态事件由 API 鉴权后提供给网页；模型密钥不下发。编号对应模块设计。']),
- dict(id='workflow',title='创作与返修流程',subtitle='D2 · 用户控制选题和最终版本；系统执行有界协作',width=1200,height=1660,
+ e('L1','L2','请求、确认；事件回传到 Console',[(600,198),(600,300)]),
+ e('L2','L3','受控调度与结果校验',[(600,378),(600,480)]),
+ e('L3','tools','获准工具调用',[(370,558),(370,660)]),
+ e('skills','L3','加载固定版本方法',[(830,660),(830,558)]),
+ e('tools','L5','按身份与来源版本读取',[(370,738),(370,900)]),
+ e('L2','L5','运行检查点 / 事件独立存储',[(160,339),(70,339),(70,939),(160,939)],True)],
+ notes=['Skills 不保存用户资料、不赋予权限；Memory 的画像更新须由用户确认。',
+        '模型网关、认证、队列为横向设施；所有层输出事件，Console 展示可审计成果而非隐藏推理。']),
+ dict(id='workflow',title='四 Agent 并行与返修流程',subtitle='D2 · Audience + Research 并行；同一个 Content 负责策划、创作和改稿',width=1200,height=1800,
  nodes=[
- n('input',410,110,'填写需求与真实素材','账号定位 / 本次主题 / 图片','human'),
- n('plan',410,260,'策划 Agent · planner','3 个角度 + 素材缺口','agent'),
- n('select',410,410,'用户选择选题','持久化暂停，不占 Worker','human'),
- n('write',410,560,'写作 Agent · writer','标题 / 正文 / 来源编号','agent'),
- n('design',410,710,'编排 Agent · designer','模板 / 分页 / 配图','agent'),
- n('review',410,860,'审稿 Agent · reviewer','内容依据 / 标题兑现 / 版式','agent'),
- n('supply',20,410,'补充真实资料','更新快照后恢复请求节点','human',330),
- n('revise',850,860,'返修路由','文案 → writer；排版 → designer','service',330),
- n('limit',850,1110,'达到 2 轮自动返修上限','暂停，请用户处理问题','human',330),
- n('confirm',410,1110,'用户编辑与定稿','候选稿和差异，明确接受','human'),
- n('export',410,1320,'模板渲染与导出','有效审核版本 + 图文预览'),
- n('done',410,1470,'获得可发布素材','用户手动发布；不预测爆款','human')],
+ n('brief',410,110,'用户 Brief + 输入快照','固定 Profile / Material / History','human'),
+ n('audience',20,270,'① Audience · 受众洞察','历史分析 / 相似内容 / 画像与历史','agent',360),
+ n('research',820,270,'② Research · 素材研究','素材检索 / 依据检查 / 证据缺口','agent',360),
+ n('join',410,440,'Join · 同快照汇合','两分支有效成功；失败不当空结果'),
+ n('content',410,600,'③ Content · 内容策划创作','Strategy → Outline → Hook → Title → Body','agent'),
+ n('reviewer',410,780,'④ Reviewer · 主编审核','分项分数 / 阻断问题 / 修改指令','agent'),
+ n('revise',850,600,'Content.revise','最早受影响阶段起重算','agent',330),
+ n('supply',20,1060,'补充资料 / 新快照','重新验证两分支；预算不静默清零','human',330),
+ n('limit',850,960,'自动返修上限','等待补料新运行或取消','human',330),
+ n('human',410,1060,'人工确认当前已审版本','接受 / 请求改稿 / 取消','human'),
+ n('final',410,1220,'最终内容版本','用户接受后进入 History','data'),
+ n('export',410,1380,'模板工具导出','确认版本 / 图片 / manifest'),
+ n('done',410,1540,'完成交付','发布由人决定，指标手工回填','human'),
+ n('cancelled',850,1540,'取消 / 保留候选稿','不升级为最终内容','data',330)],
  edges=[
- e('input','plan','提交',[(600,188),(600,260)]),
- e('plan','select','资料充分',[(600,338),(600,410)]),
- e('plan','supply','资料不足',[(410,299),(185,299),(185,410)],True),
- e('select','write','确认',[(600,488),(600,560)]),
- e('write','design','候选稿',[(600,638),(600,710)]),
- e('design','review','稿件 + 排版',[(600,788),(600,860)]),
- e('review','confirm','通过',[(600,938),(600,1110)]),
- e('review','supply','缺少依据',[(410,899),(185,899),(185,488)],True),
- e('review','revise','有问题',[(790,899),(850,899)],True),
- e('revise','write','文案返修',[(1015,860),(1015,599),(790,599)],True),
- e('revise','design','排版返修',[(850,920),(820,920),(820,749),(790,749)],True),
- e('revise','limit','上限',[(1015,938),(1015,1110)],True),
- e('confirm','export','接受版本',[(600,1188),(600,1320)]),
- e('export','done','成功',[(600,1398),(600,1470)])],
- notes=['补料、返修上限和用户要求改稿：按服务端保存的 resume_node 恢复，见 FLOWS.md。',
-        '导出失败只重试渲染；用户修改稿件后旧排版与审核失效，需重新检查。']),
+ e('brief','audience','并行分支',[(410,149),(200,149),(200,270)]),
+ e('brief','research','并行分支',[(790,149),(1000,149),(1000,270)]),
+ e('audience','join','AudienceInsight',[(200,348),(200,479),(410,479)]),
+ e('research','join','ResearchNotes',[(1000,348),(1000,479),(790,479)]),
+ e('join','content','完整性 / 版本通过',[(600,518),(600,600)]),
+ e('join','supply','关键资料不足',[(410,499),(160,499),(160,1060)],True),
+ e('content','reviewer','Draft + 阶段产物',[(600,678),(600,780)]),
+ e('reviewer','revise','不通过，有额度',[(790,819),(1015,819),(1015,678)],True),
+ e('revise','content','改稿',[(850,639),(790,639)],True),
+ e('reviewer','human','通过门槛',[(600,858),(600,1060)]),
+ e('reviewer','supply','关键证据不足',[(410,819),(185,819),(185,1060)],True),
+ e('reviewer','limit','返修 2 轮仍不过',[(790,839),(810,839),(810,925),(1015,925),(1015,960)],True),
+ e('limit','supply','补料后明确新建 run',[(1015,1038),(1015,1190),(185,1190),(185,1138)],True),
+ e('supply','brief','新快照重新分析',[(20,1099),(10,1099),(10,90),(600,90),(600,110)],True),
+ e('limit','cancelled','取消',[(1180,999),(1190,999),(1190,1579),(1180,1579)],True),
+ e('human','revise','用户请求改稿',[(790,1080),(830,1080),(830,560),(1015,560),(1015,600)],True),
+ e('human','cancelled','取消',[(790,1118),(825,1118),(825,1579),(850,1579)],True),
+ e('human','final','接受且版本有效',[(600,1138),(600,1220)]),
+ e('final','export','有效审核版本',[(600,1298),(600,1380)]),
+ e('export','done','文件齐全',[(600,1458),(600,1540)])],
+ notes=['没有历史只能标注假设；补料入口也用于汇合前发现关键资料不足，见 FLOWS.md。',
+        '改稿后必回 Reviewer；修改过的稿件必须复审。图中的业务恢复不重置旧 run 累计费用。']),
  dict(id='deployment',title='云端部署拓扑',subtitle='D3 · 单节点起步，模型通过 API 调用，无需自备 GPU',width=1200,height=1160,
  nodes=[
  n('browser',410,110,'用户浏览器','无需 CLI / API Key / 扩展','human'),
@@ -121,7 +121,23 @@ GRAPHS = [
  e('RETRY_WAIT','FAILED','不可继续',[(1015,588),(1015,880)],True),
  e('RUNNING','FAILED','不可恢复',[(790,360),(815,360),(815,850),(1015,850),(1015,880)],True)],
  notes=['所有非终态均可 CANCELLED；RUNNING 也可直接 FAILED。完整转换表见 design_contract.json。',
-        'SUCCEEDED 代表本次请求目标达成；full 流程需用户接受。导出任务有独立状态。'])
+        'SUCCEEDED 代表本次请求目标达成；full 流程需用户接受。导出任务有独立状态。']),
+ dict(id='runtime',title='Runtime Console 事件链',subtitle='D5 · 真实事件驱动的观察与干预，不模拟 Agent 思考',width=1200,height=1120,
+ nodes=[
+ n('producer',200,120,'Orchestrator / Agents / Tools / Memory','统一 event_id / run_id / seq / agent / stage / snapshot_id','agent',800),
+ n('events',200,310,'鉴权、脱敏与事件持久化','PostgreSQL 先落库，再通知；call_id 用量去重','data',800),
+ n('transport',200,500,'API · SSE / 状态快照','15s 心跳 / Last-Event-ID 续读 / 5s 补偿轮询','service',800),
+ n('console',200,690,'UI · Runtime Console','状态 / 输入输出 / Tool calls / Memory reads / 耗时 / Token成本 / 错误重试','human',800),
+ n('action',200,900,'允许的用户操作 → 服务端校验','补料 / 改稿 / 接受 / 取消；幂等键 + 状态与稿件版本','human',800)],
+ edges=[
+ e('producer','events','步骤、工具与记忆事件',[(600,198),(600,310)]),
+ e('events','transport','按用户与游标读取',[(600,388),(600,500)]),
+ e('transport','console','事件重放去重',[(600,578),(600,690)]),
+ e('console','action','allowed_actions',[(600,768),(600,900)]),
+ e('action','producer','恢复命令',[(200,939),(60,939),(60,159),(200,159)],True)],
+ notes=['默认摘要 240 字符，事件保留 30 天；过期游标返回快照并标记历史不完整。',
+        '成本 unknown 不记作 0；不展示密钥、完整系统提示或隐藏推理；管理员默认只能看脱敏指标。'])
+
 ]
 
 COLORS = {'service':('#f0f5ff','#4763b6'), 'human':('#eaf8f3','#15816a'),
@@ -148,6 +164,10 @@ def svg(g):
             if x > g['width']-160: x-=8; anchor='end'
             else: x+=8; anchor='start'
         else: y-=9; anchor='middle'
+        overrides = {('workflow', 'reviewer', 'revise'): (1023, 735, 'start'),
+                     ('workflow', 'human', 'revise'): (838, 720, 'start'),
+                     ('workflow', 'limit', 'supply'): (320, 1170, 'middle')}
+        x, y, anchor = overrides.get((g['id'], edge['source'], edge['target']), (x, y, anchor))
         pieces.append(f'<text x="{x}" y="{y}" font-size="14" text-anchor="{anchor}" fill="#53627d" stroke="white" stroke-width="5" paint-order="stroke">{esc(edge["label"])}</text>')
     for node in g['nodes']:
         fill,stroke=COLORS[node['kind']];x=node['x'];y=node['y'];w=node['w']
@@ -186,7 +206,7 @@ def build():
         cards.append(f'<section id="{graph["id"]}">{text}<p><a href="diagrams/{graph["id"]}.svg">打开 SVG</a> · <a href="diagrams/{graph["id"]}.mmd">Mermaid 源文件</a></p></section>')
     page='''<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>多 Agent 图文创作 · 软件设计图册</title>
 <style>*{box-sizing:border-box}body{margin:0;background:#edf1f8;color:#182841;font-family:"PingFang SC",sans-serif}header,main{max-width:1240px;margin:auto;padding:32px 20px}header{padding-bottom:8px}h1{font-size:32px;margin:12px 0}p{line-height:1.8;color:#53627d}nav{display:flex;gap:12px;flex-wrap:wrap}a{color:#355cb5}nav a{padding:10px 16px;background:white;border-radius:10px;text-decoration:none}section{background:white;border-radius:18px;margin:24px 0;padding:20px;box-shadow:0 4px 22px #1a34500a}svg{display:block;width:100%;height:auto}section p{margin:0;padding:8px}small{letter-spacing:2px;color:#7354bd}@media print{body{background:white}header{padding:0}nav{display:none}section{box-shadow:none;break-before:page;padding:0}main{padding:0}svg{max-height:245mm}section p{font-size:10px}}</style>
-<header><small>SOFTWARE DESIGN / v0.1</small><h1>多 Agent 图文创作产品</h1><p>架构 · 协作流程 · 云端部署 · 任务状态<br>2026-09-20 · 设计方案，尚未实现；参数为建议配置及待测目标。</p><nav><a href="#architecture">01 总体架构</a><a href="#workflow">02 创作流程</a><a href="#deployment">03 云端部署</a><a href="#lifecycle">04 任务状态</a><a href="README.md">设计文档索引</a></nav></header><main>'''+''.join(cards)+'</main></html>\n'
+<header><small>SOFTWARE DESIGN / v0.2</small><h1>多 Agent 图文创作产品</h1><p>五层架构 · 四 Agent 协作 · 云端部署 · 任务状态 · Runtime Console<br>2026-09-20 · 设计方案，尚未实现；参数为建议配置及待测目标。</p><nav><a href="#architecture">01 总体架构</a><a href="#workflow">02 创作流程</a><a href="#deployment">03 云端部署</a><a href="#lifecycle">04 任务状态</a><a href="#runtime">05 Runtime Console</a><a href="README.md">设计文档索引</a></nav></header><main>'''+''.join(cards)+'</main></html>\n'
     (OUT/'DESIGN_ATLAS.html').write_text(page)
 
 if __name__=='__main__':

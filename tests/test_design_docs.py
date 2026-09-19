@@ -87,9 +87,56 @@ class DesignDocumentationTests(unittest.TestCase):
     def test_atlas_offline(self):
         text=(DESIGN/'DESIGN_ATLAS.html').read_text()
         self.assertNotRegex(text,r'<script|<link[^>]*https?://|<img[^>]*https?://')
-        self.assertEqual(text.count('<svg '),4)
+        self.assertEqual(text.count('<svg '),len(atlas.GRAPHS))
         for g in atlas.GRAPHS:
             self.assertIn(atlas.svg(g),text)
+
+    def test_five_layers_and_four_agents_are_unambiguous(self):
+        c = self.contract
+        self.assertEqual(c['agents'], ['audience', 'research', 'content', 'reviewer'])
+        self.assertEqual(list(c['layers']), ['L1', 'L2', 'L3', 'L4', 'L5'])
+        self.assertEqual(set(c['layers']['L3']), set(c['agents']))
+        located = [m for layer in c['layers'].values() for m in layer if m.startswith('M')]
+        located += c['cross_cutting_modules']
+        self.assertCountEqual(located, c['modules'])
+        self.assertEqual(c['content_stages'], ['strategy', 'outline', 'hook', 'title', 'body'])
+
+    def test_workflow_diagram_matches_routing_contract(self):
+        graph = next(g for g in atlas.GRAPHS if g['id'] == 'workflow')
+        expected = {(a,b) for a,bs in self.contract['workflow'].items() for b in bs}
+        actual = {(e['source'],e['target']) for e in graph['edges']}
+        self.assertEqual(actual, expected)
+        self.assertEqual({n['id'] for n in graph['nodes']}, set(self.contract['workflow']))
+        self.assertEqual(self.contract['join_requires'], ['audience', 'research'])
+        predecessors = {a for a,bs in self.contract['workflow'].items() if 'join' in bs}
+        self.assertEqual(predecessors, set(self.contract['join_requires']))
+
+    def test_revision_cannot_bypass_review_or_human_acceptance(self):
+        flow = self.contract['workflow']
+        self.assertEqual(flow['revise'], ['content'])
+        self.assertEqual(flow['content'], ['reviewer'])
+        # Removing either gate must make final content unreachable from revision.
+        for blocked in ('reviewer', 'human'):
+            pending, seen = ['revise'], set()
+            while pending:
+                node = pending.pop()
+                if node in seen or node == blocked:
+                    continue
+                seen.add(node)
+                pending.extend(flow[node])
+            self.assertNotIn('final', seen)
+        self.assertNotIn('human', flow['limit'])
+        self.assertNotIn('final', flow['limit'])
+
+    def test_tool_privileges_and_quality_limits(self):
+        tools = self.contract['tool_permissions']
+        self.assertEqual(set(tools), set(self.contract['agents']))
+        for granted in tools.values():
+            self.assertNotIn('export_bundle', granted)
+        p = self.contract['parameters']
+        self.assertGreaterEqual(p['run_attempts_max'], 2 + len(self.contract['content_stages']) + 1)
+        self.assertLessEqual(p['agent_tool_calls_max'], p['run_tool_calls_max'])
+        self.assertTrue(0 < p['evidence_score_min'] <= p['review_threshold'] <= 100)
 
     def test_research_provenance_and_no_execution_claim(self):
         rows=json.loads((ROOT/'docs/research/repository_snapshot.json').read_text())

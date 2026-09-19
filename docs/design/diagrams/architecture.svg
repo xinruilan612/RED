@@ -1,60 +1,40 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1120" viewBox="0 0 1200 1120" role="img" aria-labelledby="title desc">
-<title id="title">软件总体架构</title><desc id="desc">D1 · 模块化服务 + 持久化的四 Agent 工作流</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1140" viewBox="0 0 1200 1140" role="img" aria-labelledby="title desc">
+<title id="title">五层软件架构</title><desc id="desc">D1 · 职责分层，不是五台服务器；横向设施承载权限、模型和事件</desc>
 <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#71809c"/></marker></defs>
 <rect width="100%" height="100%" fill="#ffffff"/>
 <g font-family="PingFang SC, Microsoft YaHei, sans-serif">
-<text x="28" y="40" font-size="26" font-weight="700" fill="#182841">软件总体架构</text>
-<text x="28" y="71" font-size="16" fill="#65748c">D1 · 模块化服务 + 持久化的四 Agent 工作流</text>
-<polyline points="600,188 600,270" fill="none" stroke="#71809c" stroke-width="2" marker-end="url(#arrow)"/>
-<text x="608.0" y="229.0" font-size="14" text-anchor="start" fill="#53627d" stroke="white" stroke-width="5" paint-order="stroke">HTTPS / SSE</text>
-<polyline points="410,309 190,309 190,430" fill="none" stroke="#71809c" stroke-width="2" marker-end="url(#arrow)"/>
-<text x="300.0" y="300.0" font-size="14" text-anchor="middle" fill="#53627d" stroke="white" stroke-width="5" paint-order="stroke">素材与版本</text>
-<polyline points="600,348 600,430" fill="none" stroke="#71809c" stroke-width="2" marker-end="url(#arrow)"/>
-<text x="608.0" y="389.0" font-size="14" text-anchor="start" fill="#53627d" stroke="white" stroke-width="5" paint-order="stroke">异步任务</text>
-<polyline points="600,508 600,590" fill="none" stroke="#71809c" stroke-width="2" marker-end="url(#arrow)"/>
-<text x="608.0" y="549.0" font-size="14" text-anchor="start" fill="#53627d" stroke="white" stroke-width="5" paint-order="stroke">领取与续跑</text>
-<polyline points="790,629 860,629" fill="none" stroke="#71809c" stroke-width="2" marker-end="url(#arrow)"/>
-<text x="825.0" y="620.0" font-size="14" text-anchor="middle" fill="#53627d" stroke="white" stroke-width="5" paint-order="stroke">服务端调用</text>
-<polyline points="600,668 600,750" fill="none" stroke="#71809c" stroke-width="2" marker-end="url(#arrow)"/>
-<text x="608.0" y="709.0" font-size="14" text-anchor="start" fill="#53627d" stroke="white" stroke-width="5" paint-order="stroke">确认版本</text>
-<polyline points="190,508 190,910" fill="none" stroke="#71809c" stroke-width="2" marker-end="url(#arrow)"/>
-<text x="198.0" y="709.0" font-size="14" text-anchor="start" fill="#53627d" stroke="white" stroke-width="5" paint-order="stroke">业务持久化</text>
-<polyline points="410,629 375,629 375,869 190,869 190,910" fill="none" stroke="#71809c" stroke-width="2" marker-end="url(#arrow)"/>
-<text x="383.0" y="749.0" font-size="14" text-anchor="start" fill="#53627d" stroke="white" stroke-width="5" paint-order="stroke">检查点与状态</text>
-<polyline points="600,828 600,910" fill="none" stroke="#71809c" stroke-width="2" marker-end="url(#arrow)"/>
-<text x="608.0" y="869.0" font-size="14" text-anchor="start" fill="#53627d" stroke="white" stroke-width="5" paint-order="stroke">图片与清单</text>
-<polyline points="1020,668 1020,910" fill="none" stroke="#71809c" stroke-width="2" marker-end="url(#arrow)"/>
-<text x="1028.0" y="789.0" font-size="14" text-anchor="start" fill="#53627d" stroke="white" stroke-width="5" paint-order="stroke">用量与错误</text>
-<rect x="410" y="110" width="380" height="78" rx="13" fill="#eaf8f3" stroke="#15816a" stroke-width="1.5"/>
-<text x="600.0" y="141" text-anchor="middle" font-size="19" font-weight="600" fill="#182841">M01 网页工作台</text>
-<text x="600.0" y="167" text-anchor="middle" font-size="14" fill="#53627d">定位 / 素材 / 编辑 / 预览 / 导出</text>
-<rect x="410" y="270" width="380" height="78" rx="13" fill="#f0f5ff" stroke="#4763b6" stroke-width="1.5"/>
-<text x="600.0" y="301" text-anchor="middle" font-size="19" font-weight="600" fill="#182841">M02 业务 API</text>
-<text x="600.0" y="327" text-anchor="middle" font-size="14" fill="#53627d">认证、权限、幂等、版本校验</text>
-<rect x="20" y="430" width="340" height="78" rx="13" fill="#f4f6f9" stroke="#65748c" stroke-width="1.5"/>
-<text x="190.0" y="461" text-anchor="middle" font-size="19" font-weight="600" fill="#182841">M03 + M07 内容与版本</text>
-<text x="190.0" y="487" text-anchor="middle" font-size="14" fill="#53627d">素材快照 / 用户稿 / 候选稿</text>
-<rect x="410" y="430" width="380" height="78" rx="13" fill="#f0f5ff" stroke="#4763b6" stroke-width="1.5"/>
-<text x="600.0" y="461" text-anchor="middle" font-size="19" font-weight="600" fill="#182841">M04 调度与任务队列</text>
-<text x="600.0" y="487" text-anchor="middle" font-size="14" fill="#53627d">outbox → Redis / Celery</text>
-<rect x="410" y="590" width="380" height="78" rx="13" fill="#eeebff" stroke="#7354bd" stroke-width="1.5"/>
-<text x="600.0" y="621" text-anchor="middle" font-size="19" font-weight="600" fill="#182841">M05 四 Agent 工作流</text>
-<text x="600.0" y="647" text-anchor="middle" font-size="14" fill="#53627d">策划 → 写作 → 编排 → 审稿</text>
-<rect x="860" y="590" width="320" height="78" rx="13" fill="#fff4e4" stroke="#bc791d" stroke-width="1.5"/>
-<text x="1020.0" y="621" text-anchor="middle" font-size="19" font-weight="600" fill="#182841">M06 模型网关</text>
-<text x="1020.0" y="647" text-anchor="middle" font-size="14" fill="#53627d">额度预留 / API / 计量</text>
-<rect x="410" y="750" width="380" height="78" rx="13" fill="#f0f5ff" stroke="#4763b6" stroke-width="1.5"/>
-<text x="600.0" y="781" text-anchor="middle" font-size="19" font-weight="600" fill="#182841">M08 模板渲染与导出</text>
-<text x="600.0" y="807" text-anchor="middle" font-size="14" fill="#53627d">固定模板 / PNG / ZIP</text>
-<rect x="20" y="910" width="340" height="78" rx="13" fill="#f4f6f9" stroke="#65748c" stroke-width="1.5"/>
-<text x="190.0" y="941" text-anchor="middle" font-size="19" font-weight="600" fill="#182841">M09 PostgreSQL</text>
-<text x="190.0" y="967" text-anchor="middle" font-size="14" fill="#53627d">项目 / 任务 / 检查点 / 事件</text>
-<rect x="410" y="910" width="380" height="78" rx="13" fill="#f4f6f9" stroke="#65748c" stroke-width="1.5"/>
-<text x="600.0" y="941" text-anchor="middle" font-size="19" font-weight="600" fill="#182841">M09 私有对象存储</text>
-<text x="600.0" y="967" text-anchor="middle" font-size="14" fill="#53627d">原始图片 / 导出文件</text>
-<rect x="860" y="910" width="320" height="78" rx="13" fill="#f4f6f9" stroke="#65748c" stroke-width="1.5"/>
-<text x="1020.0" y="941" text-anchor="middle" font-size="19" font-weight="600" fill="#182841">M09 运行观测</text>
-<text x="1020.0" y="967" text-anchor="middle" font-size="14" fill="#53627d">脱敏日志 / 指标 / 用量</text>
-<text x="28" y="1070" font-size="15" fill="#65748c">私有网络：API、Worker、数据库及队列均在服务端；仅 HTTPS 网关对外。</text>
-<text x="28" y="1094" font-size="15" fill="#65748c">状态事件由 API 鉴权后提供给网页；模型密钥不下发。编号对应模块设计。</text>
+<text x="28" y="40" font-size="26" font-weight="700" fill="#182841">五层软件架构</text>
+<text x="28" y="71" font-size="16" fill="#65748c">D1 · 职责分层，不是五台服务器；横向设施承载权限、模型和事件</text>
+<polyline points="600,198 600,300" fill="none" stroke="#71809c" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="608.0" y="249.0" font-size="14" text-anchor="start" fill="#53627d" stroke="white" stroke-width="5" paint-order="stroke">请求、确认；事件回传到 Console</text>
+<polyline points="600,378 600,480" fill="none" stroke="#71809c" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="608.0" y="429.0" font-size="14" text-anchor="start" fill="#53627d" stroke="white" stroke-width="5" paint-order="stroke">受控调度与结果校验</text>
+<polyline points="370,558 370,660" fill="none" stroke="#71809c" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="378.0" y="609.0" font-size="14" text-anchor="start" fill="#53627d" stroke="white" stroke-width="5" paint-order="stroke">获准工具调用</text>
+<polyline points="830,660 830,558" fill="none" stroke="#71809c" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="838.0" y="609.0" font-size="14" text-anchor="start" fill="#53627d" stroke="white" stroke-width="5" paint-order="stroke">加载固定版本方法</text>
+<polyline points="370,738 370,900" fill="none" stroke="#71809c" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="378.0" y="819.0" font-size="14" text-anchor="start" fill="#53627d" stroke="white" stroke-width="5" paint-order="stroke">按身份与来源版本读取</text>
+<polyline points="160,339 70,339 70,939 160,939" fill="none" stroke="#71809c" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<text x="78.0" y="639.0" font-size="14" text-anchor="start" fill="#53627d" stroke="white" stroke-width="5" paint-order="stroke">运行检查点 / 事件独立存储</text>
+<rect x="160" y="120" width="880" height="78" rx="13" fill="#eaf8f3" stroke="#15816a" stroke-width="1.5"/>
+<text x="600.0" y="151" text-anchor="middle" font-size="19" font-weight="600" fill="#182841">L1 · UI / Runtime Console</text>
+<text x="600.0" y="177" text-anchor="middle" font-size="14" fill="#53627d">Brief / 编辑 / 人工确认 / 状态与输入输出 / Tool calls / Memory reads / 耗时和成本</text>
+<rect x="160" y="300" width="880" height="78" rx="13" fill="#f0f5ff" stroke="#4763b6" stroke-width="1.5"/>
+<text x="600.0" y="331" text-anchor="middle" font-size="19" font-weight="600" fill="#182841">L2 · Orchestrator</text>
+<text x="600.0" y="357" text-anchor="middle" font-size="14" fill="#53627d">API / 快照 / 并行汇合 / 分支 / 有界返修 / 预算 / 暂停与恢复</text>
+<rect x="160" y="480" width="880" height="78" rx="13" fill="#eeebff" stroke="#7354bd" stroke-width="1.5"/>
+<text x="600.0" y="511" text-anchor="middle" font-size="19" font-weight="600" fill="#182841">L3 · 四个 Agents</text>
+<text x="600.0" y="537" text-anchor="middle" font-size="14" fill="#53627d">Audience 受众洞察 / Research 素材研究 / Content 策划创作 / Reviewer 主编审核</text>
+<rect x="160" y="660" width="420" height="78" rx="13" fill="#f0f5ff" stroke="#4763b6" stroke-width="1.5"/>
+<text x="370.0" y="691" text-anchor="middle" font-size="19" font-weight="600" fill="#182841">L4 · Tools 能力</text>
+<text x="370.0" y="717" text-anchor="middle" font-size="14" fill="#53627d">历史分析 / 素材检索 / 依据检查 / 渲染</text>
+<rect x="620" y="660" width="420" height="78" rx="13" fill="#f0f5ff" stroke="#4763b6" stroke-width="1.5"/>
+<text x="830.0" y="691" text-anchor="middle" font-size="19" font-weight="600" fill="#182841">L4 · Skills 方法</text>
+<text x="830.0" y="717" text-anchor="middle" font-size="14" fill="#53627d">分析方法 / 策略与写作 / 审核标准</text>
+<rect x="160" y="900" width="880" height="78" rx="13" fill="#f4f6f9" stroke="#65748c" stroke-width="1.5"/>
+<text x="600.0" y="931" text-anchor="middle" font-size="19" font-weight="600" fill="#182841">L5 · Memory</text>
+<text x="600.0" y="957" text-anchor="middle" font-size="14" fill="#53627d">Profile 账号画像 / Material 真实素材 / History 历史内容与表现</text>
+<text x="28" y="1090" font-size="15" fill="#65748c">Skills 不保存用户资料、不赋予权限；Memory 的画像更新须由用户确认。</text>
+<text x="28" y="1114" font-size="15" fill="#65748c">模型网关、认证、队列为横向设施；所有层输出事件，Console 展示可审计成果而非隐藏推理。</text>
 </g></svg>
