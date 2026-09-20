@@ -5,6 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 from uuid import uuid4
 
 from backend.contracts import CONTRACT, require
+from backend.creator_context import enrich, history_sample
 
 SCENARIOS = ('standard', 'revision', 'missing')
 
@@ -55,15 +56,19 @@ def record(run, result):
     run.event('agent.completed', agent=result['agent'],stage=result['stage'],node_ref=result['id'],mode='simulation')
 
 
-def audience(context):
+def _audience(context):
     memories=context.get('operations',{}).get('memories',[])
     return {'sample_size':len({m['publication_id'] for m in memories}),'status':'needs_data','primary_audience':context['audience'],
-            'confidence':'low','basis':('读取已接受的描述性复盘建议；不足以证明稳定效果' if memories else '依据本次需求的模拟假设，未分析历史表现'),
+            'confidence':'low','basis':('读取账号历史与已接受的复盘建议；不足以证明稳定效果' if memories or history_sample(context) else '依据本次需求的模拟假设，未分析历史表现'),
             'pain_points':['希望获得与主题有关、可跟做的具体步骤'],
             'content_opportunities':['用清晰步骤组织内容，邀请读者自行验证效果'] + [m['text'] for m in context.get('operations',{}).get('memories',[])]}
 
 
-def research(context):
+def audience(context):
+    return enrich("audience", _audience(context), context)
+
+
+def _research(context):
     material=context['material']
     gap=context['scenario']=='missing' and not material.strip()
     return {'core_gap':gap,'status':'insufficient' if gap else ('ready' if material else 'partial'),
@@ -75,11 +80,15 @@ def research(context):
             'prohibited_claims':['未经验证的效果数字','虚构亲身经历']}
 
 
+def research(context):
+    return enrich("research", _research(context), context)
+
+
 def latest(run, stage):
     return next(a['value'] for a in reversed(run.artifacts) if a['stage']==stage)
 
 
-def make_content(run, stage):
+def _make_content(run, stage):
     c=run.context; topic=c['topic']
     operation=c.get('operations',{})
     video=operation.get('platform')=='douyin'
@@ -99,6 +108,7 @@ def make_content(run, stage):
         selected='必爆！'+titles[0] if c['scenario']=='revision' else titles[0]
         if selected not in titles: titles[0]=selected
         return {'candidates':titles,'selected':selected,
+                'reasons':['以小步骤降低阅读门槛','用明确数量组织内容','面向初学者提供清单','问题式开头邀请思考','强调一次可执行的练习'],
                 'note':'返修演示故意加入「必爆」，供规则审核发现' if c['scenario']=='revision' else '模拟候选，不代表真实传播表现'}
     material=('\n\n你的素材（用户自述，未核验）：\n'+c['material']) if c['material'] else ''
     if video:
@@ -110,15 +120,21 @@ def make_content(run, stage):
             'cta':'你准备先尝试哪一步？','tags':['创作笔记','尝试清单']}
 
 
+def make_content(run, stage):
+    return enrich(stage, _make_content(run, stage), run.context)
+
+
 def review(run):
     draft=run.drafts[-1]; text=draft['content']; issues=[]
     # This small rule set is not a semantic or platform compliance reviewer.
     for field in ('selected_title','body','cta','tags'):
         value=' '.join(text.get(field,[])) if field=='tags' else text.get(field,'')
-        for word in ('必爆','保证收益','百分之百有效'):
+        banned = (run.context.get('operations', {}).get('profile') or {}).get('profile', {}).get('banned', '')
+        words = ('必爆','保证收益','百分之百有效') + tuple(w.strip() for w in banned.replace('，', ',').replace('、', ',').split(',') if w.strip())
+        for word in dict.fromkeys(words):
             if word in value:
                 issues.append({'issue_id':f'{field}:{word}','severity':'major','state':'open',
-                               'location':field,'excerpt':word,'reason':'确定性效果承诺，模拟规则要求修改',
+                               'location':field,'excerpt':word,'reason':'效果承诺或账号禁用表达，模拟规则要求修改',
                                'suggestion':f'删除「{word}」，改为可验证的尝试建议'})
     decision='revision_required' if issues else 'approved'
     old=run.prior_review['issues'] if run.prior_review else []

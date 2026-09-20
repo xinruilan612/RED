@@ -7,6 +7,7 @@ from uuid import uuid4
 from backend.contracts import CONTRACT, require, DomainError
 from backend.demo import validate_edit
 from backend.workflow import digest, validate_review
+from backend.creator_context import enrich
 
 
 def material_records(context):
@@ -51,10 +52,10 @@ def outline_items(value):
 def schema(stage):
     if stage=='audience':return {'primary_audience':'目标受众','basis':'基于用户需求的假设，非历史统计','pain_points':['待验证痛点'],'content_opportunities':['创作机会']}
     if stage=='research':return {'core_gap':False,'gaps':[],'facts':[{'source_id':'user-material','quote':'从素材逐字引用'}],'prohibited_claims':['无依据的效果数字']}
-    if stage=='strategy':return {'angle':'创作角度','reader':'读者','promise':'可提供的价值','tone':'风格','assumptions':['待验证假设']}
+    if stage=='strategy':return {'angle':'创作角度','reader':'读者','promise':'可提供的价值','tone':'风格','assumptions':['待验证假设'],'candidate_angles':['场景问题','步骤清单'],'cta':'互动引导','why_account':'与账号目标及定位的关系'}
     if stage=='outline':return {'items':['第一节','第二节','第三节']}
     if stage=='hook':return {'text':'有信息量的开头'}
-    if stage=='title':return {'candidates':['候选一','候选二','候选三','候选四','候选五'],'selected':'候选一','note':'选择理由'}
+    if stage=='title':return {'candidates':['候选一','候选二','候选三','候选四','候选五'],'selected':'候选一','note':'选择理由','reasons':['候选一理由','候选二理由','候选三理由','候选四理由','候选五理由']}
     if stage in ('body','revise'):return {'selected_title':'已选择的标题','body':'完整正文','cta':'互动引导','tags':['标签']}
     return {'decision':'approved','next_action':'await_user_confirmation',
             'checks':[{'name':name,'result':'pass','basis':'结合本次稿件逐项给出依据'} for name in CONTRACT['review_policy']['checks']],
@@ -72,15 +73,15 @@ def messages_for(run,stage):
         data['draft']=run.drafts[-1]['content']
         data['previous_review']=run.review if stage=='revise' else run.prior_review
     rules={
-        'audience':'没有历史指标，只能给明确标注待验证的受众假设。primary_audience,basis为文字；pain_points,content_opportunities为文字数组。',
-        'research':'只分析所给素材，不联网。facts为source_id+quote对象数组，quote必须逐字引用，没素材则[]。gaps/prohibited_claims为文字数组。仅任务必须依赖缺失事实时core_gap=true。',
-        'strategy':'angle,reader,promise,tone均为文字；assumptions为文字数组。只输出策略，不写提纲或正文。',
+        'audience':'优先使用operations.profile定位、history/metrics描述性记录、competitors公开观察和preferences表达偏好。无数据时明确标为待验证假设；有数据需说明出处和不足，不将相关性解释为因果，不把编辑偏好当效果。primary_audience,basis为文字；pain_points,content_opportunities为文字数组。',
+        'research':'只分析所给素材及operations中的选题线索，不联网。来源链接未读取，不得凭链接编造内容或热度。facts为source_id+quote对象数组，quote必须逐字引用，没素材则[]。gaps/prohibited_claims为文字数组。仅任务必须依赖缺失事实时core_gap=true。',
+        'strategy':'angle,reader,promise,tone均为文字；assumptions为文字数组。candidate_angles为两个不同内容角度的文字数组；cta和why_account为文字。结合账号目标、已接受实验建议和表达偏好说明推荐原因。只输出策略，不写提纲或正文。',
         'outline':'只输出提纲。顶层必须是{"items":["第一段内容要点","第二段内容要点"]}。items每项必须是非空字符串，2至8项。不要在数组内输出对象，不要写完整文章。',
         'hook':'只输出{"text":"开头文字"}，text必须是非空字符串。',
-        'title':'输出5个不同的标题，candidates是字符串数组，selected是其中一个原样字符串，note为选择理由。',
+        'title':'输出5个不同的标题，candidates是字符串数组，selected是其中一个原样字符串，note为选择理由。reasons为五个与候选逐一对应的比较理由，比较账号匹配、具体性和同质化；不得输出传播概率。',
         'body':'只输出selected_title/body/cta/tags四个字段。标题原样使用upstream.title.selected；body约300至600字，cta为文字，tags为最多10个短字符串。',
         'revise':'按previous_review改稿，保留无须修改的内容。只输出selected_title/body/cta/tags四个字段，tags是文字数组。不能自行确认或发布。',
-        'review':('逐项核对示例中的8个检查项，每项包含name/result(pass/fail/unknown)/basis。严重问题不得通过。原创未比对则unknown并说明limitations。'
+        'review':('结合operations.profile检查账号风格、禁用表达与当前目标；以原始素材核对事实，不可用吸引力抵消重要问题。逐项核对示例中的8个检查项，每项包含name/result(pass/fail/unknown)/basis。严重问题不得通过。原创未比对则unknown并说明limitations。'
           '不通过用decision=revision_required,next_action=revise。issues每条包括issue_id,severity(blocker/major/minor),state(open),location(selected_title/body/cta/tags),excerpt,reason,suggestion。'
           '缺材料则decision=needs_human,next_action=request_human，human_questions给具体问题。通过则approved/await_user_confirmation。'
           'previous_review的每个issue_id都要在previous_issue_results给出result(resolved/unresolved/regressed)，无旧问题则[]。'
@@ -127,12 +128,16 @@ def normalize(run,stage,value):
         return {k:value[k] for k in schema(stage)}|{'sources':material_records(run.context),'scope':'仅分析本次用户素材；未联网核实'}
     if stage=='strategy':
         for k in ('angle','reader','promise','tone'):text(value.get(k))
-        strings(value.get('assumptions'));return {k:value[k] for k in schema(stage)}
+        strings(value.get('assumptions'));strings(value.get('candidate_angles'))
+        require(len(value['candidate_angles']) == 2, 'MODEL_OUTPUT_INVALID', '策略需要两个不同角度')
+        for k in ('cta','why_account'):text(value.get(k))
+        return {k:value[k] for k in schema(stage)}
     if stage=='outline':
         return outline_items(value)
     if stage=='hook':return text(value.get('text'))
     if stage=='title':
-        strings(value.get('candidates'));text(value.get('note'))
+        strings(value.get('candidates'));text(value.get('note'));strings(value.get('reasons'))
+        require(len(value['reasons']) == 5, 'MODEL_OUTPUT_INVALID', '五个候选需要逐项比较理由')
         require(len(value['candidates'])==5 and len(set(value['candidates']))==5 and value.get('selected') in value['candidates'],
                 'MODEL_OUTPUT_INVALID','标题须有五个不同候选并选择其中一个')
         require(all(len(t)<=200 for t in value['candidates']),'MODEL_OUTPUT_INVALID','标题过长')
@@ -178,7 +183,7 @@ def advance(run,call,on_validation=None):
         messages,inputs=messages_for(run,stage)
         started=time.perf_counter(); value,tokens,call_id=call(agent,stage,messages)
         try:
-            result=normalize(run,stage,value)
+            result=enrich(stage, normalize(run,stage,value), run.context)
         except DomainError as error:
             if on_validation:on_validation(call_id,str(error))
             label={'audience':'受众分析','research':'素材研究','strategy':'策略','outline':'提纲','hook':'开头','title':'标题','body':'正文','revise':'改稿','review':'审核'}.get(stage,stage)
@@ -187,7 +192,7 @@ def advance(run,call,on_validation=None):
         return {'id':str(uuid4()),'agent':agent,'stage':stage,'mode':'live','snapshot_id':run.snapshot_id,
                 'input':inputs,'output':result,'duration_ms':round((time.perf_counter()-started)*1000),
                 'model_calls':1,'tokens':tokens,'cost':None,'call_id':call_id,'tools':[],
-                'memory':'本次需求与素材；未接入历史指标或长期记忆'}
+                'memory':'读取创建任务时的账号档案、历史、偏好与已接受经验快照；原始依据可在输入中查看'}
     def save(log):
         run.node_runs.append(log)
         run.event('agent.completed',agent=log['agent'],stage=log['stage'],mode='live',node_ref=log['id'])

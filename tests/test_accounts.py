@@ -97,3 +97,32 @@ class RecoveryTests(unittest.TestCase):
         self.assertEqual(self.request('POST','/api/session/restore', {'recovery_code':code})[0], 403)
         with self.store.connect() as db:
             self.assertNotIn(code, str(db.execute('SELECT * FROM recovery_keys').fetchall()))
+
+class CreatorContextTests(unittest.TestCase):
+    def test_context_artifacts_do_not_turn_preferences_into_statistics(self):
+        from backend.creator_context import enrich
+        context = dict(topic='旧衣搭配',audience='学生',operations=dict(account_id='a',
+            profile={'revision':2,'profile':{'positioning':'日常衣橱','goal':'增加收藏','banned':'保证有效'}},
+            history=[{'id':'post'}], metrics=[{'publication_id':'post','values':{'views':100}}],
+            preferences=[{'changes':{'body':{'before':'x','after':'y'}}}], memories=[]))
+        audience = enrich('audience',{},context)
+        self.assertEqual(audience['sample_size'],1)
+        self.assertEqual(audience['confidence'],'low')
+        research = enrich('research',{'prohibited_claims':['无依据效果']},context)
+        self.assertIn('暂无可核验',research['topic_card']['why_now'])
+        strategy = enrich('strategy',dict(angle='衣橱清单',reader='学生'),context)
+        self.assertEqual(strategy['content_brief']['goal'],'增加收藏')
+        self.assertEqual(strategy['content_brief']['profile_revision'],2)
+        self.assertIn('暂无经过验证',strategy['content_brief']['publishing_window'])
+        context['operations']['metrics']=[]
+        self.assertEqual(enrich('audience',{},context)['sample_size'],0)
+
+    def test_account_banned_expression_is_checked_in_simulation(self):
+        from backend.demo import review
+        from backend.workflow import Run, digest
+        run=Run('owner','snapshot',context={'operations':{'profile':{'profile':{'banned':'夸张词、保证变美'}}}})
+        content={'selected_title':'保证变美','body':'这是一份搭配建议','cta':'','tags':[]}
+        run.drafts=[{'ref':'draft@1','content':content,'content_hash':digest(content)}]
+        report=review(run)
+        self.assertEqual(report['decision'],'revision_required')
+        self.assertTrue(any(i['excerpt']=='保证变美' for i in report['issues']))

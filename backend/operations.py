@@ -1,7 +1,7 @@
 """Local operations demo: owned, versioned records; no external publishing."""
 import copy
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from urllib.parse import urlsplit
 from uuid import uuid4
 
@@ -9,6 +9,8 @@ from backend.contracts import require, integer
 from backend.demo import validate_text
 from backend.workflow import digest
 from backend.accounts import migrate, find_account, save_account, account_id, new_account
+from backend.analytics import AnalyticsAgent, invalidate, refresh_plans
+from backend.planning import make_plan, update_plan, update_task
 
 PLATFORMS = ('xiaohongshu', 'douyin')
 
@@ -137,6 +139,59 @@ class Operations:
             return state
 
     def apply(self, db, owner, state, action, data):
+        if action == 'load_sample':
+            require(not data, 'INVALID_INPUT', '演示数据无需参数')
+            require(not any(a.get('demo_sample') for a in state['accounts']), 'DUPLICATE', '已载入演示账号，请从顶部切换')
+            account = new_account(str(uuid4()), '衣橱观察 · 演示账号', 'xiaohongshu')
+            account.update(demo_sample=True, profile=dict(positioning='大学生的日常衣橱记录', audience='预算有限、希望提高搭配利用率的学生',
+                tone='具体、真实、少用夸张承诺', pillars='搭配清单, 衣橱整理, 场景穿搭', goal='观察收藏表现，验证内容是否有参考价值',
+                resources='每周可准备三组搭配素材', banned='必爆、保证变美', weekly_frequency=3))
+            state['accounts'].append(account)
+            for i in range(4):
+                published = datetime.now(timezone.utc)-timedelta(days=18-i*4)
+                identity = str(uuid4())
+                content = dict(selected_title=['白衬衫搭配清单','旧衣橱整理记录','通勤搭配小清单','一件衬衫的三种场景'][i], body='仅用于演示的虚构内容，不代表真实发布。', cta='', tags=[])
+                state['publications'].insert(0, dict(id=identity, account_id=account['id'], account=account['name'],
+                    platform='xiaohongshu', run_id=None, draft_ref='sample-'+str(uuid4()), review_ref=None,
+                    content=content, content_hash=digest(content), mode='simulation', provenance='simulation',
+                    format='image_text', pillar='搭配清单', traffic='organic', status='SIMULATED', url=None,
+                    created_at=now(), approved_at=None, published_at=published.isoformat()))
+                state['metrics'].append(dict(id=str(uuid4()), publication_id=identity, platform='xiaohongshu',
+                    account=account['name'], account_id=account['id'], window='24h', source_type='simulation', revision=1,
+                    observed_at=(published+timedelta(hours=24)).isoformat(),
+                    values=dict(views=1000, likes=30+i*3, saves=[8,10,12,24][i], comments=5, shares=3)))
+            return
+        if action == 'post_metadata':
+            require(set(data) == {'id','format','pillar','traffic'}, 'INVALID_INPUT', '作品分类字段无效')
+            pub = item(state['publications'], data['id'])
+            require(data['format'] in ('image_text','video') and data['traffic'] in ('organic','paid','unknown'), 'INVALID_INPUT', '内容形式或流量类型无效')
+            pillar = validate_text(data['pillar'], '栏目', 80)
+            for window in ('24h','72h','7d'):
+                invalidate(state, pub['id'], window)
+            pub.update(format=data['format'], pillar=pillar, traffic=data['traffic'])
+            return
+        if action == 'create_plan':
+            make_plan(state, data, now()); return
+        if action == 'plan_status':
+            update_plan(state, data); return
+        if action == 'plan_task':
+            update_task(state, data); return
+        if action == 'analyze':
+            require(set(data) == {'id'}, 'INVALID_INPUT', '分析字段无效')
+            metric = item(state['metrics'], data['id'])
+            require(not any(a['metric_id'] == metric['id'] and a['status'] != 'superseded' for a in state['analyses']), 'DUPLICATE', '该快照已有分析')
+            report = AnalyticsAgent().run(state, metric, now())
+            state['analyses'].insert(0, report)
+            pub = item(state['publications'], metric['publication_id'])
+            if report['status'] == 'descriptive':
+                state['memories'].insert(0, dict(id=str(uuid4()), account_id=pub['account_id'],
+                    platform=pub['platform'], account=pub['account'], publication_id=pub['id'],
+                    metric_id=metric['id'], metric_refs=report['metric_refs'], analysis_id=report['id'],
+                    window=metric['window'], source_type=metric['source_type'], status='proposed',
+                    created_at=now(), sample_size=max(v['sample_size'] for v in report['comparisons'].values())+1,
+                    observation='；'.join(report['observations']), text=report['experiment'],
+                    limitation='描述性比较，仅建议下一次实验，不证明因果或稳定规律'))
+            return
         if action == 'save_account':
             save_account(state, data)
             return
@@ -160,7 +215,8 @@ class Operations:
             'learn': {'id'}, 'memory': {'id','status'},
         }
         require(isinstance(action,str) and action in fields, 'INVALID_INPUT', '未知运营操作')
-        require(set(data) == fields[action], 'INVALID_INPUT', '操作参数字段无效')
+        extra_metrics = {'impressions','new_followers','profile_visits','completed_plays','negative_feedback'}
+        require((fields[action] <= set(data) <= fields[action] | extra_metrics) if action == 'metrics' else set(data) == fields[action], 'INVALID_INPUT', '操作参数字段无效')
         if action == 'add_trend':
             require(data['platform'] in PLATFORMS, 'INVALID_INPUT', '平台无效')
             source = url(data['source_url']); observed = timestamp(data['observed_at'])
@@ -210,10 +266,11 @@ class Operations:
             observed = timestamp(data['observed_at'])
             require(datetime.fromisoformat(observed.replace('Z','+00:00')) >= datetime.fromisoformat(pub['published_at'].replace('Z','+00:00')), 'INVALID_INPUT', '观察时间不能早于发布时间')
             values = {}
-            for name in ('views','likes','saves','comments','shares'):
-                value = data[name]
+            for name in ('views','likes','saves','comments','shares','impressions','new_followers','profile_visits','completed_plays','negative_feedback'):
+                value = data.get(name)
                 require(value is None or (type(value) is int and 0 <= value <= 10000000000), 'INVALID_INPUT', '指标须为非负整数，未知请留空')
                 values[name] = value
+            require(values['completed_plays'] is None or (pub['format'] == 'video' and (values['views'] is None or values['completed_plays'] <= values['views'])), 'INVALID_INPUT', '完整播放指标仅用于视频，且不能大于播放数')
             require(any(v is not None for v in values.values()), 'INVALID_INPUT', '至少录入一个已知指标')
             source = 'simulation' if pub['mode'] == 'simulation' else 'manual'
             prior = [m for m in state['metrics'] if m['publication_id'] == pub['id'] and m['window'] == data['window']]
@@ -221,6 +278,7 @@ class Operations:
                 window=data['window'], observed_at=observed, source_type=source, values=values, revision=len(prior)+1)
             require(not prior or prior[-1]['values'] != values or prior[-1]['observed_at'] != observed, 'DUPLICATE','同一快照已录入')
             state['metrics'].append(metric)
+            invalidate(state, pub['id'], data['window'])
             # Corrections invalidate derived lessons, including previously accepted lessons.
             for memory in state['memories']:
                 if memory['publication_id'] == pub['id'] and memory['window'] == data['window']:
@@ -244,6 +302,7 @@ class Operations:
             require((memory['status'] == 'proposed' and data['status'] in ('accepted','rejected')) or
                     (memory['status'] == 'accepted' and data['status'] == 'revoked'), 'INVALID_TRANSITION','当前经验不能执行此操作')
             memory['status'] = data['status']; memory['updated_at'] = now()
+            refresh_plans(state)
 
 
     def import_post(self, state, data):

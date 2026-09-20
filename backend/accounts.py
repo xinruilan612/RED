@@ -84,8 +84,10 @@ def capture_edit(db, run, before):
         return
     row = db.execute('SELECT payload FROM operations WHERE owner=?', (run.owner_id,)).fetchone()
     if row is None:
-        return
-    state = migrate(json.loads(row[0]), run.owner_id)
+        from backend.operations import seed
+        state = migrate(seed(), run.owner_id)
+    else:
+        state = migrate(json.loads(row[0]), run.owner_id)
     find_account(state, identity)
     after = run.drafts[-1]
     changes = {k: {'before': before['content'][k], 'after': after['content'][k]}
@@ -97,4 +99,4 @@ def capture_edit(db, run, before):
         mode=run.context.get('mode', 'simulation'), created_at=datetime.now(timezone.utc).isoformat(),
         interpretation='用户表达偏好信号，不代表传播效果；仅记录，不自动写成永久规则'))
     state['version'] += 1
-    db.execute('UPDATE operations SET payload=? WHERE owner=?', (json.dumps(state, ensure_ascii=False), run.owner_id))
+    db.execute('INSERT OR REPLACE INTO operations VALUES(?,?)', (run.owner_id, json.dumps(state, ensure_ascii=False)))

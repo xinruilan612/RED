@@ -79,3 +79,16 @@ search_public_sources/fetch_source_text 虽属于 research 能力名单，MVP �
 ## v0.4 运营扩展边界
 
 本文件保留 v0.3 创作子流程契约；热点、国内平台发布、指标回流与学习为 [v0.4 技术提案](ARCHITECTURE.md#运营闭环-v04-技术提案)，尚未实现。运营对象采用独立状态，创作 SUCCEEDED 不代表发布成功。当前代码进度见 [开发记录](../IMPLEMENTATION_STATUS.md)，不要将历史设计中的“待实现”覆盖已验证能力，也不要把提案字段直接当成现有 API。
+
+## v0.5 账号运营执行扩展（2026-09-21）
+
+用户已授权实施。创作子流程仍为 audience/research/content/reviewer，五阶段、预算、版本与审核守卫不变；新增 analytics 是发布后独立角色，不加入创作 join，也不能确认稿件。机器配置位于 design_contract.json 的 operations_extension，版本与旧创作 schema 分域。
+
+- Operations schema_version=2：accounts、publications、metrics、preferences、competitors、analyses、memories、plans 按本地 owner 隔离；account_id 稳定，不以昵称作关联键。旧 JSON 在读取时兼容，首次写入持久化；原始稿件与来源保留。
+- AnalyticsReport schema_version=1：agent_id/agent_version、account_id、publication_id、metric_id、metric_refs、window/elapsed_hours/window_quality、observations、hypotheses、experiment、comparisons、velocity、excluded、flags、limitations、execution；由 backend/analytics.py 的独立规则角色输出。无模型调用，不是已训练预测器。状态 descriptive/insufficient/superseded。
+- 统计只用同账号、同平台、同形式、同投流类型、同来源、同窗口的此前作品，且观测时间不得晚于目标快照。观察时长范围为目标至目标的 125%；至少 3 篇有对应指标的历史才显示中位数。未知不补零；账号新增关注不得冒充单篇归因关注。
+- 分析只在有比较依据时提交候选经验；人工接受后进入下一次任务快照和周计划。指标或作品分类修正使全部依赖分析与经验 superseded，使依赖计划 needs_review；撤销经验同样使计划失效。历史运行快照保留作审计，不原地改写。
+- 计划状态 draft → accepted / revoked；依据失效 → needs_review，只能撤销并重建。任务可改日期/标题/完成状态、关联同账号同来源作品；不执行发布。到期复盘由持久化发布时间推导，服务重启后仍可恢复，但本机关闭时不采集或推送。
+- 真实历史导入与模型生成模式分离：imported + manual 表示用户记录，未由平台核实；simulation 永不进入 live 的历史指标或经验。恢复码是本地空间凭证，数据库只存哈希，可重新生成；不是平台 OAuth。
+
+四张角色卡文末明确本机适配字段，不将生产示例字段标成已全面实现。旧 learn 命令为兼容 v0.4 单篇描述性复盘保留，新 UI 使用 analyze。

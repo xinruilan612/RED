@@ -344,5 +344,37 @@
   "disabled_tools_default": [
     "search_public_sources",
     "fetch_source_text"
-  ]
+  ],
+  "operations_extension": {
+    "version": "0.5",
+    "schema_version": 2,
+    "agents": [
+      "analytics"
+    ],
+    "agent_schema_version": 1,
+    "engine": "deterministic_rules",
+    "windows_hours": {
+      "24h": 24,
+      "72h": 72,
+      "7d": 168
+    },
+    "window_late_tolerance": 0.25,
+    "baseline_display_min": 3,
+    "source_types": [
+      "manual",
+      "simulation"
+    ],
+    "analysis_states": [
+      "descriptive",
+      "insufficient",
+      "superseded"
+    ],
+    "plan_states": [
+      "draft",
+      "accepted",
+      "revoked",
+      "needs_review"
+    ],
+    "account_key": "account_id"
+  }
 }

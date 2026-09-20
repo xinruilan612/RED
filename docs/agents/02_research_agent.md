@@ -148,3 +148,7 @@ Skills 只能使用上表工具，不能通过提示模板获得额外浏览、�
 ## 11. 统一执行协议
 
 角色职责以本卡为准；状态、路由、预算、工具/技能 ID、事件和版本规则遵循 [统一执行协议](../design/AGENT_PROTOCOL.md) 与 [机器契约](../design/design_contract.json)。字段示例中的 ID 仅为可读占位符，身份、时间戳、版本和权限由服务端生成。
+
+## v0.5 本机账号上下文适配（2026-09-21）
+
+本机展示名升级为“热点与证据研究”。现有素材研究输出增加 topic_card：topic、why_now、audience、evidence、account_fit、risk、content_angles。选题卡由本地上下文适配生成，来源链接仅保存，未联网读取；没有时效证据时明确写自主选题。来源逐字引用守卫不变。

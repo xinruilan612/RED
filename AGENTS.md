@@ -28,3 +28,9 @@
 ## v0.4 本机 Demo 实现约定
 
 运营状态由 backend/operations.py 与 /api/operations 管理，沿用本地会话、CSRF、SQLite 事务、版本校验与幂等。此为创作 schema 外的演示适配，不代表完成生产机器契约迁移。平台 API 未接通；示例趋势不标实时、SIMULATED 不等于真实发布、MANUAL_REPORTED 不等于核实成功。模拟指标/经验不得进入真实 AI 上下文；经验只复用于同平台同账号，指标修正使关联经验失效。
+
+## v0.5 账号运营约定
+
+用户已授权账号档案/历史、四角色升级、独立分析角色及周运营循环。创作子流程仍为四角色；发布后 analytics 在 backend/analytics.py 独立执行确定性规则，不调用收费模型。扩展机器契约为 design_contract.json.operations_extension，Operations schema_version=2；本机角色字段适配见卡片文末。
+
+账号关联使用 account_id，不用昵称；真实历史导入与 AI 模式分开。指标或分类修正须使依赖分析、经验与计划失效；撤销经验后计划也需重新生成。新上下文只读取当前有效且同来源的经验；旧任务快照保留审计。前端新增 account.js，修改后需运行 node --check；原有四角色及 HTTP 回归测试继续执行。

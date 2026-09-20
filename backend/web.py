@@ -89,9 +89,9 @@ class Handler(BaseHTTPRequestHandler):
     def dispatch(self, write):
         try:
             origin=self.host(); path=urlsplit(self.path).path
-            if not write and path in ('/','/app.js','/style.css','/operations.js'):
-                name={'/':'index.html','/app.js':'app.js','/style.css':'style.css','/operations.js':'operations.js'}[path]
-                mime={'/':'text/html; charset=utf-8','/app.js':'text/javascript; charset=utf-8','/style.css':'text/css; charset=utf-8','/operations.js':'text/javascript; charset=utf-8'}[path]
+            if not write and path in ('/','/app.js','/style.css','/operations.js','/account.js'):
+                name={'/':'index.html','/app.js':'app.js','/style.css':'style.css','/operations.js':'operations.js','/account.js':'account.js'}[path]
+                mime={'/':'text/html; charset=utf-8','/app.js':'text/javascript; charset=utf-8','/style.css':'text/css; charset=utf-8','/operations.js':'text/javascript; charset=utf-8','/account.js':'text/javascript; charset=utf-8'}[path]
                 self.send(200,(FRONTEND/name).read_bytes(),mime); return
             if not write and path=='/api/session':
                 _,csrf,cookie=self.session(True)
@@ -125,6 +125,9 @@ class Handler(BaseHTTPRequestHandler):
                     db.execute('INSERT INTO demo_sessions VALUES(?,?,?)',
                                (hashlib.sha256(token.encode()).hexdigest(), row[0], fresh_csrf))
                 self.send(200, {'csrf': fresh_csrf}, cookie=f'xhs_demo={token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=604800'); return
+            if not write and path == '/api/operations/due':
+                from backend.planning import due_reviews
+                self.send(200, due_reviews(self.server.operations.read(owner))); return
             if path=='/api/operations':
                 self.send(200,self.server.operations.command(owner,data) if write else self.server.operations.read(owner)); return
             if path=='/api/runs':

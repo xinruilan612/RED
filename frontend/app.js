@@ -1,7 +1,7 @@
 'use strict';
 const $=id=>document.getElementById(id);
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const names={audience:'受众洞察',research:'素材研究',content:'内容策划创作',reviewer:'主编审核',human:'人工处理 / 确认'};
+const names={audience:'受众与竞品洞察',research:'热点与证据研究',content:'内容策划创作',reviewer:'主编审核',human:'人工处理 / 确认'};
 const stages={analysis:'分析',audience:'受众分析',research:'素材分析',strategy:'策略',outline:'提纲',hook:'开头',title:'标题',body:'正文',revise:'按意见改稿',review:'审核'};
 const states={QUEUED:'准备开始',RUNNING:'可以继续执行',WAITING_USER:'等待你的决定',SUCCEEDED:'已确认完成',CANCELLED:'已取消',FAILED:'执行失败',RETRY_WAIT:'等待重试',EXPIRED:'已过期'};
 const checks={brief_fit:'符合需求',audience_fit:'受众相关',usefulness_and_readability:'实用与易读',title_body_alignment:'标题与正文一致',evidence_integrity:'证据完整',experience_authenticity:'经历真实',originality_risk:'原创风险',privacy_and_policy:'隐私与规则'};
@@ -17,7 +17,7 @@ function toast(text){$('toast').textContent=text;$('toast').hidden=false;clearTi
 function json(value){return '<pre class="json">'+esc(JSON.stringify(value,null,2))+'</pre>';}
 function dirtyGuard(){return !editing||window.confirm('有尚未保存的编辑，确定放弃吗？');}
 async function history(){
- const rows=await api('/api/runs');
+ const rows=(await api('/api/runs')).filter(r=>typeof matchesAccount!=='function'||matchesAccount(r));
  $('history').innerHTML=rows.length?rows.map(r=>`<button data-run="${esc(r.run_id)}" class="${run?.run_id===r.run_id?'selected':''}">${esc(r.context.topic||'旧任务')}<small>${esc(states[r.run_status])} · ${r.drafts.length} 个版本</small></button>`).join(''):'<p class="helper">还没有创作记录</p>';
  return rows;
 }
@@ -53,7 +53,7 @@ function render(){
  const contentStages=['strategy','outline','hook','title','body'].map(s=>`<button class="stage-chip ${run.artifacts.some(a=>a.stage===s)?'done':''}" data-stage="${s}">${stages[s]}</button>`).join('');
  $('flow').innerHTML=`<div class="parallel">${node('audience','01','理解读者 · 明确假设')}${node('research','02','收录素材 · 标记缺口')}</div><div class="connector">同一份需求 · 并行分析<span>↓ 汇合 ↓</span></div>${node('content','03','策略与写作 · 同一角色负责返修')}<div class="stages">${contentStages}</div><div class="connector"><span>↓</span></div>${node('reviewer','04','问题定位 · 修改建议 · 再次审核')}<div class="connector">不通过 ↺ 回到创作 / 通过 ↓</div>${node('human','YOU','补资料 / 改稿 / 比较版本 / 最后确认')}`;
  renderDetails();renderHuman();renderDraft();renderTimeline();renderCalls();
- document.querySelectorAll('#workbench button').forEach(b=>{if(!b.closest('#flow')&&b.id!=='auto')b.disabled=busy;});
+ document.querySelectorAll('#workbench button').forEach(b=>{if(!b.closest('#flow')&&b.id!=='auto')b.disabled=busy||(b.dataset.titleChoice!==undefined&&run.artifacts.find(a=>a.stage==='title')?.value.candidates[Number(b.dataset.titleChoice)]===run.drafts.at(-1)?.content.selected_title);});
  $('cancel').disabled=busy&&!run.in_flight;
  if(editing){$('next').disabled=true;$('auto').disabled=true;$('accept').disabled=true;$('revise').disabled=true;$('editButton').disabled=true;}
  else $('auto').disabled=busy&&!auto;
@@ -61,13 +61,13 @@ function render(){
 function friendly(agent,stage,value){
  const p=text=>'<p class="readable">'+esc(text)+'</p>';
  const list=items=>'<ol class="readable">'+items.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ol>';
- if(agent==='audience')return p('目标读者：'+value.primary_audience)+p('已接受经验关联样本：'+(value.sample_size||0)+' 条 · 可信程度：低（待验证）')+p(value.basis)+list(value.content_opportunities||[]);
- if(agent==='research')return p(value.scope)+(value.trend_context?p('选题线索：'+value.trend_context.title)+p(value.trend_context.source_type==='example'?'固定示例，不是实时热点':'来源链接仅保存，未抓取页面：'+value.trend_context.source_url):'')+(value.sources.length?value.sources.map(source=>'<h3>用户提供的素材</h3>'+p(source.text)+p(source.verification)).join(''):p('没有可用素材，不能虚构经历或效果数字。'))+list(value.gaps||[]);
+ if(agent==='audience')return p('目标读者：'+value.primary_audience)+p('可用历史作品：'+(value.sample_size||0)+' 条 · 可信程度：低（待验证）')+p(value.basis)+list(value.content_opportunities||[])+(value.competitor_observations?.length?'<h3>同类账号观察 · 用户记录</h3>'+list(value.competitor_observations.map(c=>c.name+'：'+c.observation)):'');
+ if(agent==='research')return (value.topic_card?'<h3>结构化选题卡</h3>'+p('为什么现在：'+value.topic_card.why_now)+p('账号关联：'+value.topic_card.account_fit)+list(value.topic_card.content_angles):'')+p(value.scope)+(value.trend_context?p('选题线索：'+value.trend_context.title)+p(value.trend_context.source_type==='example'?'固定示例，不是实时热点':'来源链接仅保存，未抓取页面：'+value.trend_context.source_url):'')+(value.sources.length?value.sources.map(source=>'<h3>用户提供的素材</h3>'+p(source.text)+p(source.verification)).join(''):p('没有可用素材，不能虚构经历或效果数字。'))+list(value.gaps||[]);
  if(agent==='reviewer')return p(({approved:'审核通过，等待你确认',revision_required:'发现问题，需要修改',needs_human:'需要你补充信息'})[value.decision])+list(value.limitations||[]);
- if(stage==='strategy')return p('创作角度：'+value.angle)+p('服务读者：'+value.reader)+p('内容承诺：'+value.promise)+p('表达风格：'+value.tone)+list(value.assumptions||[])+((value.next_experiments||[]).length?'<h3>已接受的实验建议</h3>'+list(value.next_experiments):'');
+ if(stage==='strategy')return (value.content_brief?'<h3>创作简报</h3>'+p('目标：'+value.content_brief.goal)+p('内容形式：'+value.content_brief.content_type)+p('推荐依据：'+value.content_brief.recommendation_reason)+p('禁用表达：'+(value.content_brief.banned||'未设置'))+p('互动引导：'+value.content_brief.cta)+p(value.content_brief.publishing_window):'')+p('创作角度：'+value.angle)+p('服务读者：'+value.reader)+p('内容承诺：'+value.promise)+p('表达风格：'+value.tone)+list(value.assumptions||[])+((value.next_experiments||[]).length?'<h3>已接受的实验建议</h3>'+list(value.next_experiments):'');
  if(stage==='outline')return list(value);
  if(stage==='hook')return p(value);
- if(stage==='title')return list(value.candidates)+p('当前选择：'+value.selected)+p(value.note);
+ if(stage==='title')return list(value.candidates.map((t,i)=>t+' — '+(value.reasons?.[i]||'历史版本未保存比较理由')))+p('当前选择：'+value.selected)+p(value.note);
  return '<h3>'+esc(value.selected_title)+'</h3>'+p(value.body)+p(value.cta)+p((value.tags||[]).map(t=>'#'+t).join(' '));
 }
 function renderDetails(){
@@ -96,7 +96,7 @@ function renderHuman(){
  let title='需要你的决定',message='';
  if(run.run_status==='SUCCEEDED'){title='这个版本，已由你确认';message='可以下载已确认稿件。审核不能保证事实正确，发布前仍需你检查。';}
  else if(run.wait_reason==='missing_material'){title='资料还不够，请补充';message='请提供缺失的真实素材。保存后，两个分析角色会使用新快照重新执行。';}
- else if(run.wait_reason==='hypothesis_permission'){title='没有历史数据，需要你选择';message='当前暂不支持历史指标导入。可允许明确标注的假设模式，或取消任务。';}
+ else if(run.wait_reason==='hypothesis_permission'){title='没有历史数据，需要你选择';message='本次账号快照没有可用的历史指标。可以允许明确标注的假设模式；也可取消任务，导入历史指标后新建创作。';}
  else if(run.wait_reason==='revision_limit'){title='已达到自动改稿上限';message='没有自动通过。请查看未解决的问题，取消本任务后带着补充资料新建任务。';}
  else if(revision){title='主编发现了问题，你可以介入';message='选择自动改稿，或亲自修改。两种方式都会保存新版本，然后再次审核。';}
  else if(allowed.includes('accept')){title='审核结束，最后由你决定';message='请检查正文与素材。你可以先修改，也可以确认当前版本；修改后必须重新审核。';}
@@ -112,7 +112,10 @@ function renderDraft(){
  const i=viewVersion,d=run.drafts[i],prev=run.drafts[i-1];
  const changes=prev?['selected_title','body','cta','tags'].filter(k=>JSON.stringify(prev.content[k])!==JSON.stringify(d.content[k])).map(k=>({selected_title:'标题',body:'正文',cta:'互动引导',tags:'标签'})[k]):[];
  $('draftView').innerHTML=(prev?'<p class="change-summary">与上一版相比：'+(changes.length?'修改了 '+changes.join('、'):'文字内容未变化')+'。左侧旧稿，右侧当前所选稿。</p><div class="draft-columns">'+draftHTML(prev,i-1)+draftHTML(d,i,true)+'</div>':draftHTML(d,i));
+ const candidates=run.artifacts.find(a=>a.stage==='title')?.value;
+ if(candidates&&run.allowed_actions.includes('edit')&&!editing)$('draftView').insertAdjacentHTML('beforeend','<details><summary>比较候选标题 / 选择后重新审核</summary>'+candidates.candidates.map((t,n)=>`<div class="candidate-row"><div><b>${esc(t)}</b><p class="muted">${esc(candidates.reasons?.[n]||'历史版本未记录理由')}</p></div><button data-title-choice="${n}" ${t===run.drafts.at(-1).content.selected_title?'disabled':''}>选用并复审</button></div>`).join('')+'</details>');
 }
+$('draftView').onclick=async e=>{const b=e.target.closest('[data-title-choice]');if(!b||busy||editing)return;const title=run.artifacts.find(a=>a.stage==='title')?.value.candidates[Number(b.dataset.titleChoice)];if(title&&title!==run.drafts.at(-1).content.selected_title&&await act('edit',{...run.drafts.at(-1).content,selected_title:title})){viewVersion=null;render();toast('标题另存为新版本，请重新审核正文是否匹配');}};
 function renderTimeline(){
  const labels={'run.queued':'任务已保存','run.started':'开始执行','agent.started':'角色开始','agent.failed':'执行失败','agent.completed':'角色阶段完成','branch.completed':'分析分支完成','join.completed':'两分支已汇合','artifact.created':'产物已保存','review.completed':'审核完成','human.accepted':'你确认了当前版本','run.completed':'任务完成','run.cancelled':'你取消了任务','workflow.transition':'状态更新'};
  $('timeline').innerHTML=run.events.slice().reverse().map(e=>`<div class="event"><time>${esc(new Date(e.occurred_at).toLocaleTimeString('zh-CN',{hour12:false}))}<br>#${e.seq}</time><div>${esc(labels[e.type]||e.type)} ${esc(names[e.payload.agent]||'')} ${esc(stages[e.payload.stage]||'')}<small>${esc(e.payload.run_status?states[e.payload.run_status]:e.payload.decision?({approved:'审核通过，等待确认',revision_required:'发现问题，需要修改',needs_human:'需要补充信息'})[e.payload.decision]:e.payload.message|| (e.payload.mode==='simulation'?'固定模板 / 模拟执行':e.payload.mode==='live'?'真实 AI 执行':'已持久化'))}</small></div></div>`).join('');
@@ -124,7 +127,7 @@ function renderCalls(){
 }
 async function act(action,payload={}){
  if(busy||!run)return false;busy=true;clearError();if(action==='next'&&run.mode==='live')run.in_flight=true;render();
- try{run=await api(`/api/runs/${run.run_id}/actions`,'POST',{action,version:run.status_version,key:crypto.randomUUID(),payload});clearError();viewVersion=null;selected=currentAgent();detailStage=null;await history();return true;}
+ try{run=await api(`/api/runs/${run.run_id}/actions`,'POST',{action,version:run.status_version,key:crypto.randomUUID(),payload});clearError();viewVersion=null;selected=currentAgent();detailStage=null;if(action==='edit'){ops=await api('/api/operations');syncAccounts();}await history();return true;}
  catch(e){auto=false;error(e);try{run=await api('/api/runs/'+run.run_id);}catch(_){}return false;}
  finally{busy=false;render();}
 }
@@ -139,10 +142,10 @@ async function autoRun(){
  auto=false;render();
 }
 $('briefForm').addEventListener('submit',async e=>{e.preventDefault();if(busy)return;busy=true;clearError();e.submitter.disabled=true;
- try{run=await api('/api/runs','POST',{mode:$('mode').value,topic:$('topic').value,audience:$('audience').value,tone:$('tone').value,material:$('material').value,scenario:$('scenario').value,allow_hypothesis:$('hypothesis').checked,operations:{platform:$('targetPlatform').value,account:$('accountName').value,trend_id:chosenTrend?.id||null}});selected='audience';detailStage=null;viewVersion=null;editing=false;$('editor').hidden=true;render();await history();}
+ try{run=await api('/api/runs','POST',{mode:$('mode').value,topic:$('topic').value,audience:$('audience').value,tone:$('tone').value,material:$('material').value,scenario:$('scenario').value,allow_hypothesis:$('hypothesis').checked,operations:{platform:$('targetPlatform').value,account_id:currentAccount()?.id,account:$('accountName').value,trend_id:chosenTrend?.id||null}});selected='audience';detailStage=null;viewVersion=null;editing=false;$('editor').hidden=true;render();await history();}
  catch(err){error(err);}finally{busy=false;e.submitter.disabled=false;if(run&&!$('workbench').hidden)render();}});
 $('history').addEventListener('click',async e=>{const b=e.target.closest('[data-run]');if(!b||busy||!dirtyGuard())return;auto=false;editing=false;$('editor').hidden=true;clearError();showPage('studio');try{run=await api('/api/runs/'+b.dataset.run);viewVersion=null;detailStage=null;selected=currentAgent();render();await history();}catch(err){error(err);}});
-$('newRun').onclick=()=>{if(busy||!dirtyGuard())return;showPage('studio');auto=false;editing=false;$('editor').hidden=true;$('workbench').hidden=true;$('welcome').hidden=false;renderMode($('mode').value);clearError();};
+$('newRun').onclick=()=>{if(busy||!dirtyGuard())return;showPage('studio');auto=false;editing=false;$('editor').hidden=true;$('workbench').hidden=true;$('welcome').hidden=false;renderMode($('mode').value);fillAccountBrief();clearError();};
 $('flow').onclick=e=>{const chip=e.target.closest('[data-stage]');const b=e.target.closest('[data-agent]');if(chip){selected='content';detailStage=chip.dataset.stage;render();}else if(b){selected=b.dataset.agent;detailStage=null;render();}};
 $('recover').onclick=()=>act('recover');
 $('next').onclick=()=>act('next');$('auto').onclick=autoRun;

@@ -89,3 +89,14 @@ class AgentContractTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+class OperationsContractTests(unittest.TestCase):
+    def test_analytics_extension_is_separate_from_creation_and_matches_runtime(self):
+        from backend.analytics import AnalyticsAgent, WINDOW_HOURS
+        extension=C['operations_extension']
+        self.assertEqual(extension['agents'],[AnalyticsAgent.agent_id])
+        self.assertEqual(extension['schema_version'],2)
+        self.assertEqual(extension['windows_hours'],WINDOW_HOURS)
+        self.assertEqual(extension['engine'],'deterministic_rules')
+        self.assertNotIn('analytics',C['join_requires'])
+        self.assertEqual(extension['account_key'],'account_id')

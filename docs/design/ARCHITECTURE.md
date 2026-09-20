@@ -226,3 +226,11 @@ PublishApproval 绑定 owner_id、platform、account_id、draft_ref、review_ref
 ## v0.4 Demo 实施进展
 
 用户在设计交付后授权功能实现。现在已有选题来源导入、平台创作上下文、发布演练/人工回填、指标录入及经验确认复用；这是本机适配，尚无实时热榜、国内平台API、自动指标回流或模型在线训练。当前能力以 [开发记录](../IMPLEMENTATION_STATUS.md) 和 [实际验证](../WEB_DEMO_VALIDATION.md) 为准，前述“未实现”是设计阶段快照。
+
+## 账号长期运营 v0.5 实现边界
+
+当前在本机服务中增加账号中心和发布后分析支路，详见 [执行扩展](AGENT_PROTOCOL.md#v05-账号运营执行扩展2026-09-21)。账号由 accounts.py 管理，独立统计分析在 analytics.py，周计划与到期待办在 planning.py；统一从 Operations 事务入口校验 owner、版本和幂等。
+
+产品呈现为四个创作角色 + 一个发布后分析角色。analytics 使用确定性统计规则而非大模型，不暗示拥有实时热点采集、平台发布权限或成熟增长预测。创作阶段仍沿用 v0.3 机器契约及现有 DeepSeek 调用计数；此轮增加 account context 和 brief，不引入新的 Agent 框架。
+
+本机持久化仍为 SQLite，运营记录仍放在按 owner 分隔的 JSON 中。该实现适合当前单机功能验证；大规模历史检索、多人并发与云端账号服务未验证。输入来源、真实/演示数据、表达偏好和传播效果分别保存。
