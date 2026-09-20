@@ -31,3 +31,22 @@ JavaScript 通过 node --check；git diff --check 通过。HTTP 测试在临时�
 ## 提纲修复后的浏览器验证
 
 刷新原失败任务，点击“从失败步骤继续（保留计数）”，确认新任务复用策略且计数仍为4。自动运行后达到 WAITING_USER/final_confirmation，页面显示9次，正文可读、审核通过、无错误提示。此次新调用5次；没有重新生成上游、没有自动确认、没有导出或发布。模型记录已保存在 [验证摘要](evidence/2026-09-20-outline-fix.json)。
+
+## 2026-09-20 运营方向设计前存档与 Demo 复跑
+
+代码基线 main / a561323，backend/ 与 frontend/ 已纳入 Git。修改前在已有 runtime/ 保存以下本地归档（被 Git 忽略，未上传）：
+
+| 文件 | 内容 | SHA-256 |
+| --- | --- | --- |
+| runtime/before-hotspot-design-a561323.tar | git archive HEAD 的已跟踪源码，不含 .env 与运行数据 | fa889e99b9bd094869b932ac8dd4df873d6f69871cbeee199b07edf78dbb75ad |
+| runtime/before-hotspot-design.sqlite | 原 runtime/demo.sqlite 的 SQLite backup API 一致性备份；integrity_check 为 ok | e18bfd53dd4d288628df6346cf5b8bb560a15886bc4a6a12633e58f88fadbbc7 |
+
+源码归档表示 HEAD，不把工作区已有三处旧 starter 删除变成新基线。数据库可能含私人创作记录，仅留本机；恢复时先停服务并另存当前数据库，再使用备份。配置仍留原 .env，不随归档复制。
+
+Demo 启动命令：`PYTHONDONTWRITEBYTECODE=1 python3 -m backend.web --port 8765 --db runtime/hotspot-review-demo.sqlite`。独立演示数据库未覆盖原 runtime/demo.sqlite。首次因沙箱禁止监听回环端口而失败；获得执行权限后正常启动。未改动产品代码。
+
+浏览器操作：明确选择免费模拟模式 → 创建“运营方案讨论前的现有流程回归” → 自动运行 → 首稿因效果承诺被拒 → 自动返修第二版 → 再次审核 → 确认第二版 → 刷新。刷新后仍显示已确认完成、2 个版本、0 次真实模型调用、费用 ¥0.00 和 Markdown 下载入口。
+
+本轮演示 run_id 为 a80f8757-1e14-470e-97c8-60a179611aee。浏览器确认下载入口可见；实际导出响应由 HTTP 集成测试覆盖，不将入口可见写成已下载文件。这里验证的是旧创作链路，不是新热点/发布/指标/学习功能，也不是真实模型效果。
+
+测试基线：修改前 70 项测试通过。修改后新增 2 项文档回归，并扩大 README 链接检查；全量 72 项测试通过（5.858 秒），node --check frontend/app.js 与 git diff --check 通过。所有模型测试使用替身，不调用收费接口。机器契约与图件未改动，图件/合并卡一致性由现有测试验证。

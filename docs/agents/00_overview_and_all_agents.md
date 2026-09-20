@@ -6,7 +6,7 @@
 
 ## 1. 目录与使用方式
 
-将压缩包中的 `docs/agents/` 复制到项目中即可：
+直接维护仓库已有的 `docs/agents/`，不要再复制出另一套目录：
 
 ```text
 docs/agents/
@@ -21,6 +21,12 @@ docs/agents/
 - 本文件前半部分为统一约定，后半部分原样收录四张卡片，便于一次复制或整体评审。
 - 修改时以四份独立卡片为角色规范源；运行 python3 scripts/sync_agent_cards.py 生成本文件的合并部分。统一执行协议由 docs/design/AGENT_PROTOCOL.md 和 design_contract.json 维护。
 - JSON 均为合法示例，不是已经运行得到的数据；字段约束表与说明共同构成角色 schema 1.1.0 契约（运行状态 schema 为 2，二者版本域不同）。实现时使用 JSON Schema、Zod 或 Pydantic 进行验证。
+
+## 运营助手方向增补
+
+v0.4 面向小红书、抖音，暂不接入 Postiz。保留四角色：research 扩展趋势证据，audience 使用可比历史并提出复盘经验，content 生成平台候选，reviewer 审核绑定版本。采集、发布和指标计算由 Tools/Orchestrator 执行，不是 Agent 的直接发帖权限。以上为待实施扩展；独立角色卡与 schema 1.1.0 保持现有创作契约。
+
+详见 [技术提案](../design/ARCHITECTURE.md#运营闭环-v04-技术提案)。新方向拟支持人工批准后的国内平台发布；下文“不在 MVP 自动发布”描述现有创作 MVP，不能理解成永远排除发布。图示仍是创作子流程。
 
 ## 2. 产品目标与角色分工
 

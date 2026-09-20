@@ -116,3 +116,7 @@ MVP 允许用户随时保存手工稿；后台成果只写 candidate。任务结
 POST /profiles/{id}/versions 和 POST /profiles/{id}/accept 用于画像候选和确认；POST /projects/{id}/feedback 保存手工发布指标，要求 observed_at 与来源。聚合分析、只读检索为内部 Tool，不向浏览器开放任意数据库查询。
 
 resume 不再有 choose_topic；接受请求必须带 expected_status_version 和 reviewed_draft_version_id。手工修改变成新版本后重新审核，accept 不接受旧 review。/exports 要求用户已确认且审核仍有效，不能把“审核有风险但执行结束”当成可正式导出。
+
+## v0.4 运营扩展边界
+
+本文件保留 v0.3 创作子流程契约；热点、国内平台发布、指标回流与学习为 [v0.4 技术提案](ARCHITECTURE.md#运营闭环-v04-技术提案)，尚未实现。运营对象采用独立状态，创作 SUCCEEDED 不代表发布成功。当前代码进度见 [开发记录](../IMPLEMENTATION_STATUS.md)，不要将历史设计中的“待实现”覆盖已验证能力，也不要把提案字段直接当成现有 API。

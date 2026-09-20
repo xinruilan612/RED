@@ -69,3 +69,30 @@
 ## 5. 后续复用记录
 
 若实际复用，新增第三方清单：仓库 URL、固定 commit、文件路径、许可证全文、改动说明、在本项目的用途、测试结果；同时核对依赖及图片/字体许可。当前没有复制这些项目的代码或下载运行它们，也没有产生模型调用费用。
+
+## 运营助手参考增补
+
+核查日期：2026-09-20。用户明确指定 [Klaudiusz321/social-media-agents](https://github.com/Klaudiusz321/social-media-agents)，不是前文的 langchain-ai/social-media-agent。以下新增项不属于前述五仓库历史元数据快照。本轮未安装、运行该第三方项目，也未进行端到端发布验证。
+
+README 描述 TrendScannerAgent、ContentCreatorAgent、SchedulerAgent 和 Orchestrator，主要目标是 Twitter、Instagram、LinkedIn；可以借鉴趋势到创作到排程的分层思路。仓库简介提到广告/分析/互动等角色，与 README 主链路不完全一致，不能只凭简介认定能力完整。
+
+读取 [orchestrator.py](https://github.com/Klaudiusz321/social-media-agents/blob/main/orchestrator.py) 发现 human_review 默认 False，启用后通过命令行 input 获取同意；内容池和发布历史采用 JSON 路径。它不是我们需要的默认人工审批、版本绑定、多人隔离的网页发布系统。本轮只静态读取部分代码，没有证据证明完整指标回流、受控学习和多版本审核闭环已经实现。借鉴流程划分，自有状态与权限保持现有守卫。
+
+README 声明 MIT，但本次仓库根目录展示未见独立 LICENSE 全文；实际复制代码前须取得并核对许可文本、固定 commit 及拟用文件。本轮未复制第三方实现、未打开其 .env，也未下载运行。此前 langchain-ai 项目继续作为图编排的独立参考。
+
+[Postiz 官方平台列表与 Analytics 介绍](https://postiz.com/agent)可用于了解发布和数据适配方式；所读列表未显示小红书/抖音，不能据此认定可直接使用。用户已明确暂不接入 Postiz，因此本期设计无其运行时依赖。
+
+## 国内平台接入核查
+
+| 来源 | 已核查事实 | 本项目边界 |
+| --- | --- | --- |
+| [抖音创建视频](https://developer.open-douyin.com/docs/resource/zh-CN/dop/develop/openapi/video-management/douyin/create-video/video-create) | 需要 video.create.bind 能力申请和用户授权；创建后会有平台审核 | 有公开文档不代表本项目已获权；回执 ID 不等于公开发布成功 |
+| [抖音发布能力使用规范](https://developer.open-douyin.com/docs/resource/zh-CN/dop/operation-standard/platform-capabilities/useclue) | 存在 App、H5/Web 等投稿路径，需申请对应能力 | 选择适合本项目应用类型的接入方式，不把不同路径混为一套 API |
+| [抖音视频数据查询](https://developer.open-douyin.com/docs/resource/zh-CN/mini-app/develop/server/basic-abilities/video-id-convert/user-video-data/video-data) | 所读页面是小程序接口，ma.video.bind，需申请和授权；仅返回公开视频数据 | 不能直接作为当前 Web 产品已可用接口；先核对网站应用对应通道 |
+| [抖音数据权限调整公告](https://developer.open-douyin.com/forum/bulletin/post/672d828be9f6234d658c8dd2) | 2024-11-08 公告涉及 hotsearch 等能力 | 公告是历史调整证据，不证明现在一定能申请；以实际控制台审批为准 |
+| [抖音用户互动数据](https://developer.open-douyin.com/capacity-center-page/capacity-detail/7180284622729658424) | 授权后可获取账号部分指标，并有用途与数据延迟说明 | 不将账号级数据当单篇归因；接入前核对本产品场景适用性 |
+| [小红书小程序开放平台](https://miniapp.xiaohongshu.com/) | 搜索索引出现“笔记发布能力及入口”；本轮页面正文获取失败 | 仅作为官方核查入口；尚不能确认通用 Web 代发、热点和作品指标权限 |
+
+本轮未登录开发者控制台、申请能力或连接用户账号。无法确认的小红书能力保持 unknown；抖音公开接口保持 documented_not_verified。人工发布和手工指标导入属于产品过渡设计，不冒充官方自动接入。
+
+技术建议与阶段取舍由 [v0.4 技术方案](../design/ARCHITECTURE.md#运营闭环-v04-技术提案) 维护。接入前再次核对对应官方文档、实际账号类型与授权范围，不硬编码本轮未验证的配额。

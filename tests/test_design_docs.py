@@ -19,12 +19,41 @@ class DesignDocumentationTests(unittest.TestCase):
         cls.contract = json.loads((DESIGN/'design_contract.json').read_text())
 
     def test_local_links_resolve(self):
-        for path in [ROOT/'AGENTS.md', *ROOT.glob('docs/**/*.md')]:
+        for path in [ROOT/'README.md', ROOT/'AGENTS.md', *ROOT.glob('docs/**/*.md')]:
             for dest in re.findall(r'\]\(([^)]+)\)', path.read_text()):
                 if '://' in dest or dest.startswith('#'):
                     continue
                 with self.subTest(file=path.name, link=dest):
                     self.assertTrue((path.parent/dest.split('#')[0]).is_file())
+
+    def test_operations_proposal_is_reachable_without_replacing_runtime_contract(self):
+        # Guard against a split set of MVP documents and accidental migration by prose.
+        for relative in ('README.md', 'AGENTS.md', 'docs/design/README.md',
+                         'docs/design/MIGRATION.md', 'docs/IMPLEMENTATION_STATUS.md'):
+            text = (ROOT / relative).read_text()
+            with self.subTest(document=relative):
+                self.assertIn('ARCHITECTURE.md#运营闭环-v04-技术提案', text)
+        text = (DESIGN / 'ARCHITECTURE.md').read_text()
+        for section in ('热点发现和选题方法', '版本和发布状态', '数据模型与接口草案',
+                        '指标回流、学习与实验', '六环节验收与风险'):
+            self.assertIn(section, text)
+        self.assertIn('暂不接入', text)
+        self.assertIn('小红书', text)
+        self.assertIn('抖音', text)
+        self.assertIn('SUCCEEDED 仅表示确认稿完成', text)
+        self.assertIn('UNKNOWN', text)
+        self.assertIn('缺失为 null', text)
+        self.assertIn('可拒绝、撤销、回滚', text)
+        self.assertEqual(self.contract['agents'], ['audience', 'research', 'content', 'reviewer'])
+
+    def test_operations_references_distinguish_requested_repo_and_platform_evidence(self):
+        text = (ROOT / 'docs/research/GITHUB_PROJECTS.md').read_text()
+        self.assertIn('https://github.com/Klaudiusz321/social-media-agents', text)
+        self.assertIn('https://github.com/langchain-ai/social-media-agent', text)
+        self.assertIn('documented_not_verified', text)
+        self.assertIn('页面正文获取失败', text)
+        self.assertIn('human_review 默认 False', text)
+        self.assertFalse((ROOT / 'AGENT.md').exists())
 
     def test_states_known_and_terminals_absorbing(self):
         transitions = self.contract['transitions']

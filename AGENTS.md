@@ -16,3 +16,11 @@
 当前设计基线为 v0.3 五层（UI/Runtime Console、Orchestrator、Agents、Tools/Skills、Memory）与 audience/research/content/reviewer 四角色。实现前阅读 [迁移计划](docs/design/MIGRATION.md)，不要混用旧版角色契约。
 
 角色卡入口：[四 Agent 规范](docs/agents/00_overview_and_all_agents.md)。运行协议以 [统一执行协议](docs/design/AGENT_PROTOCOL.md) 和机器契约为准；编辑独立卡片后运行 `python3 scripts/sync_agent_cards.py`，不要手动维护合并部分。
+
+## 运营助手 v0.4 设计增补（2026-09-20）
+
+用户确认目标平台为小红书、抖音，暂不接入 Postiz。指定参考为 Klaudiusz321/social-media-agents；与 langchain-ai/social-media-agent 分开记录。
+
+本轮仅修改文档、运行现有 Demo 和设计技术方案，不实现新功能、不新建文件夹、不额外建立 AGENT.md。v0.3 机器契约与四角色继续作为当前创作基线；v0.4 运营扩展见 [技术提案](docs/design/ARCHITECTURE.md#运营闭环-v04-技术提案) 和 [推进计划](docs/design/MIGRATION.md#运营闭环-v04-推进计划)，未实现条目不得写成已完成。
+
+未来发布必须绑定用户批准的账号、平台、稿件/媒体版本和计划时间；创作 SUCCEEDED 不表示发布成功。指标缺失不得填零，模拟受众反应不得写入真实历史；经验更新可追踪、可撤销，不能绕过人工确认。平台能力须以适用的官方接口、账号授权和实测为准。
