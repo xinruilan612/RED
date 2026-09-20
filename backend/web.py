@@ -13,24 +13,31 @@ from uuid import uuid4
 from backend.contracts import DomainError, require, integer
 from backend.demo import actions, validate_brief, validate_edit
 from backend.store import Store
+from backend.provider import Config, load_config
+from backend.execution import Executor
 
 FRONTEND = Path(__file__).resolve().parents[1]/'frontend'
 
 
-def view(run):
+def view(run, executor=None):
     result=asdict(run)
     result.pop('owner_id')
     result['allowed_actions']=actions(run)
-    result['mode']='simulation'
+    result['mode']=run.context.get('mode','simulation')
     result['usage']={'model_calls':0,'tokens':0,'cost':0,'currency':'CNY'}
+    if result['mode']=='live' and executor:
+        result.update(executor.public(run))
+        if result['in_flight']:result['allowed_actions']=[a for a in result['allowed_actions'] if a=='cancel']
     return result
 
 
 class DemoServer(ThreadingHTTPServer):
     daemon_threads=True
 
-    def __init__(self, address, store):
+    def __init__(self, address, store, config=None, client=None):
         self.store=store
+        self.config=config or Config()
+        self.executor=Executor(store,self.config,client)
         with store.connect() as db:
             db.execute('CREATE TABLE IF NOT EXISTS demo_sessions (token_hash TEXT PRIMARY KEY, owner TEXT NOT NULL, csrf TEXT NOT NULL)')
         super().__init__(address, Handler)
@@ -84,7 +91,7 @@ class Handler(BaseHTTPRequestHandler):
                 self.send(200,(FRONTEND/name).read_bytes(),mime); return
             if not write and path=='/api/session':
                 _,csrf,cookie=self.session(True)
-                self.send(200,{'csrf':csrf,'mode':'simulation'},cookie=cookie); return
+                self.send(200,{'csrf':csrf,'mode':'simulation','provider':self.server.config.public()},cookie=cookie); return
             owner,csrf,_=self.session()
             if write:
                 require(self.headers.get('Origin')==origin and secrets.compare_digest(self.headers.get('X-CSRF-Token',''),csrf),
@@ -98,20 +105,26 @@ class Handler(BaseHTTPRequestHandler):
                 require(isinstance(data,dict),'INVALID_INPUT','请求须为对象')
             if path=='/api/runs':
                 if write:
-                    context=validate_brief(data)
+                    mode=data.get('mode','simulation')
+                    require(mode in ('simulation','live'),'INVALID_INPUT','运行模式无效')
+                    require(mode!='live' or self.server.config.ready,'KEY_REQUIRED','请先填写 .env 中的 DEEPSEEK_API_KEY 并重启服务')
+                    context=validate_brief({k:v for k,v in data.items() if k!='mode'})
+                    context['mode']=mode
+                    if mode=='live':context['scenario']='standard'
                     run=self.server.store.create(owner,str(uuid4()),context)
-                    self.send(201,view(run))
-                else: self.send(200,[view(r) for r in self.server.store.list_runs(owner)])
+                    self.send(201,view(run,self.server.executor))
+                else: self.send(200,[view(r,self.server.executor) for r in self.server.store.list_runs(owner)])
                 return
             parts=path.strip('/').split('/')
             require(len(parts) in (3,4) and parts[:2]==['api','runs'],'RESOURCE_NOT_FOUND','页面不存在')
             run_id=parts[2]; run=self.server.store.get(run_id,owner)
             if not write:
-                if len(parts)==3: self.send(200,view(run)); return
+                if len(parts)==3: self.send(200,view(run,self.server.executor)); return
                 require(parts[3]=='export' and 'export' in actions(run),'INVALID_TRANSITION','确认稿件后才能导出')
                 draft=run.drafts[-1]['content']
-                body='# 模拟创作稿（未调用真实 AI）\n\n# '+draft['selected_title']+'\n\n'+draft['body']+'\n\n'+draft['cta']+'\n\n'+' '.join('#'+t for t in draft['tags'])
-                self.send(200,body.encode(),'text/markdown; charset=utf-8',filename='xhs-demo.md'); return
+                heading='AI 创作稿（已人工确认；事实仍需核实）' if run.context.get('mode')=='live' else '模拟创作稿（未调用真实 AI）'
+                body='# '+heading+'\n\n# '+draft['selected_title']+'\n\n'+draft['body']+'\n\n'+draft['cta']+'\n\n'+' '.join('#'+t for t in draft['tags'])
+                self.send(200,body.encode(),'text/markdown; charset=utf-8',filename='xhs-draft.md' if run.context.get('mode')=='live' else 'xhs-demo.md'); return
             require(len(parts)==4 and parts[3]=='actions','RESOURCE_NOT_FOUND','操作不存在')
             require(set(data)=={'action','version','key','payload'},'INVALID_INPUT','命令字段无效')
             action=data['action']; payload=data['payload']
@@ -129,8 +142,11 @@ class Handler(BaseHTTPRequestHandler):
             elif action=='cancel':
                 require(not payload,'INVALID_INPUT','取消不能带额外参数'); command='cancel'
             else: raise DomainError('INVALID_INPUT','未知动作')
-            run=self.server.store.command(run_id,owner,data['version'],data['key'],command,payload)
-            self.send(200,view(run))
+            if action=='next' and run.context.get('mode')=='live':
+                run=self.server.executor.step(run_id,owner,data['version'],data['key'])
+            else:
+                run=self.server.store.command(run_id,owner,data['version'],data['key'],command,payload)
+            self.send(200,view(run,self.server.executor))
         except DomainError as error:
             status={'RESOURCE_NOT_FOUND':404,'AUTH_REQUIRED':401,'FORBIDDEN':403,'INVALID_INPUT':400}.get(error.code,409)
             self.send(status,{'error':{'code':error.code,'message':str(error)}})
@@ -146,8 +162,8 @@ def main():
     parser.add_argument('--port',type=int,default=8765)
     parser.add_argument('--db',default='runtime/demo.sqlite')
     args=parser.parse_args(); Path(args.db).parent.mkdir(parents=True,exist_ok=True)
-    server=DemoServer(('127.0.0.1',args.port),Store(args.db))
-    print(f'模拟工作台：http://127.0.0.1:{server.server_port}（无需 API Key，仅本机）',flush=True)
+    server=DemoServer(('127.0.0.1',args.port),Store(args.db),load_config())
+    print(f'创作工作台：http://127.0.0.1:{server.server_port}（仅本机；DeepSeek 已配置：{server.config.ready}）',flush=True)
     try: server.serve_forever()
     except KeyboardInterrupt: pass
     finally: server.server_close()

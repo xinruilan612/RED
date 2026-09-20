@@ -148,6 +148,53 @@ class DemoWebTests(unittest.TestCase):
         status,html=self.request('GET','/')
         for label in ('协作流程','补充真实素材','保存新版本并等待复审','运行记录','模拟运行'):
             self.assertIn(label,html)
+        # Parse the actual HTML, catching malformed option tags that strand startup JS.
+        from html.parser import HTMLParser
+        class Options(HTMLParser):
+            def __init__(self):super().__init__();self.options=[]
+            def handle_starttag(self,tag,attrs):
+                if tag=='option':self.options.append(dict(attrs))
+        parsed=Options();parsed.feed(html)
+        self.assertTrue(any(o.get('id')=='liveOption' and o.get('value')=='live' for o in parsed.options))
         status,_=self.request('GET','/missing');self.assertEqual(status,404)
+
+
+class LiveWebTests(unittest.TestCase):
+    request=DemoWebTests.request
+    create=DemoWebTests.create
+    action=DemoWebTests.action
+    until_pause=DemoWebTests.until_pause
+    tearDown=DemoWebTests.tearDown
+
+    def setUp(self):
+        from backend.provider import Config
+        from test_live_provider import FixtureModel
+        self.temp=tempfile.TemporaryDirectory()
+        self.store=Store(Path(self.temp.name)/'live.sqlite')
+        self.model=FixtureModel()
+        self.server=DemoServer(('127.0.0.1',0),self.store,Config('private-test-key'),self.model)
+        self.thread=threading.Thread(target=self.server.serve_forever,daemon=True);self.thread.start()
+        self.cookie='';self.csrf=''
+        self.logs=patch.object(Handler,'log_message',lambda *args:None);self.logs.start()
+        self.request('GET','/api/session')
+
+    def test_real_mode_http_creation_export_and_private_env(self):
+        status,session=self.request('GET','/api/session')
+        self.assertTrue(session['provider']['ready']);self.assertNotIn('private-test-key',json.dumps(session))
+        status,_=self.request('GET','/.env');self.assertEqual(status,404)
+        run=self.until_pause(self.create(mode='live'))
+        self.assertEqual(run['mode'],'live');self.assertEqual(run['usage']['model_calls'],8)
+        run=self.action(run,'accept',{'draft_ref':run['drafts'][-1]['ref'],'review_ref':run['review']['ref']})
+        status,body=self.request('GET',f"/api/runs/{run['run_id']}/export")
+        self.assertEqual(status,200);self.assertIn('AI 创作稿',body);self.assertNotIn('模拟创作稿',body)
+        self.assertNotIn('private-test-key',json.dumps(run))
+
+    def test_no_key_cannot_create_live_but_simulation_still_free(self):
+        from backend.provider import Config
+        self.server.config=Config()
+        status,error=self.request('POST','/api/runs',{'mode':'live','topic':'x'})
+        self.assertEqual(status,409);self.assertEqual(error['error']['code'],'KEY_REQUIRED')
+        run=self.until_pause(self.create())
+        self.assertEqual(run['mode'],'simulation');self.assertEqual(self.model.calls,[])
 
 if __name__=='__main__':unittest.main()
