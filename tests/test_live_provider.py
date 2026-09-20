@@ -193,6 +193,51 @@ class LiveTests(unittest.TestCase):
         self.assertIn('提纲输出校验失败',self.run.events[-1]['payload']['message'])
         self.assertEqual(self.executor.public(self.run)['usage']['tokens'],480)
 
+    def test_outline_compatibility_is_lossless_and_rejects_bad_fields(self):
+        value={'items':[{'title':'归档','points':['按课命名','增加日期']},{'title':'复习','content':'每周检查'}]}
+        self.assertEqual(normalize(self.run,'outline',value),['归档\n按课命名\n增加日期','复习\n每周检查'])
+        for item in ({'title':'x','points':[123]},{'title':'x','content':'','ignored':'x'},''):
+            with self.assertRaises(DomainError) as error:normalize(self.run,'outline',{'items':['valid',item]})
+            self.assertIn('items[1]',str(error.exception))
+
+    def test_recovery_reuses_successes_preserves_parent_and_costs(self):
+        base=self.model.complete
+        def fail_once(messages):
+            value,tokens=base(messages)
+            if self.model.calls[-1]=='outline' and self.model.calls.count('outline')==1:value={'items':[None,'two']}
+            return value,tokens
+        self.model.complete=fail_once
+        self.step();self.step();self.step();parent=self.run
+        failed=self.executor.public(parent)['calls'][-1]
+        self.assertEqual(failed['status'],'invalid');self.assertEqual(failed['diagnostic_response'],{'items':[None,'two']})
+        self.assertIn('items[0]',failed['error'])
+        with self.assertRaises(DomainError):self.executor.recover(parent.run_id,'other',parent.status_version)
+        self.run=self.executor.recover(parent.run_id,'me',parent.status_version)
+        self.assertEqual(self.run,self.executor.recover(parent.run_id,'me',parent.status_version))
+        self.assertEqual(self.run.artifacts,parent.artifacts)
+        for _ in range(5):self.step()
+        self.assertEqual(self.run.wait_reason,'final_confirmation')
+        self.assertEqual(self.model.calls.count('audience'),1)
+        self.assertEqual(self.model.calls.count('strategy'),1)
+        self.assertEqual(self.executor.public(self.run)['usage']['model_calls'],9)
+        self.assertEqual(self.store.get(parent.run_id,'me'),parent)
+
+    def test_recovery_cannot_reset_stage_cap_or_unknown_charges(self):
+        base=self.model.complete
+        def always_bad(messages):
+            value,tokens=base(messages)
+            if self.model.calls[-1]=='outline':value={'items':[None,'two']}
+            return value,tokens
+        self.model.complete=always_bad
+        self.step();self.step();self.step()
+        for _ in range(3):
+            self.run=self.executor.recover(self.run.run_id,'me',self.run.status_version)
+            self.step()
+        self.assertEqual(self.model.calls.count('outline'),3)
+        self.assertEqual(self.run.run_status,'FAILED')
+        with self.store.connect() as db:db.execute("UPDATE live_calls SET actual=NULL WHERE stage='outline'")
+        with self.assertRaises(DomainError):self.executor.recover(self.run.run_id,'me',self.run.status_version)
+
     def test_forged_quotes_and_wrong_title_blocked(self):
         value=schema('research');value['facts']=[{'source_id':'user-material','quote':'不存在的事实'}]
         with self.assertRaises(DomainError):normalize(self.run,'research',value)

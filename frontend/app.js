@@ -39,7 +39,7 @@ function render(){
  $('runSummary').textContent=`写给 ${run.context.audience} · ${run.context.tone} · ${run.snapshot_id.slice(0,8)} 输入快照`;
  $('statusLabel').textContent=run.in_flight?'AI 正在处理，请稍候':states[run.run_status];$('versionCount').textContent=run.drafts.length+' 个';
  const allowed=run.allowed_actions;
- $('next').hidden=!allowed.includes('next');$('auto').hidden=!allowed.includes('next');$('cancel').hidden=!allowed.includes('cancel');
+ $('recover').hidden=!allowed.includes('recover');$('next').hidden=!allowed.includes('next');$('auto').hidden=!allowed.includes('next');$('cancel').hidden=!allowed.includes('cancel');
  $('next').textContent=run.current_stage==='reviewer'?'执行复审 / 审核 →':run.review?.decision==='revision_required'?'按意见改稿 →':'执行下一步 →';
  $('auto').textContent=auto?'停止自动运行':'自动运行到人工处理';
  const node=(key,num,sub)=>{
@@ -118,12 +118,12 @@ function renderTimeline(){
 }
 function renderCalls(){
  if(run.mode!=='live')return;
- const rows=(run.calls||[]).map(c=>'<div class="event"><time>DeepSeek</time><div>'+esc(names[c.agent])+' · '+esc(stages[c.stage])+'<small>'+esc(({calling:'请求中 / 如服务已重启，请取消后新建',received:'已收到响应',failed:'请求失败'})[c.status]||c.status)+' · '+(c.tokens===null?'用量未知，已保留预算':c.tokens+' Token')+(c.error?' · '+esc(c.error):'')+'</small></div></div>').join('');
+ const rows=(run.calls||[]).map(c=>'<div class="event"><time>DeepSeek</time><div>'+esc(names[c.agent])+' · '+esc(stages[c.stage])+'<small>'+esc(({calling:'请求中 / 如服务已重启，请取消后新建',received:'已收到响应',validated:'校验通过',invalid:'输出格式校验失败',failed:'请求失败'})[c.status]||c.status)+' · '+(c.tokens===null?'用量未知，已保留预算':c.tokens+' Token')+(c.inherited?' · 沿用原任务计数':'')+(c.error?' · '+esc(c.error):'')+'</small>'+(c.diagnostic_response?'<details><summary>查看被拒绝的模型响应</summary>'+json(c.diagnostic_response)+'</details>':'')+'</div></div>').join('');
  $('timeline').insertAdjacentHTML('afterbegin',rows);
 }
 async function act(action,payload={}){
  if(busy||!run)return false;busy=true;clearError();if(action==='next'&&run.mode==='live')run.in_flight=true;render();
- try{run=await api(`/api/runs/${run.run_id}/actions`,'POST',{action,version:run.status_version,key:crypto.randomUUID(),payload});viewVersion=null;selected=currentAgent();detailStage=null;await history();return true;}
+ try{run=await api(`/api/runs/${run.run_id}/actions`,'POST',{action,version:run.status_version,key:crypto.randomUUID(),payload});clearError();viewVersion=null;selected=currentAgent();detailStage=null;await history();return true;}
  catch(e){auto=false;error(e);try{run=await api('/api/runs/'+run.run_id);}catch(_){}return false;}
  finally{busy=false;render();}
 }
@@ -143,6 +143,7 @@ $('briefForm').addEventListener('submit',async e=>{e.preventDefault();if(busy)re
 $('history').addEventListener('click',async e=>{const b=e.target.closest('[data-run]');if(!b||busy||!dirtyGuard())return;auto=false;editing=false;$('editor').hidden=true;clearError();try{run=await api('/api/runs/'+b.dataset.run);viewVersion=null;detailStage=null;selected=currentAgent();render();await history();}catch(err){error(err);}});
 $('newRun').onclick=()=>{if(busy||!dirtyGuard())return;auto=false;editing=false;$('editor').hidden=true;$('workbench').hidden=true;$('welcome').hidden=false;renderMode($('mode').value);clearError();};
 $('flow').onclick=e=>{const chip=e.target.closest('[data-stage]');const b=e.target.closest('[data-agent]');if(chip){selected='content';detailStage=chip.dataset.stage;render();}else if(b){selected=b.dataset.agent;detailStage=null;render();}};
+$('recover').onclick=()=>act('recover');
 $('next').onclick=()=>act('next');$('auto').onclick=autoRun;
 $('cancel').onclick=async()=>{
  if(!window.confirm('取消当前任务？已有版本会保留。已发送给模型的请求可能仍产生费用。'))return;

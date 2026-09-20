@@ -27,6 +27,7 @@ def view(run, executor=None):
     result['usage']={'model_calls':0,'tokens':0,'cost':0,'currency':'CNY'}
     if result['mode']=='live' and executor:
         result.update(executor.public(run))
+        if run.run_status=='FAILED':result['allowed_actions'].append('recover')
         if result['in_flight']:result['allowed_actions']=[a for a in result['allowed_actions'] if a=='cancel']
     return result
 
@@ -128,10 +129,14 @@ class Handler(BaseHTTPRequestHandler):
             require(len(parts)==4 and parts[3]=='actions','RESOURCE_NOT_FOUND','操作不存在')
             require(set(data)=={'action','version','key','payload'},'INVALID_INPUT','命令字段无效')
             action=data['action']; payload=data['payload']
-            require(isinstance(action,str) and action in ('next','edit','supplement','accept','cancel'),'INVALID_TRANSITION','当前不能执行这个操作')
+            require(isinstance(action,str) and action in ('next','edit','supplement','accept','cancel','recover'),'INVALID_TRANSITION','当前不能执行这个操作')
             integer(data['version'],'version')
             require(isinstance(data['key'],str) and 0<len(data['key'])<=100,'INVALID_INPUT','操作标识无效')
             require(isinstance(payload,dict),'INVALID_INPUT','操作参数无效')
+            if action=='recover':
+                require(not payload,'INVALID_INPUT','继续执行不能带额外参数')
+                recovered=self.server.executor.recover(run_id,owner,data['version'])
+                self.send(200,view(recovered,self.server.executor));return
             if action=='next':
                 require(not payload,'INVALID_INPUT','下一步不能带额外参数'); command='demo_step'
             elif action=='edit': command='edit'; payload={'content':validate_edit(payload)}

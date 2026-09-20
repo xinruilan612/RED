@@ -189,6 +189,25 @@ class LiveWebTests(unittest.TestCase):
         self.assertEqual(status,200);self.assertIn('AI 创作稿',body);self.assertNotIn('模拟创作稿',body)
         self.assertNotIn('private-test-key',json.dumps(run))
 
+    def test_recover_live_failure_from_ui_contract_and_replay(self):
+        base=self.model.complete
+        def bad(messages):
+            value,tokens=base(messages)
+            if self.model.calls[-1]=='outline':value={'items':[None,'two']}
+            return value,tokens
+        self.model.complete=bad
+        run=self.create(mode='live')
+        for _ in range(3):run=self.action(run,'next')
+        self.assertEqual(run['run_status'],'FAILED');self.assertIn('recover',run['allowed_actions'])
+        parent=run;run=self.action(parent,'recover')
+        self.assertNotEqual(run['run_id'],parent['run_id'])
+        self.assertEqual(self.action(parent,'recover')['run_id'],run['run_id'])
+        self.assertEqual(run['usage']['model_calls'],4)
+        self.model.complete=base
+        run=self.until_pause(run)
+        self.assertEqual(run['wait_reason'],'final_confirmation')
+        self.assertEqual(run['usage']['model_calls'],9)
+
     def test_no_key_cannot_create_live_but_simulation_still_free(self):
         from backend.provider import Config
         self.server.config=Config()
