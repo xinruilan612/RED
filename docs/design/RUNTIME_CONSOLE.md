@@ -1,6 +1,6 @@
 # Runtime Console 设计
 
-v0.2 · L1 UI 中的运行观察与干预界面，不是 Agent 的聊天群，也不显示隐藏推理过程。
+v0.3 · L1 UI 中的运行观察与干预界面，不是 Agent 的聊天群，也不显示隐藏推理过程。
 
 ![D5 Runtime Console 事件链](diagrams/runtime.svg)
 
@@ -10,7 +10,7 @@ v0.2 · L1 UI 中的运行观察与干预界面，不是 Agent 的聊天群，�
 
 | 标签 | 显示字段 | 展示约束 |
 | --- | --- | --- |
-| 状态 | run_id、agent、stage、status、wait_reason | 区分执行完成、审核通过、用户确认、已发布 |
+| 状态 | run_id、agent、current_stage、run_status、wait_reason | 区分执行完成、审核通过、用户确认、已发布 |
 | 输入 / 输出 | input_summary、artifact_ref、schema_version、snapshot_id | 摘要默认最多 240 字符；原文仅本人按需查看 |
 | Tool calls | tool、参数摘要、结果摘要、耗时、error_code | 工具调用真实产生事件，不能用动画伪造 |
 | Memory reads | store、record_ids、version、query_summary、命中数 | 区分“无数据”和“读取失败”；来源可追踪 |
@@ -24,7 +24,7 @@ v0.2 · L1 UI 中的运行观察与干预界面，不是 Agent 的聊天群，�
 
 RuntimeEvent：schema_version=2、event_id、run_id、seq、occurred_at、type、agent（可空）、stage（可空）、attempt、snapshot_id、draft_version_id、payload、visibility。
 
-事件类型：run.queued / run.started / branch.started / branch.completed / join.completed / agent.started / agent.completed / tool.started / tool.completed / tool.failed / memory.read / memory.read_failed / artifact.saved / review.completed / human.required / human.accepted / retry.scheduled / run.failed / run.cancelled / run.completed / usage.updated。
+事件类型以 [机器契约](design_contract.json) 的 events 列表为唯一来源，覆盖 agent/tool/branch 的执行、memory 读取/候选、artifact.created、validation.failed、workflow.transition、人工确认、重试和费用变化；禁止使用 artifact.saved 等另一套别名。
 
 后端分配单 run 单调递增 seq 并先落库，再通知 SSE；客户端按 (run_id,seq) 去重。并行阶段的实际先后看 occurred_at，不用数组位置虚构依赖。每次开始事件应有完成或失败事件；崩溃时经租约回收补事件并标 recovered。
 

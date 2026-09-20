@@ -136,7 +136,7 @@ class DesignDocumentationTests(unittest.TestCase):
         p = self.contract['parameters']
         self.assertGreaterEqual(p['run_attempts_max'], 2 + len(self.contract['content_stages']) + 1)
         self.assertLessEqual(p['agent_tool_calls_max'], p['run_tool_calls_max'])
-        self.assertTrue(0 < p['evidence_score_min'] <= p['review_threshold'] <= 100)
+        self.assertFalse(self.contract['review_policy']['score_gate'])
 
     def test_research_provenance_and_no_execution_claim(self):
         rows=json.loads((ROOT/'docs/research/repository_snapshot.json').read_text())

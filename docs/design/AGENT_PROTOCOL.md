@@ -1,0 +1,77 @@
+# 四 Agent 统一执行协议
+
+v0.3 · 设计待实现。本文规定路由与校验语义；[design_contract.json](design_contract.json) 是 ID、预算、状态、事件及权限名单的唯一机器来源。角色字段见 [Agent Cards](../agents/00_overview_and_all_agents.md)。发生差异须修订契约并通过测试，不能在提示词中静默覆盖。
+
+## 1. 版本与状态
+
+设计版本为 0.3，WorkflowState/RuntimeEvent 的 schema_version 为整数 2，角色产物的 schema_version 为字符串 1.1.0。这是三个不同版本域，不应相互比较。旧角色 schema 1.0.0 必须显式迁移；未迁移不接入新流程。
+
+agent 固定 audience / research / content / reviewer。产物依次为 AudienceInsight / ResearchPack / ContentDraft / ReviewReport。旧名 ResearchNotes、ContentArtifacts、ReviewResult 不再是对外接口。
+
+运行状态使用 [生命周期](FLOWS.md) 中的八个大写值，WorkflowState 的字段统一为 `run_status`。`current_stage` 表示阶段，不是生命周期；API 返回同名字段。存储 runs.status 是该字段的内部映射。产物的 status 只表示该产物是否可用。节点执行状态可为 pending/running/succeeded/failed/cancelled，不与任务状态混用。
+
+WAITING_USER 用 wait_reason 区分 missing_material、hypothesis_permission、final_confirmation、revision_limit、version_conflict、budget_exhausted、policy_unavailable。FAILED/CANCELLED/EXPIRED/SUCCEEDED 不原地复活。额度耗尽先保存候选并进入 budget_exhausted；只能取消或显式创建受日额度约束的新 run，旧 run 关闭为 CANCELLED，不允许 resume 重置计数。硬执行时限到达则 FAILED。
+
+## 2. 分支可用性与路由（按顺序执行）
+
+先判断取消、权限、版本、工具执行错误和预算；仅执行成功的分支可参与资料充分性判断。两支必须使用相同 snapshot_id（Brief/Profile/Material/History 版本集合）；Agent 不调度另一个 Agent。
+
+| 条件 | 确定动作 | 等待原因 |
+| --- | --- | --- |
+| 一支传输失败且仍可重试 | RETRY_WAIT，仅重试该支；不把错误变为空结果 | 无 |
+| 无历史、allow_hypothesis_mode=true | Audience needs_data 可参与 Join；输出低置信度及假设标签 | 无 |
+| 无历史、allow_hypothesis_mode=false | WAITING_USER，补历史或明确授权假设模式 | hypothesis_permission |
+| 非核心主张缺证据，可删除且仍满足 Brief | Research partial 可参与 Join；将主张列入 prohibited_claims | 无 |
+| 核心主张缺失、受众与素材无法共同满足 Brief | WAITING_USER，列出准确问题及已有证据 | missing_material |
+| 规则包核心检查不可用 | WAITING_USER；展示未完成项 | policy_unavailable |
+| Content blocked | 映射 missing_material 或需求裁决问题，不进入审核 | missing_material |
+| 审核建议不一致或 Schema 错误 | 最多一次格式修复；仍错 FAILED | 无 |
+| 有可改的问题且预算/返修次数允许 | 同一 content 生成新版本，再审完整稿 | 无 |
+| 审核有效通过 | WAITING_USER；仅允许确认该版本 | final_confirmation |
+| 自动返修两轮仍未通过 | WAITING_USER；补料并新建运行或取消 | revision_limit |
+
+核心主张指 Brief 的 must_include 或策略的 core_promise 必需的事实。不能为继续生成而删去用户明确必含项；需要改变 Brief 时先由用户确认。Research 的 ready/partial/insufficient 只是输入，不能用单个状态字代替上述判断。
+
+Join 还检查 Audience 的目标受众与 Research 的 suggested_angles/usable claims 是否能共同兑现 Brief；不匹配时把最少需要补查的问题交用户。MVP 补研究采用图中的 supply → brief 路径，用户明确补料或授权重查后才执行，不新增自主 Agent 对话。一个 run 最多一次补研究，重试不算新轮但调用量照计；达到上限须新建 run 或取消。
+
+补料更新快照后重算两支，保留旧结果供查看但不混入新 Join；预算与已用次数不重置。传输重试输入未变时才复用成功分支。新增研究和返修分别计数；都受同一全局预算约束。
+
+## 3. 创作与证据
+
+逻辑顺序 Strategy → Outline → Hook → Title → Body 不变。策略必须先独立保存并发 artifact.created；其余阶段可合并一次生成后分别记录产物，不能在产物尚不存在时伪造完成事件。模型调用计划记录到 run；全部分开时基础流程八次，合并时按实际调用记账，不宣称已优化到某个耗时。
+
+改稿按 issue_id 和 location 选择受影响字段，保持无关内容不变；改变策略导致下游依赖失效，改变标题需检查正文承诺但不必机械重写全文。完整新稿始终再审。标题默认五个、最少两个，由配置及 Brief 决定，不是平台规则。
+
+Research claims 的 partially_supported 且 usable=true 必须有非空 allowed_wording。不可用主张 allowed_wording=null，不能进入事实表述。用户自述记录 source_type=user_provided、材料 type=user_experience 与授权；即使来源确有该陈述，也不代表经历被独立验证，不可推广为普遍效果。
+
+claim_map 与审核覆盖全部对外字段：selected_title、hook、body:pN、cta、tags:N、cover_text。标题候选若可供用户选择也须检查；选用候选会创建新稿并复审。建议、类比和主观感受标明性质，不强制冒充可验证效果主张。定位需同时绑定版本、原文和段落位置，避免改稿后错指。
+
+## 4. 程序审核门槛
+
+Reviewer 的 decision 仅为建议。编排器先验证角色 Schema、八项检查恰好各一项、输入/来源/规则版本、引用存在性、模板硬规则以及 decision/next_action/issues 一致性；这些检查失败不能当作普通的通过报告。
+
+approved 要求七项 required_pass 全部 pass，originality_risk 允许 pass，或带非空 limitations 的 unknown；不得 fail。所有 issues 不得有未解决 blocker/major，previous_issue_results 不得残留 unresolved/regressed 重要问题，不能通过漏报旧问题让其消失。证据缺口未解决不能通过。未执行的检查必须 unknown，不能补 pass。
+
+严重问题必须产生 issue；重要问题的初次状态 open，复审必须覆盖全部旧问题 ID，并由 Reviewer 验证 Content 的 fixed/removed 声明。resolved 引用旧稿片段时保留旧 draft_ref，不能要求已删除片段仍存在于新稿；新问题必须定位新稿。不存在的旧问题 ID 或不一致决定属于契约错误。
+
+对证据的语义判断由 Reviewer 检查原始文本快照；Tool 做引用/位置/规则的确定性检查。若工具内部另用模型，必须计入统一预算并记录真实调用。审核不得仅相信研究包的 supported 标记。取消、次数上限和预算判断由编排器执行。
+
+模型返回 approved 时 next_action 必须 await_user_confirmation；revision_required 必须 revise；needs_human 必须 request_human 且 human_questions 非空。人工接受需以事务重新核对 run_status、wait_reason、status_version、draft_ref、review_ref、snapshot_id、policy_ref 和内容 hash。用户编辑使旧审核失效；新稿复审前拒绝接受和正式导出。
+
+## 5. 调用预算、工具与记忆
+
+默认工具超时 10 秒、只读额外重试一次；每角色激活最多 6 次 Tool、全 run 24 次。Agent attempt 最长 180 秒、单模型调用 90 秒、run 有效执行 900 秒；更早到达的上限优先。模型传输额外重试最多两次，格式修复一次；全 run 最多 16 次模型尝试、40000 Token，单次输出最多 3000 Token。Token/金额需要调用前原子预留，并行两支不能同时花同一余额。
+
+自动返修最多两轮不是保证一定跑满；Tool、模型、时间、金额任何预算先耗尽即停止新增调用。策略等阶段合并不改变上限。调用数包含失败和重试；角色激活内的所有阶段共享该次 Tool 额度。重入节点、补研究、格式修复均受全 run 上限约束。
+
+search_public_sources/fetch_source_text 虽属于 research 能力名单，MVP 默认禁用；先使用授权导入素材。部署配置好来源策略和预算后才可启用，页面明确能力是否可用。注册能力不等于当前已实现。角色访问范围是白名单与运行时授权的交集。
+
+统计、Schema 校验、布局检查和事件落盘可由程序自动触发，不必让模型逐次决定。所有被包装为 Tool 的调用（含失败、重试、程序代调）计 Tool 次数；纯本地守卫和事件写入不是 Tool，不计 Tool 次数。不得以程序代调隐藏模型/外部服务费用。导出服务在人工接受后独立执行，不授权 Agent。
+
+六类记忆 namespace 映射到 Profile/Material/History 三域，见机器契约；run_memory 为运行记录。候选记忆必须有来源和版本；去重键为 account/namespace/key，冲突由用户选择，接受/撤销均有审计。假设不能因反复生成升级为事实；授权撤回或资料删除使相关依赖失效。
+
+## 6. 维护与验收
+
+角色卡保持单独编辑，合并部分由 scripts/sync_agent_cards.py 生成；工具/Skill 注册表由同一脚本从角色卡生成，并由测试与机器契约对照。脚本不自动修改机器契约来掩盖差异。AGENTS.md 仅保留入口和协作规则。
+
+必须覆盖：无历史的允许/拒绝假设、非核心/核心证据缺口、工具失败、并行乱序与不同快照、补研究上限、矛盾审核、未映射事实、旧问题遗漏、旧版本确认、用户编辑后复审、取消迟到结果、重复恢复及并发预算。当前文档测试只验证规范一致性，产品实施后仍须运行这些场景的集成测试。

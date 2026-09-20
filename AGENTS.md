@@ -13,4 +13,6 @@
 
 软件设计入口：[架构、模块与流程](docs/design/README.md)；开源参考：[GitHub 项目调研](docs/research/GITHUB_PROJECTS.md)。这些是开发前方案，尚不能作为实现或性能证据。修改图件后运行 `python3 scripts/build_design_atlas.py` 并验证生成物一致。
 
-当前设计基线为 v0.2 五层（UI/Runtime Console、Orchestrator、Agents、Tools/Skills、Memory）与 audience/research/content/reviewer 四角色。实现前阅读 [迁移计划](docs/design/MIGRATION.md)，不要混用旧版角色契约。
+当前设计基线为 v0.3 五层（UI/Runtime Console、Orchestrator、Agents、Tools/Skills、Memory）与 audience/research/content/reviewer 四角色。实现前阅读 [迁移计划](docs/design/MIGRATION.md)，不要混用旧版角色契约。
+
+角色卡入口：[四 Agent 规范](docs/agents/00_overview_and_all_agents.md)。运行协议以 [统一执行协议](docs/design/AGENT_PROTOCOL.md) 和机器契约为准；编辑独立卡片后运行 `python3 scripts/sync_agent_cards.py`，不要手动维护合并部分。

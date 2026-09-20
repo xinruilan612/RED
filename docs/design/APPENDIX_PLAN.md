@@ -1,6 +1,6 @@
 # 附录交付追踪与验证计划
 
-v0.2。依据：[AIC AI+软件创新参考大纲第六项](https://www.aicomp.cn/tracks/tracks-2/3792.html)。本次新增截图与该页附录内容相符，区别于前次涉及 HAP/小艺的未确认截图。
+v0.3。依据：[AIC AI+软件创新参考大纲第六项](https://www.aicomp.cn/tracks/tracks-2/3792.html)。本次新增截图与该页附录内容相符，区别于前次涉及 HAP/小艺的未确认截图。
 
 ## 1. 五类附录的当前交付边界
 
@@ -58,4 +58,4 @@ v0.2。依据：[AIC AI+软件创新参考大纲第六项](https://www.aicomp.cn
 
 A：身份、项目、素材、契约和数据库；B：四 Agent 与用户确认；C：版本编辑、审稿和图文导出；D：故障恢复、额度、部署和真实评测。每阶段完成相关测试和 Git commit 后交付，最后再根据真实结果整理比赛文档、视频及佐证。
 
-新增 v0.2 验收：同快照双分支汇合；历史为零与 Tool 失败的区分；content 局部阶段失效与复审；Skill 固定版本；Memory 越权与撤销；Console 事件重放/费用去重；老 completed 不等于 accepted。详见 [模块](MODULES.md)、[工具/方法/记忆](TOOLS_SKILLS_MEMORY.md)、[控制台](RUNTIME_CONSOLE.md)。
+新增 v0.3 验收：同快照双分支汇合；历史为零与 Tool 失败的区分；content 局部阶段失效与复审；Skill 固定版本；Memory 越权与撤销；Console 事件重放/费用去重；老 completed 不等于 accepted。详见 [模块](MODULES.md)、[工具/方法/记忆](TOOLS_SKILLS_MEMORY.md)、[控制台](RUNTIME_CONSOLE.md)。

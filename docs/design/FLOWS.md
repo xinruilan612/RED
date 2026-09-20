@@ -1,6 +1,6 @@
 # 四 Agent 业务流程与任务状态
 
-v0.2 · 目标设计，待实施。机器可读路由：[design_contract.json](design_contract.json)。
+v0.3 · 目标设计，待实施。机器可读路由：[design_contract.json](design_contract.json)。
 
 ## 1. 主流程与返修
 
@@ -8,7 +8,7 @@ v0.2 · 目标设计，待实施。机器可读路由：[design_contract.json](d
 
 Brief → 同一快照分发 → audience / research 并行 → Join 校验 → content 五阶段 → reviewer → 人工确认 → 最终版本 → 模板导出。
 
-reviewer 不通过 → content.revise → reviewer 再审；改稿不能直接成为最终内容。关键资料不足 → 用户补料 → 新快照 → 重新并行分析；返修次数耗尽 → 等待补料或取消，不能“降低分数标准后通过”。
+reviewer 不通过 → content.revise → reviewer 再审；改稿不能直接成为最终内容。关键资料不足 → 用户补料 → 新快照 → 重新并行分析；返修次数耗尽 → 等待补料或取消，不能“绕过检查后通过”。
 
 默认不再在生成前强制选题确认；用户仍可在 Brief 指定主题，在 Console 查看 Strategy，或取消后调整需求。未来若添加策略确认，必须作为显式 WAITING_USER 节点，不增加第五个 Agent。
 
@@ -23,13 +23,13 @@ reviewer 不通过 → content.revise → reviewer 再审；改稿不能直接�
 | WAITING_USER | 已保存检查点，不占 Worker | QUEUED、CANCELLED、EXPIRED |
 | RETRY_WAIT | 等待可恢复重试 | QUEUED、FAILED、CANCELLED |
 | SUCCEEDED | 本次请求的工作流目标完成 | 无 |
-| FAILED | 不可自动恢复或预算用尽 | 无 |
+| FAILED | 不可自动恢复或硬执行时限用尽 | 无 |
 | CANCELLED | 用户取消，后续结果不再接纳 | 无 |
 | EXPIRED | 人工等待超过保留期 | 无 |
 
 终态不可回退。FAILED 若希望再尝试，创建带 parent_run_id 的新 run，并继续受用户日额度约束。/retry 仅用于 RETRY_WAIT，不能重置失败终态。
 
-wait_reason：missing_material、final_confirmation、revision_limit、version_conflict。resume_node 从服务端已记录检查点读取，不由客户端任意设置。
+wait_reason 以 [统一执行协议](AGENT_PROTOCOL.md) 为准，包含资料、假设授权、确认、返修、冲突、预算和规则等待。resume_node 从服务端已记录检查点读取，不由客户端任意设置。
 
 SUCCEEDED 对 full/rewrite 请求均要求当前稿审核有效且用户接受；layout/review 辅助请求仅表示该项产物已生成，不能自动将项目稿件标为最终稿。导出是独立 export job，失败不需要重生成文案。
 
@@ -37,7 +37,7 @@ SUCCEEDED 对 full/rewrite 请求均要求当前稿审核有效且用户接受�
 
 1. Orchestrator 冻结 Profile、Material、History 和 Brief 的 snapshot_id，预留两个分支的预算。
 2. audience、research 并行运行，各自记录输入/输出、Tool 调用和 Memory 读取；分别保存 branch_results，不能覆盖整个共享状态。
-3. Join 仅在两个结果都通过 Schema、权限、来源和快照版本校验后放行。历史样本为 0 可以是成功结果；资料不足触发人工补料，不是忽略 research。
+3. Join 仅在两个结果都通过 Schema、权限、来源和快照版本校验后放行。历史样本为 0 可以是成功结果；核心资料不足触发人工补料；非核心缺口限制主张后可继续，不是忽略 research。Join 还须检查受众与素材能共同兑现 Brief。
 4. 单分支失败：只重试失败分支，保留同快照成功结果。不可恢复时取消另一分支后续操作并终止本 run；已发生的费用仍计入。
 5. 用户补料或改 Brief 导致快照变化，旧分支结果失效，两者重算；输入完全不变的传输重试才复用成功分支。
 
@@ -58,15 +58,15 @@ sequenceDiagram
         A-->>O: AudienceInsight
     and 素材分支
         O->>R: Material 工具权限
-        R-->>O: ResearchNotes
+        R-->>O: ResearchPack
     end
     O->>O: Join 校验版本、完整性和资料缺口
     O->>C: Strategy → Outline → Hook → Title → Body
     C-->>O: 分阶段产物 + Draft
     O->>V: 精确 Draft 和来源版本
-    V-->>O: 问题定位、分项分数、修改指令
+    V-->>O: 问题定位、八项检查、修改指令
     alt 不通过且有返修额度
-        O->>C: revise，从最早受影响阶段开始
+        O->>C: revise，从受影响字段开始
         C-->>O: 新候选版本
         O->>V: 必须再次审核
     else 审核通过
@@ -81,11 +81,11 @@ sequenceDiagram
 
 ## 4. Content 阶段、返修与审核门槛
 
-Strategy 保存受众、角度、承诺、证据计划；Outline 保存段落结构；Hook 保存开头；Title 保存 5 个候选和选定标题；Body 保存段落、素材引用、标签与封面建议。每阶段只写自己的产物，下游引用上游版本。
+Strategy 保存受众、角度、承诺、证据计划；Outline 保存段落结构；Hook 保存开头；Title 默认保存 5 个候选（最少 2 个）和选定标题；Body 保存段落、素材引用、标签与封面建议。每阶段只写自己的产物，下游引用上游版本。
 
-一次正常流程预计 8 个模型调用，最多 2 轮自动返修；若策略问题需重算多个阶段，16 次总尝试或 40000 Token 预算可能先耗尽，应明确报告而非保证一定返修满 2 轮。每次格式修复、网络重试、模型型 Tool 内部调用都占同一预算。
+若所有阶段分别调用，基础流程为八次模型调用；策略之后可合并生成，按实际调用计数。最多两轮返修，16 次模型尝试或 40000 Token 可能先耗尽；不能保证一定返修满两轮。预算耗尽保存产物进入 WAITING_USER/budget_exhausted，禁止在原 run 加预算重启；硬执行时限到达 FAILED。
 
-Reviewer 的分项分数由模型给出；总分及通过条件由程序复算。总分 >= 82、证据安全 >= 80 只是必要条件，还需无阻断项/关键证据缺口，规则与版本校验均通过。评审均分不能覆盖明显事实缺口。
+Reviewer 使用八项检查及问题严重度，不再以综合分数放行。程序验证检查齐全、重要问题均解决、引用/版本/规则有效和决定一致；完整守卫及补研究上限见 [统一执行协议](AGENT_PROTOCOL.md)。
 
 ## 5. 人工确认、补料和版本冲突
 
@@ -93,7 +93,7 @@ WAITING_USER 不占 Worker。恢复必须校验身份、wait_reason、status_ver
 
 用户手工编辑任何已审核稿都会产生新 candidate，旧审核失效；重新经过 reviewer 后才可接受。请求改稿进入同一个 content.revise，累计预算不重置。达到自动返修上限后只有补料并重新开明确的新运行或取消；不能通过无限 resume 绕过上限。
 
-missing_material 补料产生新快照，当前 run 预算足够时从 Brief 分支重新执行；不足则结束并由用户明确新建 run。revision_limit 的补料结束旧 run，创建 parent_run_id 关联的新 run，继续受日额度约束。图中 supply → brief 是业务恢复路径，不表示重置旧 run 的计数。
+missing_material 补料产生新快照，一个 run 最多一次补研究，当前 run 预算及次数足够时从 Brief 分支重新执行；不足则结束并由用户明确新建 run。revision_limit 的补料结束旧 run，创建 parent_run_id 关联的新 run，继续受日额度约束。图中 supply → brief 是业务恢复路径，不表示重置旧 run 的计数。
 
 旧任务基于 v3 返回，但用户已保存 v4：保留为旧版本建议并进入 version_conflict，用户选择以当前稿新建运行或取消；不得自动覆盖。任何恢复动作来自服务端白名单，不接受模型输出任意节点名。
 
@@ -121,4 +121,4 @@ missing_material 补料产生新快照，当前 run 预算足够时从 Brief 分
 
 ## 8. 验收重点
 
-并行乱序完成、单支超时、快照不一致、无历史冷启动、无素材、工具越权、注入内容、不同观察窗口不可比、五阶段局部失效、改稿复审、审核分数与风险冲突、过期确认、人工编辑、预算提前耗尽、取消后迟到结果、Console 断线与事件重放。测试结果在真实实现后记录。
+并行乱序完成、单支超时、快照不一致、无历史冷启动、无素材、工具越权、注入内容、不同观察窗口不可比、五阶段局部失效、改稿复审、审核决定与问题清单冲突、过期确认、人工编辑、预算提前耗尽、取消后迟到结果、Console 断线与事件重放。测试结果在真实实现后记录。

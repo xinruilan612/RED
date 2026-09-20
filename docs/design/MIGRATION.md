@@ -1,4 +1,4 @@
-# v0.2 迁移与实施计划
+# v0.3 迁移与实施计划
 
 本轮只修订设计资料与验证，不改变已运行的 starter。依据为用户三张图片和本轮早期的源码静态检查；收尾时工作区已移除旧 starter 文件，以下记录为移除前的实现状态。
 
@@ -42,4 +42,4 @@
 
 旧 WorkflowState 保留 schema_version=1 只读映射：strategy → content_artifacts.strategy，draft → legacy_candidate；traces 保留 legacy 标记。旧 completed 不推断人工接受或发布；缺少 evidence/confirmation 时需新审核。
 
-新增 API 使用 /api/v1 和 schema_version=2，原 /api/runs 在迁移期保持旧契约或明确废弃日期，不静默改变字段含义。数据库先备份并做迁移演练，配置和模型密钥不写进迁移脚本。
+新增 API 使用 /api/v1；WorkflowState/RuntimeEvent 使用 schema_version=2，角色产物使用 1.1.0，原 /api/runs 在迁移期保持旧契约或明确废弃日期，不静默改变字段含义。数据库先备份并做迁移演练，配置和模型密钥不写进迁移脚本。

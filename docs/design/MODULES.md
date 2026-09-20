@@ -1,6 +1,6 @@
 # 五层模块、Agent 与数据接口设计
 
-v0.2 · 根据用户三张图片重规划。目标方案尚未实现；现有六角色 starter 的迁移见 [MIGRATION.md](MIGRATION.md)。
+v0.3 · 根据用户三张图片重规划。目标方案尚未实现；现有六角色 starter 的迁移见 [MIGRATION.md](MIGRATION.md)。
 
 ## 1. 模块归属与职责
 
@@ -12,7 +12,7 @@ v0.2 · 根据用户三张图片重规划。目标方案尚未实现；现有六
 | M04 | L2 调度与恢复 | outbox、队列、租约、取消与恢复 | 不重复已提交分支，不重置费用计数 |
 | M05 | L2 Orchestrator | 四 Agent 路由、并行屏障、审核门槛、人工暂停 | 仅程序控制分支，不由 Agent 自由互相调用 |
 | M06 | 横向模型网关 | 模型适配、超时、预算预留、用量与格式检查 | 不算 Agent/Skill/Memory；受 L2 约束 |
-| A01–A04 | L3 四个 Agent | AudienceInsight、ResearchNotes、ContentArtifacts、ReviewResult | 独立上下文，共享模型，不直接写最终稿 |
+| A01–A04 | L3 四个 Agent | AudienceInsight、ResearchPack、ContentDraft、ReviewReport | 独立上下文，共享模型，不直接写最终稿 |
 | M08 | L4 Tool Registry | 历史分析、检索、依据检查、版式测量、模板渲染 | 名单授权、Schema、超时、审计、无任意脚本执行 |
 | M11 | L4 Skill Registry | 版本化方法、输出标准、示例与检查项 | 不能绕过工具权限；不保存用户私有资料 |
 | M03 | L5 Profile / Material | 用户确认画像、真实经历、产品资料及来源 | 数据隔离、来源版本、假设不当事实 |
@@ -23,65 +23,27 @@ v0.2 · 根据用户三张图片重规划。目标方案尚未实现；现有六
 
 ### A01 audience：受众洞察
 
-输入：Brief、已确认 Profile 快照；工具查询得到的历史指标和相似内容。输出 AudienceInsight：pains、expectations、language_preferences、patterns、hypotheses、sample_size、window、history_refs、confidence_basis。
-
-允许 analyze_history、find_similar_content。历史为空时输出 sample_size=0 和基于 Brief 的假设；工具报错不能伪装为“无历史”。样本不足不做趋势结论，不直接写正文，不虚构平台热点或因果提升。
+输入 Brief、Profile、授权历史；输出 AudienceInsight。无历史允许假设时继续，否则等待用户；工具错误不能作为冷启动结果。字段及工具见 [受众卡](../agents/01_audience_insight_agent.md)。
 
 ### A02 research：素材研究
 
-输入：同一 Brief 快照及 Material 引用。输出 ResearchNotes：claims[{id,text,source_id,source_version,quote,status}]、usable_experiences、evidence_gaps、claims_to_avoid。
-
-允许 retrieve_material、check_claim_support。status ∈ supported_by_source/conflicting/insufficient；supported_by_source 只说明资料支持该表述，不保证现实世界真伪。真实经历由用户提供且标 source_type=user_reported；不得编造数字、案例、效果。
+输入同快照 Brief、材料及来源规则；输出 ResearchPack。主张状态为 supported/partially_supported/contradicted/unverified，带来源原文、使用范围和 allowed_wording。用户自述用 user_provided + user_experience 标注，不代表独立验证。见 [研究卡](../agents/02_research_agent.md)。
 
 ### A03 content：内容策划创作
 
-输入：同 snapshot_id 的 audience/research 已验证结果、Profile、Skill 版本及可选 ReviewResult。内部阶段固定 **Strategy → Outline → Hook → Title → Body**，分别保存结构化中间产物与 hash；不是增加五个 Agent。
-
-输出 ContentArtifacts：strategy{angle,promise,proof_plan}、outline{sections}、hook{text}、titles{candidates,selected}、draft{paragraphs,source_refs,tags,cover_text,visual_suggestions}。首版每阶段最多一次模型生成；完整正常流程是 2 个研究调用 + 5 个内容调用 + 1 个审核调用，共 8 次，网络/格式重试另计。
-
-允许 retrieve_material、measure_layout、render_preview；新增检索结果如改变事实集，必须提交 research 增量校验后更新快照，不私自改通过的证据。此路径由 Orchestrator 转补料/重跑控制，不由 content 私自调用 research。
-
-返修模式仍由 content 执行：review.issues 指定 affected_stage / paragraph_id，最早受影响阶段起重算下游；例如修改策略重算全部阶段，正文问题只重写 Body，标题问题重算 Title/Body。保留旧版本，不静默覆盖用户稿；改稿必回 reviewer。
+输出 ContentDraft，逻辑阶段固定 Strategy → Outline → Hook → Title → Body。策略独立先落盘，其余阶段允许合并生成；产物及调用按实际执行记录。同一角色按问题位置改稿，保留无关内容并复审完整新版本。见 [创作卡](../agents/03_content_agent.md)。
 
 ### A04 reviewer：主编审核
 
-输入：Draft 精确版本、对应 Strategy、ResearchNotes、布局检查结果和审核 Skill。输出 ReviewResult：draft_version_id、dimensions、blocking_issues、issues、revision_instructions、decision。
-
-6 维是 hook/specificity/authenticity/readability/interaction/evidence_safety，均 0–100。程序按等权均值四舍五入到整数计算 total_score；模型提供总分时忽略，防止与分项不一致。
-
-通过条件同时满足：total_score >= 82、evidence_safety >= 80、blocking_issues 为空、没有未解决的关键证据缺口、Schema/字数/排版硬规则通过、稿件及来源版本一致。阈值仅内部质量基线，不表示爆款概率。
-
-允许 check_claim_support、validate_draft、measure_layout。仅输出检查结果，由 L2 判断下一步：pass → 人工确认；revise → 同一个 content；need_input → 用户补料。自动返修 2 轮后仍不过，等待用户补料或取消，不得自动通过或直接变最终稿。
+输出 ReviewReport，八项检查及 blocker/major/minor 问题。七项必须 pass，originality_risk 可带限制为 unknown；不能有未解决重要问题或证据缺口。程序复核 Schema、版本、原文引用、排版及决定一致性，不采用未经校准的总分门槛。见 [审核卡](../agents/04_reviewer_agent.md)。
 
 ## 3. 共享状态与校验
 
-schema_version=2；ID 使用 UUID，时间存 UTC。owner_id 从服务端会话解析。禁止 Agent 凭文字指定他人 Memory 或任意下一节点。
+WorkflowState schema_version=2，角色产物 schema_version=1.1.0；ID 由服务端生成，时间存 UTC。统一结构为 run_id、snapshot_id、workflow_version、skill_versions、model_config_version、branch_results、content_artifacts、draft_version_id、review、iteration、run_status、current_stage、wait_reason、resume_node、status_version、lease_token、usage_totals。
 
-WorkflowState：run_id、snapshot_id、workflow_version、skill_versions、model_config_version、branch_results、content_artifacts、draft_version_id、review、iteration、status、wait_reason、resume_node、status_version、lease_token、usage_totals。
+角色产物不可变，格式 artifact_id@version；metadata 包含 agent_id、input_refs、content_hash。snapshot_id 和真实 Tool/Memory/usage 记录由运行时封装，不让模型伪造身份或计费字段。编排器校验双支同快照、产物可用性及受众/素材适配；只有核心资料缺失才暂停，非核心缺口可通过限定范围继续。
 
-branch_results 的 audience 与 research 各自提交不可变结果；汇合时二者都须成功且 snapshot_id 相同。零条历史是一种有效结果，失败/超时不是。素材缺失则先 WAITING_USER，不生成无依据正文。
-
-AgentEnvelope：agent、stage、input_hash、output_ref、schema_version、source_refs、decision、tool_calls、memory_reads、usage。数据/权限/预算三类校验在 L2/L4 执行，不能仅靠提示词。
-
-ReviewResult 示例（合成契约样例，非真实评测）：
-
-```json
-{
-  "schema_version": 2,
-  "agent": "reviewer",
-  "draft_version_id": "example-v3",
-  "decision": "revise",
-  "issues": [{
-    "paragraph_id": "p2",
-    "affected_stage": "body",
-    "type": "unsupported_experience",
-    "source_refs": [],
-    "instruction": "删除没有来源的亲测时长，或请求用户补充记录"
-  }]
-}
-```
-
-所有阶段绑定 snapshot_id 和输入 hash；内容阶段输出不是聊天记录拼接。Skill、提示词或输入变化必须生成新执行版本，不把旧节点缓存当新成果。
+状态、可恢复动作、证据与审核守卫统一见 [执行协议](AGENT_PROTOCOL.md)；权限和预算唯一来源为 [机器契约](design_contract.json)。角色 Schema 详细字段以四张卡片为准，本文件不维护第二套接口样例。
 
 ## 4. 数据模型与约束
 
@@ -116,7 +78,7 @@ ReviewResult 示例（合成契约样例，非真实评测）：
 | POST /projects | profile_id、brief | 201，project_id、revision |
 | GET /projects/{id} | 会话 | 200，当前版本和 run；越权 404 |
 | POST /projects/{id}/sources | 文本或受限 multipart 图片 | 201，source_id；超限 413/422 |
-| POST /projects/{id}/runs | base_revision、material_ids、intent | 202，run_id、status_url、events_url；事务创建 outbox |
+| POST /projects/{id}/runs | base_revision、material_ids、intent | 202，run_id、run_status、status_url、events_url；事务创建 outbox |
 | GET /runs/{id} | 会话 | 200，状态、节点、wait_reason、可恢复动作 |
 | GET /runs/{id}/events | Last-Event-ID | SSE，event_id、type、payload；鉴权和断线重放 |
 | POST /runs/{id}/resume | expected_status_version、action、payload | 202，同一确认只能消费一次 |
@@ -137,7 +99,7 @@ MVP 允许用户随时保存手工稿；后台成果只写 candidate。任务结
 
 接受、重新排版、复审和导出都绑定版本。用户修改通过审查的 v4 得到 v5，则 v4 的排版/审核不能给 v5 背书。人工编辑或 content 返修后必须重新 reviewer 检查，不得直接导出。渲染失败仍可查看稿件和下载单独文本，但完整图文包只能在渲染全部成功后标为完成。
 
-## 7. v0.2 增补实体和接口
+## 7. v0.3 增补实体和接口
 
 | 实体 | 关键字段与限制 |
 | --- | --- |

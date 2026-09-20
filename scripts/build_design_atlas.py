@@ -40,8 +40,8 @@ GRAPHS = [
  n('research',820,270,'② Research · 素材研究','素材检索 / 依据检查 / 证据缺口','agent',360),
  n('join',410,440,'Join · 同快照汇合','两分支有效成功；失败不当空结果'),
  n('content',410,600,'③ Content · 内容策划创作','Strategy → Outline → Hook → Title → Body','agent'),
- n('reviewer',410,780,'④ Reviewer · 主编审核','分项分数 / 阻断问题 / 修改指令','agent'),
- n('revise',850,600,'Content.revise','最早受影响阶段起重算','agent',330),
+ n('reviewer',410,780,'④ Reviewer · 主编审核','八项检查 / 阻断问题 / 修改指令','agent'),
+ n('revise',850,600,'Content.revise','修改受影响字段 / 完整稿复审','agent',330),
  n('supply',20,1060,'补充资料 / 新快照','重新验证两分支；预算不静默清零','human',330),
  n('limit',850,960,'自动返修上限','等待补料新运行或取消','human',330),
  n('human',410,1060,'人工确认当前已审版本','接受 / 请求改稿 / 取消','human'),
@@ -53,7 +53,7 @@ GRAPHS = [
  e('brief','audience','并行分支',[(410,149),(200,149),(200,270)]),
  e('brief','research','并行分支',[(790,149),(1000,149),(1000,270)]),
  e('audience','join','AudienceInsight',[(200,348),(200,479),(410,479)]),
- e('research','join','ResearchNotes',[(1000,348),(1000,479),(790,479)]),
+ e('research','join','ResearchPack',[(1000,348),(1000,479),(790,479)]),
  e('join','content','完整性 / 版本通过',[(600,518),(600,600)]),
  e('join','supply','关键资料不足',[(410,499),(160,499),(160,1060)],True),
  e('content','reviewer','Draft + 阶段产物',[(600,678),(600,780)]),
@@ -108,7 +108,7 @@ GRAPHS = [
  n('SUCCEEDED',410,690,'SUCCEEDED · 目标完成','成果可查询','data'),
  n('EXPIRED',20,880,'EXPIRED · 等待过期','7 天后关闭，保留草稿','data',330),
  n('CANCELLED',410,880,'CANCELLED · 已取消','不接受迟到成果','data'),
- n('FAILED',850,880,'FAILED · 执行失败','配置 / 预算 / 不可恢复错误','data',330)],
+ n('FAILED',850,880,'FAILED · 执行失败','配置 / 超时 / 不可恢复错误','data',330)],
  edges=[
  e('QUEUED','RUNNING','领取',[(600,188),(600,300)]),
  e('RUNNING','WAITING_USER','需确认 / 补料',[(410,339),(185,339),(185,510)]),
@@ -206,7 +206,7 @@ def build():
         cards.append(f'<section id="{graph["id"]}">{text}<p><a href="diagrams/{graph["id"]}.svg">打开 SVG</a> · <a href="diagrams/{graph["id"]}.mmd">Mermaid 源文件</a></p></section>')
     page='''<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>多 Agent 图文创作 · 软件设计图册</title>
 <style>*{box-sizing:border-box}body{margin:0;background:#edf1f8;color:#182841;font-family:"PingFang SC",sans-serif}header,main{max-width:1240px;margin:auto;padding:32px 20px}header{padding-bottom:8px}h1{font-size:32px;margin:12px 0}p{line-height:1.8;color:#53627d}nav{display:flex;gap:12px;flex-wrap:wrap}a{color:#355cb5}nav a{padding:10px 16px;background:white;border-radius:10px;text-decoration:none}section{background:white;border-radius:18px;margin:24px 0;padding:20px;box-shadow:0 4px 22px #1a34500a}svg{display:block;width:100%;height:auto}section p{margin:0;padding:8px}small{letter-spacing:2px;color:#7354bd}@media print{body{background:white}header{padding:0}nav{display:none}section{box-shadow:none;break-before:page;padding:0}main{padding:0}svg{max-height:245mm}section p{font-size:10px}}</style>
-<header><small>SOFTWARE DESIGN / v0.2</small><h1>多 Agent 图文创作产品</h1><p>五层架构 · 四 Agent 协作 · 云端部署 · 任务状态 · Runtime Console<br>2026-09-20 · 设计方案，尚未实现；参数为建议配置及待测目标。</p><nav><a href="#architecture">01 总体架构</a><a href="#workflow">02 创作流程</a><a href="#deployment">03 云端部署</a><a href="#lifecycle">04 任务状态</a><a href="#runtime">05 Runtime Console</a><a href="README.md">设计文档索引</a></nav></header><main>'''+''.join(cards)+'</main></html>\n'
+<header><small>SOFTWARE DESIGN / v0.3</small><h1>多 Agent 图文创作产品</h1><p>五层架构 · 四 Agent 协作 · 云端部署 · 任务状态 · Runtime Console<br>2026-09-20 · 设计方案，尚未实现；参数为建议配置及待测目标。</p><nav><a href="#architecture">01 总体架构</a><a href="#workflow">02 创作流程</a><a href="#deployment">03 云端部署</a><a href="#lifecycle">04 任务状态</a><a href="#runtime">05 Runtime Console</a><a href="README.md">设计文档索引</a></nav></header><main>'''+''.join(cards)+'</main></html>\n'
     (OUT/'DESIGN_ATLAS.html').write_text(page)
 
 if __name__=='__main__':

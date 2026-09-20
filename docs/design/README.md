@@ -1,6 +1,6 @@
-# 多 Agent 图文创作产品 · 软件设计资料 v0.2
+# 多 Agent 图文创作产品 · 软件设计资料 v0.3
 
-依据：本轮用户提供的三张架构图片。v0.2 取代 v0.1 的角色与流程设计；旧版可从 Git 历史追溯。六角色 starter 的描述依据此前源码核验，本次未修改其运行逻辑；收尾时发现工作区已移除旧原型文件，这些变动不纳入本次提交。
+依据：用户提供的三张架构图片及 docs/agents 角色卡。v0.3 在 v0.2 五层四角色基础上统一执行契约；旧版可从 Git 历史追溯。六角色 starter 的描述依据此前源码核验，本次未修改其运行逻辑；收尾时发现工作区已移除旧原型文件，这些变动不纳入本次提交。
 
 ## 设计结论
 
@@ -14,6 +14,8 @@
 
 | 文档 | 内容 |
 | --- | --- |
+| [Agent 统一执行协议](AGENT_PROTOCOL.md) | 状态、分支、证据与审核守卫、预算及恢复 |
+| [四张 Agent Cards](../agents/00_overview_and_all_agents.md) | 角色职责、输入输出、工具技能与验收 |
 | [架构与参数](ARCHITECTURE.md) | 五层架构、产品部署、边界、预算、性能与设计参数 |
 | [模块与数据接口](MODULES.md) | 角色契约、模块归属、数据库、API、审核规则 |
 | [业务与状态流程](FLOWS.md) | 并行汇合、返修循环、人工确认、失败/取消/恢复 |
@@ -47,6 +49,7 @@
 机器可读契约：[design_contract.json](design_contract.json)。图件唯一编辑入口为 scripts/build_design_atlas.py；JSON 中的流程与 SVG/Mermaid 必须一致。
 
 ```bash
+PYTHONDONTWRITEBYTECODE=1 python3 scripts/sync_agent_cards.py
 PYTHONDONTWRITEBYTECODE=1 python3 scripts/build_design_atlas.py
 PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -v
 git diff --check

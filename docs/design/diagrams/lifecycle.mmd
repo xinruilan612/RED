@@ -6,7 +6,7 @@ flowchart TD
     SUCCEEDED["SUCCEEDED · 目标完成 / 成果可查询"]
     EXPIRED["EXPIRED · 等待过期 / 7 天后关闭，保留草稿"]
     CANCELLED["CANCELLED · 已取消 / 不接受迟到成果"]
-    FAILED["FAILED · 执行失败 / 配置 / 预算 / 不可恢复错误"]
+    FAILED["FAILED · 执行失败 / 配置 / 超时 / 不可恢复错误"]
     QUEUED -->|"领取"| RUNNING
     RUNNING -->|"需确认 / 补料"| WAITING_USER
     WAITING_USER -.->|"用户恢复"| QUEUED

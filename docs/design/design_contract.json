@@ -91,12 +91,13 @@
     "tool_retries_max": 1,
     "agent_tool_calls_max": 6,
     "run_tool_calls_max": 24,
-    "review_threshold": 82,
-    "evidence_score_min": 80,
     "console_preview_chars": 240,
-    "console_event_retention_days": 30
+    "console_event_retention_days": 30,
+    "title_candidate_min": 2,
+    "agent_attempt_timeout_s": 180,
+    "supplement_rounds_max": 1
   },
-  "design_version": "0.2",
+  "design_version": "0.3",
   "layers": {
     "L1": [
       "M01",
@@ -139,22 +140,39 @@
   ],
   "tool_permissions": {
     "audience": [
-      "analyze_history",
-      "find_similar_content"
+      "read_account_profile",
+      "query_authorized_post_metrics",
+      "compute_content_metrics",
+      "read_memory",
+      "propose_memory_update"
     ],
     "research": [
-      "retrieve_material",
-      "check_claim_support"
+      "search_public_sources",
+      "fetch_source_text",
+      "read_user_material",
+      "extract_document_text",
+      "verify_quote_match",
+      "read_memory",
+      "propose_memory_update"
     ],
     "content": [
-      "retrieve_material",
-      "measure_layout",
-      "render_preview"
+      "read_run_artifact",
+      "validate_draft_schema",
+      "check_text_constraints",
+      "render_draft_preview",
+      "diff_draft_versions",
+      "read_memory",
+      "propose_memory_update"
     ],
     "reviewer": [
-      "check_claim_support",
-      "validate_draft",
-      "measure_layout"
+      "read_run_artifact",
+      "validate_draft_schema",
+      "check_text_constraints",
+      "verify_claim_mapping",
+      "compare_supplied_texts",
+      "read_review_policy",
+      "read_memory",
+      "propose_memory_update"
     ]
   },
   "workflow": {
@@ -208,5 +226,123 @@
   "join_requires": [
     "audience",
     "research"
+  ],
+  "agent_schema_version": "1.1.0",
+  "review_policy": {
+    "checks": [
+      "brief_fit",
+      "audience_fit",
+      "usefulness_and_readability",
+      "title_body_alignment",
+      "evidence_integrity",
+      "experience_authenticity",
+      "originality_risk",
+      "privacy_and_policy"
+    ],
+    "required_pass": [
+      "brief_fit",
+      "audience_fit",
+      "usefulness_and_readability",
+      "title_body_alignment",
+      "evidence_integrity",
+      "experience_authenticity",
+      "privacy_and_policy"
+    ],
+    "optional_unknown": [
+      "originality_risk"
+    ],
+    "blocking_severities": [
+      "blocker",
+      "major"
+    ],
+    "score_gate": false,
+    "required_gates": [
+      "schema_valid",
+      "versions_match",
+      "references_valid",
+      "layout_valid",
+      "no_unresolved_evidence_gap",
+      "decision_consistent"
+    ]
+  },
+  "wait_reasons": [
+    "missing_material",
+    "hypothesis_permission",
+    "final_confirmation",
+    "revision_limit",
+    "version_conflict",
+    "budget_exhausted",
+    "policy_unavailable"
+  ],
+  "artifact_types": {
+    "audience": "AudienceInsight",
+    "research": "ResearchPack",
+    "content": "ContentDraft",
+    "reviewer": "ReviewReport"
+  },
+  "memory_domains": {
+    "account_profile": "Profile",
+    "audience_memory": "Profile/History",
+    "performance_memory": "History",
+    "material_memory": "Material",
+    "content_memory": "History",
+    "review_memory": "History"
+  },
+  "events": [
+    "run.queued",
+    "run.started",
+    "branch.started",
+    "branch.completed",
+    "join.completed",
+    "agent.started",
+    "agent.completed",
+    "agent.failed",
+    "tool.started",
+    "tool.completed",
+    "tool.failed",
+    "memory.read",
+    "memory.read_failed",
+    "memory.proposed",
+    "artifact.created",
+    "validation.failed",
+    "workflow.transition",
+    "review.completed",
+    "human.required",
+    "human.accepted",
+    "retry.scheduled",
+    "run.failed",
+    "run.cancelled",
+    "run.completed",
+    "usage.updated"
+  ],
+  "skill_permissions": {
+    "audience": [
+      "audience_segmentation",
+      "historical_performance_analysis",
+      "evidence_based_insight",
+      "cold_start_insight"
+    ],
+    "research": [
+      "research_question_planning",
+      "source_evaluation",
+      "claim_evidence_mapping",
+      "conflict_and_gap_analysis"
+    ],
+    "content": [
+      "content_strategy",
+      "xiaohongshu_copywriting",
+      "evidence_grounded_writing",
+      "review_driven_revision"
+    ],
+    "reviewer": [
+      "editorial_review",
+      "evidence_review",
+      "risk_and_authenticity_review",
+      "actionable_feedback"
+    ]
+  },
+  "disabled_tools_default": [
+    "search_public_sources",
+    "fetch_source_text"
   ]
 }
