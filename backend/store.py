@@ -39,10 +39,10 @@ class Store:
         require(row is not None, 'RESOURCE_NOT_FOUND', '任务不可访问')
         return Run(**json.loads(row[0]))
 
-    def create(self, owner, snapshot):
+    def create(self, owner, snapshot, context=None):
         require(isinstance(owner,str) and owner and isinstance(snapshot,str) and snapshot,
                 'INVALID_INPUT', '身份和快照不能为空')
-        run = Run(owner_id=owner, snapshot_id=snapshot)
+        run = Run(owner_id=owner, snapshot_id=snapshot, context=context or {})
         run.event('run.queued')
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
@@ -61,7 +61,7 @@ class Store:
         payload = {} if payload is None else payload
         require(isinstance(payload,dict) and isinstance(key,str) and key, 'INVALID_INPUT', '命令参数无效')
         integer(expected_version, 'expected_version')
-        actions = ('start','cancel','branch','retry','join','supplement','draft','reviewed','accept','edit')
+        actions = ('start','cancel','branch','retry','join','supplement','draft','reviewed','accept','edit','demo_step','demo_supplement')
         require(action in actions, 'INVALID_INPUT', '未知命令')
         fingerprint = digest({'version':expected_version,'action':action,'payload':payload})
         with self.connect() as db:
@@ -110,3 +110,8 @@ class Store:
             require(actual <= row[0], 'USAGE_OVER_RESERVATION', '实际用量超过预留，需人工核对')
             require(row[1] is None or row[1] == actual, 'IDEMPOTENCY_CONFLICT', '用量已结算')
             db.execute('UPDATE reservations SET actual=? WHERE run_id=? AND call_id=?', (actual,run_id,call_id))
+
+    def list_runs(self, owner):
+        with self.connect() as db:
+            rows = db.execute('SELECT payload FROM runs WHERE owner=? ORDER BY rowid DESC LIMIT 50', (owner,)).fetchall()
+            return [Run(**json.loads(row[0])) for row in rows]

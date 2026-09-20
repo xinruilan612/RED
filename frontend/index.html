@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>有迹 · 四 Agent 创作工作台</title><link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script></head>
+<body>
+<aside class="sidebar"><a class="brand" href="/">迹<span>有迹创作</span></a><div class="workspace-label">你的创作空间</div><button id="newRun" class="nav active">＋ 新建创作</button><div class="workspace-label">最近的创作</div><div id="history" class="history"></div><div class="sidebar-footer"><span class="dot"></span> 本机模拟版<br><small>无需 API Key · 不会产生模型费用</small></div></aside>
+<main>
+<header><div><span class="eyebrow">CREATOR WORKSPACE / 01</span><h1>让创作的每一步，都看得见。</h1><p class="muted">从需求到成稿，查看协作过程，在关键处亲自决定。</p></div><span class="pill simulation">模拟运行</span></header>
+<div class="notice"><strong>这是可操作的流程演示。</strong> 四个角色使用固定规则和模板，没有调用真实 AI；审核通过也不代表事实已核验。</div>
+<div id="error" class="error" role="alert" hidden></div><div id="toast" role="status" class="toast" hidden></div>
+<section id="welcome" class="start-grid">
+<form id="briefForm" class="panel brief-panel"><div class="section-heading"><span class="step-number">01</span><div><h2>告诉我们，这次想写什么</h2><p>清晰的需求，是四个 Agent 的共同起点。</p></div></div>
+<label for="topic">创作主题 <span>必填</span></label><input id="topic" name="topic" maxlength="100" required placeholder="例如：大学生如何整理学习资料" value="大学生如何整理学习资料">
+<div class="two-col"><div><label for="audience">写给谁</label><input id="audience" maxlength="200" required value="想改善资料整理习惯的大学生"></div><div><label for="tone">表达风格</label><input id="tone" maxlength="100" required value="真实、清楚、容易跟做"></div></div>
+<label for="material">真实素材 <span>可选</span></label><textarea id="material" rows="4" maxlength="8000" placeholder="粘贴你的经历、资料或事实。模拟版只收录，不会联网核实。"></textarea>
+<label for="scenario">这次想测试哪条流程</label><select id="scenario"><option value="standard">正常创作 → 审核 → 人工确认</option><option value="revision">审核发现问题 → 自动或手动改稿 → 复审</option><option value="missing">资料不足 → 人工补充 → 重新分析</option></select>
+<label class="checkbox"><input id="hypothesis" type="checkbox" checked> 没有历史数据时，允许明确标注为假设的受众建议</label>
+<button type="submit" class="primary">创建工作流 <span>→</span></button><p class="helper">输入只保存在本机。暂不支持上传文件、联网搜索或自动发布。</p></form>
+<div class="intro panel"><span class="eyebrow">一份需求，四个视角</span><h2>你始终在流程里。</h2><p class="muted">Agent 不会悄悄替你确认或发布。</p><ol><li><b>受众洞察 & 素材研究</b><span>同时分析：写给谁，有什么可以写。</span></li><li><b>内容策划创作</b><span>策略、提纲、开头、标题、正文逐步可见。</span></li><li><b>主编审核</b><span>展示问题的位置、原因和修改建议。</span></li><li><b>你的决定</b><span>补资料、编辑、比较版本，再确认导出。</span></li></ol><div class="intro-foot">每一次修改都有记录。<br>每一个结论都能查看依据。</div></div>
+</section>
+<section id="workbench" hidden>
+<div class="run-heading"><div><span class="eyebrow">当前创作</span><h2 id="runTitle"></h2><p id="runSummary" class="muted"></p></div><div class="buttons"><button id="cancel" class="quiet">取消任务</button><button id="auto" class="secondary">自动运行到人工处理</button><button id="next" class="primary">执行下一步 →</button></div></div>
+<div class="stats"><div><span>当前状态</span><b id="statusLabel"></b></div><div><span>已保存版本</span><b id="versionCount">0</b></div><div><span>真实模型调用</span><b>0 次</b></div><div><span>模型费用</span><b>¥0.00 <small>模拟模式</small></b></div></div>
+<div class="workflow-grid"><section class="panel flow-panel"><div class="section-heading"><span class="step-number">02</span><div><h2>协作流程</h2><p>点击角色，展开真实执行记录与模拟产物。</p></div></div><div id="flow"></div><div class="legend"><span>○ 尚未执行</span><span>◉ 当前步骤</span><span>✓ 已有产物</span><span>◈ 等你处理</span></div></section>
+<section class="panel detail-panel"><div class="detail-heading"><h2 id="detailTitle">步骤详情</h2><span class="pill" id="detailMode">模拟产物</span></div><div id="details"></div></section></div>
+<section id="humanPanel" class="panel human-panel" hidden><div class="section-heading"><span class="step-number">你</span><div><h2 id="humanTitle">需要你的决定</h2><p id="humanMessage"></p></div></div><div id="issues"></div><form id="supplyForm" hidden><label for="supply">补充真实素材</label><textarea id="supply" maxlength="8000" rows="3" placeholder="填写可用于这次创作的资料或经历"></textarea><label class="checkbox"><input id="supplyHypothesis" type="checkbox" checked> 允许无历史数据时使用明确标注的假设</label><button class="primary" type="submit">保存补充并重新分析</button></form><div class="buttons"><button id="revise" class="primary" hidden>按审核意见自动改稿</button><button id="editButton" class="secondary" hidden>我来修改文案</button><button id="accept" class="primary" hidden>确认当前版本</button><a id="export" class="button primary" hidden>下载确认稿（Markdown）</a></div></section>
+<section id="draftPanel" class="panel" hidden><div class="detail-heading"><div><span class="eyebrow">VERSION HISTORY</span><h2>文案与版本对比</h2></div><label class="inline-label" for="versionSelect">查看版本 <select id="versionSelect"></select></label></div><div id="draftView"></div><form id="editor" hidden><div class="editor-note">手动修改会保存为新版本，并重新审核；不会覆盖旧稿。未保存的修改不会进入最终稿。</div><label for="editTitle">标题</label><input id="editTitle" maxlength="200" required><label for="editBody">正文</label><textarea id="editBody" rows="9" maxlength="6000" required></textarea><div class="two-col"><div><label for="editCta">互动引导</label><input id="editCta" maxlength="500"></div><div><label for="editTags">标签（用逗号分隔）</label><input id="editTags"></div></div><div class="buttons"><button type="button" id="discardEdit" class="quiet">放弃未保存修改</button><button type="submit" class="primary">保存新版本并等待复审</button></div></form></section>
+<section class="panel timeline-panel"><div class="detail-heading"><div><span class="eyebrow">RUNTIME CONSOLE</span><h2>运行记录</h2></div><span class="muted">刷新页面，记录仍在</span></div><div id="timeline"></div></section>
+</section><footer>有迹 · 四 Agent 创作工作台 <span>模拟过程可验证，真实效果待验证。</span></footer>
+</main></body></html>

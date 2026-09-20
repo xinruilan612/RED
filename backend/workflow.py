@@ -26,6 +26,10 @@ class Run:
     status_version: int = 0
     iteration: int = 0
     supplements: int = 0
+    context: dict = field(default_factory=dict)
+    artifacts: list = field(default_factory=list)
+    node_runs: list = field(default_factory=list)
+    reviews: list = field(default_factory=list)
     branches: dict = field(default_factory=dict)
     branch_errors: dict = field(default_factory=dict)
     drafts: list = field(default_factory=list)
@@ -114,7 +118,7 @@ class Run:
         require(isinstance(content, dict) and isinstance(content.get('body'), str) and content['body'].strip(),
                 'INVALID_INPUT', '正文不能为空')
         item = {'ref': f'{uuid4()}@1', 'content': json.loads(json.dumps(content)),
-                'content_hash': digest(content), 'snapshot_id': self.snapshot_id}
+                'content_hash': digest(content), 'snapshot_id': self.snapshot_id, 'actor':'content'}
         self.drafts.append(item)
         self.prior_review = self.review
         self.review = None
@@ -127,6 +131,7 @@ class Run:
                 'INVALID_TRANSITION', '当前不能接收审核')
         validate_review(report, self.drafts[-1], gates, self.prior_review)
         self.review = json.loads(json.dumps(report))
+        self.reviews.append(json.loads(json.dumps(report)))
         self.event('review.completed', decision=report['decision'])
         if report['decision'] == 'approved':
             self._transition('WAITING_USER', 'final_confirmation')
@@ -156,12 +161,34 @@ class Run:
         self.event('run.completed')
 
     def edit(self, content):
-        require(self.run_status == 'WAITING_USER' and self.wait_reason == 'final_confirmation',
-                'INVALID_TRANSITION', '当前不能编辑待确认稿')
-        self._transition('QUEUED')
-        self._transition('RUNNING')
+        waiting = self.run_status == 'WAITING_USER' and self.wait_reason == 'final_confirmation'
+        revision = self.run_status == 'RUNNING' and self.current_stage == 'content' and self.review and self.review['decision'] == 'revision_required'
+        require(waiting or revision, 'INVALID_TRANSITION', '当前不能编辑稿件')
+        if waiting:
+            self._transition('QUEUED')
+            self._transition('RUNNING')
         self.current_stage = 'content'
-        return self.draft(content)
+        ref = self.draft(content)
+        self.drafts[-1]['actor'] = 'user'
+        return ref
+
+    def demo_step(self):
+        from backend.demo import advance
+        advance(self)
+
+    def demo_supplement(self, material, allow_hypothesis):
+        from backend.demo import validate_text
+        validate_text(material, '补充素材', 8000, allow_empty=True)
+        require(type(allow_hypothesis) is bool, 'INVALID_INPUT', '请选择假设授权')
+        if self.wait_reason == 'missing_material':
+            require(material.strip(), 'INVALID_INPUT', '请补充实际素材')
+        if self.wait_reason == 'hypothesis_permission':
+            require(allow_hypothesis, 'INVALID_INPUT', '模拟版无历史导入，请允许假设模式或取消')
+        self.supplement(str(uuid4()))
+        self.context['material'] = material
+        self.context['allow_hypothesis'] = allow_hypothesis
+        self.artifacts = []
+
 
 
 def validate_review(report, draft, gates, previous=None):
