@@ -11,7 +11,7 @@
 | starter strategy_agent | content.strategy | 策略仍是独立产物，但不再是独立 Agent |
 | starter writer_agent | content.outline/hook/title/body | 分阶段成果与失效规则 |
 | starter revision_agent | content.revise | 同角色返修，保留阶段/段落定位并回 reviewer |
-| starter review_agent | reviewer | 总分程序复算、阻断项检查、版本绑定 |
+| starter review_agent | reviewer | 八项检查及程序守卫、阻断项检查、版本绑定 |
 | 旧设计 planner | audience + research + content.strategy | 取消前置强制选题确认，主题在 Brief 指定 |
 | 旧设计 writer | content | 合并策划与返修能力 |
 | 旧设计 designer | L4 版式测量/渲染 Tool | 图文建议来自 content，不新增第五个角色 |
@@ -43,3 +43,7 @@
 旧 WorkflowState 保留 schema_version=1 只读映射：strategy → content_artifacts.strategy，draft → legacy_candidate；traces 保留 legacy 标记。旧 completed 不推断人工接受或发布；缺少 evidence/confirmation 时需新审核。
 
 新增 API 使用 /api/v1；WorkflowState/RuntimeEvent 使用 schema_version=2，角色产物使用 1.1.0，原 /api/runs 在迁移期保持旧契约或明确废弃日期，不静默改变字段含义。数据库先备份并做迁移演练，配置和模型密钥不写进迁移脚本。
+
+## 5. 开发启动记录
+
+用户已于 2026-09-20 确认开发。新源码位于 backend/；阶段进度及运行验证以 [开发记录](../IMPLEMENTATION_STATUS.md) 为准。本文前面的“尚未实现”描述是设计时基线，不能代替当前实现清单。
