@@ -72,7 +72,11 @@ class Store:
                 require(prior[0] == fingerprint, 'IDEMPOTENCY_CONFLICT', '幂等键已用于其他命令')
                 return Run(**json.loads(prior[1]))
             require(run.status_version == expected_version, 'VERSION_CONFLICT', '任务已更新')
+            before = run.drafts[-1] if action == 'edit' else None
             getattr(run, action)(**payload)
+            if before is not None:
+                from backend.accounts import capture_edit
+                capture_edit(db, run, before)
             run.status_version += 1
             encoded = json.dumps(asdict(run), ensure_ascii=False)
             db.execute('UPDATE runs SET payload=? WHERE id=?', (encoded,run_id))

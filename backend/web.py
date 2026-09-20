@@ -43,6 +43,7 @@ class DemoServer(ThreadingHTTPServer):
         self.operations=Operations(store)
         with store.connect() as db:
             db.execute('CREATE TABLE IF NOT EXISTS demo_sessions (token_hash TEXT PRIMARY KEY, owner TEXT NOT NULL, csrf TEXT NOT NULL)')
+            db.execute('CREATE TABLE IF NOT EXISTS recovery_keys (owner TEXT PRIMARY KEY, key_hash TEXT UNIQUE NOT NULL)')
         super().__init__(address, Handler)
 
 
@@ -106,6 +107,24 @@ class Handler(BaseHTTPRequestHandler):
                 try: data=json.loads(self.rfile.read(size))
                 except (ValueError,UnicodeDecodeError): raise DomainError('INVALID_INPUT','JSON 无效')
                 require(isinstance(data,dict),'INVALID_INPUT','请求须为对象')
+            if write and path == '/api/session/recovery':
+                require(not data, 'INVALID_INPUT', '恢复码请求不能携带参数')
+                recovery = secrets.token_urlsafe(32)
+                with self.server.store.connect() as db:
+                    db.execute('INSERT OR REPLACE INTO recovery_keys VALUES(?,?)',
+                               (owner, hashlib.sha256(recovery.encode()).hexdigest()))
+                self.send(200, {'recovery_code': recovery}); return
+            if write and path == '/api/session/restore':
+                require(set(data) == {'recovery_code'} and isinstance(data['recovery_code'], str)
+                        and len(data['recovery_code']) <= 100, 'INVALID_INPUT', '恢复码格式无效')
+                with self.server.store.connect() as db:
+                    row = db.execute('SELECT owner FROM recovery_keys WHERE key_hash=?',
+                                     (hashlib.sha256(data['recovery_code'].strip().encode()).hexdigest(),)).fetchone()
+                    require(row is not None, 'FORBIDDEN', '恢复码无效')
+                    token = secrets.token_urlsafe(32); fresh_csrf = secrets.token_urlsafe(32)
+                    db.execute('INSERT INTO demo_sessions VALUES(?,?,?)',
+                               (hashlib.sha256(token.encode()).hexdigest(), row[0], fresh_csrf))
+                self.send(200, {'csrf': fresh_csrf}, cookie=f'xhs_demo={token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=604800'); return
             if path=='/api/operations':
                 self.send(200,self.server.operations.command(owner,data) if write else self.server.operations.read(owner)); return
             if path=='/api/runs':

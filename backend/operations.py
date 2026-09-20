@@ -8,6 +8,7 @@ from uuid import uuid4
 from backend.contracts import require, integer
 from backend.demo import validate_text
 from backend.workflow import digest
+from backend.accounts import migrate, find_account, save_account, account_id, new_account
 
 PLATFORMS = ('xiaohongshu', 'douyin')
 
@@ -76,22 +77,43 @@ class Operations:
             with self.store.connect() as connection:
                 return self.read(owner, connection)
         row = db.execute('SELECT payload FROM operations WHERE owner=?', (owner,)).fetchone()
-        return json.loads(row[0]) if row else seed()
+        return migrate(json.loads(row[0]) if row else seed(), owner)
 
     def context(self, owner, data, mode):
-        require(isinstance(data, dict) and set(data) <= {'platform','account','trend_id'}, 'INVALID_INPUT', '运营上下文字段无效')
+        require(isinstance(data, dict) and set(data) <= {'platform','account','account_id','trend_id'}, 'INVALID_INPUT', '运营上下文字段无效')
         platform = data.get('platform', 'xiaohongshu')
         require(platform in PLATFORMS, 'INVALID_INPUT', '平台无效')
         account = validate_text(data.get('account','我的账号'), '账号名称', 80)
         state = self.read(owner)
+        profile = find_account(state, data['account_id']) if data.get('account_id') else next((a for a in state['accounts'] if a['platform'] == platform and account in a['aliases']), None)
+        if profile:
+            require(profile['platform'] == platform, 'INVALID_INPUT', '账号与平台不一致')
+            account = profile['name']
+        identity = profile['id'] if profile else account_id(owner, platform, account)
         trend = item(state['trends'], data['trend_id']) if data.get('trend_id') else None
         require(not trend or trend['platform'] == platform, 'INVALID_INPUT', '选题平台不一致')
         # Demo evidence is never fed into paid/real creation.
         require(not (mode == 'live' and trend and trend['source_type'] == 'example'), 'INVALID_INPUT', '示例选题只用于模拟模式；真实创作请导入自己的来源')
         memories = [copy.deepcopy(m) for m in state['memories'] if m['status'] == 'accepted'
-                    and m['platform'] == platform and m['account'] == account
+                    and m['platform'] == platform and m.get('account_id') == identity
                     and m['source_type'] == ('simulation' if mode == 'simulation' else 'manual')]
-        return {'platform': platform, 'account': account, 'trend': copy.deepcopy(trend), 'memories': memories[-5:]}
+        source = 'simulation' if mode == 'simulation' else 'manual'
+        publications = [p for p in state['publications'] if p.get('account_id') == identity
+                        and p['provenance'] == source and p['published_at']]
+        ids = {p['id'] for p in publications}
+        history = [{'id': p['id'], 'title': p['content']['selected_title'], 'published_at': p['published_at'],
+                    'format': p['format'], 'pillar': p['pillar'], 'traffic': p['traffic'], 'source_type': p['provenance']}
+                   for p in publications[:20]]
+        latest = {}
+        for metric in state['metrics']:
+            if metric['publication_id'] in ids:
+                latest[(metric['publication_id'], metric['window'])] = copy.deepcopy(metric)
+        return {'platform': platform, 'account': account, 'account_id': identity,
+                'profile': copy.deepcopy(profile), 'trend': copy.deepcopy(trend), 'memories': memories[:5],
+                'history': history, 'metrics': list(latest.values())[-60:],
+                'competitors': [copy.deepcopy(c) for c in state['competitors'] if c['account_id'] == identity][-10:],
+                'preferences': [copy.deepcopy(p) for p in state['preferences'] if p['account_id'] == identity
+                                and p['mode'] == mode][-10:]}
 
     def command(self, owner, command):
         require(set(command) == {'action','payload','version','key'}, 'INVALID_INPUT', '操作字段无效')
@@ -115,6 +137,21 @@ class Operations:
             return state
 
     def apply(self, db, owner, state, action, data):
+        if action == 'save_account':
+            save_account(state, data)
+            return
+        if action == 'import_post':
+            self.import_post(state, data)
+            return
+        if action == 'add_competitor':
+            require(set(data) == {'account_id','name','url','observation','observed_at'}, 'INVALID_INPUT', '竞品观察字段无效')
+            account = find_account(state, data['account_id'])
+            state['competitors'].append(dict(id=str(uuid4()), account_id=account['id'],
+                name=validate_text(data['name'], '同类账号', 80), url=url(data['url']),
+                observation=validate_text(data['observation'], '观察内容', 1500),
+                observed_at=timestamp(data['observed_at']), source_type='manual',
+                limitation='用户记录的公开观察，未抓取核验；不推断曝光、转化或因果'))
+            return
         fields = {
             'add_trend': {'title','platform','category','angle','source_url','observed_at'},
             'prepare': {'run_id','draft_ref'}, 'approve': {'id'},
@@ -138,10 +175,17 @@ class Operations:
             require(run.run_status == 'SUCCEEDED' and run.accepted_ref == data['draft_ref'], 'INVALID_TRANSITION', '只有已确认的准确版本可进入发布中心')
             require(not any(p['run_id'] == run.run_id and p['draft_ref'] == run.accepted_ref for p in state['publications']), 'DUPLICATE', '该确认稿已经进入发布中心')
             op = run.context.get('operations', {})
+            platform = op.get('platform', 'xiaohongshu'); name = op.get('account', '我的账号')
+            identity = op.get('account_id') or account_id(owner, platform, name)
+            account = next((a for a in state['accounts'] if a['id'] == identity or (a['platform'] == platform and name in a['aliases'])), None)
+            if account is None:
+                account = new_account(identity, name, platform); state['accounts'].append(account)
             state['publications'].insert(0, dict(id=str(uuid4()), run_id=run.run_id, draft_ref=run.accepted_ref,
                 review_ref=run.review['ref'], content=copy.deepcopy(run.drafts[-1]['content']),
                 content_hash=digest(run.drafts[-1]['content']), platform=op.get('platform','xiaohongshu'),
-                account=op.get('account','我的账号'), mode=run.context.get('mode','simulation'),
+                account=account['name'], account_id=account['id'], mode=run.context.get('mode','simulation'),
+                provenance='simulation' if run.context.get('mode','simulation') == 'simulation' else 'manual',
+                format='video' if platform == 'douyin' else 'image_text', pillar='未分类', traffic='unknown',
                 status='AWAITING_APPROVAL', created_at=now(), approved_at=None, url=None, published_at=None))
         elif action in ('approve','simulate','record'):
             pub = item(state['publications'], data['id'])
@@ -173,7 +217,7 @@ class Operations:
             require(any(v is not None for v in values.values()), 'INVALID_INPUT', '至少录入一个已知指标')
             source = 'simulation' if pub['mode'] == 'simulation' else 'manual'
             prior = [m for m in state['metrics'] if m['publication_id'] == pub['id'] and m['window'] == data['window']]
-            metric = dict(id=str(uuid4()), publication_id=pub['id'], platform=pub['platform'], account=pub['account'],
+            metric = dict(id=str(uuid4()), publication_id=pub['id'], platform=pub['platform'], account=pub['account'], account_id=pub['account_id'],
                 window=data['window'], observed_at=observed, source_type=source, values=values, revision=len(prior)+1)
             require(not prior or prior[-1]['values'] != values or prior[-1]['observed_at'] != observed, 'DUPLICATE','同一快照已录入')
             state['metrics'].append(metric)
@@ -191,7 +235,7 @@ class Operations:
             observation = '互动/阅读或播放比为 '+str(rate)+'%' if rate is not None else '指标不完整，暂不计算互动比'
             suggestion = '下次围绕「'+pub['content']['selected_title'][:55]+'」保留一个相近选题，单独改变开头表达，记录同一窗口表现后再比较。'
             state['memories'].insert(0, dict(id=str(uuid4()), publication_id=pub['id'], metric_id=metric['id'],
-                platform=pub['platform'], account=pub['account'], window=metric['window'], source_type=metric['source_type'],
+                platform=pub['platform'], account=pub['account'], account_id=pub['account_id'], window=metric['window'], source_type=metric['source_type'],
                 status='proposed', created_at=now(), sample_size=1, observation=observation,
                 text=suggestion, limitation='单篇描述性复盘，不代表因果或稳定规律；需更多同口径样本。'))
         elif action == 'memory':
@@ -200,3 +244,22 @@ class Operations:
             require((memory['status'] == 'proposed' and data['status'] in ('accepted','rejected')) or
                     (memory['status'] == 'accepted' and data['status'] == 'revoked'), 'INVALID_TRANSITION','当前经验不能执行此操作')
             memory['status'] = data['status']; memory['updated_at'] = now()
+
+
+    def import_post(self, state, data):
+        required = {'account_id','title','body','url','published_at','format','pillar','traffic'}
+        require(set(data) == required, 'INVALID_INPUT', '历史作品字段无效')
+        account = find_account(state, data['account_id'])
+        link = url(data['url'], account['platform'])
+        require(not any(p['url'] == link for p in state['publications']), 'DUPLICATE', '此作品链接已经导入')
+        require(data['format'] in ('image_text','video'), 'INVALID_INPUT', '内容形式无效')
+        require(data['traffic'] in ('organic','paid','unknown'), 'INVALID_INPUT', '流量类型无效')
+        content = dict(selected_title=validate_text(data['title'], '作品标题', 200),
+            body=validate_text(data['body'], '正文或脚本', 6000, True), cta='', tags=[])
+        state['publications'].insert(0, dict(id=str(uuid4()), account_id=account['id'], account=account['name'],
+            platform=account['platform'], run_id=None, draft_ref='imported-'+str(uuid4()), review_ref=None,
+            content=content, content_hash=digest(content), mode='imported', provenance='manual',
+            status='MANUAL_REPORTED', created_at=now(), approved_at=None, url=link,
+            published_at=timestamp(data['published_at']), format=data['format'],
+            pillar=validate_text(data['pillar'], '栏目', 80), traffic=data['traffic'],
+            limitation='用户导入已发布作品，未经过本系统创作审核，平台状态尚未独立核实'))
