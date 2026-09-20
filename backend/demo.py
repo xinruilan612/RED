@@ -47,6 +47,8 @@ def node(agent, stage, inputs, function):
 
 
 def record(run, result):
+    if run.context.get('operations',{}).get('memories'):
+        result['memory']='已读取经用户接受的同账号经验：'+ '；'.join(m['text'] for m in run.context['operations']['memories'])
     result['snapshot_id']=run.snapshot_id
     result['id']=str(uuid4())
     run.node_runs.append(result)
@@ -54,10 +56,11 @@ def record(run, result):
 
 
 def audience(context):
-    return {'sample_size':0,'status':'needs_data','primary_audience':context['audience'],
-            'confidence':'low','basis':'依据本次需求的模拟假设，未分析历史表现',
+    memories=context.get('operations',{}).get('memories',[])
+    return {'sample_size':len({m['publication_id'] for m in memories}),'status':'needs_data','primary_audience':context['audience'],
+            'confidence':'low','basis':('读取已接受的描述性复盘建议；不足以证明稳定效果' if memories else '依据本次需求的模拟假设，未分析历史表现'),
             'pain_points':['希望获得与主题有关、可跟做的具体步骤'],
-            'content_opportunities':['用清晰步骤组织内容，邀请读者自行验证效果']}
+            'content_opportunities':['用清晰步骤组织内容，邀请读者自行验证效果'] + [m['text'] for m in context.get('operations',{}).get('memories',[])]}
 
 
 def research(context):
@@ -68,6 +71,7 @@ def research(context):
                         'verification':'用户提供，未独立核实'}] if material else [],
             'gaps':['该演示要求真实素材，请在人工处理区补充'] if gap else [],
             'scope':'仅收录用户输入；没有联网搜索，也没有事实核验',
+            'trend_context':context.get('operations',{}).get('trend'),
             'prohibited_claims':['未经验证的效果数字','虚构亲身经历']}
 
 
@@ -77,12 +81,16 @@ def latest(run, stage):
 
 def make_content(run, stage):
     c=run.context; topic=c['topic']
+    operation=c.get('operations',{})
+    video=operation.get('platform')=='douyin'
     if stage=='strategy':
         return {'angle':f'把「{topic}」拆成可尝试的小步骤','reader':c['audience'],
                 'promise':'提供尝试方法，不承诺实际收益','tone':c['tone'],
+                'learning_refs':[m['id'] for m in operation.get('memories',[])],
+                'next_experiments':[m['text'] for m in operation.get('memories',[])],
                 'assumptions':['读者需求仅来自输入，尚未由历史数据验证']}
     if stage=='outline':
-        return ['说明使用场景','给出三个尝试步骤','回看结果并提出问题']
+        return ['0–3 秒：提出场景问题','3–20 秒：演示过程与对照','20–30 秒：总结和互动'] if video else ['说明使用场景','给出三个尝试步骤','回看结果并提出问题']
     if stage=='hook':
         return f'想试试{topic}，可以先从一个小步骤开始。'
     if stage=='title':
@@ -93,6 +101,10 @@ def make_content(run, stage):
         return {'candidates':titles,'selected':selected,
                 'note':'返修演示故意加入「必爆」，供规则审核发现' if c['scenario']=='revision' else '模拟候选，不代表真实传播表现'}
     material=('\n\n你的素材（用户自述，未核验）：\n'+c['material']) if c['material'] else ''
+    if video:
+        return {'selected_title':latest(run,'title')['selected'],
+                'body':'【模拟口播与分镜 · 非成片】\n\n0–3 秒｜近景提问：'+latest(run,'hook')+'\n\n3–20 秒｜过程特写：展示一个真实操作，配上说明字幕。\n\n20–30 秒｜回到镜头：说出本次观察，邀请观众分享自己的做法。'+material,
+                'cta':'你会怎么做？','tags':['生活记录','尝试清单']}
     return {'selected_title':latest(run,'title')['selected'],
             'body':latest(run,'hook')+'\n\n① 选一个具体场景，写下你想解决的问题。\n\n② 围绕这个场景尝试一个可执行步骤，记录过程。\n\n③ 回看结果：哪些有用，哪些需要调整？先验证，再决定是否继续。'+material,
             'cta':'你准备先尝试哪一步？','tags':['创作笔记','尝试清单']}

@@ -1,0 +1,202 @@
+"""Local operations demo: owned, versioned records; no external publishing."""
+import copy
+import json
+from datetime import datetime, timezone
+from urllib.parse import urlsplit
+from uuid import uuid4
+
+from backend.contracts import require, integer
+from backend.demo import validate_text
+from backend.workflow import digest
+
+PLATFORMS = ('xiaohongshu', 'douyin')
+
+
+def now():
+    return datetime.now(timezone.utc).isoformat()
+
+
+def timestamp(value):
+    value = validate_text(value, '时间', 80)
+    try:
+        parsed = datetime.fromisoformat(value.replace('Z', '+00:00'))
+        valid = parsed.tzinfo is not None and parsed <= datetime.now(timezone.utc)
+    except ValueError:
+        valid = False
+    require(valid, 'INVALID_INPUT', '时间需包含时区，且不能晚于现在')
+    return value
+
+
+def url(value, platform=None):
+    value = validate_text(value, '来源链接', 1000)
+    try:
+        parsed = urlsplit(value)
+        valid = parsed.scheme in ('http', 'https') and parsed.hostname and not parsed.username and not parsed.password
+        host = (parsed.hostname or '').lower()
+    except ValueError:
+        valid = False; host = ''
+    require(valid, 'INVALID_INPUT', '请填写有效的 http/https 链接')
+    if platform:
+        domains = {'xiaohongshu': ('xiaohongshu.com', 'xhslink.com'), 'douyin': ('douyin.com', 'iesdouyin.com')}[platform]
+        require(any(host == d or host.endswith('.' + d) for d in domains), 'INVALID_INPUT', '作品链接与目标平台不一致')
+    return value
+
+
+def seed():
+    ideas = [
+        ('秋季通勤：一件白衬衫的三种搭配', 'xiaohongshu', '穿搭', '从已有衣橱入手，展示通勤、周末、约会三种场景。', '适合服饰与生活方式账号；需要自己的实拍素材。'),
+        ('新学期，把学习资料整理成一个系统', 'xiaohongshu', '学习', '展示文件命名、课程分类和每周归档的方法。', '适合学生与效率账号；用个人过程支撑建议。'),
+        ('30 秒讲清一个穿搭误区', 'douyin', '穿搭', '开场提出问题，中段做对照，结尾给出可尝试的搭配。', '适合短视频口播；需要用户自行拍摄成片。'),
+        ('周末城市散步：记录身边的小发现', 'douyin', '生活', '围绕一条真实路线编排开场、沿途细节与结尾。', '适合生活记录；不要虚构店铺、价格和亲历。'),
+    ]
+    return {'version': 0, 'trends': [dict(id='example-'+str(i), title=t, platform=p, category=c,
+            angle=a, reason=r, source_type='example', source_url='', observed_at=None,
+            created_at=None) for i,(t,p,c,a,r) in enumerate(ideas)],
+            'publications': [], 'metrics': [], 'memories': []}
+
+
+def item(rows, identity):
+    found = next((x for x in rows if x['id'] == identity), None)
+    require(found is not None, 'RESOURCE_NOT_FOUND', '记录不可访问')
+    return found
+
+
+class Operations:
+    def __init__(self, store):
+        self.store = store
+        with store.connect() as db:
+            db.executescript('''CREATE TABLE IF NOT EXISTS operations (
+                owner TEXT PRIMARY KEY, payload TEXT NOT NULL);
+                CREATE TABLE IF NOT EXISTS operations_commands (
+                owner TEXT NOT NULL, key TEXT NOT NULL, hash TEXT NOT NULL, response TEXT NOT NULL,
+                PRIMARY KEY(owner,key));''')
+
+    def read(self, owner, db=None):
+        if db is None:
+            with self.store.connect() as connection:
+                return self.read(owner, connection)
+        row = db.execute('SELECT payload FROM operations WHERE owner=?', (owner,)).fetchone()
+        return json.loads(row[0]) if row else seed()
+
+    def context(self, owner, data, mode):
+        require(isinstance(data, dict) and set(data) <= {'platform','account','trend_id'}, 'INVALID_INPUT', '运营上下文字段无效')
+        platform = data.get('platform', 'xiaohongshu')
+        require(platform in PLATFORMS, 'INVALID_INPUT', '平台无效')
+        account = validate_text(data.get('account','我的账号'), '账号名称', 80)
+        state = self.read(owner)
+        trend = item(state['trends'], data['trend_id']) if data.get('trend_id') else None
+        require(not trend or trend['platform'] == platform, 'INVALID_INPUT', '选题平台不一致')
+        # Demo evidence is never fed into paid/real creation.
+        require(not (mode == 'live' and trend and trend['source_type'] == 'example'), 'INVALID_INPUT', '示例选题只用于模拟模式；真实创作请导入自己的来源')
+        memories = [copy.deepcopy(m) for m in state['memories'] if m['status'] == 'accepted'
+                    and m['platform'] == platform and m['account'] == account
+                    and m['source_type'] == ('simulation' if mode == 'simulation' else 'manual')]
+        return {'platform': platform, 'account': account, 'trend': copy.deepcopy(trend), 'memories': memories[-5:]}
+
+    def command(self, owner, command):
+        require(set(command) == {'action','payload','version','key'}, 'INVALID_INPUT', '操作字段无效')
+        integer(command['version'], 'version')
+        key = validate_text(command['key'], '操作标识', 100)
+        require(isinstance(command['payload'],dict), 'INVALID_INPUT', '参数无效')
+        fingerprint = digest(command)
+        with self.store.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            previous = db.execute('SELECT hash,response FROM operations_commands WHERE owner=? AND key=?', (owner,key)).fetchone()
+            if previous:
+                require(previous[0] == fingerprint, 'IDEMPOTENCY_CONFLICT', '操作标识已被使用')
+                return json.loads(previous[1])
+            state = self.read(owner, db)
+            require(state['version'] == command['version'], 'VERSION_CONFLICT', '运营数据已更新，请刷新后重试')
+            self.apply(db, owner, state, command['action'], command['payload'])
+            state['version'] += 1
+            encoded = json.dumps(state, ensure_ascii=False)
+            db.execute('INSERT OR REPLACE INTO operations VALUES(?,?)', (owner,encoded))
+            db.execute('INSERT INTO operations_commands VALUES(?,?,?,?)', (owner,key,fingerprint,encoded))
+            return state
+
+    def apply(self, db, owner, state, action, data):
+        fields = {
+            'add_trend': {'title','platform','category','angle','source_url','observed_at'},
+            'prepare': {'run_id','draft_ref'}, 'approve': {'id'},
+            'simulate': {'id'}, 'record': {'id','url','published_at'},
+            'metrics': {'id','window','views','likes','saves','comments','shares','observed_at'},
+            'learn': {'id'}, 'memory': {'id','status'},
+        }
+        require(isinstance(action,str) and action in fields, 'INVALID_INPUT', '未知运营操作')
+        require(set(data) == fields[action], 'INVALID_INPUT', '操作参数字段无效')
+        if action == 'add_trend':
+            require(data['platform'] in PLATFORMS, 'INVALID_INPUT', '平台无效')
+            source = url(data['source_url']); observed = timestamp(data['observed_at'])
+            title = validate_text(data['title'], '选题', 100)
+            require(not any(t['source_url'] == source and t['title'] == title for t in state['trends']), 'DUPLICATE', '此来源选题已存在')
+            state['trends'].insert(0, dict(id=str(uuid4()), title=title, platform=data['platform'],
+                category=validate_text(data['category'],'分类',30), angle=validate_text(data['angle'],'创作角度',500),
+                source_type='manual', source_url=source, observed_at=observed, created_at=now(),
+                reason='用户导入来源，内容与热度未联网核验。'))
+        elif action == 'prepare':
+            run = self.store._get(db, data['run_id'], owner)
+            require(run.run_status == 'SUCCEEDED' and run.accepted_ref == data['draft_ref'], 'INVALID_TRANSITION', '只有已确认的准确版本可进入发布中心')
+            require(not any(p['run_id'] == run.run_id and p['draft_ref'] == run.accepted_ref for p in state['publications']), 'DUPLICATE', '该确认稿已经进入发布中心')
+            op = run.context.get('operations', {})
+            state['publications'].insert(0, dict(id=str(uuid4()), run_id=run.run_id, draft_ref=run.accepted_ref,
+                review_ref=run.review['ref'], content=copy.deepcopy(run.drafts[-1]['content']),
+                content_hash=digest(run.drafts[-1]['content']), platform=op.get('platform','xiaohongshu'),
+                account=op.get('account','我的账号'), mode=run.context.get('mode','simulation'),
+                status='AWAITING_APPROVAL', created_at=now(), approved_at=None, url=None, published_at=None))
+        elif action in ('approve','simulate','record'):
+            pub = item(state['publications'], data['id'])
+            if action == 'approve':
+                require(pub['status'] == 'AWAITING_APPROVAL', 'INVALID_TRANSITION', '当前不能重复批准')
+                run = self.store._get(db, pub['run_id'], owner)
+                require(run.accepted_ref == pub['draft_ref'] and run.review['ref'] == pub['review_ref']
+                        and digest(run.drafts[-1]['content']) == pub['content_hash'], 'VERSION_CONFLICT', '确认版本已变化')
+                pub.update(status='APPROVED', approved_at=now())
+            else:
+                require(pub['status'] == 'APPROVED', 'INVALID_TRANSITION', '请先批准准确版本与目标账号')
+                if action == 'simulate':
+                    require(pub['mode'] == 'simulation', 'INVALID_TRANSITION', '仅模拟创作可演练发布')
+                    pub.update(status='SIMULATED', published_at=now())
+                else:
+                    require(pub['mode'] == 'live', 'INVALID_TRANSITION', '模拟稿不能记录为真实发布')
+                    pub.update(status='MANUAL_REPORTED', url=url(data['url'],pub['platform']), published_at=timestamp(data['published_at']))
+        elif action == 'metrics':
+            pub = item(state['publications'], data['id'])
+            require(pub['status'] in ('SIMULATED','MANUAL_REPORTED'), 'INVALID_TRANSITION', '请先完成发布演练或回填真实发布记录')
+            require(data['window'] in ('24h','72h','7d'), 'INVALID_INPUT', '统计窗口无效')
+            observed = timestamp(data['observed_at'])
+            require(datetime.fromisoformat(observed.replace('Z','+00:00')) >= datetime.fromisoformat(pub['published_at'].replace('Z','+00:00')), 'INVALID_INPUT', '观察时间不能早于发布时间')
+            values = {}
+            for name in ('views','likes','saves','comments','shares'):
+                value = data[name]
+                require(value is None or (type(value) is int and 0 <= value <= 10000000000), 'INVALID_INPUT', '指标须为非负整数，未知请留空')
+                values[name] = value
+            require(any(v is not None for v in values.values()), 'INVALID_INPUT', '至少录入一个已知指标')
+            source = 'simulation' if pub['mode'] == 'simulation' else 'manual'
+            prior = [m for m in state['metrics'] if m['publication_id'] == pub['id'] and m['window'] == data['window']]
+            metric = dict(id=str(uuid4()), publication_id=pub['id'], platform=pub['platform'], account=pub['account'],
+                window=data['window'], observed_at=observed, source_type=source, values=values, revision=len(prior)+1)
+            require(not prior or prior[-1]['values'] != values or prior[-1]['observed_at'] != observed, 'DUPLICATE','同一快照已录入')
+            state['metrics'].append(metric)
+            # Corrections invalidate derived lessons, including previously accepted lessons.
+            for memory in state['memories']:
+                if memory['publication_id'] == pub['id'] and memory['window'] == data['window']:
+                    memory['status'] = 'superseded'
+        elif action == 'learn':
+            metric = item(state['metrics'], data['id'])
+            latest = [m for m in state['metrics'] if m['publication_id'] == metric['publication_id'] and m['window'] == metric['window']][-1]
+            require(latest['id'] == metric['id'], 'INVALID_TRANSITION', '只能从最新指标快照复盘')
+            require(not any(m['metric_id'] == metric['id'] for m in state['memories']), 'DUPLICATE', '该快照已生成复盘')
+            pub = item(state['publications'], metric['publication_id']); values = metric['values']
+            rate = round(sum(values[k] for k in ('likes','saves','comments','shares')) / values['views'] * 100, 2) if values['views'] and all(values[k] is not None for k in ('likes','saves','comments','shares')) else None
+            observation = '互动/阅读或播放比为 '+str(rate)+'%' if rate is not None else '指标不完整，暂不计算互动比'
+            suggestion = '下次围绕「'+pub['content']['selected_title'][:55]+'」保留一个相近选题，单独改变开头表达，记录同一窗口表现后再比较。'
+            state['memories'].insert(0, dict(id=str(uuid4()), publication_id=pub['id'], metric_id=metric['id'],
+                platform=pub['platform'], account=pub['account'], window=metric['window'], source_type=metric['source_type'],
+                status='proposed', created_at=now(), sample_size=1, observation=observation,
+                text=suggestion, limitation='单篇描述性复盘，不代表因果或稳定规律；需更多同口径样本。'))
+        elif action == 'memory':
+            memory = item(state['memories'], data['id'])
+            require(data['status'] in ('accepted','rejected','revoked'), 'INVALID_INPUT','经验状态无效')
+            require((memory['status'] == 'proposed' and data['status'] in ('accepted','rejected')) or
+                    (memory['status'] == 'accepted' and data['status'] == 'revoked'), 'INVALID_TRANSITION','当前经验不能执行此操作')
+            memory['status'] = data['status']; memory['updated_at'] = now()

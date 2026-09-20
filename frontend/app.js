@@ -36,7 +36,7 @@ function render(){
  if(run.run_status==='FAILED'){const last=run.events.filter(e=>e.type==='agent.failed').at(-1);error(new Error(last?.payload.message||'执行失败，请查看运行记录'));}
  $('welcome').hidden=true;$('workbench').hidden=false;
  $('runTitle').textContent=run.context.topic;
- $('runSummary').textContent=`写给 ${run.context.audience} · ${run.context.tone} · ${run.snapshot_id.slice(0,8)} 输入快照`;
+ $('runSummary').textContent=`${run.context.operations?.platform==='douyin'?'抖音 · 口播脚本':'小红书 · 图文笔记'} · 写给 ${run.context.audience} · ${run.context.tone} · ${run.snapshot_id.slice(0,8)} 输入快照`;
  $('statusLabel').textContent=run.in_flight?'AI 正在处理，请稍候':states[run.run_status];$('versionCount').textContent=run.drafts.length+' 个';
  const allowed=run.allowed_actions;
  $('recover').hidden=!allowed.includes('recover');$('next').hidden=!allowed.includes('next');$('auto').hidden=!allowed.includes('next');$('cancel').hidden=!allowed.includes('cancel');
@@ -61,10 +61,10 @@ function render(){
 function friendly(agent,stage,value){
  const p=text=>'<p class="readable">'+esc(text)+'</p>';
  const list=items=>'<ol class="readable">'+items.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ol>';
- if(agent==='audience')return p('目标读者：'+value.primary_audience)+p('历史样本：0 条 · 可信程度：低（待验证假设）')+p(value.basis)+list(value.content_opportunities||[]);
- if(agent==='research')return p(value.scope)+(value.sources.length?value.sources.map(source=>'<h3>用户提供的素材</h3>'+p(source.text)+p(source.verification)).join(''):p('没有可用素材，不能虚构经历或效果数字。'))+list(value.gaps||[]);
+ if(agent==='audience')return p('目标读者：'+value.primary_audience)+p('已接受经验关联样本：'+(value.sample_size||0)+' 条 · 可信程度：低（待验证）')+p(value.basis)+list(value.content_opportunities||[]);
+ if(agent==='research')return p(value.scope)+(value.trend_context?p('选题线索：'+value.trend_context.title)+p(value.trend_context.source_type==='example'?'固定示例，不是实时热点':'来源链接仅保存，未抓取页面：'+value.trend_context.source_url):'')+(value.sources.length?value.sources.map(source=>'<h3>用户提供的素材</h3>'+p(source.text)+p(source.verification)).join(''):p('没有可用素材，不能虚构经历或效果数字。'))+list(value.gaps||[]);
  if(agent==='reviewer')return p(({approved:'审核通过，等待你确认',revision_required:'发现问题，需要修改',needs_human:'需要你补充信息'})[value.decision])+list(value.limitations||[]);
- if(stage==='strategy')return p('创作角度：'+value.angle)+p('服务读者：'+value.reader)+p('内容承诺：'+value.promise)+p('表达风格：'+value.tone)+list(value.assumptions||[]);
+ if(stage==='strategy')return p('创作角度：'+value.angle)+p('服务读者：'+value.reader)+p('内容承诺：'+value.promise)+p('表达风格：'+value.tone)+list(value.assumptions||[])+((value.next_experiments||[]).length?'<h3>已接受的实验建议</h3>'+list(value.next_experiments):'');
  if(stage==='outline')return list(value);
  if(stage==='hook')return p(value);
  if(stage==='title')return list(value.candidates)+p('当前选择：'+value.selected)+p(value.note);
@@ -92,6 +92,7 @@ function renderHuman(){
  $('revise').hidden=!(revision&&allowed.includes('next'));
  $('editButton').hidden=!allowed.includes('edit');$('accept').hidden=!allowed.includes('accept');$('export').hidden=!allowed.includes('export');
  $('export').href=`/api/runs/${run.run_id}/export`;
+ $('sendToPublish').hidden=run.run_status!=='SUCCEEDED';
  let title='需要你的决定',message='';
  if(run.run_status==='SUCCEEDED'){title='这个版本，已由你确认';message='可以下载已确认稿件。审核不能保证事实正确，发布前仍需你检查。';}
  else if(run.wait_reason==='missing_material'){title='资料还不够，请补充';message='请提供缺失的真实素材。保存后，两个分析角色会使用新快照重新执行。';}
@@ -138,10 +139,10 @@ async function autoRun(){
  auto=false;render();
 }
 $('briefForm').addEventListener('submit',async e=>{e.preventDefault();if(busy)return;busy=true;clearError();e.submitter.disabled=true;
- try{run=await api('/api/runs','POST',{mode:$('mode').value,topic:$('topic').value,audience:$('audience').value,tone:$('tone').value,material:$('material').value,scenario:$('scenario').value,allow_hypothesis:$('hypothesis').checked});selected='audience';detailStage=null;viewVersion=null;editing=false;$('editor').hidden=true;render();await history();}
+ try{run=await api('/api/runs','POST',{mode:$('mode').value,topic:$('topic').value,audience:$('audience').value,tone:$('tone').value,material:$('material').value,scenario:$('scenario').value,allow_hypothesis:$('hypothesis').checked,operations:{platform:$('targetPlatform').value,account:$('accountName').value,trend_id:chosenTrend?.id||null}});selected='audience';detailStage=null;viewVersion=null;editing=false;$('editor').hidden=true;render();await history();}
  catch(err){error(err);}finally{busy=false;e.submitter.disabled=false;if(run&&!$('workbench').hidden)render();}});
-$('history').addEventListener('click',async e=>{const b=e.target.closest('[data-run]');if(!b||busy||!dirtyGuard())return;auto=false;editing=false;$('editor').hidden=true;clearError();try{run=await api('/api/runs/'+b.dataset.run);viewVersion=null;detailStage=null;selected=currentAgent();render();await history();}catch(err){error(err);}});
-$('newRun').onclick=()=>{if(busy||!dirtyGuard())return;auto=false;editing=false;$('editor').hidden=true;$('workbench').hidden=true;$('welcome').hidden=false;renderMode($('mode').value);clearError();};
+$('history').addEventListener('click',async e=>{const b=e.target.closest('[data-run]');if(!b||busy||!dirtyGuard())return;auto=false;editing=false;$('editor').hidden=true;clearError();showPage('studio');try{run=await api('/api/runs/'+b.dataset.run);viewVersion=null;detailStage=null;selected=currentAgent();render();await history();}catch(err){error(err);}});
+$('newRun').onclick=()=>{if(busy||!dirtyGuard())return;showPage('studio');auto=false;editing=false;$('editor').hidden=true;$('workbench').hidden=true;$('welcome').hidden=false;renderMode($('mode').value);clearError();};
 $('flow').onclick=e=>{const chip=e.target.closest('[data-stage]');const b=e.target.closest('[data-agent]');if(chip){selected='content';detailStage=chip.dataset.stage;render();}else if(b){selected=b.dataset.agent;detailStage=null;render();}};
 $('recover').onclick=()=>act('recover');
 $('next').onclick=()=>act('next');$('auto').onclick=autoRun;
@@ -163,7 +164,7 @@ $('accept').onclick=async()=>{if(await act('accept',{draft_ref:run.drafts.at(-1)
 $('supplyForm').onsubmit=async e=>{e.preventDefault();if(await act('supplement',{material:$('supply').value,allow_hypothesis:$('supplyHypothesis').checked}))toast('补充已保存，执行下一步重新分析。');};
 $('versionSelect').onchange=e=>{viewVersion=Number(e.target.value);renderDraft();};
 window.addEventListener('beforeunload',e=>{if(editing){e.preventDefault();e.returnValue='';}});
-(async()=>{try{const session=await api('/api/session');csrf=session.csrf;provider=session.provider;$('configMessage').textContent=provider.message+' · 同一步最多3次（含首次）；接口错误立即停；整单最多16次 / 40000 Token';$('liveOption').disabled=!provider.ready;$('liveOption').textContent=provider.ready?'真实 AI · DeepSeek（消耗接口额度）':'真实 AI · DeepSeek（先填写 .env）';$('connectionStatus').textContent='DeepSeek：'+(provider.ready?'已配置':'未配置');if(provider.ready)$('mode').value='live';$('scenario').disabled=$('mode').value==='live';renderMode($('mode').value);const rows=await history();if(rows.length){run=rows[0];selected=currentAgent();render();await history();}}catch(e){error(e);}})();
+(async()=>{try{const session=await api('/api/session');csrf=session.csrf;provider=session.provider;$('configMessage').textContent=provider.message+' · 同一步最多3次（含首次）；接口错误立即停；整单最多16次 / 40000 Token';$('liveOption').disabled=!provider.ready;$('liveOption').textContent=provider.ready?'真实 AI · DeepSeek（消耗接口额度）':'真实 AI · DeepSeek（先填写 .env）';$('connectionStatus').textContent='DeepSeek：'+(provider.ready?'已配置':'未配置');$('mode').value='simulation';$('scenario').disabled=$('mode').value==='live';renderMode($('mode').value);const rows=await history();if(rows.length){run=rows[0];selected=currentAgent();render();await history();}await initOperations();}catch(e){error(e);}})();
 
 $('mode').onchange=()=>{renderMode($('mode').value);$('scenario').disabled=$('mode').value==='live';};
 setInterval(async()=>{

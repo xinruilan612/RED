@@ -142,6 +142,44 @@ class DemoWebTests(unittest.TestCase):
         self.action(run,'cancel')
         self.action(run,'next',expect=409)
 
+    def test_operations_http_csrf_context_and_isolation(self):
+        status,state=self.request('GET','/api/operations')
+        self.assertEqual(status,200)
+        self.assertEqual(len(state['trends']),4)
+        self.assertEqual(state['publications'],[])
+        data={'action':'add_trend','payload':{'title':'测试选题','platform':'xiaohongshu',
+              'category':'学习','angle':'操作过程','source_url':'https://example.com/topic',
+              'observed_at':'2020-01-01T00:00:00Z'},'version':0,'key':'add-trend'}
+        status,_=self.request('POST','/api/operations',data,{'X-CSRF-Token':'bad'})
+        self.assertEqual(status,403)
+        status,state=self.request('POST','/api/operations',data)
+        self.assertEqual(status,200)
+        trend=state['trends'][0]
+        run=self.create(operations={'platform':'xiaohongshu','account':'演示账号','trend_id':trend['id']})
+        self.assertEqual(run['context']['operations']['trend']['source_url'],'https://example.com/topic')
+        self.cookie='';self.request('GET','/api/session')
+        status,state=self.request('GET','/api/operations')
+        self.assertEqual(len(state['trends']),4)
+        status,_=self.request('POST','/api/runs',{'topic':'x','audience':'x','tone':'x',
+             'operations':{'trend_id':trend['id']}})
+        self.assertEqual(status,404)
+
+    def test_operations_navigation_and_static_script(self):
+        status,html=self.request('GET','/')
+        self.assertEqual(status,200)
+        from html.parser import HTMLParser
+        class Elements(HTMLParser):
+            def __init__(self):super().__init__();self.ids=[];self.pages=[]
+            def handle_starttag(self,tag,attrs):
+                attrs=dict(attrs)
+                if 'id' in attrs:self.ids.append(attrs['id'])
+                if 'data-page' in attrs:self.pages.append(attrs['data-page'])
+        parsed=Elements();parsed.feed(html)
+        self.assertEqual(len(parsed.ids),len(set(parsed.ids)))
+        self.assertEqual(parsed.pages,['trends','studio','publish','metrics','memory'])
+        status,script=self.request('GET','/operations.js')
+        self.assertEqual(status,200);self.assertIn('/api/operations',script)
+
     def test_static_assets_and_unknown_routes(self):
         for path in ('/','/app.js','/style.css'):
             status,body=self.request('GET',path);self.assertEqual(status,200);self.assertTrue(body)

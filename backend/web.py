@@ -15,6 +15,7 @@ from backend.demo import actions, validate_brief, validate_edit
 from backend.store import Store
 from backend.provider import Config, load_config
 from backend.execution import Executor
+from backend.operations import Operations
 
 FRONTEND = Path(__file__).resolve().parents[1]/'frontend'
 
@@ -39,6 +40,7 @@ class DemoServer(ThreadingHTTPServer):
         self.store=store
         self.config=config or Config()
         self.executor=Executor(store,self.config,client)
+        self.operations=Operations(store)
         with store.connect() as db:
             db.execute('CREATE TABLE IF NOT EXISTS demo_sessions (token_hash TEXT PRIMARY KEY, owner TEXT NOT NULL, csrf TEXT NOT NULL)')
         super().__init__(address, Handler)
@@ -86,9 +88,9 @@ class Handler(BaseHTTPRequestHandler):
     def dispatch(self, write):
         try:
             origin=self.host(); path=urlsplit(self.path).path
-            if not write and path in ('/','/app.js','/style.css'):
-                name={'/':'index.html','/app.js':'app.js','/style.css':'style.css'}[path]
-                mime={'/':'text/html; charset=utf-8','/app.js':'text/javascript; charset=utf-8','/style.css':'text/css; charset=utf-8'}[path]
+            if not write and path in ('/','/app.js','/style.css','/operations.js'):
+                name={'/':'index.html','/app.js':'app.js','/style.css':'style.css','/operations.js':'operations.js'}[path]
+                mime={'/':'text/html; charset=utf-8','/app.js':'text/javascript; charset=utf-8','/style.css':'text/css; charset=utf-8','/operations.js':'text/javascript; charset=utf-8'}[path]
                 self.send(200,(FRONTEND/name).read_bytes(),mime); return
             if not write and path=='/api/session':
                 _,csrf,cookie=self.session(True)
@@ -104,13 +106,17 @@ class Handler(BaseHTTPRequestHandler):
                 try: data=json.loads(self.rfile.read(size))
                 except (ValueError,UnicodeDecodeError): raise DomainError('INVALID_INPUT','JSON 无效')
                 require(isinstance(data,dict),'INVALID_INPUT','请求须为对象')
+            if path=='/api/operations':
+                self.send(200,self.server.operations.command(owner,data) if write else self.server.operations.read(owner)); return
             if path=='/api/runs':
                 if write:
                     mode=data.get('mode','simulation')
                     require(mode in ('simulation','live'),'INVALID_INPUT','运行模式无效')
                     require(mode!='live' or self.server.config.ready,'KEY_REQUIRED','请先填写 .env 中的 DEEPSEEK_API_KEY 并重启服务')
-                    context=validate_brief({k:v for k,v in data.items() if k!='mode'})
+                    context=validate_brief({k:v for k,v in data.items() if k not in ('mode','operations')})
                     context['mode']=mode
+                    if 'operations' in data:
+                        context['operations']=self.server.operations.context(owner,data['operations'],mode)
                     if mode=='live':context['scenario']='standard'
                     run=self.server.store.create(owner,str(uuid4()),context)
                     self.send(201,view(run,self.server.executor))

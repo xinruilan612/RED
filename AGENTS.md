@@ -21,6 +21,10 @@
 
 用户确认目标平台为小红书、抖音，暂不接入 Postiz。指定参考为 Klaudiusz321/social-media-agents；与 langchain-ai/social-media-agent 分开记录。
 
-本轮仅修改文档、运行现有 Demo 和设计技术方案，不实现新功能、不新建文件夹、不额外建立 AGENT.md。v0.3 机器契约与四角色继续作为当前创作基线；v0.4 运营扩展见 [技术提案](docs/design/ARCHITECTURE.md#运营闭环-v04-技术提案) 和 [推进计划](docs/design/MIGRATION.md#运营闭环-v04-推进计划)，未实现条目不得写成已完成。
+上一轮仅完成设计；用户随后已明确授权在现有 Demo 增加功能并整理排版。沿用已有文件夹，不额外建立 AGENT.md。v0.3 机器契约与四角色继续作为当前创作基线；v0.4 运营扩展见 [技术提案](docs/design/ARCHITECTURE.md#运营闭环-v04-技术提案) 和 [推进计划](docs/design/MIGRATION.md#运营闭环-v04-推进计划)，未实现条目不得写成已完成。
 
 未来发布必须绑定用户批准的账号、平台、稿件/媒体版本和计划时间；创作 SUCCEEDED 不表示发布成功。指标缺失不得填零，模拟受众反应不得写入真实历史；经验更新可追踪、可撤销，不能绕过人工确认。平台能力须以适用的官方接口、账号授权和实测为准。
+
+## v0.4 本机 Demo 实现约定
+
+运营状态由 backend/operations.py 与 /api/operations 管理，沿用本地会话、CSRF、SQLite 事务、版本校验与幂等。此为创作 schema 外的演示适配，不代表完成生产机器契约迁移。平台 API 未接通；示例趋势不标实时、SIMULATED 不等于真实发布、MANUAL_REPORTED 不等于核实成功。模拟指标/经验不得进入真实 AI 上下文；经验只复用于同平台同账号，指标修正使关联经验失效。
