@@ -82,6 +82,36 @@ class LiveTests(unittest.TestCase):
         self.step();self.assertEqual(self.run.wait_reason,'final_confirmation')
         self.assertEqual(self.run.review['previous_issue_results'],[{'issue_id':'i1','result':'resolved'}])
 
+    def test_three_rejected_outputs_fail_without_fourth_generation(self):
+        base=self.model.complete
+        def reject(messages):
+            value,tokens=base(messages)
+            if self.model.calls[-1]=='review':
+                value.update(decision='revision_required',next_action='revise',issues=[{
+                    'issue_id':'same','severity':'major','state':'open','location':'body',
+                    'excerpt':'正文','reason':'仍不满足需求','suggestion':'增加具体内容'}])
+                value['previous_issue_results']=[{'issue_id':'same','result':'unresolved'}] if self.model.calls.count('review')>1 else []
+            return value,tokens
+        self.model.complete=reject
+        for _ in range(11):self.step()
+        self.assertEqual(self.run.run_status,'FAILED')
+        self.assertEqual(self.model.calls.count('body')+self.model.calls.count('revise'),3)
+        self.assertEqual(self.model.calls.count('review'),3)
+        self.assertEqual(len(self.run.drafts),3)
+        self.assertEqual(self.run.review['decision'],'revision_required')
+        calls=len(self.model.calls)
+        with self.assertRaises(DomainError):self.step()
+        self.assertEqual(len(self.model.calls),calls)
+
+    def test_manual_edit_cannot_bypass_review_call_cap(self):
+        self.until_review()
+        for i in range(3):
+            draft=dict(self.run.drafts[-1]['content']);draft['body']='用户修改版本'+str(i)
+            self.run=self.store.command(self.run.run_id,'me',self.run.status_version,str(uuid4()),'edit',{'content':draft})
+            self.step()
+        self.assertEqual(self.run.run_status,'FAILED')
+        self.assertEqual(self.model.calls.count('review'),3)
+
     def test_missing_material_then_supplement_rebuilds_snapshot(self):
         base=self.model.complete
         def need_material(messages):
@@ -149,6 +179,19 @@ class LiveTests(unittest.TestCase):
         release.set();thread.join(5);self.assertFalse(thread.is_alive())
         self.assertEqual(self.store.get(before.run_id,'me').run_status,'CANCELLED')
         self.assertEqual(self.store.get(before.run_id,'me').drafts,[])
+
+    def test_invalid_outline_stops_with_stage_name_and_no_extra_calls(self):
+        base=self.model.complete
+        def bad_outline(messages):
+            value,tokens=base(messages)
+            if self.model.calls[-1]=='outline':value={'items':[{'title':'unexpected object'}]}
+            return value,tokens
+        self.model.complete=bad_outline
+        self.step();self.step();self.step()
+        self.assertEqual(self.run.run_status,'FAILED')
+        self.assertEqual(len(self.model.calls),4)
+        self.assertIn('提纲输出校验失败',self.run.events[-1]['payload']['message'])
+        self.assertEqual(self.executor.public(self.run)['usage']['tokens'],480)
 
     def test_forged_quotes_and_wrong_title_blocked(self):
         value=schema('research');value['facts']=[{'source_id':'user-material','quote':'不存在的事实'}]

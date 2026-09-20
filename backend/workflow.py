@@ -126,7 +126,7 @@ class Run:
         self.event('artifact.created', artifact_ref=item['ref'])
         return item['ref']
 
-    def reviewed(self, report, gates):
+    def reviewed(self, report, gates, fail_on_limit=False):
         require(self.run_status == 'RUNNING' and self.current_stage == 'reviewer' and self.drafts,
                 'INVALID_TRANSITION', '当前不能接收审核')
         validate_review(report, self.drafts[-1], gates, self.prior_review)
@@ -138,7 +138,11 @@ class Run:
         elif report['decision'] == 'needs_human':
             self._transition('WAITING_USER', 'missing_material')
         elif self.iteration >= PARAMETERS['revision_rounds_max']:
-            self._transition('WAITING_USER', 'revision_limit')
+            if fail_on_limit:
+                self._transition('FAILED')
+                self.event('agent.failed',agent='reviewer',mode='live',message='初稿及两次改稿仍未通过审核，已达到3轮上限；停止调用')
+            else:
+                self._transition('WAITING_USER', 'revision_limit')
         else:
             self.iteration += 1
             self.current_stage = 'content'

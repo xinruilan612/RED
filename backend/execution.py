@@ -65,6 +65,13 @@ class Executor:
                 db.execute('BEGIN IMMEDIATE')
                 current=self.store._get(db,run_id,owner)
                 require(current.status_version==claimed_version and current.run_status=='RUNNING','VERSION_CONFLICT','任务已取消或更新，已停止后续调用')
+                # Cumulative per-run cap: new snapshots/manual edits do not reset attempts.
+                # Initial body and revisions are one output group, never three retries each.
+                if agent=='content' and stage in ('body','revise'):
+                    stage_count=db.execute("SELECT COUNT(*) FROM live_calls WHERE run_id=? AND agent='content' AND stage IN ('body','revise')",(run_id,)).fetchone()[0]
+                else:
+                    stage_count=db.execute('SELECT COUNT(*) FROM live_calls WHERE run_id=? AND agent=? AND stage=?',(run_id,agent,stage)).fetchone()[0]
+                require(stage_count<3,'STAGE_ATTEMPT_LIMIT','同一步已达到3次调用上限（含首次）；任务已停止，不再调用模型')
                 count,used=db.execute('SELECT COUNT(*),COALESCE(SUM(COALESCE(actual,reserved)),0) FROM live_calls WHERE run_id=?',(run_id,)).fetchone()
                 daily=db.execute("SELECT COALESCE(SUM(COALESCE(actual,reserved)),0) FROM live_calls WHERE date(created)=date('now')").fetchone()[0]
                 require(count<16 and used+reserve<=40000 and (used+reserve)*RATE<=self.config.run_budget_usd and (daily+reserve)*RATE<=self.config.day_budget_usd,

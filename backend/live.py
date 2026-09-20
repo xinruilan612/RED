@@ -150,7 +150,11 @@ def advance(run,call):
     def execute(agent,stage):
         messages,inputs=messages_for(run,stage)
         started=time.perf_counter(); value,tokens,call_id=call(agent,stage,messages)
-        result=normalize(run,stage,value)
+        try:
+            result=normalize(run,stage,value)
+        except DomainError as error:
+            label={'audience':'受众分析','research':'素材研究','strategy':'策略','outline':'提纲','hook':'开头','title':'标题','body':'正文','revise':'改稿','review':'审核'}.get(stage,stage)
+            raise DomainError(error.code,f'{label}输出校验失败：{error}；已停止，未自动重试') from None
         return {'id':str(uuid4()),'agent':agent,'stage':stage,'mode':'live','snapshot_id':run.snapshot_id,
                 'input':inputs,'output':result,'duration_ms':round((time.perf_counter()-started)*1000),
                 'model_calls':1,'tokens':tokens,'cost':None,'call_id':call_id,'tools':[],
@@ -172,4 +176,4 @@ def advance(run,call):
         if stage in ('body','revise'):run.draft(log['output'])
         return
     require(run.current_stage=='reviewer','INVALID_TRANSITION','未知执行阶段')
-    log=execute('reviewer','review');save(log);run.reviewed(log['output'],review_gates(run,log['output']))
+    log=execute('reviewer','review');save(log);run.reviewed(log['output'],review_gates(run,log['output']),fail_on_limit=True)
