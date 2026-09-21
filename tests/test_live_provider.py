@@ -12,7 +12,7 @@ from urllib.error import HTTPError
 from backend.contracts import DomainError
 from backend.provider import Config, DeepSeek, load_config, decode_response, NoRedirect
 from backend.execution import Executor
-from backend.live import schema, normalize, material_records
+from backend.live import schema, normalize, material_records, messages_for
 from backend.demo import validate_brief
 from backend.store import Store
 from backend.web import view
@@ -81,6 +81,25 @@ class LiveTests(unittest.TestCase):
         self.step();self.assertEqual(len(self.run.drafts),2)
         self.step();self.assertEqual(self.run.wait_reason,'final_confirmation')
         self.assertEqual(self.run.review['previous_issue_results'],[{'issue_id':'i1','result':'resolved'}])
+
+    def test_revision_context_keeps_evidence_and_issues_without_repeating_upstream(self):
+        base=self.model.complete
+        def revise_once(messages):
+            value,tokens=base(messages)
+            if self.model.calls[-1]=='review':
+                value.update(decision='revision_required',next_action='revise',issues=[{
+                    'issue_id':'i1','severity':'major','state':'open','location':'body',
+                    'excerpt':'完整正文','reason':'信息不足','suggestion':'补充具体步骤'}])
+            return value,tokens
+        self.model.complete=revise_once
+        for _ in range(7):self.step()
+        _,data=messages_for(self.run,'revise')
+        self.assertNotIn('upstream',data)
+        self.assertEqual(set(data['branches']),{'audience','research'})
+        self.assertEqual(data['previous_review']['issues'][0]['issue_id'],'i1')
+        self.assertNotIn('checks',data['previous_review'])
+        self.assertEqual(data['draft'],self.run.drafts[-1]['content'])
+        self.assertEqual(data['materials'],material_records(self.run.context))
 
     def test_three_rejected_outputs_fail_without_fourth_generation(self):
         base=self.model.complete

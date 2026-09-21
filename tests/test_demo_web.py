@@ -179,6 +179,9 @@ class DemoWebTests(unittest.TestCase):
         self.assertEqual(parsed.pages,['overview','accounts','library','trends','studio','publish','metrics','memory'])
         status,script=self.request('GET','/operations.js')
         self.assertEqual(status,200);self.assertIn('/api/operations',script)
+        status,script=self.request('GET','/app.js')
+        self.assertEqual(status,200)
+        self.assertIn('if(changed)clearError()',script)
 
     def test_static_assets_and_unknown_routes(self):
         for path in ('/','/app.js','/style.css'):

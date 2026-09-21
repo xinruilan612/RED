@@ -187,6 +187,6 @@ $('mode').onchange=()=>{renderMode($('mode').value);$('scenario').disabled=$('mo
 setInterval(async()=>{
  if(!run?.in_flight||polling)return;
  polling=true;
- try{const latest=await api('/api/runs/'+run.run_id);if(run?.run_id===latest.run_id){const changed=run.status_version!==latest.status_version;run=latest;render();if(changed)await history();}}
+ try{const latest=await api('/api/runs/'+run.run_id);if(run?.run_id===latest.run_id){const changed=run.status_version!==latest.status_version;run=latest;if(changed)clearError();render();if(changed)await history();}}
  catch(_){}finally{polling=false;}
 },1500);

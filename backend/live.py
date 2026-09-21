@@ -69,15 +69,36 @@ def schema(stage):
             'human_questions':[], 'claim_map':[]}
 
 
+def compact_branches(branches):
+    """Keep only evidence needed to revise or review the current draft."""
+    keys={
+        'audience':('primary_audience','basis','pain_points','content_opportunities'),
+        'research':('core_gap','gaps','facts','prohibited_claims'),
+    }
+    return {name:{key:branch.get('data',{}).get(key) for key in fields}
+            for name,fields in keys.items() if (branch:=branches.get(name))}
+
+
+def compact_review(review):
+    """A rewrite needs actionable findings, not the full repeated review report."""
+    if not review:return None
+    fields=('issue_id','severity','location','excerpt','reason','suggestion')
+    return {'decision':review.get('decision'),
+            'issues':[{key:issue.get(key) for key in fields} for issue in review.get('issues',[])],
+            'limitations':review.get('limitations',[])}
+
+
 def messages_for(run,stage):
     context={k:run.context[k] for k in ('topic','audience','tone','allow_hypothesis')}
     data={'brief':context,'materials':material_records(run.context)}
-    if stage not in ('audience','research'):
+    if stage in ('revise','review'):
+        data['branches']=compact_branches(run.branches)
+    elif stage not in ('audience','research'):
         data['branches']=run.branches
         data['upstream']={a['stage']:a['value'] for a in run.artifacts}
     if stage in ('revise','review'):
         data['draft']=run.drafts[-1]['content']
-        data['previous_review']=run.review if stage=='revise' else run.prior_review
+        data['previous_review']=compact_review(run.review if stage=='revise' else run.prior_review)
     rules={
         'audience':'优先使用operations.profile定位、history/metrics描述性记录、competitors公开观察和preferences表达偏好。无数据时明确标为待验证假设；有数据需说明出处和不足，不将相关性解释为因果，不把编辑偏好当效果。primary_audience,basis为文字；pain_points,content_opportunities为文字数组。',
         'research':'只分析materials原文片段及operations中的选题线索。materials中的web代表系统已读取的正文，仍未独立核实；其余只有链接的线索不能编造正文或热度。facts为source_id+quote对象数组，quote必须逐字引用，没素材则[]。gaps/prohibited_claims为文字数组。仅任务必须依赖缺失事实时core_gap=true。',
