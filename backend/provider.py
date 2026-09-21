@@ -20,6 +20,7 @@ class Config:
     model: str = MODEL
     run_budget_usd: float = 0.10
     day_budget_usd: float = 0.50
+    routes: dict = field(default_factory=dict)
 
     @property
     def ready(self):
@@ -46,7 +47,15 @@ def load_config(path=None, environ=None):
     values.update(os.environ if environ is None else environ)
     key=values.get('DEEPSEEK_API_KEY','').strip()
     require(not any(c.isspace() for c in key), 'CONFIG_INVALID', 'API Key 中不能有空格或换行')
-    return Config(api_key=key)
+    try:
+        routes=json.loads(values.get('MODEL_ROUTES_JSON','{}'))
+        from backend.model_router import STAGES
+        require(isinstance(routes,dict) and set(routes)<=set(STAGES),'CONFIG_INVALID','模型路由阶段无效')
+        for value in routes.values():
+            require(isinstance(value,dict) and set(value)=={'model','rate'} and isinstance(value['model'],str) and 0<len(value['model'])<=100 and type(value['rate']) in (float,int) and 0<value['rate']<1,'CONFIG_INVALID','模型路由需明确 model 与每 Token 费用上限 rate')
+    except (ValueError,TypeError):
+        raise DomainError('CONFIG_INVALID','MODEL_ROUTES_JSON 格式无效') from None
+    return Config(api_key=key,routes=routes)
 
 
 class NoRedirect(HTTPRedirectHandler):
@@ -73,6 +82,10 @@ class DeepSeek:
     def __init__(self, config): self.config=config
 
     def complete(self, messages):
+        value,tokens,_ = self.complete_result(messages)
+        return value,tokens
+
+    def complete_result(self, messages):
         require(self.config.ready,'KEY_REQUIRED','请先填写 .env 的 DEEPSEEK_API_KEY 并重启服务')
         body=json.dumps({'model':self.config.model,'messages':messages,'stream':False,
                          'thinking':{'type':'disabled'},'max_tokens':3000,
@@ -83,7 +96,13 @@ class DeepSeek:
             with build_opener(NoRedirect()).open(request,timeout=90) as response:
                 raw=response.read(1_000_001)
                 require(len(raw)<=1_000_000,'MODEL_OUTPUT_INVALID','模型响应过大')
-            return decode_response(raw)
+            value,tokens=decode_response(raw)
+            packet=json.loads(raw);usage=packet.get('usage',{})
+            metadata={'request_id':packet.get('id')}
+            for key,remote in (('input_tokens','prompt_tokens'),('output_tokens','completion_tokens')):
+                n=usage.get(remote)
+                metadata[key]=n if type(n) is int and n>=0 else None
+            return value,tokens,metadata
         except HTTPError as e:
             message={401:'API Key 无效，请检查 .env',402:'DeepSeek 余额不足',429:'DeepSeek 请求受限，请稍后新建任务'}.get(e.code,'DeepSeek 暂时无法完成请求')
             raise DomainError('PROVIDER_ERROR',message+'；未自动重试') from None

@@ -115,3 +115,11 @@ RAG 首版是中文双字词及英文词的 BM25 原文检索，不是语义向�
 新增 backend/schemas.py 与 migrations.py，统一创作/后台命令的严格类型与未知字段拒绝；数据库核心升级使用事务、版本和 SQL 校验和。建立后续队列、节点产物和模型审计表，不改变已有任务状态。升级前已保留 runtime/before-core-e90f9a4.tar.gz 与一致性 PostgreSQL dump。该阶段不宣称后台任务已经可执行。
 
 第一步验证：141 项全量 unittest 通过（包含真实 PostgreSQL 临时 schema），迁移重复/篡改/回滚、严格命令及原 HTTP/审核流程均通过；记录 runtime/core-stage1-tests.log。
+
+## 核心底座第二步：Model Router
+
+统一 Calls 入口服务现有执行器与后续 Worker。每阶段解析显式 provider/model/费用上限；新任务保存路由和提示词版本快照。默认 DeepSeek，替身仅由测试依赖注入；不做静默模型降级或超时重发。所有新增收费调用先事务预留，再记录响应、用量、耗时、模型、输入哈希、快照、来源和校验结果；供应商未报告的细项为 null，旧调用标记 audit_legacy 不补造历史。
+
+MODEL_ROUTES_JSON 可按阶段配置 DeepSeek model 与每 Token 费用上限 rate；未知供应商必须实现并注册适配器，不能靠模型返回字段改变授权或审核。不同模型仍经同一 normalize、review_gates、Run.accept 和预算守卫。保留用户提供素材与知识库片段的来源，不把模型答案作为外部事实来源。
+
+第二步验证：144 项全量 unittest 通过（含 PostgreSQL），新增双模型路由、费用上限预留、错误调用审计与错误版本批准拒绝测试；记录 runtime/core-stage2-tests.log。全部模型调用为替身，不构成真实生成质量评测。

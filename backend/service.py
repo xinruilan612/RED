@@ -23,6 +23,7 @@ class Service:
         require(mode!='live' or self.config.ready, 'KEY_REQUIRED', '请在服务器配置 DeepSeek Key')
         context = validate_brief({k:v for k,v in data.items() if k not in ('mode','operations','knowledge')})
         context['mode'] = mode
+        context['model_policy'] = self.executor.router.policy()
         if 'operations' in data:
             context['operations'] = self.operations.context(owner,data['operations'],mode)
         selection=data.get('knowledge',{'enabled':False})

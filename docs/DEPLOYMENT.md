@@ -69,3 +69,9 @@ git diff --check
 上限：每账号100份有效资料，每份3 MB / 50页 / 10万字符，单次最多4个原文片段，每段400字符；每用户每小时30次搜索、30次网页读取、40次资料写入。后台队列、任务进度和暂停恢复尚未接入，读取由请求同步执行。公网流量增加前需补充分布式配额、后台任务与压测。
 
 新增前端验证：`node --check frontend/knowledge.js`。角色适配文档更新后执行 `python3 scripts/sync_agent_cards.py`；机器契约 website_extension 与原创作四角色契约分开，Agent 自主联网仍禁用。
+
+## 核心迁移与模型路由
+
+新增核心结构由 backend/migrations.py 顺序、事务升级并记录 checksum，已有迁移不可原地改写。先用 pg_dump 备份，再部署；不通过删除迁移记录强行降级。旧模块 bootstrap 保留兼容，新增核心表统一走 core_migrations。
+
+可选 MODEL_ROUTES_JSON 示例：`{"research":{"model":"deepseek-flash","rate":0.0000012}}`。rate 为每 Token 的保守美元费用上限，改模型前需核对供应商价格；未配置阶段沿用当前默认。新任务固化路由，已创建任务不因环境改变而偷偷换模型。API Key 仍只留服务器环境。新供应商需实现适配器与相同契约测试，不承诺任意模型即插即用。替身测试不访问收费接口。

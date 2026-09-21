@@ -16,6 +16,11 @@ class Executor:
     def __init__(self,store,config,client=None):
         self.store,self.config=store,config
         self.client=client or DeepSeek(config)
+        from backend.migrations import upgrade
+        from backend.model_router import ModelRouter, Calls
+        upgrade(store)
+        self.router=client if isinstance(client,ModelRouter) else ModelRouter(config,client)
+        self.calls=Calls(store,config,self.router)
         with store.connect() as db:
             db.executescript('''
                 CREATE TABLE IF NOT EXISTS live_steps (
@@ -66,19 +71,23 @@ class Executor:
             root=self.budget_id(db,run.run_id)
             calls=db.execute(f'SELECT id,agent,stage,reserved,actual,state,error,response_json,run_id FROM live_calls WHERE run_id IN ({FAMILY}) ORDER BY {self.store.order_column}',(root,)).fetchall()
             pending=db.execute("SELECT COUNT(*) FROM live_steps WHERE run_id=? AND state='running'",(run.run_id,)).fetchone()[0]
+            audits={r[0]:json.loads(r[1]) for r in db.execute("SELECT call_id,sources FROM model_audit WHERE run_id IN ("+FAMILY+")",(root,))}
+            metadata={r[0]:dict(zip(('provider','model','route_version','prompt_version','input_hash','snapshot_id','duration_ms','request_id','input_tokens','output_tokens','rate'),r[1:])) for r in db.execute("SELECT call_id,provider,model,route_version,prompt_version,input_hash,snapshot_id,duration_ms,request_id,input_tokens,output_tokens,rate FROM model_audit WHERE run_id IN ("+FAMILY+")",(root,))}
         items=[]
         for c in calls:
             item=dict(zip(('id','agent','stage','reserved_tokens','tokens','status','error'),c[:7]))
+            item.update(metadata.get(c[0],{}));item['sources']=audits.get(c[0],[]);item['audit_legacy']=c[0] not in metadata
             item['inherited']=c[8]!=run.run_id
             if c[5]=='invalid' and c[7]:item['diagnostic_response']=json.loads(c[7])
             items.append(item)
         return {'in_flight':bool(pending) and run.run_status not in ('CANCELLED','FAILED'),'calls':items,
                 'usage':{'model_calls':len(items),'tokens':sum(c['tokens'] or 0 for c in items),
                          'unknown_calls':sum(c['tokens'] is None for c in items),
-                         'cost':None,'cost_upper_estimate_usd':round(sum(c['tokens'] if c['tokens'] is not None else c['reserved_tokens'] for c in items)*RATE,6),
+                         'cost':None,'cost_upper_estimate_usd':round(sum((c['tokens'] if c['tokens'] is not None else c['reserved_tokens'])*c.get('rate',RATE) for c in items),6),
                          'currency':'USD'}}
 
     def step(self,run_id,owner,version,key):
+        self.calls.config=self.config
         require(self.config.ready,'KEY_REQUIRED','请填写 .env 的 DEEPSEEK_API_KEY，然后重启服务')
         fingerprint=digest({'version':version,'action':'next'})
         with self.store.connect() as db:
@@ -102,37 +111,12 @@ class Executor:
             db.execute('INSERT INTO live_steps VALUES(?,?,?,?,?,?,?)',(run_id,version,key,fingerprint,'running',None,None))
         claimed_version=run.status_version
         def call(agent,stage,messages):
-            # UTF-8 byte upper bound + framing allowance; settlement uses reported usage.
-            reserve=sum(len(m['content'].encode()) for m in messages)+3000+256
-            call_id=str(uuid4())
-            with self.store.connect() as db:
-                db.execute('BEGIN IMMEDIATE')
+            def guard(db):
                 current=self.store._get(db,run_id,owner)
-                require(current.status_version==claimed_version and current.run_status=='RUNNING','VERSION_CONFLICT','任务已取消或更新，已停止后续调用')
-                # Cumulative per-run cap: new snapshots/manual edits do not reset attempts.
-                # Initial body and revisions are one output group, never three retries each.
-                if agent=='content' and stage in ('body','revise'):
-                    stage_count=db.execute(f"SELECT COUNT(*) FROM live_calls WHERE run_id IN ({FAMILY}) AND agent='content' AND stage IN ('body','revise')",(root,)).fetchone()[0]
-                else:
-                    stage_count=db.execute(f'SELECT COUNT(*) FROM live_calls WHERE run_id IN ({FAMILY}) AND agent=? AND stage=?',(root,agent,stage)).fetchone()[0]
-                require(stage_count<3,'STAGE_ATTEMPT_LIMIT','同一步已达到3次调用上限（含首次）；任务已停止，不再调用模型')
-                count,used=db.execute(f'SELECT COUNT(*),COALESCE(SUM(COALESCE(actual,reserved)),0) FROM live_calls WHERE run_id IN ({FAMILY})',(root,)).fetchone()
-                daily=db.execute("SELECT COALESCE(SUM(COALESCE(actual,reserved)),0) FROM live_calls WHERE date(created)=date('now')").fetchone()[0]
-                require(count<16 and used+reserve<=40000 and (used+reserve)*RATE<=self.config.run_budget_usd and (daily+reserve)*RATE<=self.config.day_budget_usd,
-                        'BUDGET_EXCEEDED','已到调用、Token 或估算费用上限，停止执行；已有记录仍保留')
-                db.execute('INSERT INTO live_calls(id,run_id,agent,stage,reserved,state) VALUES(?,?,?,?,?,?)',(call_id,run_id,agent,stage,reserve,'calling'))
-            try:
-                value,tokens=self.client.complete(messages)
-                require(type(tokens) is int and 0<=tokens<=reserve,'MODEL_OUTPUT_INVALID','用量报告异常，停止执行并保留预留')
-                with self.store.connect() as db:db.execute("UPDATE live_calls SET actual=?,state='received',response_json=? WHERE id=?",(tokens,json.dumps(value,ensure_ascii=False),call_id))
-                return value,tokens,call_id
-            except Exception as e:
-                safe=str(e) if isinstance(e,DomainError) else '模型调用失败，未自动重试'
-                with self.store.connect() as db:db.execute("UPDATE live_calls SET state='failed',error=? WHERE id=?",(safe,call_id))
-                raise DomainError('PROVIDER_ERROR',safe) from None
+                require(current.status_version==claimed_version and current.run_status=='RUNNING','VERSION_CONFLICT','任务已取消或更新')
+            return self.calls.invoke(run,agent,stage,messages,guard)
         def validated(call_id,error):
-            with self.store.connect() as db:
-                db.execute('UPDATE live_calls SET state=?,error=? WHERE id=?',('invalid' if error else 'validated',error,call_id))
+            self.calls.validated(call_id,error)
         failure=None
         try:advance(run,call,validated)
         except Exception as e:
