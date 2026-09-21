@@ -4,11 +4,18 @@
 
 ## 环境与启动
 
-使用 Python 3.12+ 和 PostgreSQL。项目根目录安装锁定依赖：
+使用 Python 3.12+ 和 PostgreSQL。后端支持 Windows、macOS 和 Linux；生产环境建议使用受支持的服务器系统和进程管理器。项目根目录安装锁定依赖：
 
 ```bash
-python3 -m venv runtime/venv
-runtime/venv/bin/pip install -r requirements.txt
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+```
+
+Windows PowerShell 对应命令为：
+
+```powershell
+py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
 在已有 `.env` 保留 DeepSeek Key，增加以下配置（不要提交真实密码）：
@@ -21,8 +28,10 @@ PUBLIC_ORIGIN=http://127.0.0.1:8765
 创建本项目专用数据库后运行：
 
 ```bash
-runtime/venv/bin/python -m backend.api
+.venv/bin/python -m backend.api
 ```
+
+Windows 使用 `.\.venv\Scripts\python.exe -m backend.api`。Worker 同理使用同一虚拟环境。数据库可以是本机或远程 PostgreSQL；不要把 WSL、Docker 或某个固定文件系统路径写入应用配置。
 
 服务器网址必须与 PUBLIC_ORIGIN 完全一致。默认只监听本机。公网前需设置 HTTPS 域名、至少16位 REGISTRATION_INVITE、数据库最小权限用户、TLS 反向代理及服务托管，并完成单独部署验收。数据库连接信息与密钥仅在服务器。当前首次注册可绑定本浏览器旧 Demo Cookie 对应空间；不自动合并两个用户空间。
 
@@ -31,7 +40,7 @@ runtime/venv/bin/python -m backend.api
 先停止旧 Demo 写入，用 SQLite backup API 保存一致性快照。原文件不得删除。目标应为空的专用数据库：
 
 ```bash
-runtime/venv/bin/python -m backend.migrate --source runtime/before-web-foundation-hotspot-review-demo.sqlite
+.venv/bin/python -m backend.migrate --source runtime/before-web-foundation-hotspot-review-demo.sqlite
 ```
 
 迁移逐行核对原始表，保留确认状态、来源模式和 owner；失败回滚业务导入。重复运行对同一未变化目标逐行检查，目标产生新业务后拒绝再次覆盖。依赖表的建表操作可以保留，不影响原 SQLite。回退时停止新服务，使用原 SQLite 启动 backend.web；新站期间新增的数据不会自动回流到旧库。
@@ -45,7 +54,7 @@ runtime/venv/bin/python -m backend.migrate --source runtime/before-web-foundatio
 SQL 层保留有版本的业务聚合，并有 social_accounts/account_records 关系目录。PostgreSQL 短写事务使用事务咨询锁，网络和模型调用在事务外。此为小范围内测设计，不宣称已完成高并发优化。
 
 ```bash
-TEST_DATABASE_URL=postgresql:///youji_operations PYTHONDONTWRITEBYTECODE=1 runtime/venv/bin/python -m unittest discover -s tests -v
+TEST_DATABASE_URL=postgresql:///youji_operations PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m unittest discover -s tests -v
 node --check frontend/app.js
 node --check frontend/operations.js
 node --check frontend/account.js
@@ -81,8 +90,8 @@ git diff --check
 网站与 Worker 是两个进程，共用同一个 DATABASE_URL 与模型配置。必须分别启动：
 
 ```bash
-runtime/venv/bin/python -m backend.api --port 8765
-runtime/venv/bin/python -m backend.worker
+.venv/bin/python -m backend.api --port 8765
+.venv/bin/python -m backend.worker
 ```
 
 网页“后台运行到人工处理”只事务入队，关闭标签页不会停止 Worker。暂停等待当前节点保存；取消阻止后续产物提交，但已发出的模型请求仍可能产生费用。Worker 每次只领取一个任务，角色两支并行；多个 Worker 通过数据库租约和 fencing token 避免重复提交。Worker 宕机后重启，过期租约最多约30秒后重新领取。关闭电脑时任务不会执行，开机并启动服务后恢复。生产环境应由进程管理器守护两个进程。

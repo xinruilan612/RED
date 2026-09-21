@@ -188,7 +188,7 @@ def mermaid(g):
         arrow='-.->' if edge['dashed'] else '-->'
         lines.append(f'    {edge["source"]} {arrow}|"{edge["label"]}"| {edge["target"]}')
     if g['id']=='lifecycle':
-        contract=json.loads((OUT/'design_contract.json').read_text())
+        contract=json.loads((OUT/'design_contract.json').read_text(encoding='utf-8'))
         present={(e['source'],e['target']) for e in g['edges']}
         for source,targets in contract['transitions'].items():
             for target in targets:
@@ -201,13 +201,13 @@ def build():
     cards=[]
     for graph in GRAPHS:
         text=svg(graph)
-        (OUT/'diagrams'/f'{graph["id"]}.svg').write_text(text)
-        (OUT/'diagrams'/f'{graph["id"]}.mmd').write_text(mermaid(graph))
+        (OUT/'diagrams'/f'{graph["id"]}.svg').write_text(text, encoding='utf-8')
+        (OUT/'diagrams'/f'{graph["id"]}.mmd').write_text(mermaid(graph), encoding='utf-8')
         cards.append(f'<section id="{graph["id"]}">{text}<p><a href="diagrams/{graph["id"]}.svg">打开 SVG</a> · <a href="diagrams/{graph["id"]}.mmd">Mermaid 源文件</a></p></section>')
     page='''<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>多 Agent 图文创作 · 软件设计图册</title>
 <style>*{box-sizing:border-box}body{margin:0;background:#edf1f8;color:#182841;font-family:"PingFang SC",sans-serif}header,main{max-width:1240px;margin:auto;padding:32px 20px}header{padding-bottom:8px}h1{font-size:32px;margin:12px 0}p{line-height:1.8;color:#53627d}nav{display:flex;gap:12px;flex-wrap:wrap}a{color:#355cb5}nav a{padding:10px 16px;background:white;border-radius:10px;text-decoration:none}section{background:white;border-radius:18px;margin:24px 0;padding:20px;box-shadow:0 4px 22px #1a34500a}svg{display:block;width:100%;height:auto}section p{margin:0;padding:8px}small{letter-spacing:2px;color:#7354bd}@media print{body{background:white}header{padding:0}nav{display:none}section{box-shadow:none;break-before:page;padding:0}main{padding:0}svg{max-height:245mm}section p{font-size:10px}}</style>
 <header><small>SOFTWARE DESIGN / v0.3</small><h1>多 Agent 图文创作产品</h1><p>五层架构 · 四 Agent 协作 · 云端部署 · 任务状态 · Runtime Console<br>2026-09-20 · 设计方案，尚未实现；参数为建议配置及待测目标。</p><nav><a href="#architecture">01 总体架构</a><a href="#workflow">02 创作流程</a><a href="#deployment">03 云端部署</a><a href="#lifecycle">04 任务状态</a><a href="#runtime">05 Runtime Console</a><a href="README.md">设计文档索引</a></nav></header><main>'''+''.join(cards)+'</main></html>\n'
-    (OUT/'DESIGN_ATLAS.html').write_text(page)
+    (OUT/'DESIGN_ATLAS.html').write_text(page, encoding='utf-8')
 
 if __name__=='__main__':
     build()

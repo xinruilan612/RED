@@ -13,7 +13,7 @@ def main():
     service=Service(Store(os.environ['FIXTURE_DATABASE_URL']),Config('fixture-key'),FixtureModel())
     def fault(point,stage):
         if point==os.environ.get('FIXTURE_POINT') and stage==os.environ.get('FIXTURE_STAGE'):
-            Path(os.environ['FIXTURE_MARKER']).write_text('ready')
+            Path(os.environ['FIXTURE_MARKER']).write_text('ready', encoding='utf-8')
             threading.Event().wait(30)
     Worker(service,lease=1,fault=fault).once()
 

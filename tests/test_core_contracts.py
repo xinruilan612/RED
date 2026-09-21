@@ -1,3 +1,4 @@
+import ast
 import tempfile
 import unittest
 from pathlib import Path
@@ -8,6 +9,26 @@ from backend.contracts import DomainError
 
 
 class CoreContractTests(unittest.TestCase):
+    def test_path_text_io_always_declares_utf8(self):
+        root = Path(__file__).resolve().parents[1]
+        for folder in ('backend','scripts','tests'):
+            for path in (root/folder).glob('*.py'):
+                tree = ast.parse(path.read_text(encoding='utf-8'))
+                for node in ast.walk(tree):
+                    if not isinstance(node,ast.Call) or not isinstance(node.func,ast.Attribute): continue
+                    if node.func.attr not in ('read_text','write_text'): continue
+                    encodings = [keyword.value for keyword in node.keywords if keyword.arg=='encoding']
+                    self.assertTrue(encodings,f'{path.relative_to(root)}:{node.lineno} 缺少显式 UTF-8 编码')
+                    self.assertIsInstance(encodings[0],ast.Constant)
+                    self.assertIn(encodings[0].value,('utf-8','utf-8-sig'))
+
+    def test_sqlite_store_creates_missing_parent_directory(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp)/'runtime'/'nested'/'web.sqlite'
+            store = Store(path)
+            self.assertTrue(path.is_file())
+            self.assertEqual(store.list_runs('owner'), [])
+
     def test_migration_reentry_and_tampering(self):
         with tempfile.TemporaryDirectory() as tmp:
             store = Store(Path(tmp)/'db')

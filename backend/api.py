@@ -20,7 +20,7 @@ def settings():
     values = {}
     path = Path(__file__).resolve().parents[1]/'.env'
     if path.exists():
-        for line in path.read_text().splitlines():
+        for line in path.read_text(encoding='utf-8-sig').splitlines():
             if '=' in line and not line.strip().startswith('#'):
                 k,v=line.split('=',1); values[k.strip()]=v.strip().strip('\"\'')
     return {**values, **os.environ}

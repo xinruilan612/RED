@@ -6,10 +6,14 @@ import sys
 
 def main():
     try:
-        import resource
-        resource.setrlimit(resource.RLIMIT_CPU,(8,8))
-        try: resource.setrlimit(resource.RLIMIT_AS,(768*1024*1024,768*1024*1024))
-        except (ValueError,OSError): pass  # Some macOS builds do not enforce AS.
+        try:
+            import resource
+        except ImportError:
+            resource = None  # Windows relies on the parent timeout and input/output limits.
+        if resource is not None:
+            resource.setrlimit(resource.RLIMIT_CPU,(8,8))
+            try: resource.setrlimit(resource.RLIMIT_AS,(768*1024*1024,768*1024*1024))
+            except (ValueError,OSError): pass  # Some macOS builds do not enforce AS.
         from pypdf import PdfReader
         raw=sys.stdin.buffer.read(3_000_001)
         if len(raw)>3_000_000: raise ValueError()

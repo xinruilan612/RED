@@ -1,6 +1,7 @@
 """Transactional domain repository for PostgreSQL and offline SQLite compatibility."""
 import json
 from dataclasses import asdict
+from pathlib import Path
 from uuid import uuid4
 from backend.database import connect
 
@@ -12,6 +13,8 @@ class Store:
     def __init__(self, path):
         self.path = str(path)
         self.postgres = self.path.startswith(('postgresql://', 'postgres://'))
+        if not self.postgres and self.path != ':memory:':
+            Path(self.path).expanduser().parent.mkdir(parents=True, exist_ok=True)
         self.order_column = 'created_seq' if self.postgres else 'rowid'
         with self.connect() as db:
             db.executescript('''

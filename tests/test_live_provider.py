@@ -247,12 +247,12 @@ class LiveTests(unittest.TestCase):
         with self.assertRaises(DomainError):normalize(self.run,'title',value)
 
     def test_config_literal_and_no_secret_public(self):
-        path=Path(self.temp.name)/'.env';path.write_text('# comment\nDEEPSEEK_API_KEY="abc$def"\n')
+        path=Path(self.temp.name)/'.env';path.write_text('# comment\nDEEPSEEK_API_KEY="abc$def"\n', encoding='utf-8')
         cfg=load_config(path,{})
         self.assertEqual(cfg.api_key,'abc$def');self.assertNotIn('abc$def',repr(cfg)+json.dumps(cfg.public()))
         self.assertEqual(load_config(path,{'DEEPSEEK_API_KEY':'override'}).api_key,'override')
         self.assertFalse(load_config(Path(self.temp.name)/'absent',{}).ready)
-        path.write_text('DEEPSEEK_API_KEY=a b')
+        path.write_text('DEEPSEEK_API_KEY=a b', encoding='utf-8')
         with self.assertRaises(DomainError):load_config(path,{})
 
     def test_adapter_no_redirect_no_raw_error_and_json_validation(self):

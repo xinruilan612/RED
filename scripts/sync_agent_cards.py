@@ -6,9 +6,9 @@ MARKER = '**以下为四份独立 Agent Card 的完整合并内容。**'
 
 def outputs():
     folder = ROOT / 'docs/agents'
-    cards = [p.read_text().strip() for p in sorted(folder.glob('0[1-4]*.md'))]
+    cards = [p.read_text(encoding='utf-8').strip() for p in sorted(folder.glob('0[1-4]*.md'))]
     overview = folder / '00_overview_and_all_agents.md'
-    merged = overview.read_text().split(MARKER)[0] + MARKER + '\n\n---\n\n' + '\n\n---\n\n'.join(cards) + '\n'
+    merged = overview.read_text(encoding='utf-8').split(MARKER)[0] + MARKER + '\n\n---\n\n' + '\n\n---\n\n'.join(cards) + '\n'
     rows, skills = [], []
     for card in cards:
         role = re.search(r'Agent ID.*?`([^`]+)`', card).group(1)
@@ -23,4 +23,4 @@ def outputs():
 
 if __name__ == '__main__':
     for path, content in outputs().items():
-        path.write_text(content)
+        path.write_text(content, encoding='utf-8')
