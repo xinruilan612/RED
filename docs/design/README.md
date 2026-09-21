@@ -14,6 +14,8 @@
 
 ## 文档入口
 
+新增场景设计：[个人技能接单推广功能说明书](SKILL_SERVICE_PROMOTION.md)。保留普通推文创作，以大学生摄影师为首个验证场景；目前为待实现方案，开发分支 `codex/skill-service-promotion`。
+
 | 文档 | 内容 |
 | --- | --- |
 | [Agent 统一执行协议](AGENT_PROTOCOL.md) | 状态、分支、证据与审核守卫、预算及恢复 |

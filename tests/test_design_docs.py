@@ -26,6 +26,23 @@ class DesignDocumentationTests(unittest.TestCase):
                 with self.subTest(file=path.name, link=dest):
                     self.assertTrue((path.parent/dest.split('#')[0]).is_file())
 
+    def test_service_promotion_handoff_preserves_scope_and_acceptance_boundaries(self):
+        proposal = DESIGN / 'SKILL_SERVICE_PROMOTION.md'
+        self.assertIn(proposal.name, (DESIGN / 'README.md').read_text())
+        text = proposal.read_text()
+        for requirement in (
+            '状态：待实现', '保留推文创作', '大学生摄影师',
+            '不自动开始以下产品实现', '未知来源', '多触点',
+            '候选经验需人工接受', '临时 PostgreSQL schema',
+            'Git 分支只隔离代码历史', '不调用收费模型',
+        ):
+            with self.subTest(requirement=requirement):
+                self.assertIn(requirement, text)
+        cases = re.findall(r'^\| (SP-\d+) \|', text, re.M)
+        self.assertEqual(cases, [f'SP-{i:02d}' for i in range(1, 13)])
+        self.assertEqual(self.contract['agents'],
+                         ['audience', 'research', 'content', 'reviewer'])
+
     def test_operations_proposal_is_reachable_without_replacing_runtime_contract(self):
         # Guard against a split set of MVP documents and accidental migration by prose.
         for relative in ('README.md', 'AGENTS.md', 'docs/design/README.md',
