@@ -200,7 +200,8 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
     def asset(asset: str):
         require(asset in ('style.css','app.js','operations.js','account.js','auth.js','knowledge.js'),'RESOURCE_NOT_FOUND','页面不存在')
         require((FRONTEND/asset).is_file(),'RESOURCE_NOT_FOUND','页面不存在')
-        return FileResponse(FRONTEND/asset)
+        media_type = 'text/css' if asset.endswith('.css') else 'text/javascript'
+        return FileResponse(FRONTEND/asset,media_type=media_type)
 
     return app
 

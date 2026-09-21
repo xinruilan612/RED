@@ -156,6 +156,10 @@ class ProductionTests(unittest.TestCase):
         with self.assertRaises(DomainError): auth.throttle('test',1)
         with self.assertRaises(DomainError): create_app(self.store,Config(),origin='http://public.example',invite='')
 
+    def test_frontend_assets_have_browser_executable_content_types(self):
+        self.assertEqual(self.client.get('/app.js').headers['content-type'],'text/javascript; charset=utf-8')
+        self.assertEqual(self.client.get('/style.css').headers['content-type'],'text/css; charset=utf-8')
+
     def test_invalid_body_is_safe_and_cookie_is_http_only(self):
         response=self.client.get('/api/session')
         self.assertIn('HttpOnly',response.headers['set-cookie'])
