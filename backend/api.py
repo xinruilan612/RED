@@ -123,6 +123,48 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
     @app.get('/api/operations')
     def operations(user=Depends(logged)): return service.operations.read(user['owner'])
 
+    @app.get('/api/knowledge')
+    def documents(account_id: str,user=Depends(logged)): return service.knowledge.list(user['owner'],account_id)
+
+    @app.post('/api/knowledge')
+    def save_document(data: dict,user=Depends(logged)):
+        auth.throttle('upload:'+user['owner'],40,3600)
+        try: return service.knowledge.save(user['owner'],data)
+        except DomainError: raise
+        except ValueError as e: raise DomainError('INVALID_INPUT',str(e)) from None
+
+    @app.get('/api/knowledge/{document_id}')
+    def document(document_id: str,account_id: str,user=Depends(logged)):
+        return service.knowledge.get(user['owner'],account_id,document_id)
+
+    @app.post('/api/knowledge/{document_id}/delete')
+    def delete_document(document_id: str,data: dict,user=Depends(logged)):
+        require(set(data)=={'account_id','version'},'INVALID_INPUT','删除字段无效')
+        return service.knowledge.delete(user['owner'],data['account_id'],document_id,data['version'])
+
+    @app.post('/api/knowledge/retrieve')
+    def retrieve(data: dict,user=Depends(logged)):
+        require(set(data)=={'account_id','query'},'INVALID_INPUT','检索字段无效')
+        return service.knowledge.retrieve(user['owner'],data['account_id'],data['query'])
+
+    @app.post('/api/sources/search')
+    def search(data: dict,user=Depends(logged)):
+        from backend.sources import search_web
+        require({'query','account_id'}<=set(data)<={'query','account_id','provider'},'INVALID_INPUT','搜索字段无效')
+        service.knowledge.account(user['owner'],data['account_id'])
+        auth.throttle('search:'+user['owner'],30,3600)
+        return search_web(data['query'],provider=data.get('provider','bing'))
+
+    @app.post('/api/sources/import')
+    def import_source(data: dict,user=Depends(logged)):
+        from backend.sources import read_article
+        require(set(data)=={'url','account_id'},'INVALID_INPUT','来源字段无效')
+        service.knowledge.account(user['owner'],data['account_id'])
+        auth.throttle('fetch:'+user['owner'],30,3600)
+        article=read_article(data['url'])
+        return service.knowledge.save(user['owner'],{'account_id':data['account_id'],'title':article['title'],'text':article['text']},
+                                      source_type='web',source_url=article['url'],metadata={k:article[k] for k in ('fetched_at','published_at','verification')})
+
     @app.post('/api/operations')
     def operate(data: dict, user=Depends(logged)): return service.operations.command(user['owner'],data)
 

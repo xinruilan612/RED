@@ -44,7 +44,7 @@ def node(agent, stage, inputs, function):
     return {'agent':agent,'stage':stage,'mode':'simulation','input':inputs,'output':output,
             'duration_ms':round((time.perf_counter()-started)*1000,3),
             'model_calls':0,'tokens':0,'cost':0,'tools':[],
-            'memory':'仅使用本次输入；尚未接入跨任务记忆'}
+            'memory':'尚无已接受的同账号经验；资料与账号信息以本次输入快照为准'}
 
 
 def record(run, result):
@@ -70,12 +70,13 @@ def audience(context):
 
 def _research(context):
     material=context['material']
-    gap=context['scenario']=='missing' and not material.strip()
+    from backend.live import material_records
+    sources=material_records(context)
+    gap=context['scenario']=='missing' and not sources
     return {'core_gap':gap,'status':'insufficient' if gap else ('ready' if material else 'partial'),
-            'sources':[{'source_id':'user-material','text':material,'source_type':'user_provided',
-                        'verification':'用户提供，未独立核实'}] if material else [],
+            'sources':sources,
             'gaps':['该演示要求真实素材，请在人工处理区补充'] if gap else [],
-            'scope':'仅收录用户输入；没有联网搜索，也没有事实核验',
+            'scope':'收录用户素材与可用检索片段；当前仍是模板模拟，没有模型推理或事实核验',
             'trend_context':context.get('operations',{}).get('trend'),
             'prohibited_claims':['未经验证的效果数字','虚构亲身经历']}
 

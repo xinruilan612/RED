@@ -12,15 +12,25 @@ class Service:
         self.store, self.config = store, config
         self.operations = Operations(store)
         self.executor = Executor(store,config,client)
+        from backend.knowledge import Knowledge
+        self.knowledge = Knowledge(store)
 
     def create(self, owner, data):
         mode = data.get('mode','simulation')
         require(mode in ('simulation','live'), 'INVALID_INPUT', '运行模式无效')
         require(mode!='live' or self.config.ready, 'KEY_REQUIRED', '请在服务器配置 DeepSeek Key')
-        context = validate_brief({k:v for k,v in data.items() if k not in ('mode','operations')})
+        context = validate_brief({k:v for k,v in data.items() if k not in ('mode','operations','knowledge')})
         context['mode'] = mode
         if 'operations' in data:
             context['operations'] = self.operations.context(owner,data['operations'],mode)
+        selection=data.get('knowledge',{'enabled':False})
+        require(isinstance(selection,dict) and set(selection)=={'enabled'} and type(selection['enabled']) is bool,'INVALID_INPUT','资料检索设置无效')
+        if selection['enabled']:
+            account=context.get('operations',{}).get('account_id')
+            require(account,'INVALID_INPUT','请先选择资料所属账号')
+            result=self.knowledge.retrieve(owner,account,(context['topic']+' '+context['audience'])[:300])
+            context['retrieval']=result
+            context['evidence']=result['sources']
         if mode=='live': context['scenario']='standard'
         return view(self.store.create(owner,str(uuid4()),context),self.executor)
 

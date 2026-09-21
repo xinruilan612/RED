@@ -35,7 +35,7 @@ def enrich(stage, value, context):
             core_viewpoint=result['angle'], audience=result['reader'],
             content_type='口播与分镜脚本' if op.get('platform') == 'douyin' else '图文笔记',
             hook_options=result.get('candidate_angles', ['场景问题开头', '具体清单开头']),
-            evidence_scope='只引用用户提供的素材；历史表现与竞品观察不能证明正文事实',
+            evidence_scope='引用用户素材与检索原文；历史表现与竞品观察不能证明正文事实',
             cta=result.get('cta', '邀请读者分享自己的场景'), banned=profile.get('banned', ''),
             publishing_window='由用户安排；暂无经过验证的最佳发布时间',
             recommendation_reason=result.get('why_account') or profile.get('positioning') or '来自本次需求，账号定位尚待补充')

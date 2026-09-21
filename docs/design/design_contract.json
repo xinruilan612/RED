@@ -376,5 +376,26 @@
       "needs_review"
     ],
     "account_key": "account_id"
+  },
+  "website_extension": {
+    "version": "0.6.0",
+    "database_schema_version": 2,
+    "identity": "password_account_with_owner_scoped_sessions",
+    "knowledge_scope": [
+      "owner",
+      "account_id"
+    ],
+    "retrieval_engine": "bm25-zh-bigram-v1",
+    "source_states": [
+      "search_result",
+      "web",
+      "text",
+      "upload"
+    ],
+    "network_invocation": "explicit_user_action_only",
+    "snapshot_sources": "server_generated_immutable_excerpts",
+    "new_task_excludes_deleted_documents": true,
+    "old_task_keeps_evidence_for_audit": true,
+    "platform_oauth": false
   }
 }
