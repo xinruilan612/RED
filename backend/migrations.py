@@ -1,0 +1,45 @@
+"""Forward-only, transactional core migrations, separate from legacy bootstrap DDL.
+
+Never rewrite a shipped migration. A checksum mismatch fails startup rather than
+silently interpreting existing data with a different schema.
+"""
+import hashlib
+from backend.contracts import require
+
+MIGRATIONS = ((1, '''
+CREATE TABLE IF NOT EXISTS runtime_jobs (
+ id TEXT PRIMARY KEY, run_id TEXT NOT NULL UNIQUE REFERENCES runs(id),
+ owner TEXT NOT NULL, status TEXT NOT NULL, generation INTEGER NOT NULL DEFAULT 0,
+ lease_until DOUBLE PRECISION, token TEXT, error TEXT, updated DOUBLE PRECISION NOT NULL,
+ thread_id TEXT NOT NULL, policy TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS runtime_jobs_ready ON runtime_jobs(status,lease_until);
+CREATE TABLE IF NOT EXISTS runtime_nodes (
+ run_id TEXT NOT NULL REFERENCES runs(id), node_key TEXT NOT NULL,
+ stage TEXT NOT NULL, input_hash TEXT NOT NULL, output TEXT NOT NULL,
+ created DOUBLE PRECISION NOT NULL, PRIMARY KEY(run_id,node_key));
+CREATE TABLE IF NOT EXISTS model_audit (
+ call_id TEXT PRIMARY KEY, run_id TEXT NOT NULL, agent TEXT NOT NULL,
+ stage TEXT NOT NULL, provider TEXT NOT NULL, model TEXT NOT NULL,
+ route_version TEXT NOT NULL, prompt_version TEXT NOT NULL,
+ input_hash TEXT NOT NULL, sources TEXT NOT NULL, snapshot_id TEXT NOT NULL,
+ started DOUBLE PRECISION NOT NULL, duration_ms INTEGER,
+ request_id TEXT, input_tokens INTEGER, output_tokens INTEGER,
+ rate DOUBLE PRECISION NOT NULL, outcome TEXT NOT NULL);
+'''),)
+
+
+def upgrade(store, migrations=None):
+    migrations = MIGRATIONS if migrations is None else migrations
+    with store.connect() as db:
+        db.execute('BEGIN IMMEDIATE')
+        db.execute('CREATE TABLE IF NOT EXISTS core_migrations (version INTEGER PRIMARY KEY, checksum TEXT NOT NULL, applied_at TEXT DEFAULT CURRENT_TIMESTAMP)')
+        applied = dict(db.execute('SELECT version,checksum FROM core_migrations').fetchall())
+        require(set(applied) <= {v for v, _ in migrations}, 'SCHEMA_TOO_NEW', '数据库版本高于当前程序；请使用匹配版本')
+        for version, sql in migrations:
+            checksum = hashlib.sha256(sql.encode()).hexdigest()
+            if version in applied:
+                require(applied[version] == checksum, 'MIGRATION_CHANGED', '已应用迁移被修改；停止启动')
+                continue
+            db.executescript(sql)
+            db.execute('INSERT INTO core_migrations(version,checksum) VALUES(?,?)', (version, checksum))
+

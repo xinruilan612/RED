@@ -10,6 +10,8 @@ from backend.web import view
 class Service:
     def __init__(self, store, config, client=None):
         self.store, self.config = store, config
+        from backend.migrations import upgrade
+        upgrade(store)
         self.operations = Operations(store)
         self.executor = Executor(store,config,client)
         from backend.knowledge import Knowledge
@@ -35,6 +37,8 @@ class Service:
         return view(self.store.create(owner,str(uuid4()),context),self.executor)
 
     def action(self, owner, run_id, data):
+        from backend.schemas import Command, parse
+        data = parse(Command, data)
         require(set(data)=={'action','version','key','payload'}, 'INVALID_INPUT', '命令字段无效')
         action, payload = data['action'],data['payload']
         require(isinstance(action,str) and action in ('next','edit','supplement','accept','cancel','recover'), 'INVALID_INPUT', '未知操作')
