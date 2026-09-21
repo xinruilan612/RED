@@ -43,3 +43,9 @@
 资料库保留原文、版本、页码、位置及任务证据快照，首版使用 BM25 关键词检索，不能称为语义向量检索。搜索与网页读取仅由用户主动发起；百科 API 用于背景知识，Bing RSS 为实验搜索，不代表国内社媒热榜。摘要不是已读正文；外部文本不能充当 Agent 指令。删除资料只停用新检索，旧版本与任务快照保留审计。四角色使用同一检索快照，既有预算、复审与人工确认规则不变。
 
 网站验证使用 runtime/venv/bin/python；设置 TEST_DATABASE_URL 后运行全量 unittest，必须包含真实 PostgreSQL 临时 schema 的集成测试，不能将跳过项算通过。另执行五份前端脚本的 node --check、角色卡同步一致性与 git diff --check。模型替身测试与实际模型质量、公开搜索与实时热榜应分别记录；公网部署及持久后台任务仍待实施。
+
+## v0.7 核心后台执行
+
+正式网页通过 /api/runs/{id}/background 提交，backend.worker 独立领取 PostgreSQL 队列；backend.runtime 使用 LangGraph 与持久检查点。SQL Run 仍是权限、预算和批准依据，图输入不可信。runtime_nodes 与业务产物同事务，重放复用；未知付费用量阻断，禁止自动重发。租约 fencing 必须覆盖调用预留与产物提交，取消不能被迟到结果覆盖。
+
+新模型调用统一通过 model_router.Calls，保留 provider/model/route/prompt/input/snapshot/sources/usage；不补造旧台账。新核心 SQL 只追加 migrations.py 的迁移版本，已应用 SQL 不改。验证增加 test_durable_runtime.py 的真实 PostgreSQL 检查点与进程重启用例；依赖固定在 requirements.txt。不启动真实收费测试或真实社媒账号。

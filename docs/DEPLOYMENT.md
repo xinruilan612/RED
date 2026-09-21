@@ -75,3 +75,18 @@ git diff --check
 新增核心结构由 backend/migrations.py 顺序、事务升级并记录 checksum，已有迁移不可原地改写。先用 pg_dump 备份，再部署；不通过删除迁移记录强行降级。旧模块 bootstrap 保留兼容，新增核心表统一走 core_migrations。
 
 可选 MODEL_ROUTES_JSON 示例：`{"research":{"model":"deepseek-flash","rate":0.0000012}}`。rate 为每 Token 的保守美元费用上限，改模型前需核对供应商价格；未配置阶段沿用当前默认。新任务固化路由，已创建任务不因环境改变而偷偷换模型。API Key 仍只留服务器环境。新供应商需实现适配器与相同契约测试，不承诺任意模型即插即用。替身测试不访问收费接口。
+
+## v0.7 独立后台 Worker
+
+网站与 Worker 是两个进程，共用同一个 DATABASE_URL 与模型配置。必须分别启动：
+
+```bash
+runtime/venv/bin/python -m backend.api --port 8765
+runtime/venv/bin/python -m backend.worker
+```
+
+网页“后台运行到人工处理”只事务入队，关闭标签页不会停止 Worker。暂停等待当前节点保存；取消阻止后续产物提交，但已发出的模型请求仍可能产生费用。Worker 每次只领取一个任务，角色两支并行；多个 Worker 通过数据库租约和 fencing token 避免重复提交。Worker 宕机后重启，过期租约最多约30秒后重新领取。关闭电脑时任务不会执行，开机并启动服务后恢复。生产环境应由进程管理器守护两个进程。
+
+LangGraph 1.2.11 + PostgreSQL checkpointer 3.1.2 在同数据库持久化检查点，SQL runtime_nodes 与业务状态同事务提交，解决“业务已写入但检查点未写入”的重放窗口。已收到的模型响应可复用；供应商请求发送后、收到响应前进程丢失，系统无法保证供应商执行恰好一次，明确 blocked / 用量未知，不盲目再次收费。暂停/错误/人工操作后点击后台继续；用量未知需先人工核对，目前没有自动对账或绕过入口。
+
+本机兼容 SQLite 使用独立 `.checkpoints` 文件；生产使用 PostgreSQL。检查点表由锁定版本的库自行迁移，启动时以会话锁保护；升级库前备份数据库。没有把检查点当作长期记忆或批准依据，人工确认仍事务核对指定稿件、审核、快照和哈希。旧同步接口保留无后台任务的兼容测试路径；正式网页均走后台队列。

@@ -16,6 +16,18 @@ class Service:
         self.executor = Executor(store,config,client)
         from backend.knowledge import Knowledge
         self.knowledge = Knowledge(store)
+        from backend.jobs import Jobs
+        self.jobs=Jobs(store)
+
+    def view(self, run):
+        result=view(run,self.executor)
+        result['background']=self.jobs.public(run.run_id,run.owner_id)
+        result['in_flight']=result.get('in_flight',False) or result['background']['status'] in ('queued','running','pausing')
+        return result
+
+    def background(self, owner, run_id, data):
+        self.jobs.command(owner,run_id,data)
+        return self.view(self.store.get(run_id,owner))
 
     def create(self, owner, data):
         mode = data.get('mode','simulation')
@@ -35,7 +47,7 @@ class Service:
             context['retrieval']=result
             context['evidence']=result['sources']
         if mode=='live': context['scenario']='standard'
-        return view(self.store.create(owner,str(uuid4()),context),self.executor)
+        return self.view(self.store.create(owner,str(uuid4()),context))
 
     def action(self, owner, run_id, data):
         from backend.schemas import Command, parse
@@ -46,17 +58,21 @@ class Service:
         integer(data['version'],'version')
         require(isinstance(data['key'],str) and 0<len(data['key'])<=100 and isinstance(payload,dict), 'INVALID_INPUT', '命令参数无效')
         run = self.store.get(run_id,owner)
+        if action=='next':
+            job=self.jobs.public(run_id,owner)
+            require(job['status'] not in ('queued','running','pausing'),'JOB_ACTIVE','任务正在后台执行，请等待或暂停')
+            require(job['status']=='idle','INVALID_TRANSITION','此任务使用后台执行，请点击后台继续')
         if action in ('next','cancel','recover'):
             require(not payload,'INVALID_INPUT','此操作无需参数')
         if action=='recover':
-            return view(self.executor.recover(run_id,owner,data['version']),self.executor)
+            return self.view(self.executor.recover(run_id,owner,data['version']))
         if action=='next' and run.context.get('mode')=='live':
-            return view(self.executor.step(run_id,owner,data['version'],data['key']),self.executor)
+            return self.view(self.executor.step(run_id,owner,data['version'],data['key']))
         command = {'next':'demo_step','supplement':'demo_supplement'}.get(action,action)
         if action=='edit': payload={'content':validate_edit(payload)}
         if action=='supplement': require(set(payload)=={'material','allow_hypothesis'},'INVALID_INPUT','补料字段无效')
         if action=='accept': require(set(payload)=={'draft_ref','review_ref'} and all(isinstance(v,str) for v in payload.values()),'INVALID_INPUT','确认版本无效')
-        return view(self.store.command(run_id,owner,data['version'],data['key'],command,payload),self.executor)
+        return self.view(self.store.command(run_id,owner,data['version'],data['key'],command,payload))
 
     def export(self, owner, run_id):
         run = self.store.get(run_id,owner)

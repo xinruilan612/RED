@@ -37,11 +37,15 @@ function render(){
  $('welcome').hidden=true;$('workbench').hidden=false;
  $('runTitle').textContent=run.context.topic;
  $('runSummary').textContent=`${run.context.operations?.platform==='douyin'?'抖音 · 口播脚本':'小红书 · 图文笔记'} · 写给 ${run.context.audience} · ${run.context.tone} · ${run.snapshot_id.slice(0,8)} 输入快照`;
- $('statusLabel').textContent=run.in_flight?'AI 正在处理，请稍候':states[run.run_status];$('versionCount').textContent=run.drafts.length+' 个';
+ const background=run.background;
+ const jobLabels={queued:background?.worker_online?'已排队，后台即将执行':'已排队，等待 Worker 启动',running:'后台执行中 · 关闭页面后继续',pausing:'正在暂停，等待当前节点保存',paused:'后台已暂停',blocked:'后台等待处理',waiting:'等待你的审核'};
+ $('statusLabel').textContent=jobLabels[background?.status]|| (run.in_flight?'AI 正在处理，请稍候':states[run.run_status]);
+ if(background?.error)error(new Error(background.error));$('versionCount').textContent=run.drafts.length+' 个';
  const allowed=run.allowed_actions;
  $('recover').hidden=!allowed.includes('recover');$('next').hidden=!allowed.includes('next');$('auto').hidden=!allowed.includes('next');$('cancel').hidden=!allowed.includes('cancel');
  $('next').textContent=run.current_stage==='reviewer'?'执行复审 / 审核 →':run.review?.decision==='revision_required'?'按意见改稿 →':'执行下一步 →';
- $('auto').textContent=auto?'停止自动运行':'自动运行到人工处理';
+ $('auto').textContent=background?(run.in_flight?'暂停后台任务':'后台运行到人工处理'):(auto?'停止自动运行':'自动运行到人工处理');
+ if(background){$('next').hidden=true;$('auto').hidden=!allowed.includes('next')&&!run.in_flight;}
  const node=(key,num,sub)=>{
  const logs=run.node_runs.filter(n=>n.agent===key&&n.snapshot_id===run.snapshot_id);
  const isCurrent=(key===currentAgent()||(run.current_stage==='brief'&&key==='research'&&run.run_status!=='WAITING_USER'))&&!['SUCCEEDED','CANCELLED','FAILED'].includes(run.run_status);
@@ -55,6 +59,7 @@ function render(){
  renderDetails();renderHuman();renderDraft();renderTimeline();renderCalls();
  document.querySelectorAll('#workbench button').forEach(b=>{if(!b.closest('#flow')&&b.id!=='auto')b.disabled=busy||(b.dataset.titleChoice!==undefined&&run.artifacts.find(a=>a.stage==='title')?.value.candidates[Number(b.dataset.titleChoice)]===run.drafts.at(-1)?.content.selected_title);});
  $('cancel').disabled=busy&&!run.in_flight;
+ if(background&&run.in_flight){for(const id of ['editButton','accept','revise','recover'])$(id).disabled=true;}
  if(editing){$('next').disabled=true;$('auto').disabled=true;$('accept').disabled=true;$('revise').disabled=true;$('editButton').disabled=true;}
  else $('auto').disabled=busy&&!auto;
 }
@@ -122,16 +127,25 @@ function renderTimeline(){
 }
 function renderCalls(){
  if(run.mode!=='live')return;
- const rows=(run.calls||[]).map(c=>'<div class="event"><time>DeepSeek</time><div>'+esc(names[c.agent])+' · '+esc(stages[c.stage])+'<small>'+esc(({calling:'请求中 / 如服务已重启，请取消后新建',received:'已收到响应',validated:'校验通过',invalid:'输出格式校验失败',failed:'请求失败'})[c.status]||c.status)+' · '+(c.tokens===null?'用量未知，已保留预算':c.tokens+' Token')+(c.inherited?' · 沿用原任务计数':'')+(c.error?' · '+esc(c.error):'')+'</small>'+(c.diagnostic_response?'<details><summary>查看被拒绝的模型响应</summary>'+json(c.diagnostic_response)+'</details>':'')+'</div></div>').join('');
+ const rows=(run.calls||[]).map(c=>'<div class="event"><time>'+esc((c.provider||'历史记录')+' / '+(c.model||'未知模型'))+'</time><div>'+esc(names[c.agent])+' · '+esc(stages[c.stage])+'<small>'+esc(({calling:'请求中 / 中断后先核对用量，不自动重发',received:'已收到响应',validated:'校验通过',invalid:'输出格式校验失败',failed:'请求失败'})[c.status]||c.status)+' · '+(c.tokens===null?'用量未知，已保留预算':c.tokens+' Token')+(c.inherited?' · 沿用原任务计数':'')+(c.error?' · '+esc(c.error):'')+'</small>'+(c.diagnostic_response?'<details><summary>查看被拒绝的模型响应</summary>'+json(c.diagnostic_response)+'</details>':'')+'</div></div>').join('');
  $('timeline').insertAdjacentHTML('afterbegin',rows);
 }
 async function act(action,payload={}){
+ if(action==='next'&&websiteSession?.auth_required)return backgroundCommand('start');
  if(busy||!run)return false;busy=true;clearError();if(action==='next'&&run.mode==='live')run.in_flight=true;render();
  try{run=await api(`/api/runs/${run.run_id}/actions`,'POST',{action,version:run.status_version,key:crypto.randomUUID(),payload});clearError();viewVersion=null;selected=currentAgent();detailStage=null;if(action==='edit'){ops=await api('/api/operations');syncAccounts();}await history();return true;}
  catch(e){auto=false;error(e);try{run=await api('/api/runs/'+run.run_id);}catch(_){}return false;}
  finally{busy=false;render();}
 }
+async function backgroundCommand(action){
+ if(busy||!run)return false;
+ busy=true;clearError();render();
+ try{run=await api(`/api/runs/${run.run_id}/background`,'POST',{action,version:run.status_version,key:crypto.randomUUID()});await history();return true;}
+ catch(e){error(e);try{run=await api('/api/runs/'+run.run_id);}catch(_){}return false;}
+ finally{busy=false;render();}
+}
 async function autoRun(){
+ if(websiteSession?.auth_required)return backgroundCommand(run.in_flight?'pause':'start');
  if(auto){auto=false;render();return;}auto=true;render();
  while(auto&&run?.allowed_actions.includes('next')){
   if(!await act('next'))break;

@@ -123,3 +123,11 @@ RAG 首版是中文双字词及英文词的 BM25 原文检索，不是语义向�
 MODEL_ROUTES_JSON 可按阶段配置 DeepSeek model 与每 Token 费用上限 rate；未知供应商必须实现并注册适配器，不能靠模型返回字段改变授权或审核。不同模型仍经同一 normalize、review_gates、Run.accept 和预算守卫。保留用户提供素材与知识库片段的来源，不把模型答案作为外部事实来源。
 
 第二步验证：144 项全量 unittest 通过（含 PostgreSQL），新增双模型路由、费用上限预留、错误调用审计与错误版本批准拒绝测试；记录 runtime/core-stage2-tests.log。全部模型调用为替身，不构成真实生成质量评测。
+
+## 核心底座第三步：LangGraph 与持久 Worker
+
+新增 jobs.py / runtime.py / worker.py。LangGraph 分别编排 audience、research、五个 content 阶段、revise、review 和 human interrupt；并行分支独立保存。PostgreSQL 持久队列和检查点跨进程恢复，SQL 节点账本与业务修改同事务；模型响应先落盘，可在节点未提交时复用。运行租约带 fencing token，迟到 Worker 不能提交旧结果；取消始终优先。
+
+网页改为提交后台运行、暂停及轮询；独立 Worker 持续运行到人工处理。新端点继承网站会话、CSRF、owner、版本和幂等。模型调用沿用第二步统一入口与预算，人工编辑强制新稿复审。无法确认的在途付费请求阻断恢复，不承诺外部调用 exactly-once。
+
+第三步验证：160 项全量测试通过，随后补充的2项（SQLite/PostgreSQL 补料与模拟返修）也通过；18项持久运行测试全部通过，无 PostgreSQL 跳过。五份前端语法、文档契约与空白检查通过。实际进程终止和关闭浏览器标签页的验收留在第四步执行，不以实例重建测试替代。

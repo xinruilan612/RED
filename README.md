@@ -2,7 +2,7 @@
 
 产品新方向：面向小红书、抖音，将选题发现、四 Agent 创作、版本评审、人工审核与发布、指标回流、历史学习连成运营闭环。
 
-**当前可用：v0.6 账号网站、资料库与公开来源检索（本机验证，尚未公网部署）。**
+**当前可用：v0.7 账号网站、资料库、公开检索与持久多 Agent 后台（本机验证，尚未公网部署）。**
 
 新增 FastAPI、用户名/密码登录、一次性恢复码、PostgreSQL 与 SQLite 兼容存储及逐行迁移校验。启动与迁移见 [部署说明](docs/DEPLOYMENT.md)。下文 v0.5 命令保留为旧 Demo 的兼容入口，当前网站应运行 `runtime/venv/bin/python -m backend.api`。
 
@@ -36,7 +36,7 @@
 | 指标回流 | 用户录入、缺失值、窗口与修订快照；演示数据隔离 | 平台自动取数、CSV 导入 |
 | 历史学习 | 指标计算、描述性复盘、经验接受/撤销/失效、后续上下文读取 | 因果结论、在线训练、自动优化权重 |
 
-用户确认首期为小红书、抖音，**暂不接入 Postiz**。指定参考：[Klaudiusz321/social-media-agents](https://github.com/Klaudiusz321/social-media-agents)。后续完整目标见 [技术方案](docs/design/ARCHITECTURE.md#运营闭环-v04-技术提案) 与 [推进计划](docs/design/MIGRATION.md#运营闭环-v04-推进计划)；当前执行器仍为本地 Python，未迁移 LangGraph。
+用户确认首期为小红书、抖音，**暂不接入 Postiz**。指定参考：[Klaudiusz321/social-media-agents](https://github.com/Klaudiusz321/social-media-agents)。后续完整目标见 [技术方案](docs/design/ARCHITECTURE.md#运营闭环-v04-技术提案) 与 [推进计划](docs/design/MIGRATION.md#运营闭环-v04-推进计划)；正式网站已接 LangGraph、PostgreSQL 检查点和独立 Worker，旧同步路径保留兼容。
 
 沿用已有文件夹，协作规则为根目录 AGENTS.md；不建立另一套 AGENT.md 或 MVP README。
 
@@ -46,6 +46,8 @@
 
 ```bash
 runtime/venv/bin/python -m backend.api --port 8765
+# 另一个终端：
+runtime/venv/bin/python -m backend.worker
 ```
 
 然后打开 http://127.0.0.1:8765/ 。首次环境与数据库安装见 [部署说明](docs/DEPLOYMENT.md)。保持终端运行；关闭后用相同命令再次启动。更换端口时也要同步修改 `.env` 的 PUBLIC_ORIGIN。
@@ -59,8 +61,8 @@ runtime/venv/bin/python -m backend.api --port 8765
 ## 可以测试什么
 
 1. 填写主题、读者、风格和素材，选择演示场景，点击“创建工作流”。
-2. 用“执行下一步”逐阶段查看，也可“自动运行到人工处理”。点击角色或创作阶段，查看中文产物、输入和历史记录。
-3. 选择“审核发现问题”场景：流程会停下，你可以自动改稿或手动编辑。保存的新版本需要复审，旧版本仍可比较。
+2. 点击“后台运行到人工处理”，可暂停或关闭页面，Worker 会继续到人工处理。点击角色或创作阶段查看输入和产物。
+3. 选择“审核发现问题”场景：后台会自动返修并复审，最终等待你确认；你也可编辑后再次复审，旧版本保留。
 4. 选择“资料不足”场景且不填素材：流程会要求你补充，再重新分析。
 5. 最后由你确认准确版本，下载 Markdown 文稿。确认后可进入发布中心；当前支持演练或人工发布回填，没有自动发帖。
 
@@ -70,7 +72,7 @@ runtime/venv/bin/python -m backend.api --port 8765
 
 模拟模式使用固定模板；真实模式由 DeepSeek 执行四角色，正常首次 8 次请求，改稿后复审。旧 backend.web 不提供资料库与联网搜索；新 backend.api 已接资料导入、原文检索与主动公开搜索。平台自动取数、CSV 导入、图片/OCR、图片生成和图文包导出仍未实现。运营指标支持逐条表单录入。审核不代表事实、原创或平台合规已独立验证。
 
-旧 backend.web 服务只绑定本机回环地址，不可直接部署公网。新 backend.api 已完成 FastAPI、网站账号和 PostgreSQL 本机联调；持久任务队列与公网部署继续按设计推进。前端沿用原生 HTML/CSS/JS，没有重写成 Next.js。
+旧 backend.web 服务只绑定本机回环地址，不可直接部署公网。新 backend.api 已完成 FastAPI、网站账号、PostgreSQL 和持久队列本机联调，公网部署仍待推进。前端沿用原生 HTML/CSS/JS，没有重写成 Next.js。
 
 - [实际开发进度](docs/IMPLEMENTATION_STATUS.md)
 - [本轮验证记录](docs/WEB_DEMO_VALIDATION.md)
@@ -102,3 +104,9 @@ PYTHONDONTWRITEBYTECODE=1 python3 -m backend.web --port 8765 --db runtime/hotspo
 ```
 
 旧服务打开 http://127.0.0.1:8765/#overview 查看演示首页。backend.web 默认启动命令会打开 runtime/demo.sqlite，两个旧数据库的历史互不合并。所有记录按本地空间隔离。保留原 Cookie 或使用提前保存的恢复码，可访问原空间；不同数据库之间不合并。
+
+## 核心后台执行（v0.7）
+
+正式网站在 FastAPI + PostgreSQL 上运行；启动网站后还需独立启动 `runtime/venv/bin/python -m backend.worker`。网页提交任务后可关闭，Worker 继续；重启 Worker 后从数据库检查点恢复。受众和研究分支、创作各阶段独立落盘，人工确认绑定精确版本。Model Router 为每次新模型调用记录用量、模型和来源，未知用量不自动重发。
+
+部署与已知边界见 [部署说明](docs/DEPLOYMENT.md#v07-独立后台-worker)，阶段验收见 [实施记录](docs/IMPLEMENTATION_STATUS.md)。默认模拟模式不收费；没有接通真实小红书/抖音账号发布或私有数据同步。

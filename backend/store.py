@@ -1,6 +1,7 @@
-"""Transactional local repository for domain tests; production PostgreSQL pending."""
+"""Transactional domain repository for PostgreSQL and offline SQLite compatibility."""
 import json
 from dataclasses import asdict
+from uuid import uuid4
 from backend.database import connect
 
 from backend.contracts import PARAMETERS, require, integer
@@ -79,11 +80,18 @@ class Store:
                 require(prior[0] == fingerprint, 'IDEMPOTENCY_CONFLICT', '幂等键已用于其他命令')
                 return Run(**json.loads(prior[1]))
             require(run.status_version == expected_version, 'VERSION_CONFLICT', '任务已更新')
+            job = db.execute('SELECT status FROM runtime_jobs WHERE run_id=?',(run_id,)).fetchone() if db.has_table('runtime_jobs') else None
+            if job and action!='cancel':
+                require(job[0] not in ('queued','running','pausing'),'JOB_ACTIVE','后台任务尚未停稳，请稍后重试')
             before = run.drafts[-1] if action == 'edit' else None
             getattr(run, action)(**payload)
             if before is not None:
                 from backend.accounts import capture_edit
                 capture_edit(db, run, before)
+            if job and action in ('accept','cancel'):
+                db.execute("UPDATE runtime_jobs SET status='done',token=NULL WHERE run_id=?",(run_id,))
+            elif job and job[0] in ('paused','blocked') and action in ('edit','demo_supplement'):
+                db.execute('UPDATE runtime_jobs SET thread_id=? WHERE run_id=?',(str(uuid4()),run_id))
             run.status_version += 1
             encoded = json.dumps(asdict(run), ensure_ascii=False)
             db.execute('UPDATE runs SET payload=? WHERE id=?', (encoded,run_id))

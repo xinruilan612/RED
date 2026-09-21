@@ -37,7 +37,7 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
     store = store or Store(env.get('DATABASE_URL','runtime/web.sqlite'))
     config = config if config is not None else load_config()
     auth, service = Auth(store), Service(store,config,client)
-    app = FastAPI(title='有迹运营 API', version='0.6.0', docs_url=None, redoc_url=None)
+    app = FastAPI(title='有迹运营 API', version='0.7.0', docs_url=None, redoc_url=None)
     app.state.store,app.state.service,app.state.auth = store,service,auth
 
     def failure(error):
@@ -91,7 +91,7 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
     @app.get('/health')
     def health():
         with store.connect() as db: db.execute('SELECT 1')
-        return {'status':'ok','database':'postgresql' if store.postgres else 'sqlite','version':'0.6.0'}
+        return {'status':'ok','database':'postgresql' if store.postgres else 'sqlite','version':'0.7.0'}
 
     @app.get('/api/session')
     def session(request: Request):
@@ -174,16 +174,20 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
         return due_reviews(service.operations.read(user['owner']))
 
     @app.get('/api/runs')
-    def runs(user=Depends(logged)): return [view(r,service.executor) for r in store.list_runs(user['owner'])]
+    def runs(user=Depends(logged)): return [service.view(r) for r in store.list_runs(user['owner'])]
 
     @app.post('/api/runs',status_code=201)
     def create(data: dict, user=Depends(logged)): return service.create(user['owner'],data)
 
     @app.get('/api/runs/{run_id}')
-    def get_run(run_id: str,user=Depends(logged)): return view(store.get(run_id,user['owner']),service.executor)
+    def get_run(run_id: str,user=Depends(logged)): return service.view(store.get(run_id,user['owner']))
 
     @app.post('/api/runs/{run_id}/actions')
     def act(run_id: str,data: dict,user=Depends(logged)): return service.action(user['owner'],run_id,data)
+
+    @app.post('/api/runs/{run_id}/background',status_code=202)
+    def background(run_id: str,data: dict,user=Depends(logged)):
+        return service.background(user['owner'],run_id,data)
 
     @app.get('/api/runs/{run_id}/export')
     def export(run_id: str,user=Depends(logged)):

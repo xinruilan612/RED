@@ -17,9 +17,9 @@ class CoreContractTests(unittest.TestCase):
             upgrade(store); upgrade(store)
             with store.connect() as db:
                 self.assertEqual(db.execute('SELECT payload FROM runs').fetchone()[0], original)
-                self.assertEqual(db.execute('SELECT COUNT(*) FROM core_migrations').fetchone()[0], 1)
+                self.assertEqual(db.execute('SELECT COUNT(*) FROM core_migrations').fetchone()[0], len(MIGRATIONS))
             with self.assertRaisesRegex(DomainError, '被修改'):
-                upgrade(store, ((1, MIGRATIONS[0][1]+'\n'),))
+                upgrade(store, ((1, MIGRATIONS[0][1]+'\n'),)+MIGRATIONS[1:])
             self.assertEqual(store.get(run.run_id,'owner').snapshot_id, 'snapshot')
 
     def test_failed_migration_rolls_back(self):
@@ -27,10 +27,10 @@ class CoreContractTests(unittest.TestCase):
             store = Store(Path(tmp)/'db')
             upgrade(store)
             with self.assertRaises(Exception):
-                upgrade(store, MIGRATIONS+((2,'CREATE TABLE rollback_probe(id TEXT); BAD SQL'),))
+                upgrade(store, MIGRATIONS+((3,'CREATE TABLE rollback_probe(id TEXT); BAD SQL'),))
             with store.connect() as db:
                 self.assertFalse(db.has_table('rollback_probe'))
-                self.assertEqual(db.execute('SELECT COUNT(*) FROM core_migrations').fetchone()[0],1)
+                self.assertEqual(db.execute('SELECT COUNT(*) FROM core_migrations').fetchone()[0],len(MIGRATIONS))
 
     def test_strict_commands(self):
         valid = dict(action='next',version=0,key='one',payload={})

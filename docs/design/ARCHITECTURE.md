@@ -234,3 +234,11 @@ PublishApproval 绑定 owner_id、platform、account_id、draft_ref、review_ref
 产品呈现为四个创作角色 + 一个发布后分析角色。analytics 使用确定性统计规则而非大模型，不暗示拥有实时热点采集、平台发布权限或成熟增长预测。创作阶段仍沿用 v0.3 机器契约及现有 DeepSeek 调用计数；此轮增加 account context 和 brief，不引入新的 Agent 框架。
 
 本机持久化仍为 SQLite，运营记录仍放在按 owner 分隔的 JSON 中。该实现适合当前单机功能验证；大规模历史检索、多人并发与云端账号服务未验证。输入来源、真实/演示数据、表达偏好和传播效果分别保存。
+
+## 核心底座 v0.7 已实现适配
+
+正式链路为 FastAPI → Jobs（PostgreSQL 持久队列）→ 独立 Worker → LangGraph（audience/research 并行，join，strategy/outline/hook/title/body，revise/review，human interrupt）。图保存游标和中断，SQL Run 保存权威业务状态；长期账号记忆沿用原实现。模型节点通过 ModelRouter/Calls 做原子预留、来源与费用台账，normalize/review_gates/accept 继续守住业务契约。
+
+检查点与业务事务不能假设天然原子：runtime_nodes 以输入快照、阶段、迭代及稿件引用去重，与产物同事务；模型响应单独先落盘。重放先复用成功节点/已接收响应。每次领取生成新的 fencing token，所有外部调用预留与提交验证租约。人工输入走现有事务命令后再恢复图，Command(resume) 本身没有批准权限。
+
+正式图运行版本 four-role-graph@1，旧 backend.web 同步执行器仅兼容。当前短写仍使用事务咨询锁串行化，未做高并发压测；供应商未知结果无法做到外部 exactly-once，明确停止。官方依据：[LangGraph Persistence](https://docs.langchain.com/oss/python/langgraph/persistence)、[Interrupts](https://docs.langchain.com/oss/python/langgraph/interrupts)。

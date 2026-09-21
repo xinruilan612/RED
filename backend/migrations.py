@@ -25,7 +25,14 @@ CREATE TABLE IF NOT EXISTS model_audit (
  started DOUBLE PRECISION NOT NULL, duration_ms INTEGER,
  request_id TEXT, input_tokens INTEGER, output_tokens INTEGER,
  rate DOUBLE PRECISION NOT NULL, outcome TEXT NOT NULL);
-'''),)
+'''), (2, '''
+CREATE TABLE IF NOT EXISTS runtime_commands (
+ run_id TEXT NOT NULL REFERENCES runs(id), key TEXT NOT NULL,
+ fingerprint TEXT NOT NULL, PRIMARY KEY(run_id,key));
+CREATE TABLE IF NOT EXISTS runtime_workers (
+ id TEXT PRIMARY KEY, heartbeat DOUBLE PRECISION NOT NULL);
+ALTER TABLE runtime_jobs ADD COLUMN elapsed DOUBLE PRECISION NOT NULL DEFAULT 0;
+'''))
 
 
 def upgrade(store, migrations=None):
@@ -42,4 +49,3 @@ def upgrade(store, migrations=None):
                 continue
             db.executescript(sql)
             db.execute('INSERT INTO core_migrations(version,checksum) VALUES(?,?)', (version, checksum))
-
