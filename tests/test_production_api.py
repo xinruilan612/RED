@@ -30,8 +30,8 @@ class ProductionTests(unittest.TestCase):
     def post(self, path, data, client=None, csrf=None):
         return (client or self.client).post(path,json=data,headers={'Origin':'http://testserver','X-CSRF-Token':csrf or self.csrf})
 
-    def register(self, name='creator', **extras):
-        r=self.post('/api/auth/register',dict(username=name,password='test-long-password',**extras))
+    def register(self, name='creator', password='Test-long-password', **extras):
+        r=self.post('/api/auth/register',dict(username=name,password=password,**extras))
         self.assertEqual(r.status_code,200,r.text);self.csrf=r.json()['csrf'];return r.json()
 
     def brief(self):
@@ -43,7 +43,7 @@ class ProductionTests(unittest.TestCase):
         identity=self.register()
         self.assertNotEqual(before,self.client.cookies.get('youji_session'))
         c=TestClient(self.app);csrf=c.get('/api/session').json()['csrf']
-        r=self.post('/api/auth/login',{'username':'creator','password':'test-long-password'},c,csrf)
+        r=self.post('/api/auth/login',{'username':'creator','password':'Test-long-password'},c,csrf)
         self.assertEqual(r.status_code,200);self.assertEqual(r.json()['user'],identity['user'])
         self.assertNotIn('password',r.text)
         token=self.client.cookies.get('youji_session')
@@ -63,11 +63,43 @@ class ProductionTests(unittest.TestCase):
 
     def test_password_reset_revokes_sessions_and_rotates_recovery(self):
         identity=self.register();old_token=self.client.cookies.get('youji_session')
-        data={'username':'creator','password':'new-long-password','recovery_code':identity['recovery_code']}
+        data={'username':'creator','password':'New-long-password','recovery_code':identity['recovery_code']}
         r=self.post('/api/auth/reset',data);self.assertEqual(r.status_code,200,r.text)
         self.assertNotEqual(identity['recovery_code'],r.json()['recovery_code'])
         self.assertIsNone(self.app.state.auth.session(old_token))
         self.csrf=r.json()['csrf'];self.assertEqual(self.post('/api/auth/reset',data).status_code,401)
+
+    def test_new_password_policy_boundaries_and_reset(self):
+        invalid=['Aa12345','Aa'+'1'*19,'abcdefgh','ABCDEFGH','12345678']
+        for i,password in enumerate(invalid):
+            with self.subTest(password_case=i):
+                r=self.post('/api/auth/register',dict(username='invalid'+str(i),password=password))
+                self.assertEqual(r.status_code,400,r.text)
+                self.assertIn('8–20',r.json()['error']['message'])
+        for size,password in ((8,'Abcdefgh'),(20,'Ab'+'c'*18)):
+            identity=self.register('boundary'+str(size),password=password)
+            r=self.post('/api/auth/login',dict(username='boundary'+str(size),password=password))
+            self.assertEqual(r.status_code,200,r.text);self.csrf=r.json()['csrf']
+            old_token=self.client.cookies.get('youji_session')
+            data=dict(username='boundary'+str(size),password='lowercaseonly',recovery_code=identity['recovery_code'])
+            self.assertEqual(self.post('/api/auth/reset',data).status_code,400)
+            self.assertIsNotNone(self.app.state.auth.session(old_token))
+            data['password']='Xyabcdef' if size==20 else 'Xy'+'z'*18
+            r=self.post('/api/auth/reset',data)
+            self.assertEqual(r.status_code,200,r.text);self.csrf=r.json()['csrf']
+            r=self.post('/api/auth/login',dict(username=data['username'],password=data['password']))
+            self.assertEqual(r.status_code,200,r.text);self.csrf=r.json()['csrf']
+
+    def test_existing_passwords_remain_verifiable_after_policy_change(self):
+        self.register()
+        for password in ('old-lowercase-pass','Old-password-longer-than-twenty'):
+            salt='abcd'*8
+            encoded=salt+':'+hashlib.pbkdf2_hmac('sha256',password.encode(),bytes.fromhex(salt),600000).hex()
+            with self.store.connect() as db:
+                db.execute('UPDATE users SET password_hash=? WHERE username=?',(encoded,'creator'))
+            r=self.post('/api/auth/login',dict(username='creator',password=password))
+            self.assertEqual(r.status_code,200,r.text);self.csrf=r.json()['csrf']
+            self.assertEqual(self.post('/api/auth/login',dict(username='creator',password='WrongPassword')).status_code,401)
 
     def test_legacy_claim_is_explicit_and_once(self):
         token='legacy-token';owner='old-space'
@@ -79,7 +111,7 @@ class ProductionTests(unittest.TestCase):
         self.register(claim_legacy=True)
         self.assertEqual(self.client.get('/api/runs').json()[0]['run_id'],original.run_id)
         self.post('/api/auth/logout',{});self.csrf=self.client.get('/api/session').json()['csrf']
-        self.assertEqual(self.post('/api/auth/register',dict(username='second',password='test-long-password',claim_legacy=True)).status_code,409)
+        self.assertEqual(self.post('/api/auth/register',dict(username='second',password='Test-long-password',claim_legacy=True)).status_code,409)
 
     def test_workflow_edit_review_accept_and_idempotency(self):
         self.register();run=self.post('/api/runs',self.brief()).json()

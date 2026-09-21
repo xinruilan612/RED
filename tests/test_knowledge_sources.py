@@ -114,7 +114,7 @@ class KnowledgeTests(unittest.TestCase):
         with TestClient(app) as client:
             csrf=client.get('/api/session').json()['csrf']
             def post(path,data):return client.post(path,json=data,headers={'Origin':'http://testserver','X-CSRF-Token':csrf})
-            r=post('/api/auth/register',dict(username='kbuser',password='long-test-password'));csrf=r.json()['csrf']
+            r=post('/api/auth/register',dict(username='kbuser',password='Long-test-password'));csrf=r.json()['csrf']
             account=client.get('/api/operations').json()['accounts'][0]['id']
             r=post('/api/knowledge',dict(account_id=account,title='面料',text='白衬衫为纯棉面料，建议用冷水清洗。'));self.assertEqual(r.status_code,200,r.text)
             r=post('/api/knowledge/retrieve',dict(account_id=account,query='白衬衫'));self.assertEqual(len(r.json()['sources']),1)

@@ -13,21 +13,26 @@ def hashed(value):
 
 
 def password_hash(password, salt=None):
-    require(isinstance(password, str) and 12 <= len(password) <= 128, 'INVALID_INPUT', '密码需为 12 至 128 个字符')
+    require(isinstance(password, str) and 8 <= len(password) <= 20
+            and re.search(r'[A-Z]', password) and re.search(r'[a-z]', password),
+            'INVALID_INPUT', '密码需为 8–20 个字符，并同时包含英文大写和小写字母')
     salt = salt or secrets.token_hex(16)
     return salt + ':' + hashlib.pbkdf2_hmac('sha256', password.encode(), bytes.fromhex(salt), 600000).hex()
 
 
 def verify(password, encoded):
-    if not isinstance(password, str) or not 12 <= len(password) <= 128:
+    # Verify existing hashes independently of the current registration policy.
+    if not isinstance(password, str) or not 8 <= len(password) <= 128:
         return False
-    return hmac.compare_digest(password_hash(password, encoded.split(':')[0]), encoded)
+    salt = encoded.split(':')[0]
+    candidate = salt + ':' + hashlib.pbkdf2_hmac('sha256', password.encode(), bytes.fromhex(salt), 600000).hex()
+    return hmac.compare_digest(candidate, encoded)
 
 
 class Auth:
     def __init__(self, store):
         self.store = store
-        self.dummy = password_hash('not-a-real-password')
+        self.dummy = password_hash('Not-a-real-password')
         with store.connect() as db:
             db.executescript('''
                 CREATE TABLE IF NOT EXISTS users (

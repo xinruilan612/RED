@@ -27,7 +27,14 @@ function showLogin(session){
   document.getElementById('claimLegacyWrap').hidden=mode!=='register';
   document.getElementById('authInviteWrap').hidden=mode!=='register'||!session.invite_required;
   document.getElementById('authRecoveryWrap').hidden=mode!=='reset';
-  document.getElementById('authPassword').autocomplete=mode==='login'?'current-password':'new-password';
+  const password=document.getElementById('authPassword'),isLogin=mode==='login';
+  password.autocomplete=isLogin?'current-password':'new-password';
+  password.maxLength=isLogin?128:20;
+  password.placeholder=isLogin?'请输入已有密码':'8–20 位，包含英文大写和小写字母';
+  password.title=isLogin?'请输入已有密码':'密码需为 8–20 个字符，并同时包含英文大写和小写字母';
+  if(isLogin)password.removeAttribute('pattern');
+  else password.pattern='(?=.*[A-Z])(?=.*[a-z]).{8,20}';
+  document.getElementById('passwordRule').hidden=isLogin;
   document.getElementById('authSubmit').textContent={login:'登录工作空间',register:'创建网站账号',reset:'重设密码并登录'}[mode];
  };
  document.getElementById('authMode').dispatchEvent(new Event('change'));
