@@ -80,6 +80,17 @@ class DemoWebTests(unittest.TestCase):
         status,loaded=self.request('GET',f"/api/runs/{run['run_id']}")
         self.assertEqual(run,loaded)
 
+    def test_quick_workflow_reaches_confirmation_in_two_steps(self):
+        run=self.create(workflow='quick')
+        run=self.action(run,'next')
+        self.assertEqual([n['stage'] for n in run['node_runs']],['quick'])
+        self.assertEqual([a['stage'] for a in run['artifacts']],['quick'])
+        self.assertEqual(run['branches'],{})
+        self.assertEqual(run['current_stage'],'reviewer')
+        run=self.action(run,'next')
+        self.assertEqual([n['stage'] for n in run['node_runs']],['quick','review'])
+        self.assertEqual(run['wait_reason'],'final_confirmation')
+
     def test_manual_revision_then_reaudit_keeps_versions(self):
         run=self.until_pause(self.create('revision'))
         self.assertEqual(run['review']['decision'],'revision_required')
@@ -138,6 +149,8 @@ class DemoWebTests(unittest.TestCase):
         self.action(run,'next',{'run_status':'SUCCEEDED'},expect=400)
         status,_=self.request('POST','/api/runs',{'topic':'x','owner_id':'other'})
         self.assertEqual(status,400)
+        status,_=self.request('POST','/api/runs',{'topic':'x','workflow':'unknown'})
+        self.assertEqual(status,400)
         status,_=self.request('GET','/../../backend/store.py');self.assertEqual(status,404)
         self.action(run,'cancel')
         self.action(run,'next',expect=409)
@@ -179,6 +192,7 @@ class DemoWebTests(unittest.TestCase):
         self.assertEqual(parsed.pages,['overview','accounts','library','trends','studio','publish','metrics','memory'])
         status,script=self.request('GET','/operations.js')
         self.assertEqual(status,200);self.assertIn('/api/operations',script)
+        self.assertIn('recommend_experiment',script)
         status,script=self.request('GET','/app.js')
         self.assertEqual(status,200)
         self.assertIn('if(changed)clearError()',script)
@@ -187,8 +201,10 @@ class DemoWebTests(unittest.TestCase):
         for path in ('/','/app.js','/style.css'):
             status,body=self.request('GET',path);self.assertEqual(status,200);self.assertTrue(body)
         status,html=self.request('GET','/')
-        for label in ('协作流程','补充真实素材','保存新版本并等待复审','运行记录','模拟运行'):
+        for label in ('协作流程','补充真实素材','保存新版本并等待复审','运行记录','模拟运行',
+                      '一句话极速出稿','1 次生成 + 1 次独立审核','证据驱动的专业创作','让算法决定下一次实验'):
             self.assertIn(label,html)
+        self.assertNotIn('豆包写文案',html)
         # Parse the actual HTML, catching malformed option tags that strand startup JS.
         from html.parser import HTMLParser
         class Options(HTMLParser):

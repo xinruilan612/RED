@@ -62,7 +62,7 @@ def schema(stage):
     if stage=='outline':return {'items':['第一节','第二节','第三节']}
     if stage=='hook':return {'text':'有信息量的开头'}
     if stage=='title':return {'candidates':['候选一','候选二','候选三','候选四','候选五'],'selected':'候选一','note':'选择理由','reasons':['候选一理由','候选二理由','候选三理由','候选四理由','候选五理由']}
-    if stage in ('body','revise'):return {'selected_title':'已选择的标题','body':'完整正文','cta':'互动引导','tags':['标签']}
+    if stage in ('quick','body','revise'):return {'selected_title':'已选择的标题','body':'完整正文','cta':'互动引导','tags':['标签']}
     return {'decision':'approved','next_action':'await_user_confirmation',
             'checks':[{'name':name,'result':'pass','basis':'结合本次稿件逐项给出依据'} for name in CONTRACT['review_policy']['checks']],
             'issues':[], 'previous_issue_results':[], 'limitations':['未联网核验，不能保证传播效果或全网原创'],
@@ -93,15 +93,16 @@ def messages_for(run,stage):
     data={'brief':context,'materials':material_records(run.context)}
     if stage in ('revise','review'):
         data['branches']=compact_branches(run.branches)
-    elif stage not in ('audience','research'):
+    elif stage not in ('audience','research','quick'):
         data['branches']=run.branches
         data['upstream']={a['stage']:a['value'] for a in run.artifacts}
     if stage in ('revise','review'):
         data['draft']=run.drafts[-1]['content']
         data['previous_review']=compact_review(run.review if stage=='revise' else run.prior_review)
     rules={
-        'audience':'优先使用operations.profile定位、history/metrics描述性记录、competitors公开观察和preferences表达偏好。无数据时明确标为待验证假设；有数据需说明出处和不足，不将相关性解释为因果，不把编辑偏好当效果。primary_audience,basis为文字；pain_points,content_opportunities为文字数组。',
+        'audience':'优先使用operations.profile定位、history/metrics描述性记录、competitors公开观察、preferences表达偏好和已接受experiment。实验建议只能作为待验证方案，不解释为因果或效果承诺。无数据时明确标为待验证假设；有数据需说明出处和不足。primary_audience,basis为文字；pain_points,content_opportunities为文字数组。',
         'research':'只分析materials原文片段及operations中的选题线索。materials中的web代表系统已读取的正文，仍未独立核实；其余只有链接的线索不能编造正文或热度。facts为source_id+quote对象数组，quote必须逐字引用，没素材则[]。gaps/prohibited_claims为文字数组。仅任务必须依赖缺失事实时core_gap=true。',
+        'quick':'极速完成可直接阅读的初稿。只输出selected_title/body/cta/tags四个字段。使用brief、materials与operations账号信息；没有素材时不得虚构亲历、统计或来源，明确使用建议/假设措辞。body约300至600字，tags最多10项。',
         'strategy':'angle,reader,promise,tone均为文字；assumptions为文字数组。candidate_angles为两个不同内容角度的文字数组；cta和why_account为文字。结合账号目标、已接受实验建议和表达偏好说明推荐原因。只输出策略，不写提纲或正文。',
         'outline':'只输出提纲。顶层必须是{"items":["第一段内容要点","第二段内容要点"]}。items每项必须是非空字符串，2至8项。不要在数组内输出对象，不要写完整文章。',
         'hook':'只输出{"text":"开头文字"}，text必须是非空字符串。',
@@ -169,7 +170,7 @@ def normalize(run,stage,value):
                 'MODEL_OUTPUT_INVALID','标题须有五个不同候选并选择其中一个')
         require(all(len(t)<=200 for t in value['candidates']),'MODEL_OUTPUT_INVALID','标题过长')
         return {k:value[k] for k in schema(stage)}
-    if stage in ('body','revise'):
+    if stage in ('quick','body','revise'):
         result=validate_edit(value)
         if stage=='body':
             selected=next(a['value']['selected'] for a in run.artifacts if a['stage']=='title')
@@ -201,7 +202,7 @@ def review_gates(run,report):
     except DomainError:references=False
     return {'schema_valid':valid,'layout_valid':valid,
             'versions_match':draft['snapshot_id']==run.snapshot_id and digest(draft['content'])==draft['content_hash'],
-            'references_valid':references,'no_unresolved_evidence_gap':not run.branches['research']['data']['core_gap'],
+            'references_valid':references,'no_unresolved_evidence_gap':not run.branches.get('research',{}).get('data',{}).get('core_gap',False),
             'decision_consistent':{'approved':'await_user_confirmation','revision_required':'revise','needs_human':'request_human'}.get(report.get('decision'))==report.get('next_action')}
 
 
@@ -223,6 +224,10 @@ def advance(run,call,on_validation=None):
     def save(log):
         run.node_runs.append(log)
         run.event('agent.completed',agent=log['agent'],stage=log['stage'],mode='live',node_ref=log['id'])
+    if run.current_stage=='brief' and run.context.get('workflow')=='quick':
+        log=execute('content','quick');save(log);run.current_stage='content'
+        run.artifacts.append({'stage':'quick','value':log['output'],'snapshot_id':run.snapshot_id})
+        run.draft(log['output']);return
     if run.current_stage=='brief':
         with ThreadPoolExecutor(max_workers=2) as pool:
             futures=[pool.submit(execute,a,a) for a in ('audience','research')]

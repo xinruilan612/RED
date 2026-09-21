@@ -49,6 +49,26 @@ class LiveTests(unittest.TestCase):
         self.assertEqual(self.run.wait_reason,'final_confirmation')
         return self.run
 
+    def test_quick_workflow_uses_one_generation_and_one_independent_review(self):
+        self.run.context['workflow']='quick'
+        from dataclasses import asdict
+        with self.store.connect() as db:
+            db.execute('UPDATE runs SET payload=? WHERE id=?',(json.dumps(asdict(self.run)),self.run.run_id))
+        self.step()
+        self.assertEqual(self.model.calls,['quick'])
+        self.assertEqual(self.run.current_stage,'reviewer')
+        self.assertEqual([a['stage'] for a in self.run.artifacts],['quick'])
+        self.assertEqual(self.run.branches,{})
+        self.assertEqual(len(self.run.drafts),1)
+        _,inputs=messages_for(self.run,'review')
+        self.assertEqual(inputs['branches'],{})
+        self.assertEqual(inputs['draft'],self.run.drafts[-1]['content'])
+        self.step()
+        self.assertEqual(self.model.calls,['quick','review'])
+        self.assertEqual(self.run.wait_reason,'final_confirmation')
+        self.assertEqual(self.executor.public(self.run)['usage']['model_calls'],2)
+        self.assertEqual(self.executor.public(self.run)['usage']['tokens'],240)
+
     def test_eight_calls_text_flow_edit_reaudit_accept_and_no_secrets(self):
         run=self.until_review();self.assertEqual(len(self.model.calls),8)
         self.assertEqual({n['agent'] for n in run.node_runs},{'audience','research','content','reviewer'})

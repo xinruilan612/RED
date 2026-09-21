@@ -11,6 +11,7 @@ from backend.workflow import digest
 from backend.accounts import migrate, find_account, save_account, account_id, new_account
 from backend.analytics import AnalyticsAgent, invalidate, refresh_plans
 from backend.planning import make_plan, update_plan, update_task
+from backend.experiments import recommend
 
 PLATFORMS = ('xiaohongshu', 'douyin')
 
@@ -82,7 +83,7 @@ class Operations:
         return migrate(json.loads(row[0]) if row else seed(), owner)
 
     def context(self, owner, data, mode):
-        require(isinstance(data, dict) and set(data) <= {'platform','account','account_id','trend_id'}, 'INVALID_INPUT', '运营上下文字段无效')
+        require(isinstance(data, dict) and set(data) <= {'platform','account','account_id','trend_id','experiment_id'}, 'INVALID_INPUT', '运营上下文字段无效')
         platform = data.get('platform', 'xiaohongshu')
         require(platform in PLATFORMS, 'INVALID_INPUT', '平台无效')
         account = validate_text(data.get('account','我的账号'), '账号名称', 80)
@@ -94,6 +95,9 @@ class Operations:
         identity = profile['id'] if profile else account_id(owner, platform, account)
         trend = item(state['trends'], data['trend_id']) if data.get('trend_id') else None
         require(not trend or trend['platform'] == platform, 'INVALID_INPUT', '选题平台不一致')
+        experiment = item(state['experiments'], data['experiment_id']) if data.get('experiment_id') else None
+        require(not experiment or (experiment['account_id'] == identity and experiment['source_type'] == ('simulation' if mode == 'simulation' else 'manual')
+                and experiment['status'] == 'accepted'), 'INVALID_INPUT', '实验建议未接受、已失效或不属于当前账号')
         # Demo evidence is never fed into paid/real creation.
         require(not (mode == 'live' and trend and trend['source_type'] == 'example'), 'INVALID_INPUT', '示例选题只用于模拟模式；真实创作请导入自己的来源')
         memories = [copy.deepcopy(m) for m in state['memories'] if m['status'] == 'accepted'
@@ -111,7 +115,7 @@ class Operations:
             if metric['publication_id'] in ids:
                 latest[(metric['publication_id'], metric['window'])] = copy.deepcopy(metric)
         return {'platform': platform, 'account': account, 'account_id': identity,
-                'profile': copy.deepcopy(profile), 'trend': copy.deepcopy(trend), 'memories': memories[:5],
+                'profile': copy.deepcopy(profile), 'trend': copy.deepcopy(trend), 'experiment': copy.deepcopy(experiment), 'memories': memories[:5],
                 'history': history, 'metrics': list(latest.values())[-60:],
                 'competitors': [copy.deepcopy(c) for c in state['competitors'] if c['account_id'] == identity][-10:],
                 'preferences': [copy.deepcopy(p) for p in state['preferences'] if p['account_id'] == identity
@@ -193,6 +197,18 @@ class Operations:
                     created_at=now(), sample_size=max(v['sample_size'] for v in report['comparisons'].values())+1,
                     observation='；'.join(report['observations']), text=report['experiment'],
                     limitation='描述性比较，仅建议下一次实验，不证明因果或稳定规律'))
+            return
+        if action == 'recommend_experiment':
+            require(set(data) == {'account_id','source_type','window'}, 'INVALID_INPUT', '实验推荐字段无效')
+            state['experiments'].insert(0, recommend(state, data['account_id'], data['source_type'], data['window'], now()))
+            return
+        if action == 'experiment_status':
+            require(set(data) == {'id','status'}, 'INVALID_INPUT', '实验状态字段无效')
+            experiment = item(state['experiments'], data['id'])
+            require(data['status'] in ('accepted','rejected','revoked'), 'INVALID_INPUT', '实验状态无效')
+            require((experiment['status'] == 'proposed' and data['status'] in ('accepted','rejected')) or
+                    (experiment['status'] == 'accepted' and data['status'] == 'revoked'), 'INVALID_TRANSITION', '当前实验建议不能执行此操作')
+            experiment['status'] = data['status']; experiment['updated_at'] = now()
             return
         if action == 'save_account':
             save_account(state, data)

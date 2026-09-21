@@ -45,7 +45,7 @@ class AccountTests(unittest.TestCase):
     def test_legacy_migration_is_stable_and_non_destructive(self):
         run, pub = self.publication()
         state = self.ops.read(self.owner)
-        for key in ('accounts','preferences','analyses','plans','competitors','operations_schema_version'): state.pop(key)
+        for key in ('accounts','preferences','analyses','plans','competitors','experiments','operations_schema_version'): state.pop(key)
         state['publications'][0].pop('account_id')
         with self.store.connect() as db:
             db.execute('UPDATE operations SET payload=? WHERE owner=?', (json.dumps(state), self.owner))

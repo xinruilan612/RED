@@ -125,6 +125,18 @@ def make_content(run, stage):
     return enrich(stage, _make_content(run, stage), run.context)
 
 
+def quick(run):
+    context=run.context;material=context.get('material','').strip()
+    title=context['topic'][:200]
+    body=(f"想快速了解「{context['topic']}」，可以先从一个具体场景开始。\n\n"
+          "① 写下当前遇到的问题，不先假定结果。\n\n"
+          "② 选择一个今天能完成的小步骤，记录实际过程。\n\n"
+          "③ 对照原始资料或真实结果复核，再决定是否继续。")
+    if material:body+='\n\n本次可用素材：'+material
+    body+='\n\n这是极速模拟初稿，仍需人工核对，不代表效果保证。'
+    return validate_edit({'selected_title':title,'body':body,'cta':'你准备先验证哪一步？','tags':['快速创作','小步验证']})
+
+
 def review(run):
     draft=run.drafts[-1]; text=draft['content']; issues=[]
     # This small rule set is not a semantic or platform compliance reviewer.
@@ -154,6 +166,11 @@ def advance(run):
     require(run.context, 'INVALID_INPUT','这不是网页模拟任务')
     require(run.run_status in ('QUEUED','RUNNING'), 'INVALID_TRANSITION','请先处理人工操作')
     if run.run_status=='QUEUED': run.start()
+    if run.current_stage=='brief' and run.context.get('workflow')=='quick':
+        run.event('agent.started',agent='content',mode='simulation');run.current_stage='content'
+        result=node('content','quick',{'brief':run.context},lambda:quick(run));record(run,result)
+        run.artifacts.append({'stage':'quick','value':result['output'],'snapshot_id':run.snapshot_id})
+        run.event('artifact.created',stage='quick',mode='simulation');run.draft(result['output']);return
     if run.current_stage=='brief':
         for agent in ('audience','research'): run.event('agent.started',agent=agent,mode='simulation')
         with ThreadPoolExecutor(max_workers=2) as pool:

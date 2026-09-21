@@ -1,8 +1,9 @@
 'use strict';
-let ops=null,chosenTrend=null,opsBusy=false,currentPage='overview',platformFilter='all',keyword='';
+let ops=null,chosenTrend=null,chosenExperiment=null,opsBusy=false,currentPage='overview',platformFilter='all',keyword='';
 const platformNames={xiaohongshu:'小红书',douyin:'抖音'};
 const pubStates={AWAITING_APPROVAL:'待发布确认',APPROVED:'待执行',SIMULATED:'已演练 · 未真实发布',MANUAL_REPORTED:'已回填 · 未独立核验'};
 const memoryStates={proposed:'待你决定',accepted:'已接受',rejected:'已拒绝',revoked:'已撤销',superseded:'指标已修正 · 经验失效'};
+const experimentStates={proposed:'待你决定',accepted:'实验已接受',rejected:'已拒绝',revoked:'已撤销',superseded:'依据已修正 · 实验失效'};
 const pageInfo={overview:['THIS WEEK / 00','把每周运营，连成长期积累。','目标、创作和复盘，都围绕当前账号展开。'],accounts:['ACCOUNT / PROFILE','认识你的账号，也记住每一次选择。','定位档案、历史作品与表达偏好，持续保存在同一个账号里。'],trends:['DISCOVER / 01','找到下一个值得写的选题。','从趋势线索出发，让每一次创作都有依据。'],studio:['CREATE / 02','把好选题，变成好内容。','受众洞察、素材研究、创作与审核，协作过程始终可见。'],publish:['PUBLISH / 03','发布之前，最后确认一次。','把准确版本交给准确账号，留下可追溯的发布记录。'],metrics:['MEASURE / 04','看看内容带来了什么。','保留数据来源与观察窗口，缺失数据不记为零。'],memory:['LEARN / 05','让下一次创作，更有依据。','从历史表现提取实验建议，由你决定哪些经验值得保留。']};
 const dateText=value=>value?new Date(value).toLocaleString('zh-CN',{hour12:false}):'固定示例 · 无采集时间';
 const badge=(text,kind='')=>`<span class="pill ${kind}">${esc(text)}</span>`;
@@ -45,13 +46,21 @@ function renderTrends(){
 function chooseTrend(id){
  if(busy||!dirtyGuard())return;const trend=ops.trends.find(t=>t.id===id);if(!trend)return;
  if(currentAccount()?.platform!==trend.platform){toast('请先在顶部切换到对应平台的账号');return;}
- chosenTrend=trend;showPage('studio');$('newRun').click();
+ chosenTrend=trend;chosenExperiment=null;showPage('studio');$('newRun').click();
  $('targetPlatform').value=trend.platform;$('topic').value=trend.title;
  $('audience').value=trend.category==='穿搭'?'关注日常穿搭与服饰搭配的读者':trend.category==='学习'?'希望改善学习习惯的大学生':'关注日常生活方式的读者';
  $('audience').value=currentAccount()?.profile.audience||$('audience').value;
  $('tone').value=currentAccount()?.profile.tone||'真实、具体、有场景感';$('material').value='';
  $('mode').value='simulation';$('mode').onchange();
  $('selectedTrend').textContent=(trend.source_type==='example'?'示例选题 · 非实时热点':'用户导入来源 · 尚未联网核验')+'：'+trend.angle;
+ $('selectedTrend').hidden=false;$('clearTrend').hidden=false;
+}
+function chooseExperiment(id){
+ const experiment=ops.experiments.find(row=>row.id===id);if(!experiment||experiment.status!=='accepted')return;
+ chosenExperiment=experiment;chosenTrend=null;showPage('studio');$('newRun').click();
+ $('topic').value=experiment.hypothesis;$('material').value=`实验控制：${experiment.control}\n本次变量：${experiment.variant}`;
+ $('mode').value=experiment.source_type==='simulation'?'simulation':'live';$('workflow').value='professional';$('mode').onchange();
+ $('selectedTrend').textContent=`已接受实验 · ${experiment.algorithm}：${experiment.chosen_pillar}`;
  $('selectedTrend').hidden=false;$('clearTrend').hidden=false;
 }
 function renderPublications(){
@@ -61,12 +70,17 @@ function renderPublications(){
 }
 function latestMetrics(){const map=new Map();for(const m of accountRows('metrics'))map.set(m.publication_id+':'+m.window,m);return [...map.values()].reverse();}
 function renderMemory(){
- $('operationsContent').innerHTML=`<div class="ops-hero memory-hero"><div><span class="eyebrow">从记录中学习，由你决定如何使用</span><h2>经验有来源，也可以撤销。</h2><p>指标 → 自动生成复盘建议 → 你接受 → 下次同账号创作读取。</p></div>${badge(accountRows('memories').filter(m=>m.status==='accepted').length+' 条已接受经验')}</div><div class="memory-list">${accountRows('memories').map(m=>`<article class="panel memory-card"><div class="card-top"><div>${badge(platformNames[m.platform])} ${badge(m.source_type==='simulation'?'演示经验':'用户数据经验','amber')}</div>${badge(memoryStates[m.status],'neutral')}</div><h2>${esc(m.observation.split('；')[0])}</h2><p class="memory-advice">${esc(m.text)}</p><p class="muted">${esc(m.account)} · ${m.window} · ${m.sample_size} 篇样本</p><p class="helper">${esc(m.limitation)}</p><details><summary>查看证据与使用范围</summary><p class="readable">${esc(m.observation)}</p><p>指标快照 ${esc(m.metric_id.slice(0,8))} · 发布记录 ${esc(m.publication_id.slice(0,8))}</p><p>仅用于同平台、同账号的${m.source_type==='simulation'?'模拟':'真实 AI'}创作。修正指标后，相关经验会自动失效。</p></details><div class="buttons">${m.status==='proposed'?`<button class="primary" data-memory="${m.id}" data-status="accepted">接受为下次实验建议</button><button class="quiet" data-memory="${m.id}" data-status="rejected">暂不采用</button>`:m.status==='accepted'?`<button class="quiet" data-memory="${m.id}" data-status="revoked">撤销此经验</button>`:''}</div></article>`).join('')||empty('还没有复盘经验','在数据复盘中录入指标并生成建议，再来决定是否采用。')}</div>`;
+ const experiments=accountRows('experiments');
+ $('operationsContent').innerHTML=`<div class="ops-hero memory-hero"><div><span class="eyebrow">可解释运营实验引擎</span><h2>不是猜爆款，而是决定下一次值得验证什么。</h2><p>UCB1 在利用已有表现与探索低样本栏目之间选择；推荐、证据、公式和失效原因全部可查看。</p></div>${badge(experiments.filter(x=>x.status==='accepted').length+' 个已接受实验')}</div><form id="experimentForm" class="panel inline-form"><h2>生成下一次可控实验</h2><div class="two-col"><label>数据来源<select name="source_type"><option value="manual">真实人工记录</option><option value="simulation">演示数据</option></select></label><label>统一观察窗口<select name="window"><option value="24h">24 小时</option><option value="72h">72 小时</option><option value="7d">7 天</option></select></label></div><button class="primary">运行实验决策算法</button><p class="helper">不调用收费模型；只读取当前账号同来源、同窗口、自然流量且指标完整的记录。</p></form><div class="memory-list">${experiments.map(x=>`<article class="panel memory-card"><div class="card-top"><div>${badge(x.algorithm)} ${badge(x.decision_mode==='explore'?'探索':'利用','amber')}</div>${badge(experimentStates[x.status],'neutral')}</div><h2>下一篇验证「${esc(x.chosen_pillar)}」</h2><p class="memory-advice">${esc(x.hypothesis)}</p><p class="muted">${x.sample_size} 篇可用样本 · 置信信息 ${esc(x.confidence)} · ${esc(x.window)}</p><details><summary>查看算法、候选分数与证据</summary><p>${esc(x.reward_formula)}</p>${x.candidates.map(c=>`<p><b>${esc(c.pillar)}</b> · 样本 ${c.samples} · 均值 ${c.mean_reward??'待探索'} · 探索奖励 ${c.exploration_bonus??'优先'} · UCB ${c.ucb_score??'未采样'}</p>`).join('')}<p>控制：${esc(x.control)}<br>变量：${esc(x.variant)}<br>证据快照：${x.metric_refs.map(id=>esc(id.slice(0,8))).join('、')||'暂无，优先探索未测试栏目'}</p>${x.limitations.map(v=>`<p class="helper">${esc(v)}</p>`).join('')}</details><div class="buttons">${x.status==='proposed'?`<button class="primary" data-experiment="${x.id}" data-status="accepted">接受这个实验</button><button class="quiet" data-experiment="${x.id}" data-status="rejected">拒绝</button>`:x.status==='accepted'?`<button class="primary" data-use-experiment="${x.id}">按这个实验创作 →</button><button class="quiet" data-experiment="${x.id}" data-status="revoked">撤销</button>`:''}</div></article>`).join('')}</div><div class="section-toolbar"><div><h2>人工接受的运营经验</h2><p class="muted">保留原有描述性复盘；不把相关性写成因果。</p></div></div><div class="memory-list">${accountRows('memories').map(m=>`<article class="panel memory-card"><div class="card-top"><div>${badge(platformNames[m.platform])} ${badge(m.source_type==='simulation'?'演示经验':'用户数据经验','amber')}</div>${badge(memoryStates[m.status],'neutral')}</div><h2>${esc(m.observation.split('；')[0])}</h2><p class="memory-advice">${esc(m.text)}</p><p class="muted">${esc(m.account)} · ${m.window} · ${m.sample_size} 篇样本</p><p class="helper">${esc(m.limitation)}</p><details><summary>查看证据与使用范围</summary><p class="readable">${esc(m.observation)}</p><p>指标快照 ${esc(m.metric_id.slice(0,8))} · 发布记录 ${esc(m.publication_id.slice(0,8))}</p></details><div class="buttons">${m.status==='proposed'?`<button class="primary" data-memory="${m.id}" data-status="accepted">接受为下次实验建议</button><button class="quiet" data-memory="${m.id}" data-status="rejected">暂不采用</button>`:m.status==='accepted'?`<button class="quiet" data-memory="${m.id}" data-status="revoked">撤销此经验</button>`:''}</div></article>`).join('')||empty('还没有复盘经验','在数据复盘中录入指标并生成建议，再来决定是否采用。')}</div>`;
+ $('experimentForm').onsubmit=async e=>{e.preventDefault();const f=e.target.elements;await operate('recommend_experiment',{account_id:currentAccount().id,source_type:f.source_type.value,window:f.window.value});};
 }
 document.querySelector('.workspace-nav').onclick=e=>{const b=e.target.closest('[data-page]');if(b&&!busy&&dirtyGuard()){auto=false;showPage(b.dataset.page);}};
-$('clearTrend').onclick=()=>{chosenTrend=null;$('selectedTrend').hidden=true;$('clearTrend').hidden=true;};
+$('clearTrend').onclick=()=>{chosenTrend=null;chosenExperiment=null;$('selectedTrend').hidden=true;$('clearTrend').hidden=true;};
 $('targetPlatform').onchange=()=>{if(chosenTrend&&chosenTrend.platform!==$('targetPlatform').value)$('clearTrend').click();};
 $('sendToPublish').onclick=async()=>{try{if(!ops)ops=await api('/api/operations');if(await operate('prepare',{run_id:run.run_id,draft_ref:run.accepted_ref}))showPage('publish');}catch(e){error(e);}};
+$('quickStart').onclick=()=>{$('workflow').value='quick';$('topic').focus();$('briefForm').scrollIntoView({behavior:'smooth',block:'start'});};
+$('focusBrief').onclick=()=>{$('workflow').value='professional';$('topic').focus();$('briefForm').scrollIntoView({behavior:'smooth',block:'start'});};
+$('openExperiments').onclick=()=>{showPage('memory');};
 $('operationsContent').onclick=async e=>{
  const b=e.target.closest('button');if(!b||opsBusy)return;
  if(b.dataset.filter){platformFilter=b.dataset.filter;renderTrends();}
@@ -77,4 +91,6 @@ $('operationsContent').onclick=async e=>{
  if(b.dataset.toMetrics){showPage('metrics');renderMetrics(b.dataset.toMetrics);}
  if(b.dataset.learn&&await operate('analyze',{id:b.dataset.learn})){showPage('metrics');toast('分析已保存；有可比依据时会生成候选经验');}
  if(b.dataset.memory)await operate('memory',{id:b.dataset.memory,status:b.dataset.status});
+ if(b.dataset.experiment)await operate('experiment_status',{id:b.dataset.experiment,status:b.dataset.status});
+ if(b.dataset.useExperiment)chooseExperiment(b.dataset.useExperiment);
 };

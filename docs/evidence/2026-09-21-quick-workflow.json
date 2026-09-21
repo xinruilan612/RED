@@ -1,0 +1,30 @@
+{
+  "feature": "quick-workflow-v1",
+  "verified_at": "2026-09-21T19:16:37+08:00",
+  "environment": "Windows local FastAPI UI with DeepSeek live mode and background Worker",
+  "input": {
+    "platform": "xiaohongshu",
+    "topic": "大学生低预算衣橱：一件白衬衫的三种场景搭配",
+    "workflow": "quick",
+    "material_supplied": true
+  },
+  "result": {
+    "run_status": "WAITING_USER",
+    "wait_reason": "final_confirmation",
+    "node_stages": ["quick", "review"],
+    "professional_stages_skipped": ["audience", "research", "strategy", "outline", "hook", "title", "body"],
+    "model_calls": 2,
+    "generation_tokens": 1066,
+    "review_tokens": 2434,
+    "total_tokens": 3500,
+    "cost_upper_estimate_usd": 0.0042,
+    "draft_versions": 1,
+    "review_decision": "approved",
+    "human_confirmation_pending": true
+  },
+  "boundaries": [
+    "The reviewer is an independent second model call, not a deterministic guarantee of correctness.",
+    "No publication or platform-side metric collection occurred.",
+    "The draft was intentionally left for the user to edit or confirm."
+  ]
+}

@@ -22,7 +22,7 @@ def new_account(identity, name, platform):
 def migrate(state, owner):
     """Deterministic read adapter; persisted in the next transaction, never loses v0.4 records."""
     state.setdefault('accounts', [])
-    for key in ('preferences', 'analyses', 'plans', 'competitors'):
+    for key in ('preferences', 'analyses', 'plans', 'competitors', 'experiments'):
         state.setdefault(key, [])
     pairs = [('xiaohongshu', '我的账号')]
     pairs += [(p['platform'], p['account']) for p in state['publications'] if not p.get('account_id')]
@@ -41,7 +41,7 @@ def migrate(state, owner):
                 record.setdefault('pillar', '未分类')
                 record.setdefault('traffic', 'unknown')
                 record.setdefault('provenance', 'simulation' if record['mode'] == 'simulation' else 'manual')
-    state['operations_schema_version'] = 2
+    state['operations_schema_version'] = 3
     return state
 
 

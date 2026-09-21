@@ -7,7 +7,7 @@ from backend.contracts import require, DomainError, CONTRACT, PARAMETERS
 from backend.provider import DeepSeek, RATE
 from backend.workflow import digest
 
-STAGES = ('audience','research','strategy','outline','hook','title','body','revise','review')
+STAGES = ('audience','research','quick','strategy','outline','hook','title','body','revise','review')
 FAMILY = 'SELECT run_id FROM live_lineage WHERE budget_id=?'
 
 

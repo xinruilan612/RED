@@ -79,6 +79,20 @@ class ProductionTests(unittest.TestCase):
         self.post('/api/auth/logout',{});self.csrf=self.client.get('/api/session').json()['csrf'];self.register('background_other')
         self.assertEqual(self.post(path,command).status_code,404)
 
+    def test_quick_background_runtime_skips_professional_stages(self):
+        from backend.worker import Worker
+        self.register();brief=self.brief()|{'workflow':'quick'}
+        run=self.post('/api/runs',brief).json()
+        path='/api/runs/'+run['run_id']+'/background'
+        response=self.post(path,{'action':'start','version':run['status_version'],'key':'quick-background'})
+        self.assertEqual(response.status_code,202,response.text)
+        Worker(self.app.state.service).once()
+        run=self.client.get('/api/runs/'+run['run_id']).json()
+        self.assertEqual(run['wait_reason'],'final_confirmation')
+        self.assertEqual([n['stage'] for n in run['node_runs']],['quick','review'])
+        self.assertEqual([a['stage'] for a in run['artifacts']],['quick'])
+        self.assertEqual(run['branches'],{})
+
     def test_password_reset_revokes_sessions_and_rotates_recovery(self):
         identity=self.register();old_token=self.client.cookies.get('youji_session')
         data={'username':'creator','password':'New-long-password','recovery_code':identity['recovery_code']}

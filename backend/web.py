@@ -133,10 +133,13 @@ class Handler(BaseHTTPRequestHandler):
             if path=='/api/runs':
                 if write:
                     mode=data.get('mode','simulation')
+                    workflow=data.get('workflow','professional')
                     require(mode in ('simulation','live'),'INVALID_INPUT','运行模式无效')
+                    require(workflow in ('quick','professional'),'INVALID_INPUT','创作路径无效')
                     require(mode!='live' or self.server.config.ready,'KEY_REQUIRED','请先填写 .env 中的 DEEPSEEK_API_KEY 并重启服务')
-                    context=validate_brief({k:v for k,v in data.items() if k not in ('mode','operations')})
+                    context=validate_brief({k:v for k,v in data.items() if k not in ('mode','workflow','operations')})
                     context['mode']=mode
+                    context['workflow']=workflow
                     if 'operations' in data:
                         context['operations']=self.server.operations.context(owner,data['operations'],mode)
                     if mode=='live':context['scenario']='standard'
