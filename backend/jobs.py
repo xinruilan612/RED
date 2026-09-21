@@ -3,7 +3,7 @@ import json
 import time
 from dataclasses import asdict
 from uuid import uuid4
-from backend.contracts import require
+from backend.contracts import require, CONTRACT, PARAMETERS
 from backend.schemas import JobCommand, parse
 from backend.workflow import digest
 
@@ -32,7 +32,7 @@ class Jobs:
                 if row:
                     db.execute("UPDATE runtime_jobs SET status='queued',error=NULL,token=NULL,lease_until=NULL,updated=? WHERE run_id=?",(time.time(),run_id))
                 else:
-                    db.execute('INSERT INTO runtime_jobs(id,run_id,owner,status,updated,thread_id,policy) VALUES(?,?,?,?,?,?,?)',(str(uuid4()),run_id,owner,'queued',time.time(),str(uuid4()),'four-role-graph@1'))
+                    db.execute('INSERT INTO runtime_jobs(id,run_id,owner,status,updated,thread_id,policy) VALUES(?,?,?,?,?,?,?)',(str(uuid4()),run_id,owner,'queued',time.time(),str(uuid4()),CONTRACT['runtime_extension']['graph_policy']))
             else:
                 require(row and row[0] in ACTIVE,'INVALID_TRANSITION','没有正在执行的后台任务')
                 db.execute("UPDATE runtime_jobs SET status=CASE WHEN status='queued' THEN 'paused' ELSE 'pausing' END,updated=? WHERE run_id=?",(time.time(),run_id))
@@ -40,7 +40,7 @@ class Jobs:
             db.execute('UPDATE runs SET payload=? WHERE id=?',(json.dumps(asdict(run),ensure_ascii=False),run_id))
             db.execute('INSERT INTO runtime_commands VALUES(?,?,?)',(run_id,data['key'],fingerprint))
 
-    def claim(self, lease=30):
+    def claim(self, lease=CONTRACT['runtime_extension']['lease_s']):
         now=time.time()
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
@@ -55,7 +55,7 @@ class Jobs:
     def guard(self, db, job, committing=False):
         row=db.execute('SELECT token,status,lease_until,elapsed FROM runtime_jobs WHERE id=?',(job['id'],)).fetchone()
         require(row and row[0]==job['token'] and row[2]>time.time(),'LEASE_LOST','Worker 租约已失效')
-        require(row[3]<900,'TIME_BUDGET','任务累计执行时间已到上限')
+        require(row[3]<PARAMETERS['run_active_timeout_s'],'TIME_BUDGET','任务累计执行时间已到上限')
         require(row[1]=='running' or (committing and row[1]=='pausing'),'JOB_PAUSED','任务已暂停')
         run=self.store._get(db,job['run_id'],job['owner'])
         require(run.run_status not in ('SUCCEEDED','CANCELLED','FAILED','EXPIRED'),'RUN_STOPPED','任务已结束')

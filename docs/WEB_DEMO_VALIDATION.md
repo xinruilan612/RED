@@ -114,3 +114,24 @@ Demo 启动命令：`PYTHONDONTWRITEBYTECODE=1 python3 -m backend.web --port 876
 按用户要求，新注册与重设密码统一为8–20个字符，必须同时包含英文大写与小写字母，不强制数字或符号。前后端同步校验；登录按已保存哈希核验旧密码，不让规则变更锁住旧账号。没有更改用户现有密码或恢复码。
 
 全量138项测试通过（29.414秒，含实际PostgreSQL临时schema），覆盖7/8/20/21位边界、缺少大写/小写、全数字、注册后登录、重设密码、失败不撤销有效会话以及旧密码兼容。五份前端脚本语法检查及git diff --check通过。浏览器检查注册和重置两种模式，输入属性均为minLength=8、maxLength=20且具有大小写pattern，提示文案可见；没有填写或提交真实账号凭证。
+
+## v0.7 核心底座行为验收（2026-09-21）
+
+本轮全部工作在原目录推进，三个旧 starter 文件的用户删除状态未纳入任何提交。阶段提交：fa9f999（契约/迁移）、9ea754f（模型路由/台账）、1c3fef6（LangGraph/Worker），第四阶段为本节、进程与浏览器验收测试。
+
+| 完成标准 | 实际执行及结果 |
+| --- | --- |
+| 关闭页面后继续 | 独立 localhost:8766 测试网站 + PostgreSQL 临时 schema；UI创建任务、点击后台运行，在第3个节点保存后关闭标签页。解除测试暂停点后，无页面请求，Worker 完成剩余5节点；重开显示1个稿件、等待人工审核，模型调用0。 |
+| 重启恢复正确位置 | unittest 启动真实子进程 Worker，分别在策略响应落盘、策略业务提交后挂起；父进程 SIGKILL，等待1秒测试租约过期，再启动全新子进程。SQLite及真实 PostgreSQL 均到达人工确认。生产租约30秒。 |
+| 成功节点复用 | 上述两个崩溃点恢复后，完整任务均只有8次替身调用、8个节点，无重复策略产物；另测 audience 成功而 research 失败，恢复不再调用 audience。 |
+| 错版本不能批准 | 错 draft_ref、编辑后旧 review_ref 均被拒绝；新版本复审后才能人工确认。取消期间收到的旧响应只留用量，不可提交稿件。 |
+| 模型切换守住规则 | 独立注册的 research 模型替身通过同一契约；替换 reviewer 返回 approved 但必过项 fail，仍拒绝，并不能人工批准伪造版本。不同费率先预留，不突破预算。 |
+| 用量与来源记录 | 8次模型替身调用均有唯一 call_id、provider/model、路由/提示词版本、输入哈希、snapshot_id、材料来源/账号上下文哈希、实际总用量及耗时。未返回的细分用量 null；错误调用也留记录。 |
+
+公开资料：检索并阅读 Wikipedia 的 [Capsule wardrobe（固定修订）](https://en.wikipedia.org/w/index.php?title=Capsule_wardrobe&oldid=1356888069)，只保留带署名/许可的简短中文改写摘要 tests/public_materials.json。以 editorial_summary 入隔离虚构账号资料库，检索后传入四角色，测试核对每个模型调用的资料 URL 与快照相同。此为背景材料，不是实时热榜、真实账号历史或增长数据。生产账号没有自动加入测试记录。
+
+最终验证：169项全量 unittest 通过，0跳过，包含真实 PostgreSQL 临时 schema、子进程 SIGKILL 与恢复；runtime/core-final-tests.log 记录67.876秒。五份前端 node --check、角色卡生成一致性（全量测试包含）、文档契约和 git diff --check 通过。浏览器检查没有 JavaScript error，重新进入能看到 v0.7 与人工审核状态。
+
+正式服务已在 http://127.0.0.1:8765/ 启动，新 FastAPI /health 返回0.7.0、postgresql、ok；独立 Worker 心跳在线。5个原有任务 payload 的 SHA256 与本次启动前逐一相同，正式 live_calls 为0。临时浏览器 schema、账号及测试进程已清理。证据摘要保留在忽略目录 runtime/core-browser-acceptance.json 与 core-production-check.json。
+
+限制：此轮没有付费模型质量评测，没有真实小红书/抖音账号、发布或指标同步，没有公网部署/高并发压测。外部模型请求已发出但响应未落盘时无法确认扣费，系统停止并明确用量未知；不会以恢复为理由自动重发。电脑关机期间不执行，需要启动 PostgreSQL、API 和 Worker 后恢复。来源读取仍是用户主动同步请求，不包含后台采集器。

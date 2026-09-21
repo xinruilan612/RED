@@ -93,6 +93,9 @@ class Runtime:
             run=self.jobs.guard(db,self.job)
             if db.execute('SELECT 1 FROM runtime_nodes WHERE run_id=? AND node_key=?',(run.run_id,key)).fetchone():return {}
             require(run.snapshot_id==state['snapshot'],'VERSION_CONFLICT','输入快照已变化')
+            if not any(e['type']=='agent.started' and e['payload'].get('node_key')==key for e in run.events):
+                run.event('agent.started',agent=agent,stage=stage,node_key=key,mode=run.context.get('mode','simulation'))
+                self.write(db,run)
         self.fault('before_call',stage)
         started=time.monotonic()
         if run.context.get('mode')=='live':
@@ -125,7 +128,6 @@ class Runtime:
             require(current.run_status=='RUNNING' and current.current_stage==expected,'VERSION_CONFLICT','节点已过期')
             if stage in ('review','revise'):
                 require(current.drafts[-1]['ref']==state['draft'],'VERSION_CONFLICT','稿件已变化，拒绝旧结果')
-            current.event('agent.started',agent=agent,stage=stage,mode=log['mode'])
             current.node_runs.append(log)
             current.event('agent.completed',agent=agent,stage=stage,mode=log['mode'],node_ref=log['id'])
             if stage in ('audience','research'):current.branch(stage,current.snapshot_id,'succeeded',output)

@@ -2,6 +2,8 @@
 import json
 import os
 import tempfile
+import subprocess
+import sys
 import time
 import unittest
 from pathlib import Path
@@ -77,6 +79,22 @@ class DurableTests(unittest.TestCase):
         Worker(self.service,fault=crash).once();self.assertEqual(self.job()['status'],'blocked')
         self.start();Worker(self.service).once()
         self.assertEqual(self.job()['status'],'waiting',self.job());self.assertEqual(self.model.calls.count('outline'),1)
+
+    def test_public_material_snapshot_and_audit_survive_live_fixture_graph(self):
+        self.action('cancel',{})
+        fixture=json.loads((Path(__file__).parent/'public_materials.json').read_text())['sources'][0]
+        account=self.service.operations.read(self.owner)['accounts'][0]['id']
+        self.service.knowledge.save(self.owner,dict(account_id=account,title=fixture['title'],text=fixture['text']),source_type='editorial_summary',source_url=fixture['url'],metadata=fixture)
+        data=dict(topic='胶囊衣橱',audience='虚构读者',tone='清楚',material='',mode='live',allow_hypothesis=True,
+                  operations=dict(account_id=account,platform='xiaohongshu',account='虚构账号'),knowledge={'enabled':True})
+        self.run_id=self.service.create(self.owner,data)['run_id']
+        self.start();Worker(self.service).once()
+        self.assertEqual(self.run_value().wait_reason,'final_confirmation',self.job())
+        for node in self.run_value().node_runs:
+            self.assertTrue(node['input']['materials'][0]['source_id'].startswith('kb:'))
+        for call in self.service.executor.public(self.run_value())['calls']:
+            self.assertTrue(any(source.get('url')==fixture['url'] for source in call['sources']))
+            self.assertEqual(call['snapshot_id'],self.run_value().snapshot_id)
 
     def test_successful_parallel_sibling_survives_other_failure(self):
         self.start()
@@ -155,6 +173,40 @@ class DurableTests(unittest.TestCase):
         self.assertEqual(self.run_value().wait_reason,'final_confirmation',self.job())
         self.assertEqual(len(self.run_value().drafts),2)
         self.assertEqual(self.model.calls,[])
+
+    def test_sigkill_after_response_and_commit_resumes_without_duplicate_calls(self):
+        root=Path(__file__).resolve().parents[1]
+        for point in ('after_response','after_commit'):
+            with self.subTest(point=point):
+                if self.run_value().run_status!='QUEUED':
+                    self.action('cancel',{});self.prepare()
+                self.start()
+                marker=Path(self.tmp.name)/point
+                env={**os.environ,'PYTHONPATH':str(root)+os.pathsep+str(root/'tests'),
+                     'FIXTURE_DATABASE_URL':self.store.path,'FIXTURE_POINT':point,
+                     'FIXTURE_STAGE':'strategy','FIXTURE_MARKER':str(marker),
+                     'PYTHONDONTWRITEBYTECODE':'1'}
+                with tempfile.TemporaryFile() as output:
+                    process=subprocess.Popen([sys.executable,str(root/'tests/runtime_process_fixture.py')],env=env,stdout=output,stderr=output)
+                    try:
+                        deadline=time.monotonic()+20
+                        while not marker.exists() and process.poll() is None and time.monotonic()<deadline:time.sleep(.05)
+                        if not marker.exists():
+                            output.seek(0);self.fail('worker did not reach crash point: '+output.read().decode())
+                        process.kill();process.wait(timeout=5)
+                    finally:
+                        if process.poll() is None:process.kill();process.wait()
+                # A real killed process cannot renew the persisted lease.
+                time.sleep(1.1)
+                with self.store.connect() as db:
+                    self.assertEqual(db.execute('SELECT COUNT(*) FROM live_calls WHERE run_id=?',(self.run_id,)).fetchone()[0],3)
+                clean={**env,'FIXTURE_POINT':'none'}
+                result=subprocess.run([sys.executable,str(root/'tests/runtime_process_fixture.py')],env=clean,capture_output=True,timeout=30)
+                self.assertEqual(result.returncode,0,result.stderr.decode())
+                self.assertEqual(self.run_value().wait_reason,'final_confirmation',self.job())
+                with self.store.connect() as db:
+                    self.assertEqual(db.execute('SELECT COUNT(*) FROM live_calls WHERE run_id=?',(self.run_id,)).fetchone()[0],8)
+                    self.assertEqual(db.execute('SELECT COUNT(*) FROM runtime_nodes WHERE run_id=?',(self.run_id,)).fetchone()[0],8)
 
 
 @unittest.skipUnless(os.environ.get('TEST_DATABASE_URL'),'requires actual PostgreSQL')

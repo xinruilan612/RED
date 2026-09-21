@@ -81,7 +81,7 @@ function renderDetails(){
  $('details').innerHTML='<div class="detail-block"><h3>最后决定由你做</h3><p>修改会创建新版本，必须再次审核。只有你确认准确版本后才能导出。</p></div>'+ (run.accepted_ref?'<p>✓ 已确认版本 '+esc(run.accepted_ref.slice(0,8))+'</p>':'<p class="muted">尚未确认任何版本。</p>');return;
  }
  const logs=run.node_runs.filter(n=>n.agent===selected);
- if(!logs.length){$('details').innerHTML='<div class="empty">这个角色还没有执行。<br>点击“执行下一步”，查看它的输入和产物。</div>';return;}
+ if(!logs.length){$('details').innerHTML='<div class="empty">这个角色还没有执行。<br>启动运行后，可以查看它的输入和产物。</div>';return;}
  const matches=detailStage?logs.filter(n=>n.stage===detailStage):logs;
  if(!matches.length){$('details').innerHTML='<div class="empty">这个创作阶段还没有执行。</div>';return;}
  const current=matches[matches.length-1];
@@ -176,9 +176,9 @@ $('cancel').onclick=async()=>{
 $('revise').onclick=()=>act('next');
 $('editButton').onclick=()=>{auto=false;const c=run.drafts.at(-1).content;$('editTitle').value=c.selected_title;$('editBody').value=c.body;$('editCta').value=c.cta;$('editTags').value=c.tags.join('，');editing=true;$('editor').hidden=false;render();$('editor').scrollIntoView({behavior:'smooth',block:'center'});$('editTitle').focus();};
 $('discardEdit').onclick=()=>{editing=false;$('editor').hidden=true;render();};
-$('editor').onsubmit=async e=>{e.preventDefault();const data={selected_title:$('editTitle').value,body:$('editBody').value,cta:$('editCta').value,tags:$('editTags').value.split(/[,，]/).map(x=>x.trim()).filter(Boolean)};if(await act('edit',data)){editing=false;$('editor').hidden=true;render();toast('新版本已保存。请执行下一步，重新审核。');}};
+$('editor').onsubmit=async e=>{e.preventDefault();const data={selected_title:$('editTitle').value,body:$('editBody').value,cta:$('editCta').value,tags:$('editTags').value.split(/[,，]/).map(x=>x.trim()).filter(Boolean)};if(await act('edit',data)){editing=false;$('editor').hidden=true;render();toast('新版本已保存。请启动后台运行，重新审核。');}};
 $('accept').onclick=async()=>{if(await act('accept',{draft_ref:run.drafts.at(-1).ref,review_ref:run.review.ref}))toast('已确认当前版本，可以下载。');};
-$('supplyForm').onsubmit=async e=>{e.preventDefault();if(await act('supplement',{material:$('supply').value,allow_hypothesis:$('supplyHypothesis').checked}))toast('补充已保存，执行下一步重新分析。');};
+$('supplyForm').onsubmit=async e=>{e.preventDefault();if(await act('supplement',{material:$('supply').value,allow_hypothesis:$('supplyHypothesis').checked}))toast('补充已保存，请启动运行重新分析。');};
 $('versionSelect').onchange=e=>{viewVersion=Number(e.target.value);renderDraft();};
 window.addEventListener('beforeunload',e=>{if(editing){e.preventDefault();e.returnValue='';}});
 document.addEventListener('DOMContentLoaded',async()=>{try{const session=await api('/api/session');csrf=session.csrf;if(session.auth_required&&!session.user){showLogin(session);return;}showWebsiteUser(session);provider=session.provider;$('configMessage').textContent=provider.message+' · 同一步最多3次（含首次）；接口错误立即停；整单最多16次 / 40000 Token';$('liveOption').disabled=!provider.ready;$('liveOption').textContent=provider.ready?'真实 AI · DeepSeek（消耗接口额度）':'真实 AI · DeepSeek（先填写 .env）';$('connectionStatus').textContent='DeepSeek：'+(provider.ready?'已配置':'未配置');$('mode').value='simulation';$('scenario').disabled=$('mode').value==='live';renderMode($('mode').value);const rows=await history();if(rows.length){run=rows[0];selected=currentAgent();render();await history();}await initOperations();}catch(e){error(e);}});
@@ -187,6 +187,6 @@ $('mode').onchange=()=>{renderMode($('mode').value);$('scenario').disabled=$('mo
 setInterval(async()=>{
  if(!run?.in_flight||polling)return;
  polling=true;
- try{const latest=await api('/api/runs/'+run.run_id);if(run?.run_id===latest.run_id){run=latest;render();}}
+ try{const latest=await api('/api/runs/'+run.run_id);if(run?.run_id===latest.run_id){const changed=run.status_version!==latest.status_version;run=latest;render();if(changed)await history();}}
  catch(_){}finally{polling=false;}
 },1500);

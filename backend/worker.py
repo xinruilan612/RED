@@ -4,13 +4,13 @@ import signal
 import threading
 import time
 from uuid import uuid4
-from backend.contracts import DomainError
+from backend.contracts import DomainError, CONTRACT
 from backend.jobs import Jobs
 from backend.runtime import Runtime
 
 
 class Worker:
-    def __init__(self, service, lease=30, fault=None):
+    def __init__(self, service, lease=CONTRACT['runtime_extension']['lease_s'], fault=None):
         self.service,self.store,self.jobs=service,service.store,Jobs(service.store)
         self.lease,self.fault=lease,fault
         self.id=str(uuid4());self.stopped=threading.Event()

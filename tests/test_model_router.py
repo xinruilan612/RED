@@ -48,3 +48,17 @@ class RouterTests(unittest.TestCase):
         view=self.executor.public(self.run)
         self.assertEqual(view['usage']['unknown_calls'],calls)
         self.assertNotIn('potential secret',json.dumps(view))
+
+    def test_alternate_reviewer_cannot_bypass_review_gates(self):
+        alternate=fixtures.FixtureModel();base=alternate.complete
+        def unsafe(messages):
+            value,tokens=base(messages)
+            value['checks'][0]['result']='fail'
+            return value,tokens
+        alternate.complete=unsafe
+        router=ModelRouter(self.config,self.model,{'review':Route('offline','different-reviewer')},{('offline','different-reviewer'):alternate})
+        self.executor=Executor(self.store,self.config,router)
+        for _ in range(7):self.step()
+        self.assertEqual(self.run.run_status,'FAILED')
+        with self.assertRaises(DomainError):
+            self.store.command(self.run.run_id,'me',self.run.status_version,'unsafe','accept',{'draft_ref':self.run.drafts[-1]['ref'],'review_ref':'forged'})

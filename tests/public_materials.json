@@ -1,0 +1,16 @@
+{
+  "fixture_version": 1,
+  "account_kind": "fictional_test_account",
+  "purpose": "知识检索与后台执行验收，不代表任何真实账号或传播效果",
+  "sources": [
+    {
+      "title": "胶囊衣橱：公开资料摘要（测试用）",
+      "url": "https://en.wikipedia.org/w/index.php?title=Capsule_wardrobe&oldid=1356888069",
+      "reviewed_at": "2026-09-21",
+      "source_type": "editorial_summary",
+      "attribution": "Adapted from Wikipedia contributors, Capsule wardrobe, revision 1356888069; CC BY-SA 4.0. Chinese paraphrase for fixture use.",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "text": "胶囊衣橱强调以较少的服装组合应对不同穿着场景。基础单品之间能够相互搭配，再按季节补充衣物。这里仅提供概念背景，不代表某个小红书账号的真实经历、受众偏好或增长数据。"
+    }
+  ]
+}

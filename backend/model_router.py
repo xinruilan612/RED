@@ -3,7 +3,7 @@ import json
 import time
 from dataclasses import asdict, dataclass, replace
 from uuid import uuid4
-from backend.contracts import require, DomainError
+from backend.contracts import require, DomainError, CONTRACT, PARAMETERS
 from backend.provider import DeepSeek, RATE
 from backend.workflow import digest
 
@@ -27,7 +27,7 @@ class ModelRouter:
 
     def policy(self):
         routes = {s: asdict(self.routes.get(s, Route('fixture' if self.client else 'deepseek', self.config.model))) for s in STAGES}
-        return {'version':digest(routes), 'routes':routes, 'prompt_version':'four-role-v0.6.1'}
+        return {'version':digest(routes), 'routes':routes, 'prompt_version':CONTRACT['runtime_extension']['prompt_version']}
 
     def route(self, policy, stage):
         require(stage in STAGES and policy.get('version') == digest(policy.get('routes')), 'CONFIG_INVALID','模型路由快照无效')
@@ -55,10 +55,12 @@ class Calls:
         policy = run.context.get('model_policy') or self.router.policy()
         route = self.router.route(policy,stage)
         input_hash = digest({'messages':messages,'snapshot':run.snapshot_id,'route':asdict(route)})
-        reserve = sum(len(m['content'].encode()) for m in messages)+3000+256
+        reserve = sum(len(m['content'].encode()) for m in messages)+PARAMETERS['output_tokens_max']+256
         call_id = str(uuid4())
         sources = [{'id':'user-material','source_type':'user_provided','hash':digest(run.context.get('material',''))}]
-        sources += [{k:s.get(k) for k in ('source_id','document_id','version','url','content_hash')} for s in run.context.get('evidence',[])]
+        sources += [{k:s.get(k) for k in ('source_id','document_id','version','url','source_type')}|{'content_hash':digest(s.get('text',''))} for s in run.context.get('evidence',[])]
+        if run.context.get('operations'):
+            sources.append({'id':'account-context','account_id':run.context['operations'].get('account_id'),'hash':digest(run.context['operations'])})
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             guard(db)
@@ -74,12 +76,12 @@ class Calls:
                 stage_count=db.execute(f"SELECT COUNT(*) FROM live_calls WHERE run_id IN ({FAMILY}) AND agent='content' AND stage IN ('body','revise')",(root,)).fetchone()[0]
             else:
                 stage_count=db.execute(f'SELECT COUNT(*) FROM live_calls WHERE run_id IN ({FAMILY}) AND agent=? AND stage=?',(root,agent,stage)).fetchone()[0]
-            require(stage_count<3,'STAGE_ATTEMPT_LIMIT','同一步已达到3次调用上限（含首次）')
+            require(stage_count<CONTRACT['runtime_extension']['stage_attempts_max'],'STAGE_ATTEMPT_LIMIT','同一步已达到3次调用上限（含首次）')
             count,used=db.execute(f'SELECT COUNT(*),COALESCE(SUM(COALESCE(actual,reserved)),0) FROM live_calls WHERE run_id IN ({FAMILY})',(root,)).fetchone()
             cost_sql = 'SELECT COALESCE(SUM(COALESCE(c.actual,c.reserved)*COALESCE(a.rate,?)),0) FROM live_calls c LEFT JOIN model_audit a ON a.call_id=c.id '
             cost=db.execute(cost_sql+f'WHERE c.run_id IN ({FAMILY})',(RATE,root)).fetchone()[0]
             daily=db.execute(cost_sql+"WHERE date(c.created)=date('now')",(RATE,)).fetchone()[0]
-            require(count<16 and used+reserve<=40000 and cost+reserve*route.rate<=self.config.run_budget_usd and daily+reserve*route.rate<=self.config.day_budget_usd,'BUDGET_EXCEEDED','已到调用、Token 或费用预留上限')
+            require(count<PARAMETERS['run_attempts_max'] and used+reserve<=PARAMETERS['run_tokens_max'] and cost+reserve*route.rate<=self.config.run_budget_usd and daily+reserve*route.rate<=self.config.day_budget_usd,'BUDGET_EXCEEDED','已到调用、Token 或费用预留上限')
             db.execute('INSERT INTO live_calls(id,run_id,agent,stage,reserved,state) VALUES(?,?,?,?,?,?)',(call_id,run.run_id,agent,stage,reserve,'calling'))
             db.execute('INSERT INTO model_audit(call_id,run_id,agent,stage,provider,model,route_version,prompt_version,input_hash,sources,snapshot_id,started,rate,outcome) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)',(call_id,run.run_id,agent,stage,route.provider,route.model,policy['version'],policy['prompt_version'],input_hash,json.dumps(sources),run.snapshot_id,time.time(),route.rate,'calling'))
         started=time.monotonic()

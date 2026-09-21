@@ -61,6 +61,24 @@ class ProductionTests(unittest.TestCase):
         self.assertEqual(self.client.get('/api/runs/'+run['run_id']).status_code,404)
         self.assertEqual(self.client.get('/api/runs').json(),[])
 
+    def test_background_endpoint_auth_idempotency_and_worker_completion(self):
+        from backend.worker import Worker
+        self.register();run=self.post('/api/runs',self.brief()).json()
+        path='/api/runs/'+run['run_id']+'/background'
+        command=dict(action='start',version=run['status_version'],key='background-test')
+        self.assertEqual(self.client.post(path,json=command).status_code,403)
+        for _ in range(2):
+            response=self.post(path,command);self.assertEqual(response.status_code,202,response.text)
+        self.assertEqual(response.json()['background']['status'],'queued')
+        self.assertEqual(self.app.state.store.get(run['run_id'],self.app.state.auth.session(self.client.cookies.get('youji_session'))['owner']).drafts,[])
+        Worker(self.app.state.service).once()
+        run=self.client.get('/api/runs/'+run['run_id']).json()
+        self.assertEqual(run['background']['status'],'waiting')
+        self.assertEqual(run['wait_reason'],'final_confirmation')
+        self.assertEqual(run['usage']['model_calls'],0)
+        self.post('/api/auth/logout',{});self.csrf=self.client.get('/api/session').json()['csrf'];self.register('background_other')
+        self.assertEqual(self.post(path,command).status_code,404)
+
     def test_password_reset_revokes_sessions_and_rotates_recovery(self):
         identity=self.register();old_token=self.client.cookies.get('youji_session')
         data={'username':'creator','password':'New-long-password','recovery_code':identity['recovery_code']}

@@ -397,5 +397,27 @@
     "new_task_excludes_deleted_documents": true,
     "old_task_keeps_evidence_for_audit": true,
     "platform_oauth": false
+  },
+  "runtime_extension": {
+    "version": "0.7.0",
+    "graph_policy": "four-role-graph@1",
+    "prompt_version": "four-role-v0.6.1",
+    "lease_s": 30,
+    "heartbeat_s": 10,
+    "stage_attempts_max": 3,
+    "job_states": [
+      "queued",
+      "running",
+      "pausing",
+      "paused",
+      "waiting",
+      "blocked",
+      "done"
+    ],
+    "checkpoint_backend": "postgresql",
+    "approval_authority": "transactional_Run",
+    "unknown_provider_outcome": "block_without_retry",
+    "frontend_execution": "enqueue_and_poll",
+    "node_effects": "transactional_ledger_and_domain_commit"
   }
 }
