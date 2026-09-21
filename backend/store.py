@@ -1,8 +1,7 @@
 """Transactional local repository for domain tests; production PostgreSQL pending."""
 import json
-import sqlite3
 from dataclasses import asdict
-from contextlib import contextmanager
+from backend.database import connect
 
 from backend.contracts import PARAMETERS, require, integer
 from backend.workflow import Run, digest
@@ -11,6 +10,8 @@ from backend.workflow import Run, digest
 class Store:
     def __init__(self, path):
         self.path = str(path)
+        self.postgres = self.path.startswith(('postgresql://', 'postgres://'))
+        self.order_column = 'created_seq' if self.postgres else 'rowid'
         with self.connect() as db:
             db.executescript('''
                 CREATE TABLE IF NOT EXISTS runs (
@@ -21,17 +22,23 @@ class Store:
                 CREATE TABLE IF NOT EXISTS reservations (
                     run_id TEXT NOT NULL, call_id TEXT NOT NULL, tokens INTEGER NOT NULL,
                     actual INTEGER, PRIMARY KEY(run_id,call_id));
+                CREATE TABLE IF NOT EXISTS schema_migrations(version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL);
+                CREATE TABLE IF NOT EXISTS social_accounts (
+                    owner TEXT NOT NULL, id TEXT NOT NULL, platform TEXT NOT NULL,
+                    name TEXT NOT NULL, revision INTEGER NOT NULL, payload TEXT NOT NULL,
+                    PRIMARY KEY(owner,id));
+                CREATE TABLE IF NOT EXISTS account_records (
+                    owner TEXT NOT NULL, account_id TEXT NOT NULL, kind TEXT NOT NULL,
+                    id TEXT NOT NULL, payload TEXT NOT NULL, PRIMARY KEY(owner,kind,id),
+                    FOREIGN KEY(owner,account_id) REFERENCES social_accounts(owner,id));
+                CREATE INDEX IF NOT EXISTS account_record_lookup ON account_records(owner,account_id,kind);
             ''')
+            if self.postgres:
+                db.execute('ALTER TABLE runs ADD COLUMN IF NOT EXISTS created_seq BIGSERIAL')
+            db.execute("INSERT INTO schema_migrations VALUES(1,?) ON CONFLICT(version) DO NOTHING", ('2026-09-21',))
 
-    @contextmanager
     def connect(self):
-        db = sqlite3.connect(self.path, timeout=10)
-        db.execute('PRAGMA foreign_keys=ON')
-        try:
-            with db:
-                yield db
-        finally:
-            db.close()
+        return connect(self.path)
 
     @staticmethod
     def _get(db, run_id, owner):
@@ -49,7 +56,7 @@ class Store:
             active = db.execute('SELECT payload FROM runs WHERE owner=?', (owner,)).fetchall()
             require(not any(json.loads(row[0])['run_status'] not in ('SUCCEEDED','FAILED','CANCELLED','EXPIRED') for row in active),
                     'RUN_ALREADY_ACTIVE', '已有活跃任务')
-            db.execute('INSERT INTO runs VALUES(?,?,?)', (run.run_id,owner,json.dumps(asdict(run))))
+            db.execute('INSERT INTO runs(id,owner,payload) VALUES(?,?,?)', (run.run_id,owner,json.dumps(asdict(run))))
         return run
 
     def get(self, run_id, owner):
@@ -117,5 +124,5 @@ class Store:
 
     def list_runs(self, owner):
         with self.connect() as db:
-            rows = db.execute('SELECT payload FROM runs WHERE owner=? ORDER BY rowid DESC LIMIT 50', (owner,)).fetchall()
+            rows = db.execute(f'SELECT payload FROM runs WHERE owner=? ORDER BY {self.order_column} DESC LIMIT 50', (owner,)).fetchall()
             return [Run(**json.loads(row[0])) for row in rows]

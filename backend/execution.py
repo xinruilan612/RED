@@ -28,13 +28,13 @@ class Executor:
                 CREATE TABLE IF NOT EXISTS live_lineage (run_id TEXT PRIMARY KEY, budget_id TEXT NOT NULL);
                 CREATE TABLE IF NOT EXISTS live_recoveries (parent TEXT PRIMARY KEY, child TEXT NOT NULL);
             ''')
-            columns={r[1] for r in db.execute('PRAGMA table_info(live_calls)')}
+            columns=set(db.columns('live_calls'))
             if 'response_json' not in columns:db.execute('ALTER TABLE live_calls ADD COLUMN response_json TEXT')
-            db.execute('INSERT OR IGNORE INTO live_lineage SELECT id,id FROM runs')
+            if store.postgres: db.execute('ALTER TABLE live_calls ADD COLUMN IF NOT EXISTS created_seq BIGSERIAL')
 
     @staticmethod
     def budget_id(db,run_id):
-        db.execute('INSERT OR IGNORE INTO live_lineage VALUES(?,?)',(run_id,run_id))
+        db.execute('INSERT INTO live_lineage VALUES(?,?) ON CONFLICT(run_id) DO NOTHING',(run_id,run_id))
         return db.execute('SELECT budget_id FROM live_lineage WHERE run_id=?',(run_id,)).fetchone()[0]
 
     def recover(self,run_id,owner,version):
@@ -56,7 +56,7 @@ class Executor:
             candidate.run_id=str(uuid4());candidate.run_status='QUEUED';candidate.wait_reason=None;candidate.status_version=0
             candidate.events=[];candidate.context['resume_from']=old.run_id
             candidate.event('run.queued',resume_from=old.run_id)
-            db.execute('INSERT INTO runs VALUES(?,?,?)',(candidate.run_id,owner,json.dumps(asdict(candidate),ensure_ascii=False)))
+            db.execute('INSERT INTO runs(id,owner,payload) VALUES(?,?,?)',(candidate.run_id,owner,json.dumps(asdict(candidate),ensure_ascii=False)))
             db.execute('INSERT INTO live_lineage VALUES(?,?)',(candidate.run_id,root))
             db.execute('INSERT INTO live_recoveries VALUES(?,?)',(old.run_id,candidate.run_id))
             return candidate
@@ -64,7 +64,7 @@ class Executor:
     def public(self,run):
         with self.store.connect() as db:
             root=self.budget_id(db,run.run_id)
-            calls=db.execute(f'SELECT id,agent,stage,reserved,actual,state,error,response_json,run_id FROM live_calls WHERE run_id IN ({FAMILY}) ORDER BY rowid',(root,)).fetchall()
+            calls=db.execute(f'SELECT id,agent,stage,reserved,actual,state,error,response_json,run_id FROM live_calls WHERE run_id IN ({FAMILY}) ORDER BY {self.store.order_column}',(root,)).fetchall()
             pending=db.execute("SELECT COUNT(*) FROM live_steps WHERE run_id=? AND state='running'",(run.run_id,)).fetchone()[0]
         items=[]
         for c in calls:

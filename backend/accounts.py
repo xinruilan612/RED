@@ -76,7 +76,7 @@ def save_account(state, data):
 
 def capture_edit(db, run, before):
     """Save edits in the same transaction as the new draft; retries never duplicate events."""
-    if not db.execute("SELECT 1 FROM sqlite_master WHERE name='operations'").fetchone():
+    if not db.has_table('operations'):
         return
     op = run.context.get('operations', {})
     identity = op.get('account_id')
@@ -99,4 +99,6 @@ def capture_edit(db, run, before):
         mode=run.context.get('mode', 'simulation'), created_at=datetime.now(timezone.utc).isoformat(),
         interpretation='用户表达偏好信号，不代表传播效果；仅记录，不自动写成永久规则'))
     state['version'] += 1
-    db.execute('INSERT OR REPLACE INTO operations VALUES(?,?)', (run.owner_id, json.dumps(state, ensure_ascii=False)))
+    db.execute('INSERT INTO operations VALUES(?,?) ON CONFLICT(owner) DO UPDATE SET payload=excluded.payload', (run.owner_id, json.dumps(state, ensure_ascii=False)))
+    from backend.database import project_operations
+    project_operations(db, run.owner_id, state)

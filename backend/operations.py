@@ -134,7 +134,9 @@ class Operations:
             self.apply(db, owner, state, command['action'], command['payload'])
             state['version'] += 1
             encoded = json.dumps(state, ensure_ascii=False)
-            db.execute('INSERT OR REPLACE INTO operations VALUES(?,?)', (owner,encoded))
+            db.execute('INSERT INTO operations VALUES(?,?) ON CONFLICT(owner) DO UPDATE SET payload=excluded.payload', (owner,encoded))
+            from backend.database import project_operations
+            project_operations(db, owner, state)
             db.execute('INSERT INTO operations_commands VALUES(?,?,?,?)', (owner,key,fingerprint,encoded))
             return state
 

@@ -84,3 +84,10 @@ Demo 启动命令：`PYTHONDONTWRITEBYTECODE=1 python3 -m backend.web --port 876
 浏览器当前窄桌面视口检查了首页、分析、记忆、创作和档案页；表格在容器内滚动，现有数据时折叠录入表单，撤销计划折叠保留。捕获的前端 error 日志为空。没有宣称完成全部移动设备兼容或跨设备云身份测试。node --check 对 app.js、operations.js、account.js 通过，git diff --check 通过。
 
 限制：analytics 是独立确定性规则角色，不是大模型或训练后的预测模型；真实平台授权、自动热点采集、真实发布与自动指标回流仍未接通。长期计划是本机可查看、可编辑、可撤销的记录，关闭服务时不会采集或推送。真实模型输出质量、真实账号持续数周效果尚未验证。
+
+## v0.6 第一阶段验证（2026-09-21）
+
+- 修改前 HEAD a8047c9，源码存档 runtime/before-web-foundation-a8047c9.tar；两份 SQLite 用 backup API 保存一致性副本，不含 .env。
+- 使用本机 PostgreSQL 18.6 新建独立数据库 youji_operations。迁移源为 before-web-foundation-hotspot-review-demo.sqlite，5 个 runs / 48 个 commands / 1 个 operations / 14 个 operations_commands / 2 个 demo_sessions / 5 个 live_lineage；逐行比对通过。源库未覆盖。
+- 全量 113 项测试通过，含 SQLite 与实际 PostgreSQL 上的注册、登录、跨设备会话、跨用户拒绝、CSRF、密码恢复撤销会话、旧空间一次认领、改稿复审/确认、命令重放、关系目录，以及迁移重跑/冲突拒绝。日志 runtime/foundation-tests.log；测试用独立临时 schema，无真实模型请求。
+- 四份前端脚本 node --check 和 git diff --check 通过。浏览器与新版站点交付检查在资料库阶段继续进行，尚未声称公网可用。

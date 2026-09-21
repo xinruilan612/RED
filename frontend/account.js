@@ -42,6 +42,7 @@ function renderAccounts(){
  $('createRecovery').onclick=async()=>{try{const data=await api('/api/session/recovery','POST',{});$('recoveryValue').value=data.recovery_code;$('recoveryOutput').hidden=false;}catch(e){error(e);}};
  $('toggleRestore').onclick=()=>{$('restoreForm').hidden=!$('restoreForm').hidden;};
  $('restoreForm').onsubmit=async e=>{e.preventDefault();try{const result=await api('/api/session/restore','POST',{recovery_code:e.target.elements.code.value});csrf=result.csrf;location.reload();}catch(e){error(e);}};
+ if(websiteSession?.auth_required)document.querySelector('.recovery-panel').innerHTML='<h2>网站账号与恢复</h2><p class="muted">在其他设备登录同一网站账号，即可继续使用这些记录。忘记密码时，在登录页选择“使用恢复码重设密码”。网站恢复码与旧 Demo 的本地空间恢复码不同。</p>';
 }
 async function renderOverview(){
  const request=++overviewLoad,account=activeAccountId,a=currentAccount();if(!a)return;
