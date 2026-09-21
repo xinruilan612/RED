@@ -1,0 +1,20 @@
+{
+  "backend/api.py": "dcfaa9353cad963e6c665eb40fa0e9ad5bb2bafab84f0b9985f267fe9fd7560d",
+  "backend/auth.py": "1b194716ca0f14e438f14fbdd57017a044df63e2ffa2fdb05c948d3ec76a2613",
+  "backend/analytics.py": "54a77eef66ef3a791567ad35cb276744f1f9b090c2a9957dd231e61be2ff983b",
+  "backend/knowledge.py": "3cc675c1c0c85ab71a98b91b62fd071eed0e3253e7215894eab9352d90b40575",
+  "backend/runtime.py": "1a0fa02e9b804f5b7f10e611ef6d70d6c78557464a7afbfdf1f384b8a6e23896",
+  "backend/model_router.py": "f03e654fa7ba184ed53a2c360e31c3c3e713ba068af9dbc87af258459f7ae020",
+  "backend/live.py": "3ff7a09f7e40d367e2d393f14b85de9a31320238371ea9bbd89553413abbd1b3",
+  "backend/provider.py": "f85ae647c08c727690a927157b8fef4d91e5e9516d1a713d92d7d50b886d4dd8",
+  "backend/workflow.py": "0c9ca9e80472e82f230eb1c6815821d788318fd44b2d9b49485b7a4857b27570",
+  "backend/worker.py": "b5ae2091f20ae0edb62bdc19fd51e4014c40c0138d79da1043322500cdbf2cdd",
+  "backend/jobs.py": "f3e749dae1905ae31f0c28eedb2371459c2aefea056a1e73b332d48b53fda975",
+  "backend/service.py": "3b1523a749ebb511d42fbe73ca979c2c2aef0433fa6d574926f271ff8e4d03a3",
+  "docs/IMPLEMENTATION_STATUS.md": "0527071057d214c0c8d64000ae12c9d88d851d2742f3f68885c1045245e1a9b1",
+  "docs/WEB_DEMO_VALIDATION.md": "599f30ba8b1a4b00f1926182d2ab413df4a100dfafff554358663ae8c793f269",
+  "docs/DEPLOYMENT.md": "06ce2eccf2f2eab4243351c73441071d272a15bb175dd442651176ed82ad4e6f",
+  "docs/design/design_contract.json": "b9c389cce952290e041738d25663eaba793ecd54c49620481d348f2d9f2ad6ee",
+  "docs/evidence/2026-09-20-outline-fix.json": "5d008c23e94f9474caa0fc5d303d4e6a9bad8e6ff5d2ce7a442423483c29e0d9",
+  "requirements.txt": "e6bf399b53ce8205c84c277b8b7b425601315295332e71e40d791373d9de06ae"
+}

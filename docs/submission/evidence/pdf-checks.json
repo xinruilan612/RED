@@ -1,0 +1,44 @@
+{
+  "47191919-AI+软件创新-有迹-功能演示录制脚本.pdf": {
+    "pages": 2,
+    "bytes": 183098,
+    "sha256": "db8e3e42eff69c765f6dafdfc9939705d2ce68eaf54c510194999c920d1d18a0",
+    "text_checks": "passed",
+    "visual_review": "All pages rendered and inspected; no clipping or orphan final page"
+  },
+  "47191919-AI+软件创新-有迹-技术方案.pdf": {
+    "pages": 7,
+    "bytes": 299598,
+    "sha256": "492737f692e70aa379b59b9395d91940f10bcfebf8210c1fe794fa2067337dab",
+    "text_checks": "passed",
+    "visual_review": "All pages rendered and inspected; no clipping or orphan final page"
+  },
+  "47191919-AI+软件创新-有迹-核心算法说明.pdf": {
+    "pages": 4,
+    "bytes": 244876,
+    "sha256": "39903327de55975e0edaa35b993b4156b78b717051f0f1357b460a4569734b3b",
+    "text_checks": "passed",
+    "visual_review": "All pages rendered and inspected; no clipping or orphan final page"
+  },
+  "47191919-AI+软件创新-有迹-测试报告.pdf": {
+    "pages": 4,
+    "bytes": 237054,
+    "sha256": "0133469107663f958ba7a87d529d57cd95405f3e41fa06942b940531563f5076",
+    "text_checks": "passed",
+    "visual_review": "All pages rendered and inspected; no clipping or orphan final page"
+  },
+  "47191919-AI+软件创新-有迹-软件说明书.pdf": {
+    "pages": 4,
+    "bytes": 245351,
+    "sha256": "72623f1a1570c5f85f7c1818d2d947645ab760ea9e35a03c55123feb47ac810f",
+    "text_checks": "passed",
+    "visual_review": "All pages rendered and inspected; no clipping or orphan final page"
+  },
+  "47191919-AI+软件创新-有迹-提交清单与待填项.pdf": {
+    "pages": 2,
+    "bytes": 180325,
+    "sha256": "9a0b60194e2be31898ab2d94cb318227c5609c4c801c6544ade4a5fec635ccd7",
+    "text_checks": "passed",
+    "visual_review": "All pages rendered and inspected; no clipping or orphan final page"
+  }
+}
