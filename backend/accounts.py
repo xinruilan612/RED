@@ -24,6 +24,8 @@ def migrate(state, owner):
     state.setdefault('accounts', [])
     for key in ('preferences', 'analyses', 'plans', 'competitors', 'experiments'):
         state.setdefault(key, [])
+    from backend.promotions import migrate as migrate_promotions
+    migrate_promotions(state)
     pairs = [('xiaohongshu', '我的账号')]
     pairs += [(p['platform'], p['account']) for p in state['publications'] if not p.get('account_id')]
     for platform, name in pairs:
@@ -41,7 +43,7 @@ def migrate(state, owner):
                 record.setdefault('pillar', '未分类')
                 record.setdefault('traffic', 'unknown')
                 record.setdefault('provenance', 'simulation' if record['mode'] == 'simulation' else 'manual')
-    state['operations_schema_version'] = 3
+    state['operations_schema_version'] = 4
     return state
 
 

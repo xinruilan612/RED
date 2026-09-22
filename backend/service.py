@@ -41,6 +41,15 @@ class Service:
         context['model_policy'] = self.executor.router.policy()
         if 'operations' in data:
             context['operations'] = self.operations.context(owner,data['operations'],mode)
+            promotion = context['operations'].get('promotion')
+            if promotion:
+                extra = ('推广简报（仅含用户允许公开的信息）：\n' + promotion['material'] +
+                         '\n客户问题：' + promotion['customer_problem'] +
+                         '\n问题依据：' + promotion['problem_source_label'] +
+                         ('\n缺失材料：' + '；'.join(promotion['missing']) if promotion['missing'] else ''))
+                merged = (context['material'] + '\n\n' + extra).strip()
+                require(len(merged) <= 8000, 'INVALID_INPUT', '推广资料与补充素材合计不能超过 8000 字')
+                context['material'] = merged
         selection=data.get('knowledge',{'enabled':False})
         require(isinstance(selection,dict) and set(selection)=={'enabled'} and type(selection['enabled']) is bool,'INVALID_INPUT','资料检索设置无效')
         if selection['enabled']:

@@ -172,7 +172,28 @@ class ProductionTests(unittest.TestCase):
 
     def test_frontend_assets_have_browser_executable_content_types(self):
         self.assertEqual(self.client.get('/app.js').headers['content-type'],'text/javascript; charset=utf-8')
+        self.assertEqual(self.client.get('/promotion.js').headers['content-type'],'text/javascript; charset=utf-8')
         self.assertEqual(self.client.get('/style.css').headers['content-type'],'text/css; charset=utf-8')
+
+    def test_promotion_brief_enters_run_as_public_snapshot(self):
+        self.register();state=self.client.get('/api/operations').json();account=state['accounts'][0]
+        def operation(action,payload):
+            nonlocal state
+            response=self.post('/api/operations',{'action':action,'payload':payload,'version':state['version'],'key':str(uuid4())})
+            self.assertEqual(response.status_code,200,response.text);state=response.json();return state
+        service=operation('save_service',{'id':'','account_id':account['id'],'name':'校园摄影','offering':'毕业照拍摄',
+            'target_customer':'本校毕业生','delivery':'校内线下','price':'299 元起','availability':'仅周末','contact':'',
+            'public_fields':['offering','target_customer','delivery','price'],'active':True})['services'][0]
+        portfolio=operation('save_portfolio',{'id':'','service_id':service['id'],'title':'图书馆样片','description':'双人毕业照',
+            'role':'独立拍摄和修图','facts':'在图书馆外拍摄','link':'','public_confirmed':True,'active':True})['portfolio_items'][0]
+        brief=operation('create_promotion_brief',{'account_id':account['id'],'service_id':service['id'],'goal':'trust',
+            'customer_problem':'不会摆姿势怎么办','problem_source':'user_provided','portfolio_ids':[portfolio['id']]})['promotion_briefs'][0]
+        payload=self.brief()|{'operations':{'account_id':account['id'],'promotion_brief_id':brief['id']}}
+        response=self.post('/api/runs',payload);self.assertEqual(response.status_code,201,response.text)
+        context=response.json()['context'];self.assertEqual(context['operations']['promotion']['id'],brief['id'])
+        self.assertIn('299 元起',context['material']);self.assertNotIn('仅周末',context['material'])
+        with self.store.connect() as db:
+            self.assertEqual(db.execute("SELECT COUNT(*) FROM account_records WHERE kind='promotion_briefs'").fetchone()[0],1)
 
     def test_invalid_body_is_safe_and_cookie_is_http_only(self):
         response=self.client.get('/api/session')

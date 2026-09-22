@@ -95,7 +95,10 @@ class OperationsContractTests(unittest.TestCase):
         from backend.analytics import AnalyticsAgent, WINDOW_HOURS
         extension=C['operations_extension']
         self.assertEqual(extension['agents'],[AnalyticsAgent.agent_id])
-        self.assertEqual(extension['schema_version'],3)
+        self.assertEqual(extension['schema_version'],4)
+        self.assertTrue(extension['promotion_policy']['public_fields_explicit'])
+        self.assertTrue(extension['promotion_policy']['manual_and_simulation_separated'])
+        self.assertEqual(extension['promotion_policy']['inquiry_attribution'],['explicit','multi_touch','unknown'])
         self.assertEqual(extension['windows_hours'],WINDOW_HOURS)
         self.assertEqual(extension['engine'],'deterministic_rules_plus_explainable_ucb1')
         self.assertFalse(extension['experiment_policy']['predicts_virality'])

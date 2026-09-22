@@ -24,7 +24,8 @@ async function history(){
 function currentAgent(){if(!run)return 'audience';if(run.run_status==='WAITING_USER'||run.run_status==='SUCCEEDED')return 'human';if(run.current_stage==='brief')return run.context.workflow==='quick'?'content':'audience';return run.current_stage;}
 function renderMode(mode){
  const live=mode==='live';
- const quick=(run?.context?.workflow||$('workflow')?.value)==='quick';
+ const workflow=$('workbench')?.hidden?$('workflow')?.value:run?.context?.workflow;
+ const quick=workflow==='quick';
  $('modeBadge').textContent=live?'真实 AI · DeepSeek':'模拟运行';
  $('studioRouteSummary').textContent=quick?'极速生成与独立审核 · 发布后由分析角色复盘':'四个创作角色协作 · 发布后由分析角色复盘';
  $('modeNotice').textContent=live?(quick?'内容生成与独立审核各调用一次 DeepSeek；用量可查看，事实仍需核查，最终由你确认。':'四个角色调用 DeepSeek；每次输出与用量可查看。可结合账号资料与已读取来源；事实仍需核查，最终由你确认。'):'这是免费模拟流程，使用固定模板和本地规则，没有调用真实 AI。';
@@ -160,7 +161,7 @@ async function autoRun(){
  auto=false;render();
 }
 $('briefForm').addEventListener('submit',async e=>{e.preventDefault();if(busy)return;busy=true;clearError();e.submitter.disabled=true;
- try{run=await api('/api/runs','POST',{...(websiteSession?.auth_required?{knowledge:{enabled:$('useKnowledge').checked}}:{}),mode:$('mode').value,workflow:$('workflow').value,topic:$('topic').value,audience:$('audience').value,tone:$('tone').value,material:$('material').value,scenario:$('scenario').value,allow_hypothesis:$('hypothesis').checked,operations:{platform:$('targetPlatform').value,account_id:currentAccount()?.id,account:$('accountName').value,trend_id:chosenTrend?.id||null,experiment_id:chosenExperiment?.id||null}});selected=currentAgent();detailStage=null;viewVersion=null;editing=false;$('editor').hidden=true;render();await history();}
+ try{run=await api('/api/runs','POST',{...(websiteSession?.auth_required?{knowledge:{enabled:$('useKnowledge').checked}}:{}),mode:$('mode').value,workflow:$('workflow').value,topic:$('topic').value,audience:$('audience').value,tone:$('tone').value,material:$('material').value,scenario:$('scenario').value,allow_hypothesis:$('hypothesis').checked,operations:{platform:$('targetPlatform').value,account_id:currentAccount()?.id,account:$('accountName').value,trend_id:chosenTrend?.id||null,experiment_id:chosenExperiment?.id||null,promotion_brief_id:chosenPromotion?.id||null}});selected=currentAgent();detailStage=null;viewVersion=null;editing=false;$('editor').hidden=true;render();await history();}
  catch(err){error(err);}finally{busy=false;e.submitter.disabled=false;if(run&&!$('workbench').hidden)render();}});
 $('history').addEventListener('click',async e=>{const b=e.target.closest('[data-run]');if(!b||busy||!dirtyGuard())return;auto=false;editing=false;$('editor').hidden=true;clearError();showPage('studio');try{run=await api('/api/runs/'+b.dataset.run);viewVersion=null;detailStage=null;selected=currentAgent();render();await history();}catch(err){error(err);}});
 $('newRun').onclick=()=>{if(busy||!dirtyGuard())return;showPage('studio');auto=false;editing=false;$('editor').hidden=true;$('workbench').hidden=true;document.querySelector('.entry-paths').hidden=false;$('welcome').hidden=false;renderMode($('mode').value);fillAccountBrief();clearError();};

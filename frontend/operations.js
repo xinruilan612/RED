@@ -1,10 +1,10 @@
 'use strict';
-let ops=null,chosenTrend=null,chosenExperiment=null,opsBusy=false,currentPage='overview',platformFilter='all',keyword='';
+let ops=null,chosenTrend=null,chosenExperiment=null,chosenPromotion=null,opsBusy=false,currentPage='overview',platformFilter='all',keyword='';
 const platformNames={xiaohongshu:'小红书',douyin:'抖音'};
 const pubStates={AWAITING_APPROVAL:'待发布确认',APPROVED:'待执行',SIMULATED:'已演练 · 未真实发布',MANUAL_REPORTED:'已回填 · 未独立核验'};
 const memoryStates={proposed:'待你决定',accepted:'已接受',rejected:'已拒绝',revoked:'已撤销',superseded:'指标已修正 · 经验失效'};
 const experimentStates={proposed:'待你决定',accepted:'实验已接受',rejected:'已拒绝',revoked:'已撤销',superseded:'依据已修正 · 实验失效'};
-const pageInfo={overview:['THIS WEEK / 00','把每周运营，连成长期积累。','目标、创作和复盘，都围绕当前账号展开。'],accounts:['ACCOUNT / PROFILE','认识你的账号，也记住每一次选择。','定位档案、历史作品与表达偏好，持续保存在同一个账号里。'],trends:['DISCOVER / 01','找到下一个值得写的选题。','从趋势线索出发，让每一次创作都有依据。'],studio:['CREATE / 02','把好选题，变成好内容。','受众洞察、素材研究、创作与审核，协作过程始终可见。'],publish:['PUBLISH / 03','发布之前，最后确认一次。','把准确版本交给准确账号，留下可追溯的发布记录。'],metrics:['MEASURE / 04','看看内容带来了什么。','保留数据来源与观察窗口，缺失数据不记为零。'],memory:['LEARN / 05','让下一次创作，更有依据。','从历史表现提取实验建议，由你决定哪些经验值得保留。']};
+const pageInfo={overview:['THIS WEEK / 00','把每周运营，连成长期积累。','目标、创作和复盘，都围绕当前账号展开。'],accounts:['ACCOUNT / PROFILE','认识你的账号，也记住每一次选择。','定位档案、历史作品与表达偏好，持续保存在同一个账号里。'],promotion:['SERVICE / GROWTH','把真实技能，变成可持续的接单内容。','服务、作品、推广内容和匿名咨询形成有证据的闭环。'],trends:['DISCOVER / 01','找到下一个值得写的选题。','从趋势线索出发，让每一次创作都有依据。'],studio:['CREATE / 02','把好选题，变成好内容。','受众洞察、素材研究、创作与审核，协作过程始终可见。'],publish:['PUBLISH / 03','发布之前，最后确认一次。','把准确版本交给准确账号，留下可追溯的发布记录。'],metrics:['MEASURE / 04','看看内容带来了什么。','保留数据来源与观察窗口，缺失数据不记为零。'],memory:['LEARN / 05','让下一次创作，更有依据。','从历史表现提取实验建议，由你决定哪些经验值得保留。']};
 const dateText=value=>value?new Date(value).toLocaleString('zh-CN',{hour12:false}):'固定示例 · 无采集时间';
 const badge=(text,kind='')=>`<span class="pill ${kind}">${esc(text)}</span>`;
 const empty=(title,body)=>`<div class="empty-state"><span class="empty-symbol">↗</span><h2>${esc(title)}</h2><p>${esc(body)}</p></div>`;
@@ -28,6 +28,7 @@ function renderOperations(){
  if(!ops)return;
  if(currentPage==='overview')renderOverview();
  if(currentPage==='accounts')renderAccounts();
+ if(currentPage==='promotion')renderPromotion();
  if(currentPage==='trends')renderTrends();
  if(currentPage==='library')renderLibrary();
  if(currentPage==='publish')renderPublications();
@@ -46,7 +47,7 @@ function renderTrends(){
 function chooseTrend(id){
  if(busy||!dirtyGuard())return;const trend=ops.trends.find(t=>t.id===id);if(!trend)return;
  if(currentAccount()?.platform!==trend.platform){toast('请先在顶部切换到对应平台的账号');return;}
- chosenTrend=trend;chosenExperiment=null;showPage('studio');$('newRun').click();
+ chosenTrend=trend;chosenExperiment=null;chosenPromotion=null;showPage('studio');$('newRun').click();
  $('targetPlatform').value=trend.platform;$('topic').value=trend.title;
  $('audience').value=trend.category==='穿搭'?'关注日常穿搭与服饰搭配的读者':trend.category==='学习'?'希望改善学习习惯的大学生':'关注日常生活方式的读者';
  $('audience').value=currentAccount()?.profile.audience||$('audience').value;
@@ -57,14 +58,14 @@ function chooseTrend(id){
 }
 function chooseExperiment(id){
  const experiment=ops.experiments.find(row=>row.id===id);if(!experiment||experiment.status!=='accepted')return;
- chosenExperiment=experiment;chosenTrend=null;showPage('studio');$('newRun').click();
+ chosenExperiment=experiment;chosenTrend=null;chosenPromotion=null;showPage('studio');$('newRun').click();
  $('topic').value=experiment.hypothesis;$('material').value=`实验控制：${experiment.control}\n本次变量：${experiment.variant}`;
  $('mode').value=experiment.source_type==='simulation'?'simulation':'live';$('workflow').value='professional';$('mode').onchange();
  $('selectedTrend').textContent=`已接受实验 · ${experiment.algorithm}：${experiment.chosen_pillar}`;
  $('selectedTrend').hidden=false;$('clearTrend').hidden=false;
 }
 function renderPublications(){
- $('operationsContent').innerHTML=`<div class="notice">国内平台 API 尚未接通。模拟稿可演练流程；真实 AI 确认稿可在你自行发布后回填链接。此处不会向平台发送内容。</div><div class="section-toolbar"><div><h2>发布队列</h2><p class="muted">内容、账号与版本一起确认，创作完成不等于发布成功。</p></div><button id="loadConfirmed" class="secondary">选择已确认稿件</button></div><div id="confirmedRuns" class="panel inline-form" hidden></div><div class="publication-list">${accountRows('publications').map(p=>`<article class="panel publication-card"><div class="publication-main"><div>${badge(platformNames[p.platform])} ${badge(p.mode==='simulation'?'模拟稿':p.mode==='imported'?'历史导入':'真实 AI 稿','neutral')} ${badge(pubStates[p.status],'amber')}</div><h2>${esc(p.content.selected_title)}</h2><p class="muted">${esc(p.account)} · 版本 ${esc(p.draft_ref.slice(0,8))} · ${esc(dateText(p.created_at))}</p><details><summary>查看待发布正文与确认依据</summary><p class="readable">${esc(p.content.body)}</p><p>${esc(p.content.cta)}</p><p class="helper">稿件 ${esc(p.draft_ref)} · 审核 ${esc(p.review_ref||'历史导入 · 无本系统审核')}<br>内容摘要 ${esc(p.content_hash.slice(0,16))} · ${p.platform==='douyin'?'当前为脚本，需要自行制作视频。':'图片与封面需另行准备。'}</p></details>${p.url?`<a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer">查看已回填作品 ↗</a>`:''}</div><div class="publication-actions">${p.status==='AWAITING_APPROVAL'?`<button class="primary" data-approve="${p.id}">确认此版本与账号</button>`:p.status==='APPROVED'?(p.mode==='simulation'?`<button class="primary" data-simulate="${p.id}">演练发布（不发平台）</button>`:`<form data-record="${p.id}"><label>已发布作品链接<input name="url" type="url" required placeholder="平台作品 URL"></label><label>实际发布时间<input name="published_at" type="datetime-local" required></label><button class="primary">保存人工发布记录</button></form>`):`<button class="secondary" data-to-metrics="${p.id}">录入指标与复盘 →</button>`}</div></article>`).join('')||empty('还没有待发布内容','在创作工作台完成审核并确认稿件，再进入发布中心。')}</div>`;
+ $('operationsContent').innerHTML=`<div class="notice">国内平台 API 尚未接通。模拟稿可演练流程；真实 AI 确认稿可在你自行发布后回填链接。此处不会向平台发送内容。</div><div class="section-toolbar"><div><h2>发布队列</h2><p class="muted">内容、账号与版本一起确认，创作完成不等于发布成功。</p></div><button id="loadConfirmed" class="secondary">选择已确认稿件</button></div><div id="confirmedRuns" class="panel inline-form" hidden></div><div class="publication-list">${accountRows('publications').map(p=>`<article class="panel publication-card"><div class="publication-main"><div>${badge(platformNames[p.platform])} ${badge(p.mode==='simulation'?'模拟稿':p.mode==='imported'?'历史导入':'真实 AI 稿','neutral')} ${badge(pubStates[p.status],'amber')} ${p.promotion?badge('接单推广 · '+p.promotion.goal_label,'neutral'):''}</div><h2>${esc(p.content.selected_title)}</h2><p class="muted">${esc(p.account)} · 版本 ${esc(p.draft_ref.slice(0,8))} · ${esc(dateText(p.created_at))}</p><details><summary>查看待发布正文与确认依据</summary><p class="readable">${esc(p.content.body)}</p><p>${esc(p.content.cta)}</p><p class="helper">稿件 ${esc(p.draft_ref)} · 审核 ${esc(p.review_ref||'历史导入 · 无本系统审核')}<br>内容摘要 ${esc(p.content_hash.slice(0,16))} · ${p.platform==='douyin'?'当前为脚本，需要自行制作视频。':'图片与封面需另行准备。'}${p.promotion?`<br>服务 ${esc(p.promotion.public_service.name)} v${p.promotion.service_version} · 推广简报 ${esc(p.promotion.id.slice(0,8))} · 问题依据 ${esc(p.promotion.problem_source_label)}`:''}</p></details>${p.url?`<a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer">查看已回填作品 ↗</a>`:''}</div><div class="publication-actions">${p.status==='AWAITING_APPROVAL'?`<button class="primary" data-approve="${p.id}">确认此版本与账号</button>`:p.status==='APPROVED'?(p.mode==='simulation'?`<button class="primary" data-simulate="${p.id}">演练发布（不发平台）</button>`:`<form data-record="${p.id}"><label>已发布作品链接<input name="url" type="url" required placeholder="平台作品 URL"></label><label>实际发布时间<input name="published_at" type="datetime-local" required></label><button class="primary">保存人工发布记录</button></form>`):`<button class="secondary" data-to-metrics="${p.id}">录入指标与复盘 →</button>`}</div></article>`).join('')||empty('还没有待发布内容','在创作工作台完成审核并确认稿件，再进入发布中心。')}</div>`;
  $('loadConfirmed').onclick=async()=>{try{const rows=(await api('/api/runs')).filter(r=>matchesAccount(r)&&r.run_status==='SUCCEEDED'&&!ops.publications.some(p=>p.run_id===r.run_id));$('confirmedRuns').hidden=false;$('confirmedRuns').innerHTML=rows.length?rows.map(r=>`<button class="confirmed-choice" data-prepare-run="${r.run_id}" data-ref="${r.accepted_ref}">${esc(r.context.topic)} <span>加入发布队列 →</span></button>`).join(''):'<p class="muted">暂无未加入队列的确认稿。先在创作工作台完成一份稿件。</p>';}catch(e){error(e);}};
  document.querySelectorAll('[data-record]').forEach(form=>form.onsubmit=async e=>{e.preventDefault();await operate('record',{id:form.dataset.record,url:form.elements.url.value,published_at:new Date(form.elements.published_at.value).toISOString()});});
 }
@@ -75,7 +76,7 @@ function renderMemory(){
  $('experimentForm').onsubmit=async e=>{e.preventDefault();const f=e.target.elements;await operate('recommend_experiment',{account_id:currentAccount().id,source_type:f.source_type.value,window:f.window.value});};
 }
 document.querySelector('.workspace-nav').onclick=e=>{const b=e.target.closest('[data-page]');if(b&&!busy&&dirtyGuard()){auto=false;showPage(b.dataset.page);}};
-$('clearTrend').onclick=()=>{chosenTrend=null;chosenExperiment=null;$('selectedTrend').hidden=true;$('clearTrend').hidden=true;};
+$('clearTrend').onclick=()=>{chosenTrend=null;chosenExperiment=null;chosenPromotion=null;$('selectedTrend').hidden=true;$('clearTrend').hidden=true;};
 $('targetPlatform').onchange=()=>{if(chosenTrend&&chosenTrend.platform!==$('targetPlatform').value)$('clearTrend').click();};
 $('sendToPublish').onclick=async()=>{try{if(!ops)ops=await api('/api/operations');if(await operate('prepare',{run_id:run.run_id,draft_ref:run.accepted_ref}))showPage('publish');}catch(e){error(e);}};
 $('quickStart').onclick=()=>{$('workflow').value='quick';$('topic').focus();$('briefForm').scrollIntoView({behavior:'smooth',block:'start'});};

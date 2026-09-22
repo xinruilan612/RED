@@ -37,7 +37,7 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
     store = store or Store(env.get('DATABASE_URL','runtime/web.sqlite'))
     config = config if config is not None else load_config()
     auth, service = Auth(store), Service(store,config,client)
-    app = FastAPI(title='有迹运营 API', version='0.8.0', docs_url=None, redoc_url=None)
+    app = FastAPI(title='有迹运营 API', version='0.9.0', docs_url=None, redoc_url=None)
     app.state.store,app.state.service,app.state.auth = store,service,auth
 
     def failure(error):
@@ -91,7 +91,7 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
     @app.get('/health')
     def health():
         with store.connect() as db: db.execute('SELECT 1')
-        return {'status':'ok','database':'postgresql' if store.postgres else 'sqlite','version':'0.8.0'}
+        return {'status':'ok','database':'postgresql' if store.postgres else 'sqlite','version':'0.9.0'}
 
     @app.get('/api/session')
     def session(request: Request):
@@ -198,7 +198,7 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
 
     @app.get('/{asset}')
     def asset(asset: str):
-        require(asset in ('style.css','app.js','operations.js','account.js','auth.js','knowledge.js'),'RESOURCE_NOT_FOUND','页面不存在')
+        require(asset in ('style.css','app.js','operations.js','account.js','auth.js','knowledge.js','promotion.js'),'RESOURCE_NOT_FOUND','页面不存在')
         require((FRONTEND/asset).is_file(),'RESOURCE_NOT_FOUND','页面不存在')
         media_type = 'text/css' if asset.endswith('.css') else 'text/javascript'
         return FileResponse(FRONTEND/asset,media_type=media_type)

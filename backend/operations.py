@@ -12,6 +12,8 @@ from backend.accounts import migrate, find_account, save_account, account_id, ne
 from backend.analytics import AnalyticsAgent, invalidate, refresh_plans
 from backend.planning import make_plan, update_plan, update_task
 from backend.experiments import recommend
+from backend.promotions import (save_service, save_portfolio, create_brief, brief_context,
+                                record_inquiry, update_inquiry, analyze as analyze_promotion)
 
 PLATFORMS = ('xiaohongshu', 'douyin')
 
@@ -83,7 +85,7 @@ class Operations:
         return migrate(json.loads(row[0]) if row else seed(), owner)
 
     def context(self, owner, data, mode):
-        require(isinstance(data, dict) and set(data) <= {'platform','account','account_id','trend_id','experiment_id'}, 'INVALID_INPUT', '运营上下文字段无效')
+        require(isinstance(data, dict) and set(data) <= {'platform','account','account_id','trend_id','experiment_id','promotion_brief_id'}, 'INVALID_INPUT', '运营上下文字段无效')
         platform = data.get('platform', 'xiaohongshu')
         require(platform in PLATFORMS, 'INVALID_INPUT', '平台无效')
         account = validate_text(data.get('account','我的账号'), '账号名称', 80)
@@ -98,6 +100,7 @@ class Operations:
         experiment = item(state['experiments'], data['experiment_id']) if data.get('experiment_id') else None
         require(not experiment or (experiment['account_id'] == identity and experiment['source_type'] == ('simulation' if mode == 'simulation' else 'manual')
                 and experiment['status'] == 'accepted'), 'INVALID_INPUT', '实验建议未接受、已失效或不属于当前账号')
+        promotion = brief_context(state, identity, data['promotion_brief_id']) if data.get('promotion_brief_id') else None
         # Demo evidence is never fed into paid/real creation.
         require(not (mode == 'live' and trend and trend['source_type'] == 'example'), 'INVALID_INPUT', '示例选题只用于模拟模式；真实创作请导入自己的来源')
         memories = [copy.deepcopy(m) for m in state['memories'] if m['status'] == 'accepted'
@@ -115,7 +118,8 @@ class Operations:
             if metric['publication_id'] in ids:
                 latest[(metric['publication_id'], metric['window'])] = copy.deepcopy(metric)
         return {'platform': platform, 'account': account, 'account_id': identity,
-                'profile': copy.deepcopy(profile), 'trend': copy.deepcopy(trend), 'experiment': copy.deepcopy(experiment), 'memories': memories[:5],
+                'profile': copy.deepcopy(profile), 'trend': copy.deepcopy(trend), 'experiment': copy.deepcopy(experiment),
+                'promotion': promotion, 'memories': memories[:5],
                 'history': history, 'metrics': list(latest.values())[-60:],
                 'competitors': [copy.deepcopy(c) for c in state['competitors'] if c['account_id'] == identity][-10:],
                 'preferences': [copy.deepcopy(p) for p in state['preferences'] if p['account_id'] == identity
@@ -225,6 +229,18 @@ class Operations:
                 observed_at=timestamp(data['observed_at']), source_type='manual',
                 limitation='用户记录的公开观察，未抓取核验；不推断曝光、转化或因果'))
             return
+        if action == 'save_service':
+            save_service(state, data, now()); return
+        if action == 'save_portfolio':
+            save_portfolio(state, data, now()); return
+        if action == 'create_promotion_brief':
+            create_brief(state, data, now()); return
+        if action == 'record_inquiry':
+            record_inquiry(state, data, now(), timestamp); return
+        if action == 'update_inquiry':
+            update_inquiry(state, data, now()); return
+        if action == 'analyze_promotion':
+            analyze_promotion(state, data, now(), timestamp); return
         fields = {
             'add_trend': {'title','platform','category','angle','source_url','observed_at'},
             'prepare': {'run_id','draft_ref'}, 'approve': {'id'},
@@ -260,7 +276,8 @@ class Operations:
                 account=account['name'], account_id=account['id'], mode=run.context.get('mode','simulation'),
                 provenance='simulation' if run.context.get('mode','simulation') == 'simulation' else 'manual',
                 format='video' if platform == 'douyin' else 'image_text', pillar='未分类', traffic='unknown',
-                status='AWAITING_APPROVAL', created_at=now(), approved_at=None, url=None, published_at=None))
+                status='AWAITING_APPROVAL', created_at=now(), approved_at=None, url=None, published_at=None,
+                promotion=copy.deepcopy(op.get('promotion'))))
         elif action in ('approve','simulate','record'):
             pub = item(state['publications'], data['id'])
             if action == 'approve':

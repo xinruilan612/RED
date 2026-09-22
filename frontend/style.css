@@ -22,3 +22,8 @@ body{background:#f5f6f2}main{max-width:1560px;padding:36px 40px 24px;margin-left
 .website-user:not([hidden]) + .account-bar{margin-top:0}
 
 @media(min-width:721px){.sidebar{overflow-y:auto}.sidebar .history{flex:0 0 auto}.sidebar-footer{flex-shrink:0}}
+
+/* Service promotion keeps facts, permissions and observations visibly separate. */
+.promotion-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start}.promotion-layout>section{min-width:0}.promotion-layout .panel{margin-bottom:16px}.public-field-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0 12px;margin-top:8px}.service-list,.portfolio-list,.brief-list,.inquiry-list{display:grid;gap:12px;margin:16px 0}.service-card small,.portfolio-list small,.inquiry-row small{display:block;color:var(--muted);font-size:10px;margin-top:10px}.portfolio-list{grid-template-columns:repeat(2,minmax(0,1fr))}.portfolio-choice{border:1px solid var(--line);border-radius:9px;padding:8px 14px;margin:16px 0}.portfolio-choice legend{font-size:12px;color:var(--muted)}.promotion-feedback{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}.inquiry-row{display:flex;justify-content:space-between;align-items:center;gap:20px}.inquiry-row>div:first-child{min-width:0}.promotion-hero{background:linear-gradient(135deg,#eaf1e6,#f7f2e5)}
+@media(max-width:1050px){.promotion-layout,.promotion-feedback{grid-template-columns:1fr}.public-field-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:720px){.public-field-grid,.portfolio-list{grid-template-columns:1fr}.inquiry-row{align-items:flex-start;flex-direction:column}}
