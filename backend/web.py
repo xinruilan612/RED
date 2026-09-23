@@ -143,7 +143,8 @@ class Handler(BaseHTTPRequestHandler):
                     if 'operations' in data:
                         context['operations']=self.server.operations.context(owner,data['operations'],mode)
                     if mode=='live':context['scenario']='standard'
-                    run=self.server.store.create(owner,str(uuid4()),context)
+                    run=self.server.store.create(owner,str(uuid4()),context,
+                                                 validate=self.server.operations.validate_creation)
                     self.send(201,view(run,self.server.executor))
                 else: self.send(200,[view(r,self.server.executor) for r in self.server.store.list_runs(owner)])
                 return

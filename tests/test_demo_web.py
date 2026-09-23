@@ -91,6 +91,36 @@ class DemoWebTests(unittest.TestCase):
         self.assertEqual([n['stage'] for n in run['node_runs']],['quick','review'])
         self.assertEqual(run['wait_reason'],'final_confirmation')
 
+    def test_legacy_http_create_rechecks_experiment_revoked_after_context(self):
+        def operation(action, payload):
+            status, state = self.request('GET', '/api/operations')
+            self.assertEqual(status, 200)
+            status, state = self.request('POST', '/api/operations', dict(action=action, payload=payload,
+                version=state['version'], key=str(uuid4())))
+            self.assertEqual(status, 200, state)
+            return state
+
+        account = next(a for a in operation('load_sample', {})['accounts'] if a.get('demo_sample'))
+        decision = operation('recommend_experiment', dict(account_id=account['id'], source_type='simulation',
+            format='image_text', window='24h'))['experiments'][0]
+        operation('experiment_status', dict(id=decision['id'], status='accepted'))
+        ops = self.server.operations; initial_context = ops.context
+
+        def revoke_after_validation(owner, data, mode):
+            context = initial_context(owner, data, mode)
+            ops.command(owner, dict(action='experiment_status', payload=dict(id=decision['id'], status='revoked'),
+                version=ops.read(owner)['version'], key=str(uuid4())))
+            return context
+
+        with patch.object(ops, 'context', side_effect=revoke_after_validation):
+            status, result = self.request('POST', '/api/runs', dict(topic='旧入口竞态测试', audience='学生', tone='清楚',
+                operations=dict(account_id=account['id'], platform='xiaohongshu', format='image_text', experiment_id=decision['id'])))
+        self.assertEqual(status, 409, result)
+        with self.store.connect() as db:
+            for table in ('runs', 'reservations', 'live_calls', 'runtime_jobs'):
+                if db.has_table(table):
+                    self.assertEqual(db.execute('SELECT COUNT(*) FROM ' + table).fetchone()[0], 0, table)
+
     def test_manual_revision_then_reaudit_keeps_versions(self):
         run=self.until_pause(self.create('revision'))
         self.assertEqual(run['review']['decision'],'revision_required')

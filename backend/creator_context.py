@@ -34,7 +34,7 @@ def enrich(stage, value, context):
         experiment = op.get('experiment')
         result['content_brief'] = dict(**identity, goal=profile.get('goal') or '先验证内容是否对目标受众有用',
             core_viewpoint=result['angle'], audience=result['reader'],
-            content_type='口播与分镜脚本' if op.get('platform') == 'douyin' else '图文笔记',
+            content_type='口播与分镜脚本' if op.get('format', 'video' if op.get('platform') == 'douyin' else 'image_text') == 'video' else '图文笔记',
             hook_options=result.get('candidate_angles', ['场景问题开头', '具体清单开头']),
             evidence_scope='引用用户素材与检索原文；历史表现与竞品观察不能证明正文事实',
             cta=result.get('cta', '邀请读者分享自己的场景'), banned=profile.get('banned', ''),

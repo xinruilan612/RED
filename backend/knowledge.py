@@ -101,8 +101,7 @@ class Knowledge:
             pages=parse_file(name,raw); source_type='upload'
         else:
             text=validate_text(data.get('text'),'资料正文',MAX_TEXT)
-            raw=text.encode();pages=[(1,text)]
-        parts=chunks(pages)
+            raw=text.encode('utf-8');pages=[(1,text)]
         fingerprint=hashlib.sha256(raw).hexdigest();now=int(time.time())
         identity=data.get('document_id') or str(uuid4())
         with self.store.connect() as db:
@@ -117,15 +116,28 @@ class Knowledge:
                 duplicate=db.execute("SELECT d.id FROM knowledge_documents d JOIN knowledge_versions v ON v.document_id=d.id AND v.version=d.version WHERE d.owner=? AND d.account_id=? AND d.status='active' AND v.fingerprint=?",(owner,account,fingerprint)).fetchone()
                 require(not duplicate,'DUPLICATE','当前账号已有相同正文，请更新原资料或直接使用')
             version=row[0]+1 if row else 1
-            if row:
-                db.execute('UPDATE knowledge_documents SET title=?,version=?,source_type=?,source_url=?,updated_at=? WHERE id=?',(title,version,source_type,source_url,now,identity))
-            else:
-                db.execute('INSERT INTO knowledge_documents VALUES(?,?,?,?,?,?,?,?,?)',(identity,owner,account,title,version,'active',source_type,source_url,now))
-            meta={**(metadata or {}),'title':title,'source_type':source_type,'source_url':source_url,'stored_at':now,'page_count':len(pages)}
-            db.execute('INSERT INTO knowledge_versions VALUES(?,?,?,?,?,?)',(identity,version,fingerprint,base64.b64encode(raw).decode(),name,json.dumps(meta,ensure_ascii=False)))
-            for part in parts:
-                db.execute('INSERT INTO knowledge_chunks VALUES(?,?,?,?,?,?,?)',(str(uuid4()),identity,version,part['page'],part['offset'],part['text'],json.dumps(Counter(tokens(part['text'])),ensure_ascii=False)))
+            self._write_version(db, owner, account, identity, version, title, raw, pages,
+                                name, source_type, source_url, metadata, now)
         return self.get(owner,account,identity)
+
+    def _write_version(self, db, owner, account, identity, version, title, raw, pages,
+                       filename, source_type, source_url, metadata, stored_at):
+        """Write under the caller's validated transaction; never commits separately."""
+        if version > 1:
+            db.execute('UPDATE knowledge_documents SET title=?,version=?,source_type=?,source_url=?,updated_at=? WHERE id=?',
+                       (title,version,source_type,source_url,stored_at,identity))
+        else:
+            db.execute('INSERT INTO knowledge_documents VALUES(?,?,?,?,?,?,?,?,?)',
+                       (identity,owner,account,title,version,'active',source_type,source_url,stored_at))
+        meta={**(metadata or {}),'title':title,'source_type':source_type,'source_url':source_url,
+              'stored_at':stored_at,'page_count':len(pages)}
+        db.execute('INSERT INTO knowledge_versions VALUES(?,?,?,?,?,?)',
+                   (identity,version,hashlib.sha256(raw).hexdigest(),base64.b64encode(raw).decode('ascii'),
+                    filename,json.dumps(meta,ensure_ascii=False)))
+        for part in chunks(pages):
+            db.execute('INSERT INTO knowledge_chunks VALUES(?,?,?,?,?,?,?)',
+                       (str(uuid4()),identity,version,part['page'],part['offset'],part['text'],
+                        json.dumps(Counter(tokens(part['text'])),ensure_ascii=False)))
 
     def list(self, owner, account):
         self.account(owner,account)
@@ -133,15 +145,28 @@ class Knowledge:
             rows=db.execute("SELECT id,title,version,source_type,source_url,updated_at FROM knowledge_documents WHERE owner=? AND account_id=? AND status='active' ORDER BY updated_at DESC,id",(owner,account)).fetchall()
         return [dict(zip(('id','title','version','source_type','source_url','updated_at'),r)) for r in rows]
 
-    def get(self, owner, account, identity):
+    def get(self, owner, account, identity, version=None):
+        require(version is None or (type(version) is int and 0 < version <= 2147483647),
+                'INVALID_INPUT','资料版本需为正整数')
         self.account(owner,account)
         with self.store.connect() as db:
             row=db.execute("SELECT title,version,source_type,source_url FROM knowledge_documents WHERE owner=? AND account_id=? AND id=? AND status='active'",(owner,account,identity)).fetchone()
             require(row,'RESOURCE_NOT_FOUND','资料不可访问')
-            v=db.execute('SELECT fingerprint,metadata,filename FROM knowledge_versions WHERE document_id=? AND version=?',(identity,row[1])).fetchone()
-            parts=db.execute('SELECT id,page,offset_start,text FROM knowledge_chunks WHERE document_id=? AND version=? ORDER BY page,offset_start',(identity,row[1])).fetchall()
-            versions=[dict(version=r[0],metadata=json.loads(r[1])) for r in db.execute('SELECT version,metadata FROM knowledge_versions WHERE document_id=? ORDER BY version DESC',(identity,))]
-        return dict(id=identity,title=row[0],version=row[1],source_type=row[2],source_url=row[3],fingerprint=v[0],metadata=json.loads(v[1]),filename=v[2],versions=versions,chunks=[dict(zip(('id','page','offset','text'),p)) for p in parts])
+            selected=version if version is not None else row[1]
+            v=db.execute('SELECT fingerprint,metadata,filename,original_base64 FROM knowledge_versions WHERE document_id=? AND version=?',(identity,selected)).fetchone()
+            require(v,'RESOURCE_NOT_FOUND','资料版本不存在')
+            parts=db.execute('SELECT id,page,offset_start,text FROM knowledge_chunks WHERE document_id=? AND version=? ORDER BY page,offset_start',(identity,selected)).fetchall()
+            versions=[dict(version=r[0],metadata=json.loads(r[1]),fingerprint=r[2],filename=r[3]) for r in db.execute('SELECT version,metadata,fingerprint,filename FROM knowledge_versions WHERE document_id=? ORDER BY version DESC',(identity,))]
+        meta=json.loads(v[1])
+        # Never attribute today's source/title/date to historical bytes. Older
+        # records without a metadata snapshot remain explicitly unknown.
+        return dict(id=identity,title=meta.get('title','标题未记录'),version=selected,
+                    current_version=row[1],read_only=selected!=row[1],
+                    source_type=meta.get('source_type','unknown'),source_url=meta.get('source_url',''),
+                    source_recorded='source_type' in meta and 'source_url' in meta,
+                    stored_at=meta.get('stored_at'),fingerprint=v[0],metadata=meta,filename=v[2],
+                    original_base64=v[3],versions=versions,
+                    chunks=[dict(zip(('id','page','offset','text'),p)) for p in parts])
 
     def delete(self, owner, account, identity, version):
         self.account(owner,account)
@@ -157,7 +182,7 @@ class Knowledge:
         self.account(owner,account);query=validate_text(query,'检索内容',300)
         wanted=set(tokens(query))
         with self.store.connect() as db:
-            rows=db.execute("SELECT c.id,c.document_id,c.version,c.page,c.offset_start,c.text,c.terms,d.title,d.source_url,d.source_type FROM knowledge_chunks c JOIN knowledge_documents d ON d.id=c.document_id AND d.version=c.version WHERE d.owner=? AND d.account_id=? AND d.status='active'",(owner,account)).fetchall()
+            rows=db.execute("SELECT c.id,c.document_id,c.version,c.page,c.offset_start,c.text,c.terms,d.title,d.source_url,d.source_type,v.fingerprint,v.metadata FROM knowledge_chunks c JOIN knowledge_documents d ON d.id=c.document_id AND d.version=c.version JOIN knowledge_versions v ON v.document_id=c.document_id AND v.version=c.version WHERE d.owner=? AND d.account_id=? AND d.status='active'",(owner,account)).fetchall()
         documents=[(r,json.loads(r[6])) for r in rows]
         n=len(documents);avg=sum(sum(t.values()) for _,t in documents)/max(1,n)
         df={t:sum(t in terms for _,terms in documents) for t in wanted}
@@ -169,7 +194,11 @@ class Knowledge:
             score=sum(math.log(1+(n-df[t]+0.5)/(df[t]+0.5))*(terms[t]*2.2)/(terms[t]+1.2*(.25+.75*length/max(1,avg))) for t in matched)
             # A lone accidental bigram in a long question is insufficient evidence.
             if len(wanted)>3 and len(matched)<2: continue
-            results.append(dict(source_id='kb:'+r[0],document_id=r[1],version=r[2],page=r[3],offset=r[4],text=r[5],title=r[7],url=r[8],source_type=r[9],score=round(score,4),verification='原文片段匹配，来源真实性仍需核查'))
+            metadata=json.loads(r[11])
+            provenance=[metadata.get(key) for key in ('source_label','author','verification')]
+            verification='；'.join(['原文片段匹配，来源真实性仍需核查']+
+                                    [value for value in provenance if isinstance(value,str) and value])
+            results.append(dict(source_id='kb:'+r[0],document_id=r[1],version=r[2],page=r[3],offset=r[4],text=r[5],title=r[7],url=r[8],source_type=r[9],fingerprint=r[10],metadata=metadata,score=round(score,4),verification=verification))
         results.sort(key=lambda x:(-x['score'],x['source_id']))
         selected=results[:limit]
         # Keep input costs bounded while preserving exact substrings and locations.

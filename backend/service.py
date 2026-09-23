@@ -59,7 +59,7 @@ class Service:
             context['retrieval']=result
             context['evidence']=result['sources']
         if mode=='live': context['scenario']='standard'
-        return self.view(self.store.create(owner,str(uuid4()),context))
+        return self.view(self.store.create(owner,str(uuid4()),context, validate=self.operations.validate_creation))
 
     def action(self, owner, run_id, data):
         from backend.schemas import Command, parse

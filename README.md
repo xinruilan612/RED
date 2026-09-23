@@ -1,5 +1,7 @@
 # 有迹 · 热点驱动的博主运营助手
 
+无 API Key 的独立本地体验：先看 [启动独立演示](START_DEMO.md)。该入口使用单独演示数据库与会话，不读取作者的 `.env`。
+
 产品新方向：面向小红书、抖音，将选题发现、四 Agent 创作、版本评审、人工审核与发布、指标回流、历史学习连成运营闭环。
 
 **当前可用：v0.9 服务推广闭环、可解释运营实验、账号网站、资料库、公开检索与持久多 Agent 后台（本机验证，尚未公网部署）。**
@@ -84,7 +86,7 @@ python3 -m venv .venv
 
 ## 填写 DeepSeek Key
 
-项目根目录已准备 `.env`，只需填写 `DEEPSEEK_API_KEY=你的密钥`，保存并重启服务。新建创作时选择“真实 AI · DeepSeek”，再执行流程。旧任务保持原运行方式。密钥不提交 Git，不发送到浏览器。
+源码不包含作者的 `.env` 或密钥。需要真实模型时，在项目根目录自行创建 `.env`（Git 克隆可参考 `.env.example`），按部署说明填写 `DEEPSEEK_API_KEY` 和本机配置，再启动普通 API 与 Worker。新建创作时选择“真实 AI · DeepSeek”，旧任务保持原运行方式。密钥不提交 Git，不发送到浏览器。`scripts/start_demo.py` 是无密钥隔离演示，刻意不读取 `.env`，重启该入口也不会启用付费模型。
 
 完整步骤、限制与图片/PDF 扩展方式见 [DeepSeek 使用说明](docs/DEEPSEEK_SETUP.md)。
 
@@ -96,7 +98,7 @@ python3 -m venv .venv
 4. 选择“资料不足”场景且不填素材：流程会要求你补充，再重新分析。
 5. 最后由你确认准确版本，下载 Markdown 文稿。确认后可进入发布中心；当前支持演练或人工发布回填，没有自动发帖。
 
-新版任务存储在 `.env` 的 DATABASE_URL 指定的数据库，本机已配置 PostgreSQL。清除 Cookie 后重新登录网站即可读取同一用户的记录。旧 SQLite 与迁移前备份保留在被 Git 忽略的 runtime/，不要删除数据库来重启服务。
+普通网站的任务存储由 `DATABASE_URL` 配置决定；干净克隆默认使用本地 SQLite，不附带 PostgreSQL 服务或作者数据。需要 PostgreSQL 时按部署说明自行安装和配置。独立演示固定使用 `runtime/review-demo/demo.sqlite`。清除 Cookie 后重新登录同一网站用户即可读取该数据库里的记录；不要删除数据库来重启服务，`runtime/` 不应提交或分享。
 
 ## 目前的边界
 

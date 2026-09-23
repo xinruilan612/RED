@@ -50,13 +50,20 @@ class Store:
         require(row is not None, 'RESOURCE_NOT_FOUND', '任务不可访问')
         return Run(**json.loads(row[0]))
 
-    def create(self, owner, snapshot, context=None):
+    def create(self, owner, snapshot, context=None, *, validate=None):
+        """Insert a run, optionally rechecking domain state under the same lock.
+
+        The callback must use the supplied connection, without network calls.
+        Public adapters supply their domain validator; raw fixture callers may omit it.
+        """
         require(isinstance(owner,str) and owner and isinstance(snapshot,str) and snapshot,
                 'INVALID_INPUT', '身份和快照不能为空')
         run = Run(owner_id=owner, snapshot_id=snapshot, context=context or {})
         run.event('run.queued')
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
+            if validate is not None:
+                validate(db, run)
             active = db.execute('SELECT payload FROM runs WHERE owner=?', (owner,)).fetchall()
             require(not any(json.loads(row[0])['run_status'] not in ('SUCCEEDED','FAILED','CANCELLED','EXPIRED') for row in active),
                     'RUN_ALREADY_ACTIVE', '已有活跃任务')

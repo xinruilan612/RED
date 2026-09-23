@@ -11,7 +11,8 @@ from backend.workflow import digest
 from backend.accounts import migrate, find_account, save_account, account_id, new_account
 from backend.analytics import AnalyticsAgent, invalidate, refresh_plans
 from backend.planning import make_plan, update_plan, update_task
-from backend.experiments import recommend
+from backend.experiments import recommend, active_experiment, default_format, FORMATS
+from backend.experiment_results import prepare_binding, validate_publication, invalidate_results, evaluate
 from backend.promotions import (save_service, save_portfolio, create_brief, brief_context,
                                 record_inquiry, update_inquiry, analyze as analyze_promotion)
 
@@ -82,12 +83,19 @@ class Operations:
             with self.store.connect() as connection:
                 return self.read(owner, connection)
         row = db.execute('SELECT payload FROM operations WHERE owner=?', (owner,)).fetchone()
-        return migrate(json.loads(row[0]) if row else seed(), owner)
+        state = migrate(json.loads(row[0]) if row else seed(), owner)
+        state.setdefault('experiment_results', [])
+        for experiment in state['experiments']:
+            if experiment.get('schema_version') != 2 and experiment['status'] in ('proposed', 'accepted'):
+                experiment.update(status='superseded', invalid_reason='旧建议缺少内容形式和冻结证据，请重新生成实验')
+        return state
 
     def context(self, owner, data, mode):
-        require(isinstance(data, dict) and set(data) <= {'platform','account','account_id','trend_id','experiment_id','promotion_brief_id'}, 'INVALID_INPUT', '运营上下文字段无效')
+        require(isinstance(data, dict) and set(data) <= {'platform','format','account','account_id','trend_id','experiment_id','promotion_brief_id'}, 'INVALID_INPUT', '运营上下文字段无效')
         platform = data.get('platform', 'xiaohongshu')
         require(platform in PLATFORMS, 'INVALID_INPUT', '平台无效')
+        content_format = data.get('format', default_format(platform))
+        require(content_format in FORMATS, 'INVALID_INPUT', '内容形式无效')
         account = validate_text(data.get('account','我的账号'), '账号名称', 80)
         state = self.read(owner)
         profile = find_account(state, data['account_id']) if data.get('account_id') else next((a for a in state['accounts'] if a['platform'] == platform and account in a['aliases']), None)
@@ -97,9 +105,9 @@ class Operations:
         identity = profile['id'] if profile else account_id(owner, platform, account)
         trend = item(state['trends'], data['trend_id']) if data.get('trend_id') else None
         require(not trend or trend['platform'] == platform, 'INVALID_INPUT', '选题平台不一致')
-        experiment = item(state['experiments'], data['experiment_id']) if data.get('experiment_id') else None
-        require(not experiment or (experiment['account_id'] == identity and experiment['source_type'] == ('simulation' if mode == 'simulation' else 'manual')
-                and experiment['status'] == 'accepted'), 'INVALID_INPUT', '实验建议未接受、已失效或不属于当前账号')
+        experiment = active_experiment(state, data['experiment_id'], identity, platform,
+            'simulation' if mode == 'simulation' else 'manual', content_format) if data.get('experiment_id') else None
+        require(not experiment or not experiment.get('publication_id'), 'INVALID_TRANSITION', '实验已绑定发布，请继续原记录')
         promotion = brief_context(state, identity, data['promotion_brief_id']) if data.get('promotion_brief_id') else None
         # Demo evidence is never fed into paid/real creation.
         require(not (mode == 'live' and trend and trend['source_type'] == 'example'), 'INVALID_INPUT', '示例选题只用于模拟模式；真实创作请导入自己的来源')
@@ -117,13 +125,30 @@ class Operations:
         for metric in state['metrics']:
             if metric['publication_id'] in ids:
                 latest[(metric['publication_id'], metric['window'])] = copy.deepcopy(metric)
-        return {'platform': platform, 'account': account, 'account_id': identity,
+        return {'platform': platform, 'format': content_format, 'account': account, 'account_id': identity,
                 'profile': copy.deepcopy(profile), 'trend': copy.deepcopy(trend), 'experiment': copy.deepcopy(experiment),
                 'promotion': promotion, 'memories': memories[:5],
                 'history': history, 'metrics': list(latest.values())[-60:],
                 'competitors': [copy.deepcopy(c) for c in state['competitors'] if c['account_id'] == identity][-10:],
                 'preferences': [copy.deepcopy(p) for p in state['preferences'] if p['account_id'] == identity
                                 and p['mode'] == mode][-10:]}
+
+    def validate_creation(self, db, run):
+        """Recheck an experiment after retrieval, inside the run insert transaction."""
+        op = run.context.get('operations', {})
+        require(isinstance(op, dict), 'INVALID_INPUT', '运营上下文无效')
+        snapshot = op.get('experiment')
+        if snapshot is None and not op.get('experiment_id'):
+            return
+        require(isinstance(snapshot, dict) and run.context.get('mode') in ('simulation', 'live'),
+                'INVALID_INPUT', '实验上下文或运行模式无效')
+        require(op.get('experiment_id') in (None, snapshot.get('id')), 'VERSION_CONFLICT', '实验引用与快照不一致')
+        state = self.read(run.owner_id, db)
+        experiment = active_experiment(state, snapshot.get('id'), op.get('account_id'), op.get('platform'),
+            'simulation' if run.context['mode'] == 'simulation' else 'manual', op.get('format'), snapshot)
+        require(not experiment.get('publication_id') and not any(
+            p.get('experiment_id') == experiment['id'] for p in state['publications']),
+            'INVALID_TRANSITION', '实验已绑定发布，请继续原记录')
 
     def command(self, owner, command):
         require(set(command) == {'action','payload','version','key'}, 'INVALID_INPUT', '操作字段无效')
@@ -176,9 +201,13 @@ class Operations:
             pub = item(state['publications'], data['id'])
             require(data['format'] in ('image_text','video') and data['traffic'] in ('organic','paid','unknown'), 'INVALID_INPUT', '内容形式或流量类型无效')
             pillar = validate_text(data['pillar'], '栏目', 80)
+            if pub.get('metadata_confirmed') and (pub['format'], pub['pillar'], pub['traffic']) == (data['format'], pillar, data['traffic']):
+                return
             for window in ('24h','72h','7d'):
                 invalidate(state, pub['id'], window)
-            pub.update(format=data['format'], pillar=pillar, traffic=data['traffic'])
+            invalidate_results(state, '实际内容分类已更新，请重新核对观测', publication_id=pub['id'])
+            pub.update(format=data['format'], pillar=pillar, traffic=data['traffic'], metadata_confirmed=True,
+                       metadata_revision=pub.get('metadata_revision', 0) + 1)
             return
         if action == 'create_plan':
             make_plan(state, data, now()); return
@@ -203,8 +232,12 @@ class Operations:
                     limitation='描述性比较，仅建议下一次实验，不证明因果或稳定规律'))
             return
         if action == 'recommend_experiment':
-            require(set(data) == {'account_id','source_type','window'}, 'INVALID_INPUT', '实验推荐字段无效')
-            state['experiments'].insert(0, recommend(state, data['account_id'], data['source_type'], data['window'], now()))
+            require({'account_id','source_type','window'} <= set(data) <= {'account_id','source_type','window','format','platform'}, 'INVALID_INPUT', '实验推荐字段无效')
+            state['experiments'].insert(0, recommend(state, data['account_id'], data['source_type'], data['window'], now(), data.get('format'), data.get('platform')))
+            return
+        if action == 'evaluate_experiment':
+            require(set(data) == {'id'}, 'INVALID_INPUT', '实验观测字段无效')
+            evaluate(state, data['id'], now())
             return
         if action == 'experiment_status':
             require(set(data) == {'id','status'}, 'INVALID_INPUT', '实验状态字段无效')
@@ -213,6 +246,9 @@ class Operations:
             require((experiment['status'] == 'proposed' and data['status'] in ('accepted','rejected')) or
                     (experiment['status'] == 'accepted' and data['status'] == 'revoked'), 'INVALID_TRANSITION', '当前实验建议不能执行此操作')
             experiment['status'] = data['status']; experiment['updated_at'] = now()
+            if data['status'] == 'revoked':
+                experiment['invalid_reason'] = '用户已撤销实验'
+                invalidate_results(state, '实验已撤销，旧结果仅保留审计', experiment_id=experiment['id'])
             return
         if action == 'save_account':
             save_account(state, data)
@@ -263,6 +299,10 @@ class Operations:
         elif action == 'prepare':
             run = self.store._get(db, data['run_id'], owner)
             require(run.run_status == 'SUCCEEDED' and run.accepted_ref == data['draft_ref'], 'INVALID_TRANSITION', '只有已确认的准确版本可进入发布中心')
+            require(run.review and run.review['decision'] == 'approved' and run.drafts[-1]['ref'] == run.accepted_ref
+                    and run.review['draft_ref'] == run.accepted_ref and run.review['snapshot_id'] == run.snapshot_id
+                    and run.review['content_hash'] == digest(run.drafts[-1]['content']),
+                    'VERSION_CONFLICT', '已确认稿件与审核快照不一致，请重新审核')
             require(not any(p['run_id'] == run.run_id and p['draft_ref'] == run.accepted_ref for p in state['publications']), 'DUPLICATE', '该确认稿已经进入发布中心')
             op = run.context.get('operations', {})
             platform = op.get('platform', 'xiaohongshu'); name = op.get('account', '我的账号')
@@ -270,16 +310,19 @@ class Operations:
             account = next((a for a in state['accounts'] if a['id'] == identity or (a['platform'] == platform and name in a['aliases'])), None)
             if account is None:
                 account = new_account(identity, name, platform); state['accounts'].append(account)
-            state['publications'].insert(0, dict(id=str(uuid4()), run_id=run.run_id, draft_ref=run.accepted_ref,
+            publication = dict(id=str(uuid4()), run_id=run.run_id, draft_ref=run.accepted_ref,
                 review_ref=run.review['ref'], content=copy.deepcopy(run.drafts[-1]['content']),
                 content_hash=digest(run.drafts[-1]['content']), platform=op.get('platform','xiaohongshu'),
                 account=account['name'], account_id=account['id'], mode=run.context.get('mode','simulation'),
                 provenance='simulation' if run.context.get('mode','simulation') == 'simulation' else 'manual',
-                format='video' if platform == 'douyin' else 'image_text', pillar='未分类', traffic='unknown',
+                format=op.get('format', default_format(platform)), pillar='未分类', traffic='unknown',
                 status='AWAITING_APPROVAL', created_at=now(), approved_at=None, url=None, published_at=None,
-                promotion=copy.deepcopy(op.get('promotion'))))
+                promotion=copy.deepcopy(op.get('promotion')))
+            prepare_binding(state, run, publication)
+            state['publications'].insert(0, publication)
         elif action in ('approve','simulate','record'):
             pub = item(state['publications'], data['id'])
+            validate_publication(state, pub)
             if action == 'approve':
                 require(pub['status'] == 'AWAITING_APPROVAL', 'INVALID_TRANSITION', '当前不能重复批准')
                 run = self.store._get(db, pub['run_id'], owner)
@@ -293,7 +336,12 @@ class Operations:
                     pub.update(status='SIMULATED', published_at=now())
                 else:
                     require(pub['mode'] == 'live', 'INVALID_TRANSITION', '模拟稿不能记录为真实发布')
-                    pub.update(status='MANUAL_REPORTED', url=url(data['url'],pub['platform']), published_at=timestamp(data['published_at']))
+                    published_at = timestamp(data['published_at'])
+                    require(not pub.get('experiment_id') or datetime.fromisoformat(published_at.replace('Z', '+00:00')) >=
+                            datetime.fromisoformat(pub['created_at'].replace('Z', '+00:00')),
+                            'INVALID_INPUT', '实验作品发布时间不能早于本稿件进入发布中心；历史作品请单独导入')
+                    pub.update(status='MANUAL_REPORTED', url=url(data['url'],pub['platform']), published_at=published_at)
+                invalidate_results(state, '发布状态已更新，请记录目标窗口观测', publication_id=pub['id'])
         elif action == 'metrics':
             pub = item(state['publications'], data['id'])
             require(pub['status'] in ('SIMULATED','MANUAL_REPORTED'), 'INVALID_TRANSITION', '请先完成发布演练或回填真实发布记录')
@@ -314,6 +362,7 @@ class Operations:
             require(not prior or prior[-1]['values'] != values or prior[-1]['observed_at'] != observed, 'DUPLICATE','同一快照已录入')
             state['metrics'].append(metric)
             invalidate(state, pub['id'], data['window'])
+            invalidate_results(state, '目标窗口指标已新增或修正，请重新计算；旧快照保留', publication_id=pub['id'], window=data['window'])
             # Corrections invalidate derived lessons, including previously accepted lessons.
             for memory in state['memories']:
                 if memory['publication_id'] == pub['id'] and memory['window'] == data['window']:

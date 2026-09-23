@@ -39,7 +39,7 @@ function render(){
  if(run.run_status==='FAILED'){const last=run.events.filter(e=>e.type==='agent.failed').at(-1);error(new Error(last?.payload.message||'执行失败，请查看运行记录'));}
  document.querySelector('.entry-paths').hidden=true;$('welcome').hidden=true;$('workbench').hidden=false;
  $('runTitle').textContent=run.context.topic;
- $('runSummary').textContent=`${run.context.operations?.platform==='douyin'?'抖音 · 口播脚本':'小红书 · 图文笔记'} · 写给 ${run.context.audience} · ${run.context.tone} · ${run.snapshot_id.slice(0,8)} 输入快照`;
+ $('runSummary').textContent=`${run.context.operations?.platform==='douyin'?'抖音':'小红书'} · ${(run.context.operations?.format||(run.context.operations?.platform==='douyin'?'video':'image_text'))==='video'?'视频脚本（非成片）':'图文笔记'} · 写给 ${run.context.audience} · ${run.context.tone} · ${run.snapshot_id.slice(0,8)} 输入快照`;
  const background=run.background;
  const jobLabels={queued:background?.worker_online?'已排队，后台即将执行':'已排队，等待 Worker 启动',running:'后台执行中 · 关闭页面后继续',pausing:'正在暂停，等待当前节点保存',paused:'后台已暂停',blocked:'后台等待处理',waiting:'等待你的审核'};
  $('statusLabel').textContent=jobLabels[background?.status]|| (run.in_flight?'AI 正在处理，请稍候':states[run.run_status]);
@@ -161,10 +161,10 @@ async function autoRun(){
  auto=false;render();
 }
 $('briefForm').addEventListener('submit',async e=>{e.preventDefault();if(busy)return;busy=true;clearError();e.submitter.disabled=true;
- try{run=await api('/api/runs','POST',{...(websiteSession?.auth_required?{knowledge:{enabled:$('useKnowledge').checked}}:{}),mode:$('mode').value,workflow:$('workflow').value,topic:$('topic').value,audience:$('audience').value,tone:$('tone').value,material:$('material').value,scenario:$('scenario').value,allow_hypothesis:$('hypothesis').checked,operations:{platform:$('targetPlatform').value,account_id:currentAccount()?.id,account:$('accountName').value,trend_id:chosenTrend?.id||null,experiment_id:chosenExperiment?.id||null,promotion_brief_id:chosenPromotion?.id||null}});selected=currentAgent();detailStage=null;viewVersion=null;editing=false;$('editor').hidden=true;render();await history();}
+ try{run=await api('/api/runs','POST',{...(websiteSession?.auth_required?{knowledge:{enabled:$('useKnowledge').checked}}:{}),mode:$('mode').value,workflow:$('workflow').value,topic:$('topic').value,audience:$('audience').value,tone:$('tone').value,material:$('material').value,scenario:$('scenario').value,allow_hypothesis:$('hypothesis').checked,operations:{platform:$('targetPlatform').value,account_id:currentAccount()?.id,account:$('accountName').value,trend_id:chosenTrend?.id||null,...experimentCreationFields(),promotion_brief_id:chosenPromotion?.id||null}});selected=currentAgent();detailStage=null;viewVersion=null;editing=false;$('editor').hidden=true;render();await history();}
  catch(err){error(err);}finally{busy=false;e.submitter.disabled=false;if(run&&!$('workbench').hidden)render();}});
 $('history').addEventListener('click',async e=>{const b=e.target.closest('[data-run]');if(!b||busy||!dirtyGuard())return;auto=false;editing=false;$('editor').hidden=true;clearError();showPage('studio');try{run=await api('/api/runs/'+b.dataset.run);viewVersion=null;detailStage=null;selected=currentAgent();render();await history();}catch(err){error(err);}});
-$('newRun').onclick=()=>{if(busy||!dirtyGuard())return;showPage('studio');auto=false;editing=false;$('editor').hidden=true;$('workbench').hidden=true;document.querySelector('.entry-paths').hidden=false;$('welcome').hidden=false;renderMode($('mode').value);fillAccountBrief();clearError();};
+$('newRun').onclick=()=>{if(busy||!dirtyGuard())return;if(chosenExperiment){chosenExperiment=null;$('selectedTrend').hidden=true;$('clearTrend').hidden=true;}showPage('studio');auto=false;editing=false;$('editor').hidden=true;$('workbench').hidden=true;document.querySelector('.entry-paths').hidden=false;$('welcome').hidden=false;renderMode($('mode').value);fillAccountBrief();clearError();};
 $('flow').onclick=e=>{const chip=e.target.closest('[data-stage]');const b=e.target.closest('[data-agent]');if(chip){selected='content';detailStage=chip.dataset.stage;render();}else if(b){selected=b.dataset.agent;detailStage=null;render();}};
 $('recover').onclick=()=>act('recover');
 $('next').onclick=()=>act('next');$('auto').onclick=autoRun;

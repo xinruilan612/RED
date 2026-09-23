@@ -1,5 +1,7 @@
 # 网站后端运行与迁移
 
+干净源码评审入口（2026-09-23）：[独立演示](../START_DEMO.md) 使用单独 SQLite、API 与 Worker，无需 PostgreSQL 或 API Key。下文 PostgreSQL 部署和已有库迁移是可选运维流程，不是运行演示的前置条件；不要对作者或他人的既有数据库直接执行迁移。
+
 适用于 v0.6。当前在本机 PostgreSQL 验证；尚未购买云服务、绑定域名或公网部署。前端布局沿用原 Demo。
 
 ## 环境与启动
@@ -18,7 +20,7 @@ py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-在已有 `.env` 保留 DeepSeek Key，增加以下配置（不要提交真实密码）：
+源码不附带 `.env` 或数据库。需要 PostgreSQL 时，自行创建本地 `.env`（Git 克隆可参考 `.env.example`），填入自己专用数据库的连接配置；如已配置模型 Key，请保留它，不要提交真实密码：
 
 ```dotenv
 DATABASE_URL=postgresql:///youji_operations

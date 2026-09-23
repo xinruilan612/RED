@@ -15,7 +15,7 @@ function syncAccounts(){
 function fillAccountBrief(){const a=currentAccount();if(!a)return;$('targetPlatform').value=a.platform;$('accountName').value=a.name;if($('welcome').hidden)return;$('audience').value=a.profile.audience||'请填写本次目标读者';$('tone').value=a.profile.tone||'真实、具体、清楚';}
 $('activeAccount').onchange=async e=>{
  if(busy||opsBusy||!dirtyGuard()){e.target.value=activeAccountId;return;}
- auto=false;activeAccountId=e.target.value;chosenTrend=null;chosenExperiment=null;$('selectedTrend').hidden=true;$('clearTrend').hidden=true;
+ auto=false;activeAccountId=e.target.value;chosenTrend=null;chosenExperiment=null;chosenPromotion=null;$('selectedTrend').hidden=true;$('clearTrend').hidden=true;
  run=null;editing=false;$('editor').hidden=true;$('workbench').hidden=true;document.querySelector('.entry-paths').hidden=false;$('welcome').hidden=false;syncAccounts();renderOperations();await history();
 };
 $('manageAccount').onclick=()=>{if(!busy&&dirtyGuard())showPage('accounts');};

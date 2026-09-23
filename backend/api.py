@@ -2,6 +2,7 @@
 import argparse
 import json
 import os
+import re
 import secrets
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -26,8 +27,11 @@ def settings():
     return {**values, **os.environ}
 
 
-def create_app(store=None, config=None, origin=None, invite=None, client=None):
-    env = settings()
+def create_app(store=None, config=None, origin=None, invite=None, client=None, settings_override=None,
+               session_cookie='youji_session'):
+    require(isinstance(session_cookie, str) and re.fullmatch(r'[A-Za-z0-9_-]{1,64}', session_cookie),
+            'CONFIG_INVALID', '会话 Cookie 名称须为 1 至 64 位字母、数字、下划线或连字符')
+    env = settings() if settings_override is None else dict(settings_override)
     origin = (origin or env.get('PUBLIC_ORIGIN','http://127.0.0.1:8765')).rstrip('/')
     parsed = urlsplit(origin)
     require(parsed.scheme in ('http','https') and parsed.netloc and parsed.path in ('','/') and not parsed.query and not parsed.fragment and not parsed.username, 'CONFIG_INVALID','PUBLIC_ORIGIN 格式无效')
@@ -63,7 +67,7 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
             require(request.headers.get('host')==parsed.netloc, 'FORBIDDEN','请求地址与网站配置不符')
             if request.method not in ('GET','HEAD','OPTIONS'):
                 require(request.headers.get('origin')==origin, 'FORBIDDEN','仅允许本站发起操作')
-                session = auth.session(request.cookies.get('youji_session',''))
+                session = auth.session(request.cookies.get(session_cookie,''))
                 require(session and secrets.compare_digest(request.headers.get('x-csrf-token',''),session['csrf']), 'FORBIDDEN','页面会话已过期，请刷新')
                 require(request.headers.get('content-type','').split(';')[0]=='application/json','INVALID_INPUT','只接受 JSON')
                 chunks=[]; size=0
@@ -80,12 +84,12 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
         return response
 
     def logged(request: Request):
-        session=auth.session(request.cookies.get('youji_session',''))
+        session=auth.session(request.cookies.get(session_cookie,''))
         require(session and session['user'],'AUTH_REQUIRED','请先登录网站')
         return session
 
     def set_cookie(response, token):
-        response.set_cookie('youji_session',token,httponly=True,secure=parsed.scheme=='https',samesite='strict',max_age=604800,path='/')
+        response.set_cookie(session_cookie,token,httponly=True,secure=parsed.scheme=='https',samesite='strict',max_age=604800,path='/')
         return response
 
     @app.get('/health')
@@ -95,7 +99,7 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
 
     @app.get('/api/session')
     def session(request: Request):
-        token=request.cookies.get('youji_session','')
+        token=request.cookies.get(session_cookie,'')
         current=auth.session(token)
         if not current:
             auth.throttle('session:'+request.client.host,100,60)
@@ -105,10 +109,10 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
 
     @app.post('/api/auth/{action}')
     def authenticate(action: str, data: dict, request: Request):
-        token=request.cookies.get('youji_session','')
+        token=request.cookies.get(session_cookie,'')
         if action=='logout':
             auth.logout(token)
-            response=JSONResponse({'ok':True});response.delete_cookie('youji_session',path='/');return response
+            response=JSONResponse({'ok':True});response.delete_cookie(session_cookie,path='/');return response
         require(action in ('register','login','reset'),'RESOURCE_NOT_FOUND','操作不存在')
         auth.throttle('auth-ip:'+request.client.host,30)
         auth.throttle('auth-name:'+str(data.get('username','')).lower(),12)
@@ -133,9 +137,29 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
         except DomainError: raise
         except ValueError as e: raise DomainError('INVALID_INPUT',str(e)) from None
 
+    @app.get('/api/knowledge/packs')
+    def knowledge_packs(account_id: str,user=Depends(logged)):
+        from backend.knowledge_packs import catalog
+        return catalog(service.knowledge,user['owner'],account_id)
+
+    @app.get('/api/knowledge/packs/{pack_id}')
+    def preview_knowledge_pack(pack_id: str,account_id: str,user=Depends(logged)):
+        from backend.knowledge_packs import preview
+        return preview(service.knowledge,user['owner'],account_id,pack_id)
+
+    @app.post('/api/knowledge/packs/{pack_id}/import')
+    def import_knowledge_pack(pack_id: str,data: dict,user=Depends(logged)):
+        from backend.knowledge_packs import import_pack
+        require(set(data)=={'account_id','version','fingerprint'},'INVALID_INPUT','资料包导入字段无效')
+        return import_pack(service.knowledge,user['owner'],data['account_id'],pack_id,data['version'],data['fingerprint'])
+
     @app.get('/api/knowledge/{document_id}')
-    def document(document_id: str,account_id: str,user=Depends(logged)):
-        return service.knowledge.get(user['owner'],account_id,document_id)
+    def document(document_id: str,account_id: str,version: str | None=None,user=Depends(logged)):
+        if version is not None:
+            require(len(version)<=10 and version.isascii() and version.isdecimal(),
+                    'INVALID_INPUT','资料版本需为正整数')
+            version=int(version)
+        return service.knowledge.get(user['owner'],account_id,document_id,version)
 
     @app.post('/api/knowledge/{document_id}/delete')
     def delete_document(document_id: str,data: dict,user=Depends(logged)):

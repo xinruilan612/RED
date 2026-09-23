@@ -31,6 +31,9 @@ jobs:
       - run: node --check frontend/account.js
       - run: node --check frontend/auth.js
       - run: node --check frontend/knowledge.js
+      - run: node --check frontend/promotion.js
+      - run: node --test
+      - run: python scripts/start_demo.py --smoke
 
   postgresql:
     name: PostgreSQL integration / Ubuntu
