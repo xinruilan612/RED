@@ -1,0 +1,11 @@
+sample_id,cohort,content_scenario,draft_path,draft_sha256,support_material_path,feedback_path,author_alias,frozen_at,notes
+S01,exploratory,,,,,,,,
+S02,exploratory,,,,,,,,
+S03,exploratory,,,,,,,,
+S04,holdout,,,,,,,,
+S05,holdout,,,,,,,,
+S06,holdout,,,,,,,,
+S07,holdout,,,,,,,,
+S08,holdout,,,,,,,,
+S09,holdout,,,,,,,,
+S10,holdout,,,,,,,,

@@ -14,6 +14,7 @@ class Store:
         self.postgres = self.path.startswith(('postgresql://', 'postgres://'))
         self.order_column = 'created_seq' if self.postgres else 'rowid'
         with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
             db.executescript('''
                 CREATE TABLE IF NOT EXISTS runs (
                     id TEXT PRIMARY KEY, owner TEXT NOT NULL, payload TEXT NOT NULL);
@@ -55,7 +56,7 @@ class Store:
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             active = db.execute('SELECT payload FROM runs WHERE owner=?', (owner,)).fetchall()
-            require(not any(json.loads(row[0])['run_status'] not in ('SUCCEEDED','FAILED','CANCELLED','EXPIRED') for row in active),
+            require(not any(json.loads(row[0]).get('workflow_type','creation') == run.workflow_type and json.loads(row[0])['run_status'] not in ('SUCCEEDED','FAILED','CANCELLED','EXPIRED') for row in active),
                     'RUN_ALREADY_ACTIVE', '已有活跃任务')
             db.execute('INSERT INTO runs(id,owner,payload) VALUES(?,?,?)', (run.run_id,owner,json.dumps(asdict(run))))
         return run

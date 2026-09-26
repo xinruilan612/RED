@@ -5,7 +5,7 @@ const planStates={draft:'待你确认',accepted:'已采用',revoked:'已撤销',
 const metricNames={views:'阅读 / 播放',likes:'点赞',saves:'收藏',comments:'评论',shares:'分享',impressions:'曝光',new_followers:'作品归因关注',profile_visits:'作品归因主页访问',completed_plays:'完整播放',negative_feedback:'负面反馈'};
 function currentAccount(){return ops?.accounts.find(a=>a.id===activeAccountId);}
 function accountRows(key){return (ops?.[key]||[]).filter(r=>r.account_id===activeAccountId);}
-function matchesAccount(r){const a=currentAccount();if(!a)return true;const op=r.context.operations||{};return op.account_id?op.account_id===a.id:(op.platform||'xiaohongshu')===a.platform&&a.aliases.includes(op.account||'我的账号');}
+function matchesAccount(r){if(r.workflow_type==='windtunnel')return false;const a=currentAccount();if(!a)return true;const op=r.context.operations||{};return op.account_id?op.account_id===a.id:(op.platform||'xiaohongshu')===a.platform&&a.aliases.includes(op.account||'我的账号');}
 function syncAccounts(){
  if(!ops.accounts.some(a=>a.id===activeAccountId))activeAccountId=ops.accounts[0]?.id||'';
  localStorage.setItem('creator-account',activeAccountId);

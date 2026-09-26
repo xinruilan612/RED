@@ -1,0 +1,23 @@
+{
+  "status": "not_started",
+  "allocation_seed": 20260926,
+  "exploratory_samples": ["S01", "S02", "S03"],
+  "holdout_samples": ["S04", "S05", "S06", "S07", "S08", "S09", "S10"],
+  "participant_count_planned": 6,
+  "readings_planned": 42,
+  "mechanism_frozen_at": null,
+  "code_commit": null,
+  "model": null,
+  "baseline_prompt_sha256": null,
+  "windtunnel_prompt_sha256": null,
+  "task_rubric_version": null,
+  "sources_authorized": null,
+  "reader_consent_record_ref": null,
+  "paid_model_authorization_ref": null,
+  "maximum_budget_usd": null,
+  "actual_started_at": null,
+  "actual_completed_at": null,
+  "readings_completed": null,
+  "raw_results_ref": null,
+  "limitations": []
+}

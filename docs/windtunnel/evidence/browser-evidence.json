@@ -1,0 +1,25 @@
+{
+  "mode": "simulation",
+  "paid_model_calls": 0,
+  "checks": [
+    "workbench visible",
+    "worker generates candidate conditions",
+    "first report from independent worker",
+    "patch preview ready",
+    "accepted patch creates a new immutable draft",
+    "same-condition recheck produces second report",
+    "browser download landed",
+    "reusable checklist saved",
+    "API and Worker externally restarted",
+    "refresh restores completed drafts and reports",
+    "checklist reuse requires new confirmation",
+    "cancel persisted",
+    "mobile has no horizontal overflow"
+  ],
+  "js_errors": [],
+  "first_run_id": "f8b5b15b-3a3a-4fea-a5cb-28e9694ec539",
+  "reports": 2,
+  "condition_hash": "07849a445027e07b98d9302bbea45cb2f61f491dbac3039242639d5423d8b450",
+  "download_bytes": 1155,
+  "source": "unpacked delivery with fresh virtual environment and empty PostgreSQL database"
+}

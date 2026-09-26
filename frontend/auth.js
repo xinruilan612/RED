@@ -41,6 +41,7 @@ function showLogin(session){
 }
 function showWebsiteUser(session){
  websiteSession=session;
+ document.querySelector('[data-page="windtunnel"]').hidden=!session.auth_required;
  if(!session.auth_required)return;
  document.getElementById('websiteUser').hidden=false;
  document.getElementById('libraryNav').hidden=false;document.getElementById('knowledgeOption').hidden=false;

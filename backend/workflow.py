@@ -37,6 +37,8 @@ class Run:
     prior_review: Optional[dict] = None
     accepted_ref: Optional[str] = None
     events: list = field(default_factory=list)
+    workflow_type: str = 'creation'
+    windtunnel: dict = field(default_factory=dict)
 
     def event(self, kind, **payload):
         require(kind in CONTRACT['events'], 'INVALID_EVENT', kind)

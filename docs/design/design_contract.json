@@ -398,6 +398,18 @@
     "old_task_keeps_evidence_for_audit": true,
     "platform_oauth": false
   },
+  "windtunnel_extension": {
+    "version": "1.0.0",
+    "workflow_type": "windtunnel",
+    "graph_policy": "windtunnel.v1",
+    "stages": ["wt_conditions", "wt_read", "wt_verify", "wt_patch"],
+    "result_states": ["pass", "unclear", "unsupported", "insufficient"],
+    "scope": ["owner", "account_id"],
+    "paid_calls_default": false,
+    "reading_context": ["draft", "scene", "questions"],
+    "human_confirmation": ["conditions", "patch", "completion"],
+    "evaluation_status": "engineering_fixtures_only_real_model_and_reader_results_pending"
+  },
   "runtime_extension": {
     "version": "0.7.0",
     "graph_policy": "four-role-graph@1",

@@ -65,6 +65,7 @@ class Knowledge:
     def __init__(self, store):
         self.store=store
         with store.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
             db.executescript('''
                 CREATE TABLE IF NOT EXISTS knowledge_documents (
                     id TEXT PRIMARY KEY, owner TEXT NOT NULL, account_id TEXT NOT NULL,

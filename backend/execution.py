@@ -22,6 +22,7 @@ class Executor:
         self.router=client if isinstance(client,ModelRouter) else ModelRouter(config,client)
         self.calls=Calls(store,config,self.router)
         with store.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
             db.executescript('''
                 CREATE TABLE IF NOT EXISTS live_steps (
                     run_id TEXT, version INTEGER, key TEXT, fingerprint TEXT,
@@ -51,7 +52,7 @@ class Executor:
             if previous:return self.store._get(db,previous[0],owner)
             require(old.status_version==version,'VERSION_CONFLICT','任务已更新')
             require(old.context.get('mode')=='live' and old.run_status=='FAILED','INVALID_TRANSITION','只能从失败的真实任务继续')
-            require(not any(json.loads(row[0])['run_status'] not in ('SUCCEEDED','FAILED','CANCELLED','EXPIRED') for row in db.execute('SELECT payload FROM runs WHERE owner=?',(owner,))),
+            require(not any(json.loads(row[0]).get('workflow_type','creation') == old.workflow_type and json.loads(row[0])['run_status'] not in ('SUCCEEDED','FAILED','CANCELLED','EXPIRED') for row in db.execute('SELECT payload FROM runs WHERE owner=?',(owner,))),
                     'RUN_ALREADY_ACTIVE','请先处理已有活跃任务')
             root=self.budget_id(db,run_id)
             require(not db.execute(f"SELECT 1 FROM live_calls WHERE run_id IN ({FAMILY}) AND actual IS NULL",(root,)).fetchone(),

@@ -27,7 +27,7 @@ class CoreContractTests(unittest.TestCase):
             store = Store(Path(tmp)/'db')
             upgrade(store)
             with self.assertRaises(Exception):
-                upgrade(store, MIGRATIONS+((3,'CREATE TABLE rollback_probe(id TEXT); BAD SQL'),))
+                upgrade(store, MIGRATIONS+((max(v for v,_ in MIGRATIONS)+1,'CREATE TABLE rollback_probe(id TEXT); BAD SQL'),))
             with store.connect() as db:
                 self.assertFalse(db.has_table('rollback_probe'))
                 self.assertEqual(db.execute('SELECT COUNT(*) FROM core_migrations').fetchone()[0],len(MIGRATIONS))

@@ -7,7 +7,9 @@ from backend.contracts import require, DomainError, CONTRACT, PARAMETERS
 from backend.provider import DeepSeek, RATE
 from backend.workflow import digest
 
-STAGES = ('audience','research','strategy','outline','hook','title','body','revise','review')
+CREATION_STAGES = ('audience','research','strategy','outline','hook','title','body','revise','review')
+WINDTUNNEL_STAGES = ('wt_conditions','wt_read','wt_verify','wt_patch')
+STAGES = CREATION_STAGES + WINDTUNNEL_STAGES
 FAMILY = 'SELECT run_id FROM live_lineage WHERE budget_id=?'
 
 
@@ -25,12 +27,14 @@ class ModelRouter:
         self.adapters = adapters or {}
         self.client = client
 
-    def policy(self):
-        routes = {s: asdict(self.routes.get(s, Route('fixture' if self.client else 'deepseek', self.config.model))) for s in STAGES}
-        return {'version':digest(routes), 'routes':routes, 'prompt_version':CONTRACT['runtime_extension']['prompt_version']}
+    def policy(self, workflow_type='creation'):
+        require(workflow_type in ('creation','windtunnel'),'INVALID_INPUT','工作流类型无效')
+        stages = WINDTUNNEL_STAGES if workflow_type=='windtunnel' else CREATION_STAGES
+        routes = {s: asdict(self.routes.get(s, Route('fixture' if self.client else 'deepseek', self.config.model))) for s in stages}
+        return {'version':digest(routes), 'routes':routes, 'prompt_version':'windtunnel.v1' if workflow_type=='windtunnel' else CONTRACT['runtime_extension']['prompt_version']}
 
     def route(self, policy, stage):
-        require(stage in STAGES and policy.get('version') == digest(policy.get('routes')), 'CONFIG_INVALID','模型路由快照无效')
+        require(stage in STAGES and stage in policy.get('routes',{}) and policy.get('version') == digest(policy.get('routes')), 'CONFIG_INVALID','模型路由快照无效')
         route = Route(**policy['routes'][stage])
         require(isinstance(route.rate,(int,float)) and 0 < route.rate < 1, 'CONFIG_INVALID','模型费率上限无效')
         require(route.provider == 'deepseek' or self.client is not None or (route.provider,route.model) in self.adapters, 'CONFIG_INVALID','未注册的模型适配器')
@@ -51,7 +55,7 @@ class Calls:
     def __init__(self, store, config, router):
         self.store,self.config,self.router = store,config,router
 
-    def invoke(self, run, agent, stage, messages, guard, reuse=False):
+    def invoke(self, run, agent, stage, messages, guard, reuse=False, visible_sources=None):
         policy = run.context.get('model_policy') or self.router.policy()
         route = self.router.route(policy,stage)
         input_hash = digest({'messages':messages,'snapshot':run.snapshot_id,'route':asdict(route)})
@@ -61,6 +65,8 @@ class Calls:
         sources += [{k:s.get(k) for k in ('source_id','document_id','version','url','source_type')}|{'content_hash':digest(s.get('text',''))} for s in run.context.get('evidence',[])]
         if run.context.get('operations'):
             sources.append({'id':'account-context','account_id':run.context['operations'].get('account_id'),'hash':digest(run.context['operations'])})
+        if visible_sources is not None:
+            sources = visible_sources
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             guard(db)

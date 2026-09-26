@@ -32,6 +32,15 @@ CREATE TABLE IF NOT EXISTS runtime_commands (
 CREATE TABLE IF NOT EXISTS runtime_workers (
  id TEXT PRIMARY KEY, heartbeat DOUBLE PRECISION NOT NULL);
 ALTER TABLE runtime_jobs ADD COLUMN elapsed DOUBLE PRECISION NOT NULL DEFAULT 0;
+'''), (3, '''
+CREATE TABLE windtunnel_checklists (
+ id TEXT NOT NULL, owner TEXT NOT NULL, account_id TEXT NOT NULL,
+ version INTEGER NOT NULL, title TEXT NOT NULL, payload TEXT NOT NULL,
+ created_at DOUBLE PRECISION NOT NULL, PRIMARY KEY(id,version));
+CREATE INDEX windtunnel_checklists_scope ON windtunnel_checklists(owner,account_id);
+CREATE TABLE windtunnel_checklist_commands (
+ owner TEXT NOT NULL, key TEXT NOT NULL, fingerprint TEXT NOT NULL,
+ response TEXT NOT NULL, PRIMARY KEY(owner,key));
 '''))
 
 

@@ -8,7 +8,7 @@ from backend.web import view
 
 
 class Service:
-    def __init__(self, store, config, client=None):
+    def __init__(self, store, config, client=None, allow_windtunnel_live=False):
         self.store, self.config = store, config
         from backend.migrations import upgrade
         upgrade(store)
@@ -18,9 +18,26 @@ class Service:
         self.knowledge = Knowledge(store)
         from backend.jobs import Jobs
         self.jobs=Jobs(store)
+        from backend.windtunnel import Windtunnel
+        self.windtunnel=Windtunnel(store,self.operations,self.knowledge)
+        self.allow_windtunnel_live=allow_windtunnel_live
+
+    def guard_windtunnel_live(self, policy):
+        router=self.executor.router
+        fixture_only=(router.client is not None and bool(policy.get('routes')) and
+                      all(r.get('provider')=='fixture' and
+                          (r.get('provider'),r.get('model')) not in router.adapters
+                          for r in policy['routes'].values()))
+        require(self.allow_windtunnel_live or fixture_only,
+                'LIVE_DISABLED','内容风洞付费调用未启用；当前仅验证模拟流程')
 
     def view(self, run):
-        result=view(run,self.executor)
+        if run.workflow_type=='windtunnel':
+            result=self.windtunnel.view(run)
+            result.update(self.executor.public(run))
+        else:
+            result=view(run,self.executor)
+        result['workflow_type']=run.workflow_type
         result['background']=self.jobs.public(run.run_id,run.owner_id)
         result['in_flight']=result.get('in_flight',False) or result['background']['status'] in ('queued','running','pausing')
         return result
@@ -30,6 +47,14 @@ class Service:
         return self.view(self.store.get(run_id,owner))
 
     def create(self, owner, data):
+        require(isinstance(data,dict),'INVALID_INPUT','请求格式无效')
+        workflow_type=data.get('workflow_type','creation')
+        require(workflow_type in ('creation','windtunnel'),'INVALID_INPUT','工作流类型无效')
+        if workflow_type=='windtunnel':
+            policy=self.executor.router.policy('windtunnel')
+            if data.get('mode')=='live':self.guard_windtunnel_live(policy)
+            return self.view(self.windtunnel.create(owner,{k:v for k,v in data.items() if k!='workflow_type'},policy))
+        data={k:v for k,v in data.items() if k!='workflow_type'}
         mode = data.get('mode','simulation')
         require(mode in ('simulation','live'), 'INVALID_INPUT', '运行模式无效')
         require(mode!='live' or self.config.ready, 'KEY_REQUIRED', '请在服务器配置 DeepSeek Key')
@@ -50,6 +75,9 @@ class Service:
         return self.view(self.store.create(owner,str(uuid4()),context))
 
     def action(self, owner, run_id, data):
+        existing=self.store.get(run_id,owner)
+        if existing.workflow_type=='windtunnel':
+            return self.view(self.windtunnel.action(owner,run_id,data))
         from backend.schemas import Command, parse
         data = parse(Command, data)
         require(set(data)=={'action','version','key','payload'}, 'INVALID_INPUT', '命令字段无效')
@@ -76,6 +104,7 @@ class Service:
 
     def export(self, owner, run_id):
         run = self.store.get(run_id,owner)
+        if run.workflow_type=='windtunnel':return self.windtunnel.export(run)
         require('export' in actions(run),'INVALID_TRANSITION','请先确认准确版本')
         c = run.drafts[-1]['content']
         label = 'AI 创作稿（已人工确认；事实仍需核实）' if run.context.get('mode')=='live' else '模拟创作稿（未调用真实 AI）'

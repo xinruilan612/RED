@@ -68,6 +68,7 @@ class Operations:
     def __init__(self, store):
         self.store = store
         with store.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
             db.executescript('''CREATE TABLE IF NOT EXISTS operations (
                 owner TEXT PRIMARY KEY, payload TEXT NOT NULL);
                 CREATE TABLE IF NOT EXISTS operations_commands (
@@ -230,6 +231,7 @@ class Operations:
                 reason='用户导入来源，内容与热度未联网核验。'))
         elif action == 'prepare':
             run = self.store._get(db, data['run_id'], owner)
+            require(run.workflow_type == 'creation' and isinstance(data['draft_ref'],str) and bool(data['draft_ref']), 'INVALID_TRANSITION', '只有创作工作流的确认稿可进入发布中心')
             require(run.run_status == 'SUCCEEDED' and run.accepted_ref == data['draft_ref'], 'INVALID_TRANSITION', '只有已确认的准确版本可进入发布中心')
             require(not any(p['run_id'] == run.run_id and p['draft_ref'] == run.accepted_ref for p in state['publications']), 'DUPLICATE', '该确认稿已经进入发布中心')
             op = run.context.get('operations', {})

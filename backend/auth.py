@@ -34,6 +34,7 @@ class Auth:
         self.store = store
         self.dummy = password_hash('Not-a-real-password')
         with store.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
             db.executescript('''
                 CREATE TABLE IF NOT EXISTS users (
                     id TEXT PRIMARY KEY, username TEXT UNIQUE NOT NULL, owner TEXT UNIQUE NOT NULL,

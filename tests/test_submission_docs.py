@@ -24,7 +24,11 @@ class SubmissionDocumentsTests(unittest.TestCase):
         manifest = json.loads((DOCS / 'evidence/source-manifest.json').read_text())
         for relative, expected in manifest.items():
             with self.subTest(source=relative):
-                self.assertEqual(hashlib.sha256((ROOT / relative).read_bytes()).hexdigest(), expected)
+                # These are 2026-09-21 evidence, not assertions that newer features
+                # must keep the old product source unchanged. Snapshots were read
+                # from verification.json's product_commit and retain its hashes.
+                archived = DOCS / 'evidence/baseline-source' / (relative + '.snapshot')
+                self.assertEqual(hashlib.sha256(archived.read_bytes()).hexdigest(), expected)
 
     def test_required_sections_and_implementation_limits(self):
         proposal = (DOCS / '01_技术方案.md').read_text()

@@ -10,6 +10,13 @@ from backend.workflow import digest
 ACTIVE = ('queued','running','pausing')
 
 
+def graph_policy(run):
+    require(run.workflow_type in ('creation','windtunnel'),'CONFIG_INVALID','未知工作流类型')
+    expected = 'windtunnel.v1' if run.workflow_type=='windtunnel' else CONTRACT['runtime_extension']['graph_policy']
+    require(run.context.get('graph_policy',expected)==expected,'CONFIG_INVALID','未知工作流执行策略')
+    return expected
+
+
 class Jobs:
     def __init__(self, store): self.store=store
 
@@ -18,6 +25,7 @@ class Jobs:
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             run=self.store._get(db,run_id,owner)
+            policy=graph_policy(run)
             old=db.execute('SELECT fingerprint FROM runtime_commands WHERE run_id=? AND key=?',(run_id,data['key'])).fetchone()
             fingerprint=digest(data)
             if old:
@@ -32,7 +40,7 @@ class Jobs:
                 if row:
                     db.execute("UPDATE runtime_jobs SET status='queued',error=NULL,token=NULL,lease_until=NULL,updated=? WHERE run_id=?",(time.time(),run_id))
                 else:
-                    db.execute('INSERT INTO runtime_jobs(id,run_id,owner,status,updated,thread_id,policy) VALUES(?,?,?,?,?,?,?)',(str(uuid4()),run_id,owner,'queued',time.time(),str(uuid4()),CONTRACT['runtime_extension']['graph_policy']))
+                    db.execute('INSERT INTO runtime_jobs(id,run_id,owner,status,updated,thread_id,policy) VALUES(?,?,?,?,?,?,?)',(str(uuid4()),run_id,owner,'queued',time.time(),str(uuid4()),policy))
             else:
                 require(row and row[0] in ACTIVE,'INVALID_TRANSITION','没有正在执行的后台任务')
                 db.execute("UPDATE runtime_jobs SET status=CASE WHEN status='queued' THEN 'paused' ELSE 'pausing' END,updated=? WHERE run_id=?",(time.time(),run_id))
@@ -46,11 +54,11 @@ class Jobs:
             db.execute('BEGIN IMMEDIATE')
             # Pausing work whose process died has no active provider transport to wait on.
             db.execute("UPDATE runtime_jobs SET status='paused',token=NULL WHERE status='pausing' AND lease_until<?",(now,))
-            row=db.execute("SELECT id,run_id,owner,thread_id FROM runtime_jobs WHERE status='queued' OR (status='running' AND lease_until<?) ORDER BY updated LIMIT 1",(now,)).fetchone()
+            row=db.execute("SELECT id,run_id,owner,thread_id,policy FROM runtime_jobs WHERE status='queued' OR (status='running' AND lease_until<?) ORDER BY updated LIMIT 1",(now,)).fetchone()
             if not row:return None
             token=str(uuid4())
             db.execute("UPDATE runtime_jobs SET status='running',token=?,lease_until=?,updated=?,generation=generation+1 WHERE id=?",(token,now+lease,now,row[0]))
-            return dict(zip(('id','run_id','owner','thread_id'),row))|{'token':token}
+            return dict(zip(('id','run_id','owner','thread_id','policy'),row))|{'token':token}
 
     def guard(self, db, job, committing=False):
         row=db.execute('SELECT token,status,lease_until,elapsed FROM runtime_jobs WHERE id=?',(job['id'],)).fetchone()

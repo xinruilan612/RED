@@ -89,6 +89,8 @@ class Handler(BaseHTTPRequestHandler):
     def dispatch(self, write):
         try:
             origin=self.host(); path=urlsplit(self.path).path
+            if not write and path in ('/windtunnel.js','/windtunnel.css'):
+                self.send(200,(FRONTEND/path[1:]).read_bytes(),'text/javascript; charset=utf-8' if path.endswith('.js') else 'text/css; charset=utf-8');return
             if not write and path in ('/','/app.js','/style.css','/operations.js','/account.js','/auth.js','/knowledge.js'):
                 name={'/':'index.html','/app.js':'app.js','/style.css':'style.css','/operations.js':'operations.js','/account.js':'account.js','/auth.js':'auth.js','/knowledge.js':'knowledge.js'}[path]
                 mime={'/':'text/html; charset=utf-8','/app.js':'text/javascript; charset=utf-8','/style.css':'text/css; charset=utf-8','/operations.js':'text/javascript; charset=utf-8','/account.js':'text/javascript; charset=utf-8','/auth.js':'text/javascript; charset=utf-8','/knowledge.js':'text/javascript; charset=utf-8'}[path]

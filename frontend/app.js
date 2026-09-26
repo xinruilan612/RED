@@ -17,7 +17,7 @@ function toast(text){$('toast').textContent=text;$('toast').hidden=false;clearTi
 function json(value){return '<pre class="json">'+esc(JSON.stringify(value,null,2))+'</pre>';}
 function dirtyGuard(){return !editing||window.confirm('有尚未保存的编辑，确定放弃吗？');}
 async function history(){
- const rows=(await api('/api/runs')).filter(r=>typeof matchesAccount!=='function'||matchesAccount(r));
+ const rows=(await api('/api/runs')).filter(r=>r.workflow_type!=='windtunnel'&&(typeof matchesAccount!=='function'||matchesAccount(r)));
  $('history').innerHTML=rows.length?rows.map(r=>`<button data-run="${esc(r.run_id)}" class="${run?.run_id===r.run_id?'selected':''}">${esc(r.context.topic||'旧任务')}<small>${esc(states[r.run_status])} · ${r.drafts.length} 个版本</small></button>`).join(''):'<p class="helper">还没有创作记录</p>';
  return rows;
 }

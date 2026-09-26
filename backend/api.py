@@ -36,7 +36,7 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
     require(local or (parsed.scheme=='https' and len(invite)>=16), 'CONFIG_INVALID','公网运行需 HTTPS 和至少16位注册邀请码')
     store = store or Store(env.get('DATABASE_URL','runtime/web.sqlite'))
     config = config if config is not None else load_config()
-    auth, service = Auth(store), Service(store,config,client)
+    auth, service = Auth(store), Service(store,config,client,allow_windtunnel_live=env.get('WINDTUNNEL_ALLOW_LIVE','').lower()=='true')
     app = FastAPI(title='有迹运营 API', version='0.7.0', docs_url=None, redoc_url=None)
     app.state.store,app.state.service,app.state.auth = store,service,auth
 
@@ -176,6 +176,14 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
     @app.get('/api/runs')
     def runs(user=Depends(logged)): return [service.view(r) for r in store.list_runs(user['owner'])]
 
+    @app.get('/api/windtunnel/checklists')
+    def windtunnel_checklists(account_id: str,user=Depends(logged)):
+        return service.windtunnel.checklists(user['owner'],account_id)
+
+    @app.post('/api/windtunnel/checklists')
+    def save_windtunnel_checklist(data: dict,user=Depends(logged)):
+        return service.windtunnel.save_checklist(user['owner'],data)
+
     @app.post('/api/runs',status_code=201)
     def create(data: dict, user=Depends(logged)): return service.create(user['owner'],data)
 
@@ -198,7 +206,7 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
 
     @app.get('/{asset}')
     def asset(asset: str):
-        require(asset in ('style.css','app.js','operations.js','account.js','auth.js','knowledge.js'),'RESOURCE_NOT_FOUND','页面不存在')
+        require(asset in ('style.css','app.js','operations.js','account.js','auth.js','knowledge.js','windtunnel.js','windtunnel.css'),'RESOURCE_NOT_FOUND','页面不存在')
         require((FRONTEND/asset).is_file(),'RESOURCE_NOT_FOUND','页面不存在')
         return FileResponse(FRONTEND/asset)
 
