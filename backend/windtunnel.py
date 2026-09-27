@@ -270,10 +270,15 @@ class Windtunnel:
         self.store, self.operations, self.knowledge = store, operations, knowledge
 
     def create(self, owner, data, model_policy=None):
-        require(isinstance(data, dict) and set(data) <= {'account_id', 'title', 'text', 'import', 'scene', 'feedback', 'materials', 'knowledge', 'mode', 'checklist'}, 'INVALID_INPUT', '预演输入字段无效')
+        require(isinstance(data, dict) and set(data) <= {'account_id', 'title', 'text', 'import', 'scene', 'feedback', 'materials', 'knowledge', 'mode', 'checklist', 'hypothesis_id'}, 'INVALID_INPUT', '预演输入字段无效')
         account = data.get('account_id')
         require(isinstance(account, str) and 0 < len(account) <= 100, 'INVALID_INPUT', '账号 ID 无效')
         self.knowledge.account(owner, account)
+        hypothesis_id = data.get('hypothesis_id')
+        if hypothesis_id:
+            hypothesis = next((h for h in self.operations.read(owner)['hypotheses'] if h['id'] == hypothesis_id), None)
+            require(hypothesis is not None and hypothesis['account_id'] == account and hypothesis['status'] == 'testing',
+                    'RESOURCE_NOT_FOUND', '假设卡不属于当前账号或已不能继续验证')
         scene = validate_text(data.get('scene', '工具使用教程，面向初次使用的读者'), '阅读场景', 500)
         mode = data.get('mode', 'simulation')
         require(mode in ('simulation', 'live'), 'INVALID_INPUT', '预演模式无效')
@@ -318,10 +323,10 @@ class Windtunnel:
                                     origin=document['source_url'], version=document['version'], document_id=document['id'],
                                     page=chunk['page'], offset=chunk['offset'], hash=digest(chunk['text'])))
         require(sum(len(s['text']) for s in sources) <= 24000, 'INVALID_INPUT', '本次支持材料和反馈合计最多 24000 字')
-        state = dict(schema_version=1, account_id=account, scene=scene, drafts=[d], sources=sources,
+        state = dict(schema_version=1, account_id=account, hypothesis_id=hypothesis_id, scene=scene, drafts=[d], sources=sources,
                      condition_sets=[], current_set_id=None, reports=[], patches=[], reading=[], batch_id=uid(), source_history=[])
         run = Run(owner_id=owner, snapshot_id=uid(), workflow_type='windtunnel', windtunnel=state,
-                  current_stage='wt_conditions', context=dict(mode=mode, topic=d['title'], audience=scene, account_id=account, graph_policy='windtunnel.v1'))
+                  current_stage='wt_conditions', context=dict(mode=mode, topic=d['title'], audience=scene, account_id=account, hypothesis_id=hypothesis_id, graph_policy='windtunnel.v1'))
         if model_policy is not None:
             run.context['model_policy'] = copy.deepcopy(model_policy)
         if data.get('checklist'):

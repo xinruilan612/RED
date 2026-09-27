@@ -1,6 +1,8 @@
 # 有迹 · 热点驱动的博主运营助手
 
-产品方向已确认：**有迹是个人创作者的内容试飞台**，以评论区需求与搜索意图形成可证伪假设，再经风洞预演、小流量赛马、实盘归因进入账号私有经验账本。支持卖货、涨粉与工具/活动获客；方向规格与实施缺口见 [内容试飞台产品方案](docs/design/GROWTH_CAMPAIGN_PRODUCT.md)。新增环节仍按方案分阶段实现，不代表已全部交付。
+产品方向已确认：**有迹是个人创作者的内容试飞台**，以评论区需求与搜索意图形成可证伪假设，再经风洞预演、小流量赛马、实盘归因进入账号私有经验账本。支持卖货、涨粉与工具/活动获客；首段实现状态与待办见 [内容试飞台产品方案](docs/design/GROWTH_CAMPAIGN_PRODUCT.md)，整体仍未完成。
+
+**内容试飞台首段已接入：**“假设与试飞”支持记录评论需求/搜索意图，创建卖货、涨粉或获客假设，并把假设绑定到创作稿、风洞检查、两版本 A/B 赛马、人工发布回填及目标指标。假设须经过三阶段、人工裁决后才能进入同账号的私有经验；指标修正会使相关结论失效。详细边界与本轮状态见 [内容试飞台产品方案](docs/design/GROWTH_CAMPAIGN_PRODUCT.md) 和 [开发进度](docs/IMPLEMENTATION_STATUS.md)。
 
 ## 内容风洞
 
@@ -44,6 +46,7 @@
 | 人工审核与发布 | 版本绑定的发布确认、模拟演练、真实稿人工发布回填 | 官方平台自动发布与回执核验 |
 | 指标回流 | 用户录入、缺失值、窗口与修订快照；演示数据隔离 | 平台自动取数、CSV 导入 |
 | 历史学习 | 指标计算、描述性复盘、经验接受/撤销/失效、后续上下文读取 | 因果结论、在线训练、自动优化权重 |
+| 内容试飞台 | 评论/搜索信号、目标与分母预设、假设绑定创作和风洞、A/B 记录、真实发布/指标回连、经验审核 | 自动采集、平台随机分流、平台授权指标与订单回传、统计显著性及因果证明 |
 
 用户确认首期为小红书、抖音，**暂不接入 Postiz**。指定参考：[Klaudiusz321/social-media-agents](https://github.com/Klaudiusz321/social-media-agents)。后续完整目标见 [技术方案](docs/design/ARCHITECTURE.md#运营闭环-v04-技术提案) 与 [推进计划](docs/design/MIGRATION.md#运营闭环-v04-推进计划)；正式网站已接 LangGraph、PostgreSQL 检查点和独立 Worker，旧同步路径保留兼容。
 
@@ -97,6 +100,8 @@ node --check frontend/operations.js
 node --check frontend/account.js
 node --check frontend/auth.js
 node --check frontend/knowledge.js
+node --check frontend/windtunnel.js
+node --check frontend/trials.js
 git diff --check
 ```
 

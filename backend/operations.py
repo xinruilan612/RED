@@ -55,7 +55,7 @@ def seed():
     return {'version': 0, 'trends': [dict(id='example-'+str(i), title=t, platform=p, category=c,
             angle=a, reason=r, source_type='example', source_url='', observed_at=None,
             created_at=None) for i,(t,p,c,a,r) in enumerate(ideas)],
-            'publications': [], 'metrics': [], 'memories': []}
+            'publications': [], 'metrics': [], 'memories': [], 'signals': [], 'hypotheses': []}
 
 
 def item(rows, identity):
@@ -83,7 +83,7 @@ class Operations:
         return migrate(json.loads(row[0]) if row else seed(), owner)
 
     def context(self, owner, data, mode):
-        require(isinstance(data, dict) and set(data) <= {'platform','account','account_id','trend_id'}, 'INVALID_INPUT', '运营上下文字段无效')
+        require(isinstance(data, dict) and set(data) <= {'platform','account','account_id','trend_id','hypothesis_id'}, 'INVALID_INPUT', '运营上下文字段无效')
         platform = data.get('platform', 'xiaohongshu')
         require(platform in PLATFORMS, 'INVALID_INPUT', '平台无效')
         account = validate_text(data.get('account','我的账号'), '账号名称', 80)
@@ -95,6 +95,9 @@ class Operations:
         identity = profile['id'] if profile else account_id(owner, platform, account)
         trend = item(state['trends'], data['trend_id']) if data.get('trend_id') else None
         require(not trend or trend['platform'] == platform, 'INVALID_INPUT', '选题平台不一致')
+        hypothesis = item(state['hypotheses'], data['hypothesis_id']) if data.get('hypothesis_id') else None
+        require(not hypothesis or (hypothesis['account_id'] == identity and hypothesis['platform'] == platform and hypothesis['status'] == 'testing'),
+                'RESOURCE_NOT_FOUND', '假设卡不属于当前账号或已不能继续创作')
         # Demo evidence is never fed into paid/real creation.
         require(not (mode == 'live' and trend and trend['source_type'] == 'example'), 'INVALID_INPUT', '示例选题只用于模拟模式；真实创作请导入自己的来源')
         memories = [copy.deepcopy(m) for m in state['memories'] if m['status'] == 'accepted'
@@ -112,7 +115,11 @@ class Operations:
             if metric['publication_id'] in ids:
                 latest[(metric['publication_id'], metric['window'])] = copy.deepcopy(metric)
         return {'platform': platform, 'account': account, 'account_id': identity,
+                'hypothesis_id': hypothesis['id'] if hypothesis else None,
                 'profile': copy.deepcopy(profile), 'trend': copy.deepcopy(trend), 'memories': memories[:5],
+                'active_hypothesis': copy.deepcopy(hypothesis),
+                'experiment_memory': [copy.deepcopy(h) for h in state['hypotheses'] if hypothesis and h['account_id'] == identity
+                    and h['platform'] == platform and h['objective'] == hypothesis['objective'] and h['ledger_status'] == 'accepted'][:5],
                 'history': history, 'metrics': list(latest.values())[-60:],
                 'competitors': [copy.deepcopy(c) for c in state['competitors'] if c['account_id'] == identity][-10:],
                 'preferences': [copy.deepcopy(p) for p in state['preferences'] if p['account_id'] == identity
@@ -210,6 +217,10 @@ class Operations:
                 observed_at=timestamp(data['observed_at']), source_type='manual',
                 limitation='用户记录的公开观察，未抓取核验；不推断曝光、转化或因果'))
             return
+        if action in ('add_signal','create_hypothesis','record_trial','decide_hypothesis','hypothesis_status'):
+            from backend.trials import apply as apply_trial
+            apply_trial(self, db, owner, state, action, data)
+            return
         fields = {
             'add_trend': {'title','platform','category','angle','source_url','observed_at'},
             'prepare': {'run_id','draft_ref'}, 'approve': {'id'},
@@ -218,7 +229,7 @@ class Operations:
             'learn': {'id'}, 'memory': {'id','status'},
         }
         require(isinstance(action,str) and action in fields, 'INVALID_INPUT', '未知运营操作')
-        extra_metrics = {'impressions','new_followers','profile_visits','completed_plays','negative_feedback'}
+        extra_metrics = {'impressions','new_followers','profile_visits','completed_plays','negative_feedback','orders','qualified_leads','signups','link_clicks'}
         require((fields[action] <= set(data) <= fields[action] | extra_metrics) if action == 'metrics' else set(data) == fields[action], 'INVALID_INPUT', '操作参数字段无效')
         if action == 'add_trend':
             require(data['platform'] in PLATFORMS, 'INVALID_INPUT', '平台无效')
@@ -241,6 +252,7 @@ class Operations:
             if account is None:
                 account = new_account(identity, name, platform); state['accounts'].append(account)
             state['publications'].insert(0, dict(id=str(uuid4()), run_id=run.run_id, draft_ref=run.accepted_ref,
+                hypothesis_id=op.get('hypothesis_id'),
                 review_ref=run.review['ref'], content=copy.deepcopy(run.drafts[-1]['content']),
                 content_hash=digest(run.drafts[-1]['content']), platform=op.get('platform','xiaohongshu'),
                 account=account['name'], account_id=account['id'], mode=run.context.get('mode','simulation'),
@@ -270,7 +282,7 @@ class Operations:
             observed = timestamp(data['observed_at'])
             require(datetime.fromisoformat(observed.replace('Z','+00:00')) >= datetime.fromisoformat(pub['published_at'].replace('Z','+00:00')), 'INVALID_INPUT', '观察时间不能早于发布时间')
             values = {}
-            for name in ('views','likes','saves','comments','shares','impressions','new_followers','profile_visits','completed_plays','negative_feedback'):
+            for name in ('views','likes','saves','comments','shares','impressions','new_followers','profile_visits','completed_plays','negative_feedback','orders','qualified_leads','signups','link_clicks'):
                 value = data.get(name)
                 require(value is None or (type(value) is int and 0 <= value <= 10000000000), 'INVALID_INPUT', '指标须为非负整数，未知请留空')
                 values[name] = value
@@ -287,6 +299,13 @@ class Operations:
             for memory in state['memories']:
                 if memory['publication_id'] == pub['id'] and memory['window'] == data['window']:
                     memory['status'] = 'superseded'
+            obsolete = {m['id'] for m in prior}
+            for hypothesis in state.get('hypotheses', []):
+                live = hypothesis.get('validations', {}).get('live_attribution', {})
+                if any(entry.get('metric_id') in obsolete for entry in live.get('items', [])):
+                    hypothesis['status'] = 'superseded'
+                    if hypothesis.get('ledger_status') in ('proposed', 'accepted'):
+                        hypothesis['ledger_status'] = 'superseded'
         elif action == 'learn':
             metric = item(state['metrics'], data['id'])
             latest = [m for m in state['metrics'] if m['publication_id'] == metric['publication_id'] and m['window'] == metric['window']][-1]

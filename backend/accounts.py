@@ -22,8 +22,9 @@ def new_account(identity, name, platform):
 def migrate(state, owner):
     """Deterministic read adapter; persisted in the next transaction, never loses v0.4 records."""
     state.setdefault('accounts', [])
-    for key in ('preferences', 'analyses', 'plans', 'competitors'):
+    for key in ('preferences', 'analyses', 'plans', 'competitors', 'signals', 'hypotheses'):
         state.setdefault(key, [])
+    state.setdefault('trials_schema_version', 1)
     pairs = [('xiaohongshu', '我的账号')]
     pairs += [(p['platform'], p['account']) for p in state['publications'] if not p.get('account_id')]
     for platform, name in pairs:

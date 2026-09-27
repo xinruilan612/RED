@@ -19,7 +19,7 @@ function wtTitle(r){return r?.windtunnel?.drafts?.at(-1)?.title||r?.context?.top
 function wtTime(value){return value?new Date(typeof value==='number'?value*1000:value).toLocaleString('zh-CN',{hour12:false}):'已保存';}
 function wtEmpty(title,text){return `<div class="wt-empty"><span aria-hidden="true">◈</span><h3>${esc(title)}</h3><p>${esc(text)}</p></div>`;}
 function wtBelongs(r,account){return (r.windtunnel?.account_id||r.context?.operations?.account_id||r.context?.account_id)===account;}
-function wtNotice(){return '<div class="wt-notice" role="note"><span aria-hidden="true">◈</span><div><strong>模拟演练 · 不调用真实 AI，不产生模型费用</strong><p>当前检查使用规则与模型替身，结果用于验证操作流程，不能证明真实读者理解、事实正确或优于普通 AI。真人试读与模型对照需分别记录。</p></div></div>';}
+function wtNotice(){const h=(ops?.hypotheses||[]).find(x=>x.id===window.activeTrialHypothesisId);return '<div class="wt-notice" role="note"><span aria-hidden="true">◈</span><div><strong>模拟演练 · 不调用真实 AI，不产生模型费用</strong><p>当前检查使用规则与模型替身，结果用于验证操作流程，不能证明真实读者理解、事实正确或优于普通 AI。真人试读与模型对照需分别记录。</p></div></div>'+(h?`<div class="notice"><strong>关联假设卡：</strong>${esc(h.statement)}<p class="helper">本次风洞任务会绑定此假设；模拟预演不算读者或平台验证。</p></div>`:'');}
 
 async function renderWindtunnel(){
  const account=activeAccountId,request=++wt.loading;
@@ -161,11 +161,11 @@ async function wtClick(e){
 async function wtCreate(e){
  e.preventDefault();if(wt.busy)return;
  const f=wt.form,account=wt.account;
- const body={workflow_type:'windtunnel',account_id:account,title:f.title,scene:f.scene,mode:'simulation',materials:f.material.trim()?[{text:f.material,title:f.materialTitle}]:[],feedback:f.feedback.trim()?[{text:f.feedback,origin:wtOriginLabels[f.origin]+' · '+f.feedbackOrigin,provenance:f.origin==='user_hypothesis'?'author':f.origin,permission:f.permission}]:[]};
+ const body={workflow_type:'windtunnel',account_id:account,title:f.title,scene:f.scene,mode:'simulation',hypothesis_id:window.activeTrialHypothesisId||null,materials:f.material.trim()?[{text:f.material,title:f.materialTitle}]:[],feedback:f.feedback.trim()?[{text:f.feedback,origin:wtOriginLabels[f.origin]+' · '+f.feedbackOrigin,provenance:f.origin==='user_hypothesis'?'author':f.origin,permission:f.permission}]:[]};
  if(f.inputMode==='import'){delete body.title;body.import={run_id:f.importRun,draft_ref:f.importRef};}else body.text=f.text;
  if(f.checklist){const [id,version]=f.checklist.split(':');body.checklist={id,version:Number(version)};}
  wt.busy=true;e.submitter.disabled=true;wt.failure='';
- try{const created=await api('/api/runs','POST',body);if(account!==activeAccountId)return;wt.run=created;wt.runs.unshift(created);wt.newDraft=false;wt.tab='cards';wt.message='稿件和来源已保存。请主动启动模拟处理，生成候选条件。';wt.form=wtFreshForm();}
+ try{const created=await api('/api/runs','POST',body);if(account!==activeAccountId)return;window.activeTrialHypothesisId=null;wt.run=created;wt.runs.unshift(created);wt.newDraft=false;wt.tab='cards';wt.message='稿件和来源已保存。请主动启动模拟处理，生成候选条件。';wt.form=wtFreshForm();}
  catch(err){if(account===activeAccountId)wt.failure=err.message;}
  finally{wt.busy=false;wtPaint();}
 }

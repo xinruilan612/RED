@@ -8,6 +8,7 @@ from backend.api import create_app
 from backend.provider import Config
 from backend.store import Store
 from backend.worker import Worker
+from backend.operations import now
 
 
 class WindtunnelApiTests(unittest.TestCase):
@@ -99,3 +100,28 @@ class WindtunnelApiTests(unittest.TestCase):
         self.action(run,'recheck',{'condition_set_id':cs['id']})
         response=self.client.get('/api/runs/'+run['run_id']+'/export')
         self.assertEqual(response.status_code,409)
+
+    def test_signal_hypothesis_creation_and_windtunnel_are_bound(self):
+        state=self.client.get('/api/operations').json()
+        signal_payload=dict(account_id=self.account,kind='comment_demand',text='如何把剪辑好的文件导出？',
+            source_url='',observed_at=now(),sample_size=8,collection_method='manual',notes='授权测试摘要')
+        signal=self.post('/api/operations',dict(action='add_signal',payload=signal_payload,
+            version=state['version'],key=uuid4().hex))
+        self.assertEqual(signal.status_code,200,signal.text)
+        state=signal.json();entry=state['signals'][0]
+        payload=dict(account_id=self.account,objective='lead_acquisition',audience='剪辑软件新手',
+            statement='完整步骤能提高有效试用注册',desired_action='完成试用注册',metric='signups',
+            window='24h',minimum_lift_pct=20,falsifier='注册率提升低于20%',signal_ids=[entry['id']])
+        created=self.post('/api/operations',dict(action='create_hypothesis',payload=payload,
+            version=state['version'],key=uuid4().hex))
+        self.assertEqual(created.status_code,200,created.text)
+        hypothesis=created.json()['hypotheses'][0]
+        self.assertEqual(hypothesis['denominator'],'link_clicks')
+        run_response=self.post('/api/runs',dict(topic='剪辑导出步骤',audience='新手',tone='清楚',mode='simulation',
+            operations=dict(platform='xiaohongshu',account_id=self.account,hypothesis_id=hypothesis['id'])))
+        self.assertEqual(run_response.status_code,201,run_response.text)
+        self.assertEqual(run_response.json()['context']['operations']['active_hypothesis']['id'],hypothesis['id'])
+        wind=self.create(hypothesis_id=hypothesis['id'])
+        self.assertEqual(wind['windtunnel']['hypothesis_id'],hypothesis['id'])
+        self.assertEqual(self.client.get('/trials.js').status_code,200)
+        self.assertEqual(self.client.get('/trials.css').status_code,200)

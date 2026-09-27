@@ -28,6 +28,7 @@ function renderOperations(){
  if(currentPage==='overview')renderOverview();
  if(currentPage==='accounts')renderAccounts();
  if(currentPage==='trends')renderTrends();
+ if(currentPage==='trials')renderTrials();
  if(currentPage==='library')renderLibrary();
  if(currentPage==='windtunnel')renderWindtunnel();
  if(currentPage==='publish')renderPublications();

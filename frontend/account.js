@@ -2,7 +2,7 @@
 let activeAccountId=localStorage.getItem('creator-account')||'',overviewLoad=0;
 const profileLabels={positioning:'账号定位',audience:'目标受众',tone:'表达风格',pillars:'内容栏目（逗号分隔）',goal:'当前运营目标',resources:'可投入时间与素材条件',banned:'禁用表达（逗号分隔）'};
 const planStates={draft:'待你确认',accepted:'已采用',revoked:'已撤销',needs_review:'依据已失效 · 请重建'};
-const metricNames={views:'阅读 / 播放',likes:'点赞',saves:'收藏',comments:'评论',shares:'分享',impressions:'曝光',new_followers:'作品归因关注',profile_visits:'作品归因主页访问',completed_plays:'完整播放',negative_feedback:'负面反馈'};
+const metricNames={views:'阅读 / 播放',likes:'点赞',saves:'收藏',comments:'评论',shares:'分享',impressions:'有效曝光',new_followers:'作品归因关注',profile_visits:'作品归因主页访问',completed_plays:'完整播放',negative_feedback:'负面反馈',link_clicks:'追踪链接点击',orders:'归因订单',qualified_leads:'有效线索',signups:'报名 / 注册'};
 function currentAccount(){return ops?.accounts.find(a=>a.id===activeAccountId);}
 function accountRows(key){return (ops?.[key]||[]).filter(r=>r.account_id===activeAccountId);}
 function matchesAccount(r){if(r.workflow_type==='windtunnel')return false;const a=currentAccount();if(!a)return true;const op=r.context.operations||{};return op.account_id?op.account_id===a.id:(op.platform||'xiaohongshu')===a.platform&&a.aliases.includes(op.account||'我的账号');}
@@ -15,7 +15,7 @@ function syncAccounts(){
 function fillAccountBrief(){const a=currentAccount();if(!a)return;$('targetPlatform').value=a.platform;$('accountName').value=a.name;if($('welcome').hidden)return;$('audience').value=a.profile.audience||'请填写本次目标读者';$('tone').value=a.profile.tone||'真实、具体、清楚';}
 $('activeAccount').onchange=async e=>{
  if(busy||opsBusy||!dirtyGuard()){e.target.value=activeAccountId;return;}
- auto=false;activeAccountId=e.target.value;chosenTrend=null;$('selectedTrend').hidden=true;$('clearTrend').hidden=true;
+ auto=false;activeAccountId=e.target.value;chosenTrend=null;chosenHypothesis=null;window.activeTrialHypothesisId=null;$('selectedTrend').hidden=true;$('clearTrend').hidden=true;
  run=null;editing=false;$('editor').hidden=true;$('workbench').hidden=true;$('welcome').hidden=false;syncAccounts();renderOperations();await history();
 };
 $('manageAccount').onclick=()=>{if(!busy&&dirtyGuard())showPage('accounts');};

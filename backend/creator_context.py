@@ -31,6 +31,7 @@ def enrich(stage, value, context):
             content_angles=[trend['angle']] if trend else ['结合真实场景解释问题', '整理可验证的尝试步骤'],
             limitation='选题卡基于用户线索；没有自动抓取、热度统计或时效核实。')
     if stage == 'strategy':
+        active = op.get('active_hypothesis')
         result['content_brief'] = dict(**identity, goal=profile.get('goal') or '先验证内容是否对目标受众有用',
             core_viewpoint=result['angle'], audience=result['reader'],
             content_type='口播与分镜脚本' if op.get('platform') == 'douyin' else '图文笔记',
@@ -39,8 +40,18 @@ def enrich(stage, value, context):
             cta=result.get('cta', '邀请读者分享自己的场景'), banned=profile.get('banned', ''),
             publishing_window='由用户安排；暂无经过验证的最佳发布时间',
             recommendation_reason=result.get('why_account') or profile.get('positioning') or '来自本次需求，账号定位尚待补充')
-        result['learning_refs'] = [m['id'] for m in op.get('memories', [])]
-        result['next_experiments'] = [m['text'] for m in op.get('memories', [])]
+        if active:
+            goal_names = {'sales':'帮助卖货', 'audience_growth':'帮助涨粉', 'lead_acquisition':'帮助获客'}
+            result['content_brief'].update(goal=goal_names[active['objective']], audience=active['audience'],
+                core_viewpoint=active['statement'], cta=active['desired_action'],
+                hypothesis_id=active['id'], primary_metric=active['metric'],
+                limitation='本次创作服务于待验证假设；除非完成真实试验，不视为已证实规律。')
+        memories = op.get('memories', [])
+        experiments = op.get('experiment_memory', [])
+        result['learning_refs'] = [m['id'] for m in memories] + [h['id'] for h in experiments]
+        result['next_experiments'] = [m['text'] for m in memories] + [
+            f"待验证假设：{h['statement']}；结论={h['verdict']}；证据等级={h.get('evidence_grade','exploratory')}，仅供同账号同目标参考。"
+            for h in experiments]
     if stage == 'review':
         result['account_context'] = identity
         result['ranking_limit'] = '版本比较是内容评价；重要事实问题先阻断，不输出爆款概率。'
