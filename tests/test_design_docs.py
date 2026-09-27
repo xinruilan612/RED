@@ -26,6 +26,20 @@ class DesignDocumentationTests(unittest.TestCase):
                 with self.subTest(file=path.name, link=dest):
                     self.assertTrue((path.parent/dest.split('#')[0]).is_file())
 
+    def test_content_trial_stand_direction_and_validation_layers_are_explicit(self):
+        proposal = DESIGN / 'GROWTH_CAMPAIGN_PRODUCT.md'
+        self.assertIn(proposal.name, (ROOT / 'README.md').read_text())
+        text = proposal.read_text()
+        for requirement in (
+            '个人创作者的内容试飞台', '评论区需求 + 搜索意图', '可证伪假设卡',
+            '风洞预演 → 小流量赛马 → 实盘归因', '校准后的私有经验账本',
+            '帮商家卖货', '帮创作者涨粉', '帮工具/活动获客',
+            '观察性比较，不把差异说成因果', '暂无随机分流试验',
+            '未验证、模拟和观察性记录不会伪装成确定规律',
+        ):
+            with self.subTest(requirement=requirement):
+                self.assertIn(requirement, text)
+
     def test_service_promotion_handoff_preserves_scope_and_acceptance_boundaries(self):
         proposal = DESIGN / 'SKILL_SERVICE_PROMOTION.md'
         self.assertIn(proposal.name, (DESIGN / 'README.md').read_text())
