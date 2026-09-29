@@ -226,6 +226,11 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None, s
     def export(run_id: str,user=Depends(logged)):
         return Response(service.export(user['owner'],run_id),media_type='text/markdown',headers={'Content-Disposition':'attachment; filename="youji-draft.md"'})
 
+    @app.get('/api/runs/{run_id}/bundle')
+    def export_bundle(run_id: str,user=Depends(logged)):
+        return Response(service.export_bundle(user['owner'],run_id),media_type='application/zip',
+                        headers={'Content-Disposition':'attachment; filename="youji-publish-bundle.zip"'})
+
     @app.get('/')
     def index(): return FileResponse(FRONTEND/'index.html')
 

@@ -1,9 +1,11 @@
 """Run on SQLite and, when TEST_DATABASE_URL is set, a fresh PostgreSQL schema."""
 import hashlib
+import io
 import json
 import os
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 from uuid import uuid4
 from fastapi.testclient import TestClient
@@ -147,6 +149,7 @@ class ProductionTests(unittest.TestCase):
 
     def test_workflow_edit_review_accept_and_idempotency(self):
         self.register();run=self.post('/api/runs',self.brief()).json()
+        self.assertEqual(self.client.get('/api/runs/'+run['run_id']+'/bundle').status_code,409)
         def act(action,payload=None):
             nonlocal run
             body={'action':action,'version':run['status_version'],'key':str(uuid4()),'payload':payload or {}}
@@ -163,6 +166,16 @@ class ProductionTests(unittest.TestCase):
         act('next');act('accept',{'draft_ref':run['drafts'][-1]['ref'],'review_ref':run['review']['ref']})
         self.assertEqual(run['run_status'],'SUCCEEDED')
         self.assertEqual(self.client.get('/api/runs/'+run['run_id']+'/export').status_code,200)
+        bundle=self.client.get('/api/runs/'+run['run_id']+'/bundle')
+        self.assertEqual(bundle.status_code,200,bundle.text)
+        self.assertEqual(bundle.headers['content-type'],'application/zip')
+        with zipfile.ZipFile(io.BytesIO(bundle.content)) as archive:
+            self.assertEqual(set(archive.namelist()),{'content.md','cover-copy.txt','publish-checklist.md','metadata.json'})
+            metadata=json.loads(archive.read('metadata.json').decode('utf-8'))
+            self.assertEqual(metadata['draft_ref'],run['accepted_ref'])
+            self.assertEqual(metadata['review_ref'],run['review']['ref'])
+            self.assertIn('不会自动发布',archive.read('publish-checklist.md').decode('utf-8'))
+            self.assertNotIn('DEEPSEEK_API_KEY',bundle.content.decode('utf-8',errors='ignore'))
 
     def test_rate_limit_and_public_config(self):
         auth=self.app.state.auth

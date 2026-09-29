@@ -100,8 +100,9 @@ function renderHuman(){
  $('humanPanel').hidden=!visible;
  $('supplyForm').hidden=!allowed.includes('supplement');
  $('revise').hidden=!(revision&&allowed.includes('next'));
- $('editButton').hidden=!allowed.includes('edit');$('accept').hidden=!allowed.includes('accept');$('export').hidden=!allowed.includes('export');
+ $('editButton').hidden=!allowed.includes('edit');$('accept').hidden=!allowed.includes('accept');$('export').hidden=!allowed.includes('export');$('exportBundle').hidden=!allowed.includes('export');
  $('export').href=`/api/runs/${run.run_id}/export`;
+ $('exportBundle').href=`/api/runs/${run.run_id}/bundle`;
  $('sendToPublish').hidden=run.run_status!=='SUCCEEDED';
  let title='需要你的决定',message='';
  if(run.run_status==='SUCCEEDED'){title='这个版本，已由你确认';message='可以下载已确认稿件。审核不能保证事实正确，发布前仍需你检查。';}

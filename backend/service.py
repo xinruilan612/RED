@@ -1,4 +1,7 @@
 """Application boundary shared by the production API and domain tests."""
+from io import BytesIO
+import json
+from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 from uuid import uuid4
 from backend.contracts import require, integer
 from backend.demo import validate_brief, validate_edit, actions
@@ -121,3 +124,51 @@ class Service:
         c = run.drafts[-1]['content']
         label = 'AI 创作稿（已人工确认；事实仍需核实）' if run.context.get('mode')=='live' else '模拟创作稿（未调用真实 AI）'
         return '# '+label+'\n\n# '+c['selected_title']+'\n\n'+c['body']+'\n\n'+c['cta']+'\n\n'+' '.join('#'+t for t in c['tags'])
+
+    def export_bundle(self, owner, run_id):
+        run = self.store.get(run_id, owner)
+        require(run.workflow_type == 'creation' and 'export' in actions(run),
+                'INVALID_TRANSITION', '请先确认准确版本')
+        draft = next((draft for draft in run.drafts if draft['ref'] == run.accepted_ref), None)
+        require(draft is not None and run.review and run.review['draft_ref'] == draft['ref'],
+                'VERSION_CONFLICT', '确认稿件或审核版本已失效')
+        content = draft['content']
+        operations = run.context.get('operations', {})
+        platform = operations.get('platform', run.context.get('target_platform', 'unknown'))
+        label = '真实 AI 稿；已人工确认，事实与平台规则仍需发布者核实' if run.context.get('mode') == 'live' else '模拟稿；未调用真实 AI，不可作为真实生成或发布证据'
+        metadata = {
+            'schema_version': 1,
+            'run_id': run.run_id,
+            'draft_ref': draft['ref'],
+            'review_ref': run.review['ref'],
+            'content_hash': draft['content_hash'],
+            'mode': run.context.get('mode', 'simulation'),
+            'workflow': run.context.get('workflow', 'professional'),
+            'platform': platform,
+            'label': label,
+        }
+        checklist = '\n'.join([
+            '# 发布前人工核对', '',
+            '- [ ] 标题、正文、互动引导与标签均为当前确认版本',
+            '- [ ] 人名、价格、功能、时间、链接等事实已逐项核实',
+            '- [ ] 图片、字体、音乐、肖像及引用材料拥有使用权限',
+            '- [ ] 广告、赞助、佣金或赠品关系已按平台要求披露',
+            '- [ ] 已在目标平台预览排版；本资料包不会自动发布',
+            '- [ ] 发布后保存实际链接、时间和同口径指标', '',
+            f'> {label}',
+        ])
+        cover = '\n'.join([content['selected_title'], '', '封面短句建议（需人工排版）：', content['selected_title'][:30]])
+        files = {
+            'content.md': self.export(owner, run_id),
+            'cover-copy.txt': cover,
+            'publish-checklist.md': checklist,
+            'metadata.json': json.dumps(metadata, ensure_ascii=False, indent=2, sort_keys=True),
+        }
+        output = BytesIO()
+        with ZipFile(output, 'w', compression=ZIP_DEFLATED) as archive:
+            for name, text in files.items():
+                info = ZipInfo(name, (2026, 1, 1, 0, 0, 0))
+                info.compress_type = ZIP_DEFLATED
+                info.external_attr = 0o600 << 16
+                archive.writestr(info, text.encode('utf-8'))
+        return output.getvalue()
