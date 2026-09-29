@@ -122,6 +122,8 @@ def invalidate(state, publication_id, window):
     for memory in state['memories']:
         if obsolete.intersection(memory.get('metric_refs', [memory['metric_id']])):
             memory['status'] = 'superseded'
+    from backend.experiments import invalidate_experiments
+    invalidate_experiments(state, obsolete)
     refresh_plans(state)
 
 

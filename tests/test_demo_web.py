@@ -80,6 +80,47 @@ class DemoWebTests(unittest.TestCase):
         status,loaded=self.request('GET',f"/api/runs/{run['run_id']}")
         self.assertEqual(run,loaded)
 
+    def test_quick_workflow_reaches_confirmation_in_two_steps(self):
+        run=self.create(workflow='quick')
+        run=self.action(run,'next')
+        self.assertEqual([n['stage'] for n in run['node_runs']],['quick'])
+        self.assertEqual([a['stage'] for a in run['artifacts']],['quick'])
+        self.assertEqual(run['branches'],{})
+        self.assertEqual(run['current_stage'],'reviewer')
+        run=self.action(run,'next')
+        self.assertEqual([n['stage'] for n in run['node_runs']],['quick','review'])
+        self.assertEqual(run['wait_reason'],'final_confirmation')
+
+    def test_legacy_http_create_rechecks_experiment_revoked_after_context(self):
+        def operation(action, payload):
+            status, state = self.request('GET', '/api/operations')
+            self.assertEqual(status, 200)
+            status, state = self.request('POST', '/api/operations', dict(action=action, payload=payload,
+                version=state['version'], key=str(uuid4())))
+            self.assertEqual(status, 200, state)
+            return state
+
+        account = next(a for a in operation('load_sample', {})['accounts'] if a.get('demo_sample'))
+        decision = operation('recommend_experiment', dict(account_id=account['id'], source_type='simulation',
+            format='image_text', window='24h'))['experiments'][0]
+        operation('experiment_status', dict(id=decision['id'], status='accepted'))
+        ops = self.server.operations; initial_context = ops.context
+
+        def revoke_after_validation(owner, data, mode):
+            context = initial_context(owner, data, mode)
+            ops.command(owner, dict(action='experiment_status', payload=dict(id=decision['id'], status='revoked'),
+                version=ops.read(owner)['version'], key=str(uuid4())))
+            return context
+
+        with patch.object(ops, 'context', side_effect=revoke_after_validation):
+            status, result = self.request('POST', '/api/runs', dict(topic='旧入口竞态测试', audience='学生', tone='清楚',
+                operations=dict(account_id=account['id'], platform='xiaohongshu', format='image_text', experiment_id=decision['id'])))
+        self.assertEqual(status, 409, result)
+        with self.store.connect() as db:
+            for table in ('runs', 'reservations', 'live_calls', 'runtime_jobs'):
+                if db.has_table(table):
+                    self.assertEqual(db.execute('SELECT COUNT(*) FROM ' + table).fetchone()[0], 0, table)
+
     def test_manual_revision_then_reaudit_keeps_versions(self):
         run=self.until_pause(self.create('revision'))
         self.assertEqual(run['review']['decision'],'revision_required')
@@ -138,6 +179,8 @@ class DemoWebTests(unittest.TestCase):
         self.action(run,'next',{'run_status':'SUCCEEDED'},expect=400)
         status,_=self.request('POST','/api/runs',{'topic':'x','owner_id':'other'})
         self.assertEqual(status,400)
+        status,_=self.request('POST','/api/runs',{'topic':'x','workflow':'unknown'})
+        self.assertEqual(status,400)
         status,_=self.request('GET','/../../backend/store.py');self.assertEqual(status,404)
         self.action(run,'cancel')
         self.action(run,'next',expect=409)
@@ -176,16 +219,26 @@ class DemoWebTests(unittest.TestCase):
                 if 'data-page' in attrs:self.pages.append(attrs['data-page'])
         parsed=Elements();parsed.feed(html)
         self.assertEqual(len(parsed.ids),len(set(parsed.ids)))
-        self.assertEqual(parsed.pages,['overview','accounts','library','trends','trials','windtunnel','studio','publish','metrics','memory'])
+        self.assertEqual(parsed.pages,['overview','accounts','promotion','library','trends','trials','windtunnel','studio','publish','metrics','memory'])
         status,script=self.request('GET','/operations.js')
         self.assertEqual(status,200);self.assertIn('/api/operations',script)
+        self.assertIn('recommend_experiment',script)
+        status,promotion=self.request('GET','/promotion.js')
+        self.assertEqual(status,200);self.assertIn('create_promotion_brief',promotion)
+        self.assertIn('record_inquiry',promotion);self.assertIn('analyze_promotion',promotion)
+        self.assertIn('source_type',promotion);self.assertIn('模拟演示数据',promotion)
+        status,script=self.request('GET','/app.js')
+        self.assertEqual(status,200)
+        self.assertIn('if(changed)clearError()',script)
 
     def test_static_assets_and_unknown_routes(self):
-        for path in ('/','/app.js','/style.css','/trials.js','/trials.css'):
+        for path in ('/','/app.js','/style.css','/promotion.js','/trials.js','/trials.css','/windtunnel.js','/windtunnel.css'):
             status,body=self.request('GET',path);self.assertEqual(status,200);self.assertTrue(body)
         status,html=self.request('GET','/')
-        for label in ('协作流程','补充真实素材','保存新版本并等待复审','运行记录','模拟运行'):
+        for label in ('协作流程','补充真实素材','保存新版本并等待复审','运行记录','模拟运行',
+                      '一句话极速出稿','1 次生成 + 1 次独立审核','证据驱动的专业创作','让算法决定下一次实验'):
             self.assertIn(label,html)
+        self.assertNotIn('豆包写文案',html)
         # Parse the actual HTML, catching malformed option tags that strand startup JS.
         from html.parser import HTMLParser
         class Options(HTMLParser):

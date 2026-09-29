@@ -105,7 +105,7 @@ class Executor:
                     'STEP_ALREADY_ATTEMPTED','当前步骤尚未完成；刷新查看，服务重启后的未决调用请取消任务后新建')
             require(run.run_status in ('QUEUED','RUNNING'),'INVALID_TRANSITION','请先处理人工操作')
             if run.run_status=='QUEUED':run.start()
-            agents=('audience','research') if run.current_stage=='brief' else (run.current_stage,)
+            agents=(('content',) if run.context.get('workflow')=='quick' else ('audience','research')) if run.current_stage=='brief' else (run.current_stage,)
             for agent in agents:run.event('agent.started',agent=agent,mode='live')
             run.status_version+=1
             db.execute('UPDATE runs SET payload=? WHERE id=?',(json.dumps(asdict(run)),run_id))

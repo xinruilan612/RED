@@ -16,11 +16,11 @@ spec.loader.exec_module(atlas)
 class DesignDocumentationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.contract = json.loads((DESIGN/'design_contract.json').read_text())
+        cls.contract = json.loads((DESIGN/'design_contract.json').read_text(encoding='utf-8'))
 
     def test_local_links_resolve(self):
         for path in [ROOT/'README.md', ROOT/'AGENTS.md', *ROOT.glob('docs/**/*.md')]:
-            for dest in re.findall(r'\]\(([^)]+)\)', path.read_text()):
+            for dest in re.findall(r'\]\(([^)]+)\)', path.read_text(encoding='utf-8')):
                 if '://' in dest or dest.startswith('#'):
                     continue
                 with self.subTest(file=path.name, link=dest):
@@ -28,8 +28,8 @@ class DesignDocumentationTests(unittest.TestCase):
 
     def test_content_trial_stand_direction_and_validation_layers_are_explicit(self):
         proposal = DESIGN / 'GROWTH_CAMPAIGN_PRODUCT.md'
-        self.assertIn(proposal.name, (ROOT / 'README.md').read_text())
-        text = proposal.read_text()
+        self.assertIn(proposal.name, (ROOT / 'README.md').read_text(encoding='utf-8'))
+        text = proposal.read_text(encoding='utf-8')
         for requirement in (
             '个人创作者的内容试飞台', '评论区需求 + 搜索意图', '可证伪假设卡',
             '风洞预演 → 小流量赛马 → 实盘归因', '校准后的私有经验账本',
@@ -42,8 +42,8 @@ class DesignDocumentationTests(unittest.TestCase):
 
     def test_service_promotion_handoff_preserves_scope_and_acceptance_boundaries(self):
         proposal = DESIGN / 'SKILL_SERVICE_PROMOTION.md'
-        self.assertIn(proposal.name, (DESIGN / 'README.md').read_text())
-        text = proposal.read_text()
+        self.assertIn(proposal.name, (DESIGN / 'README.md').read_text(encoding='utf-8'))
+        text = proposal.read_text(encoding='utf-8')
         for requirement in (
             '状态：待实现', '保留推文创作', '大学生摄影师',
             '不自动开始以下产品实现', '未知来源', '多触点',
@@ -61,10 +61,10 @@ class DesignDocumentationTests(unittest.TestCase):
         # Guard against a split set of MVP documents and accidental migration by prose.
         for relative in ('README.md', 'AGENTS.md', 'docs/design/README.md',
                          'docs/design/MIGRATION.md', 'docs/IMPLEMENTATION_STATUS.md'):
-            text = (ROOT / relative).read_text()
+            text = (ROOT / relative).read_text(encoding='utf-8')
             with self.subTest(document=relative):
                 self.assertIn('ARCHITECTURE.md#运营闭环-v04-技术提案', text)
-        text = (DESIGN / 'ARCHITECTURE.md').read_text()
+        text = (DESIGN / 'ARCHITECTURE.md').read_text(encoding='utf-8')
         for section in ('热点发现和选题方法', '版本和发布状态', '数据模型与接口草案',
                         '指标回流、学习与实验', '六环节验收与风险'):
             self.assertIn(section, text)
@@ -78,7 +78,7 @@ class DesignDocumentationTests(unittest.TestCase):
         self.assertEqual(self.contract['agents'], ['audience', 'research', 'content', 'reviewer'])
 
     def test_operations_references_distinguish_requested_repo_and_platform_evidence(self):
-        text = (ROOT / 'docs/research/GITHUB_PROJECTS.md').read_text()
+        text = (ROOT / 'docs/research/GITHUB_PROJECTS.md').read_text(encoding='utf-8')
         self.assertIn('https://github.com/Klaudiusz321/social-media-agents', text)
         self.assertIn('https://github.com/langchain-ai/social-media-agent', text)
         self.assertIn('documented_not_verified', text)
@@ -102,7 +102,7 @@ class DesignDocumentationTests(unittest.TestCase):
         self.assertEqual(seen, set(transitions))
 
     def test_lifecycle_mermaid_contains_every_transition(self):
-        text = (DESIGN/'diagrams/lifecycle.mmd').read_text()
+        text = (DESIGN/'diagrams/lifecycle.mmd').read_text(encoding='utf-8')
         pairs = set(re.findall(r'^\s*(\w+)\s+(?:-->|-\.->)(?:\|[^\n]+?\|)?\s*(\w+)\s*$',text,re.M))
         expected = {(a,b) for a,bs in self.contract['transitions'].items() for b in bs}
         self.assertEqual(pairs, expected)
@@ -133,19 +133,19 @@ class DesignDocumentationTests(unittest.TestCase):
                     self.assertIn(edge['target'],nodes)
                     for x,y in edge['points']:
                         self.assertTrue(0<=x<=graph['width'] and 0<=y<=graph['height'])
-                svg=(DESIGN/'diagrams'/f'{graph["id"]}.svg').read_text()
+                svg=(DESIGN/'diagrams'/f'{graph["id"]}.svg').read_text(encoding='utf-8')
                 self.assertEqual(svg,atlas.svg(graph))
-                self.assertEqual((DESIGN/'diagrams'/f'{graph["id"]}.mmd').read_text(),atlas.mermaid(graph))
+                self.assertEqual((DESIGN/'diagrams'/f'{graph["id"]}.mmd').read_text(encoding='utf-8'),atlas.mermaid(graph))
                 root=ET.fromstring(svg)
                 self.assertIsNotNone(root.find('{http://www.w3.org/2000/svg}title'))
 
     def test_modules_and_agents_documented(self):
-        text=(DESIGN/'MODULES.md').read_text()
+        text=(DESIGN/'MODULES.md').read_text(encoding='utf-8')
         for value in self.contract['agents']+self.contract['modules']:
             self.assertIn(value,text)
 
     def test_atlas_offline(self):
-        text=(DESIGN/'DESIGN_ATLAS.html').read_text()
+        text=(DESIGN/'DESIGN_ATLAS.html').read_text(encoding='utf-8')
         self.assertNotRegex(text,r'<script|<link[^>]*https?://|<img[^>]*https?://')
         self.assertEqual(text.count('<svg '),len(atlas.GRAPHS))
         for g in atlas.GRAPHS:
@@ -199,8 +199,8 @@ class DesignDocumentationTests(unittest.TestCase):
         self.assertFalse(self.contract['review_policy']['score_gate'])
 
     def test_research_provenance_and_no_execution_claim(self):
-        rows=json.loads((ROOT/'docs/research/repository_snapshot.json').read_text())
-        text=(ROOT/'docs/research/GITHUB_PROJECTS.md').read_text()
+        rows=json.loads((ROOT/'docs/research/repository_snapshot.json').read_text(encoding='utf-8'))
+        text=(ROOT/'docs/research/GITHUB_PROJECTS.md').read_text(encoding='utf-8')
         self.assertEqual(len(rows),5)
         for row in rows:
             self.assertIn(row['url'],text)

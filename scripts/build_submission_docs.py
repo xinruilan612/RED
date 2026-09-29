@@ -84,10 +84,10 @@ def build():
         return text.replace('`', '')
 
     for path in sorted(SOURCE.glob('[0-9][0-9]_*.md')):
-        title = path.read_text().splitlines()[0].lstrip('# ')
+        title = path.read_text(encoding='utf-8').splitlines()[0].lstrip('# ')
         filename = '47191919-AI+软件创新-有迹-' + path.stem.split('_', 1)[1] + '.pdf'
         story = []
-        lines = path.read_text().splitlines()
+        lines = path.read_text(encoding='utf-8').splitlines()
         i = 0
         while i < len(lines):
             line = lines[i].strip()

@@ -13,6 +13,6 @@ fixture=Fixture(store,os.environ['FIXTURE_OWNER'])
 service=Service(store,Config('fixture-only',run_budget_usd=10,day_budget_usd=100),fixture)
 def fault(point,stage):
     if point==os.environ['FIXTURE_POINT'] and stage=='wt_read':
-        Path(os.environ['FIXTURE_MARKER']).write_text('reached crash point')
+        Path(os.environ['FIXTURE_MARKER']).write_text('reached crash point', encoding='utf-8')
         while True:time.sleep(.1)
 Worker(service,lease=1,fault=fault).once()

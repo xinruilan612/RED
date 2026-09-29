@@ -37,7 +37,7 @@ class WindtunnelStudyTemplatesTests(unittest.TestCase):
             self.assertEqual({r["reader_id"] for r in rows}, {reader})
             self.assertEqual({mapping[r["packet_id"]]["sample_id"] for r in rows},
                              {f"S{i:02}" for i in range(4, 11)})
-            self.assertNotRegex((TEMPLATES / filename).read_text(),
+            self.assertNotRegex((TEMPLATES / filename).read_text(encoding='utf-8'),
                                 r"baseline|windtunnel|variant|sample_id|S0[4-9]|S10")
             seen.update(r["packet_id"] for r in rows)
         self.assertEqual(set(seen), set(mapping))
@@ -62,8 +62,8 @@ class WindtunnelStudyTemplatesTests(unittest.TestCase):
         evaluations = records("reader_evaluation_TEMPLATE.csv")
         self.assertEqual(len(evaluations), 42)
         self.assertEqual(len({(r["reader_id"], r["packet_id"]) for r in evaluations}), 42)
-        self.assertNotRegex((TEMPLATES / "reader_evaluation_TEMPLATE.csv").read_text(), r"baseline|windtunnel|variant")
-        run = json.loads((TEMPLATES / "study_run_TEMPLATE.json").read_text())
+        self.assertNotRegex((TEMPLATES / "reader_evaluation_TEMPLATE.csv").read_text(encoding='utf-8'), r"baseline|windtunnel|variant")
+        run = json.loads((TEMPLATES / "study_run_TEMPLATE.json").read_text(encoding='utf-8'))
         self.assertEqual(run["status"], "not_started")
         self.assertIsNone(run["readings_completed"])
         self.assertIsNone(run["paid_model_authorization_ref"])
@@ -87,7 +87,7 @@ class WindtunnelPackageTests(unittest.TestCase):
     def write(self, relative, value):
         path = self.root / relative
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(value)
+        path.write_text(value, encoding='utf-8')
         return path
 
     def test_archive_excludes_private_paths_deleted_sources_and_unlisted_files(self):
@@ -105,7 +105,12 @@ class WindtunnelPackageTests(unittest.TestCase):
         self.write("backend/new_delivery.py", "explicit safe addition")
         self.write(".env.example", "DEEPSEEK_API_KEY=\n")
         self.git("add", ".env.example")
-        self.root.joinpath("backend/link.py").symlink_to(self.root / "requirements.txt")
+        try:
+            self.root.joinpath("backend/link.py").symlink_to(self.root / "requirements.txt")
+        except OSError as error:
+            if getattr(error, 'winerror', None) == 1314:
+                self.skipTest('Windows未启用符号链接权限')
+            raise
         self.git("add", "backend/link.py")
         result = build(self.root / "bundle.zip", root=self.root, extra=["backend/new_delivery.py"])
         with zipfile.ZipFile(result["archive"]) as archive:
@@ -139,8 +144,8 @@ class WindtunnelPackageTests(unittest.TestCase):
                 data = archive.read(PREFIX + "/" + relative)
                 self.assertEqual(hashlib.sha256(data).hexdigest(), expected["sha256"])
                 self.assertEqual(len(data), expected["bytes"])
-        self.assertEqual(json.loads((self.root / "first.zip.manifest.json").read_text()), manifest)
-        self.assertTrue((self.root / "first.zip.sha256").read_text().startswith(first["sha256"]))
+        self.assertEqual(json.loads((self.root / "first.zip.manifest.json").read_text(encoding='utf-8')), manifest)
+        self.assertTrue((self.root / "first.zip.sha256").read_text(encoding='utf-8').startswith(first["sha256"]))
 
     def test_extra_inclusions_cannot_bypass_path_filter(self):
         for path in ("../outside.py", "/tmp/outside.py", "runtime/x.txt", ".env.local", "..\\outside.py"):

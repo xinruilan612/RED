@@ -346,13 +346,14 @@
     "fetch_source_text"
   ],
   "operations_extension": {
-    "version": "0.5",
-    "schema_version": 2,
+    "version": "0.9",
+    "schema_version": 4,
+    "implementation_status": "implemented_local_demo",
     "agents": [
       "analytics"
     ],
     "agent_schema_version": 1,
-    "engine": "deterministic_rules",
+    "engine": "deterministic_rules_plus_explainable_ucb1",
     "windows_hours": {
       "24h": 24,
       "72h": 72,
@@ -364,6 +365,15 @@
       "manual",
       "simulation"
     ],
+    "promotion_policy": {
+      "public_fields_explicit": true,
+      "portfolio_public_confirmation_required": true,
+      "inquiry_attribution": ["explicit", "multi_touch", "unknown"],
+      "manual_and_simulation_separated": true,
+      "missing_feedback_is_not_zero": true,
+      "deterministic_analysis": true,
+      "revenue_or_causal_claims": false
+    },
     "analysis_states": [
       "descriptive",
       "insufficient",
@@ -375,7 +385,16 @@
       "revoked",
       "needs_review"
     ],
-    "account_key": "account_id"
+    "account_key": "account_id",
+    "experiment_policy": {
+      "algorithm": "content-ucb1-v1",
+      "arms": "account_content_pillars",
+      "reward": "weighted_effective_actions_per_1000_views",
+      "weights": {"likes": 1, "saves": 3, "comments": 2, "shares": 3},
+      "human_acceptance_required": true,
+      "metric_correction_invalidates_decision": true,
+      "predicts_virality": false
+    }
   },
   "website_extension": {
     "version": "0.6.0",

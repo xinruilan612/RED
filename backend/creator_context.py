@@ -31,10 +31,11 @@ def enrich(stage, value, context):
             content_angles=[trend['angle']] if trend else ['结合真实场景解释问题', '整理可验证的尝试步骤'],
             limitation='选题卡基于用户线索；没有自动抓取、热度统计或时效核实。')
     if stage == 'strategy':
+        experiment = op.get('experiment')
         active = op.get('active_hypothesis')
         result['content_brief'] = dict(**identity, goal=profile.get('goal') or '先验证内容是否对目标受众有用',
             core_viewpoint=result['angle'], audience=result['reader'],
-            content_type='口播与分镜脚本' if op.get('platform') == 'douyin' else '图文笔记',
+            content_type='口播与分镜脚本' if op.get('format', 'video' if op.get('platform') == 'douyin' else 'image_text') == 'video' else '图文笔记',
             hook_options=result.get('candidate_angles', ['场景问题开头', '具体清单开头']),
             evidence_scope='引用用户素材与检索原文；历史表现与竞品观察不能证明正文事实',
             cta=result.get('cta', '邀请读者分享自己的场景'), banned=profile.get('banned', ''),
@@ -46,12 +47,14 @@ def enrich(stage, value, context):
                 core_viewpoint=active['statement'], cta=active['desired_action'],
                 hypothesis_id=active['id'], primary_metric=active['metric'],
                 limitation='本次创作服务于待验证假设；除非完成真实试验，不视为已证实规律。')
-        memories = op.get('memories', [])
-        experiments = op.get('experiment_memory', [])
-        result['learning_refs'] = [m['id'] for m in memories] + [h['id'] for h in experiments]
-        result['next_experiments'] = [m['text'] for m in memories] + [
-            f"待验证假设：{h['statement']}；结论={h['verdict']}；证据等级={h.get('evidence_grade','exploratory')}，仅供同账号同目标参考。"
-            for h in experiments]
+        experiment_memory = op.get('experiment_memory', [])
+        result['learning_refs'] = ([m['id'] for m in op.get('memories', [])] +
+                                   ([experiment['id']] if experiment else []) +
+                                   [h['id'] for h in experiment_memory])
+        result['next_experiments'] = ([m['text'] for m in op.get('memories', [])] +
+                                      ([experiment['hypothesis']] if experiment else []) +
+                                      [f"待验证假设：{h['statement']}；结论={h['verdict']}；证据等级={h.get('evidence_grade','exploratory')}，仅供同账号同目标参考。"
+                                       for h in experiment_memory])
     if stage == 'review':
         result['account_context'] = identity
         result['ranking_limit'] = '版本比较是内容评价；重要事实问题先阻断，不输出爆款概率。'

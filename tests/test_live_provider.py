@@ -12,7 +12,7 @@ from urllib.error import HTTPError
 from backend.contracts import DomainError
 from backend.provider import Config, DeepSeek, load_config, decode_response, NoRedirect
 from backend.execution import Executor
-from backend.live import schema, normalize, material_records
+from backend.live import schema, normalize, material_records, messages_for
 from backend.demo import validate_brief
 from backend.store import Store
 from backend.web import view
@@ -49,6 +49,26 @@ class LiveTests(unittest.TestCase):
         self.assertEqual(self.run.wait_reason,'final_confirmation')
         return self.run
 
+    def test_quick_workflow_uses_one_generation_and_one_independent_review(self):
+        self.run.context['workflow']='quick'
+        from dataclasses import asdict
+        with self.store.connect() as db:
+            db.execute('UPDATE runs SET payload=? WHERE id=?',(json.dumps(asdict(self.run)),self.run.run_id))
+        self.step()
+        self.assertEqual(self.model.calls,['quick'])
+        self.assertEqual(self.run.current_stage,'reviewer')
+        self.assertEqual([a['stage'] for a in self.run.artifacts],['quick'])
+        self.assertEqual(self.run.branches,{})
+        self.assertEqual(len(self.run.drafts),1)
+        _,inputs=messages_for(self.run,'review')
+        self.assertEqual(inputs['branches'],{})
+        self.assertEqual(inputs['draft'],self.run.drafts[-1]['content'])
+        self.step()
+        self.assertEqual(self.model.calls,['quick','review'])
+        self.assertEqual(self.run.wait_reason,'final_confirmation')
+        self.assertEqual(self.executor.public(self.run)['usage']['model_calls'],2)
+        self.assertEqual(self.executor.public(self.run)['usage']['tokens'],240)
+
     def test_eight_calls_text_flow_edit_reaudit_accept_and_no_secrets(self):
         run=self.until_review();self.assertEqual(len(self.model.calls),8)
         self.assertEqual({n['agent'] for n in run.node_runs},{'audience','research','content','reviewer'})
@@ -81,6 +101,25 @@ class LiveTests(unittest.TestCase):
         self.step();self.assertEqual(len(self.run.drafts),2)
         self.step();self.assertEqual(self.run.wait_reason,'final_confirmation')
         self.assertEqual(self.run.review['previous_issue_results'],[{'issue_id':'i1','result':'resolved'}])
+
+    def test_revision_context_keeps_evidence_and_issues_without_repeating_upstream(self):
+        base=self.model.complete
+        def revise_once(messages):
+            value,tokens=base(messages)
+            if self.model.calls[-1]=='review':
+                value.update(decision='revision_required',next_action='revise',issues=[{
+                    'issue_id':'i1','severity':'major','state':'open','location':'body',
+                    'excerpt':'完整正文','reason':'信息不足','suggestion':'补充具体步骤'}])
+            return value,tokens
+        self.model.complete=revise_once
+        for _ in range(7):self.step()
+        _,data=messages_for(self.run,'revise')
+        self.assertNotIn('upstream',data)
+        self.assertEqual(set(data['branches']),{'audience','research'})
+        self.assertEqual(data['previous_review']['issues'][0]['issue_id'],'i1')
+        self.assertNotIn('checks',data['previous_review'])
+        self.assertEqual(data['draft'],self.run.drafts[-1]['content'])
+        self.assertEqual(data['materials'],material_records(self.run.context))
 
     def test_three_rejected_outputs_fail_without_fourth_generation(self):
         base=self.model.complete
@@ -247,12 +286,12 @@ class LiveTests(unittest.TestCase):
         with self.assertRaises(DomainError):normalize(self.run,'title',value)
 
     def test_config_literal_and_no_secret_public(self):
-        path=Path(self.temp.name)/'.env';path.write_text('# comment\nDEEPSEEK_API_KEY="abc$def"\n')
+        path=Path(self.temp.name)/'.env';path.write_text('# comment\nDEEPSEEK_API_KEY="abc$def"\n', encoding='utf-8')
         cfg=load_config(path,{})
         self.assertEqual(cfg.api_key,'abc$def');self.assertNotIn('abc$def',repr(cfg)+json.dumps(cfg.public()))
         self.assertEqual(load_config(path,{'DEEPSEEK_API_KEY':'override'}).api_key,'override')
         self.assertFalse(load_config(Path(self.temp.name)/'absent',{}).ready)
-        path.write_text('DEEPSEEK_API_KEY=a b')
+        path.write_text('DEEPSEEK_API_KEY=a b', encoding='utf-8')
         with self.assertRaises(DomainError):load_config(path,{})
 
     def test_adapter_no_redirect_no_raw_error_and_json_validation(self):

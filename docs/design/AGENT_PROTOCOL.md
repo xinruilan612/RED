@@ -84,7 +84,7 @@ search_public_sources/fetch_source_text 虽属于 research 能力名单，MVP �
 
 用户已授权实施。创作子流程仍为 audience/research/content/reviewer，五阶段、预算、版本与审核守卫不变；新增 analytics 是发布后独立角色，不加入创作 join，也不能确认稿件。机器配置位于 design_contract.json 的 operations_extension，版本与旧创作 schema 分域。
 
-- Operations schema_version=2：accounts、publications、metrics、preferences、competitors、analyses、memories、plans 按本地 owner 隔离；account_id 稳定，不以昵称作关联键。旧 JSON 在读取时兼容，首次写入持久化；原始稿件与来源保留。
+- Operations schema_version=3：accounts、publications、metrics、preferences、competitors、analyses、memories、plans、experiments 按本地 owner 隔离；account_id 稳定，不以昵称作关联键。旧 JSON 在读取时兼容，首次写入持久化；原始稿件与来源保留。
 - AnalyticsReport schema_version=1：agent_id/agent_version、account_id、publication_id、metric_id、metric_refs、window/elapsed_hours/window_quality、observations、hypotheses、experiment、comparisons、velocity、excluded、flags、limitations、execution；由 backend/analytics.py 的独立规则角色输出。无模型调用，不是已训练预测器。状态 descriptive/insufficient/superseded。
 - 统计只用同账号、同平台、同形式、同投流类型、同来源、同窗口的此前作品，且观测时间不得晚于目标快照。观察时长范围为目标至目标的 125%；至少 3 篇有对应指标的历史才显示中位数。未知不补零；账号新增关注不得冒充单篇归因关注。
 - 分析只在有比较依据时提交候选经验；人工接受后进入下一次任务快照和周计划。指标或作品分类修正使全部依赖分析与经验 superseded，使依赖计划 needs_review；撤销经验同样使计划失效。历史运行快照保留作审计，不原地改写。

@@ -89,11 +89,11 @@ class Handler(BaseHTTPRequestHandler):
     def dispatch(self, write):
         try:
             origin=self.host(); path=urlsplit(self.path).path
-            if not write and path in ('/windtunnel.js','/windtunnel.css'):
-                self.send(200,(FRONTEND/path[1:]).read_bytes(),'text/javascript; charset=utf-8' if path.endswith('.js') else 'text/css; charset=utf-8');return
-            if not write and path in ('/','/app.js','/style.css','/operations.js','/account.js','/auth.js','/knowledge.js','/trials.js','/trials.css'):
-                name={'/':'index.html','/app.js':'app.js','/style.css':'style.css','/operations.js':'operations.js','/account.js':'account.js','/auth.js':'auth.js','/knowledge.js':'knowledge.js','/trials.js':'trials.js','/trials.css':'trials.css'}[path]
-                mime={'/':'text/html; charset=utf-8','/app.js':'text/javascript; charset=utf-8','/style.css':'text/css; charset=utf-8','/operations.js':'text/javascript; charset=utf-8','/account.js':'text/javascript; charset=utf-8','/auth.js':'text/javascript; charset=utf-8','/knowledge.js':'text/javascript; charset=utf-8','/trials.js':'text/javascript; charset=utf-8','/trials.css':'text/css; charset=utf-8'}[path]
+            if not write and path in ('/','/app.js','/style.css','/operations.js','/account.js','/auth.js','/knowledge.js','/promotion.js',
+                                      '/windtunnel.js','/windtunnel.css','/trials.js','/trials.css'):
+                name='index.html' if path=='/' else path[1:]
+                mime=('text/html; charset=utf-8' if path=='/' else
+                      'text/css; charset=utf-8' if path.endswith('.css') else 'text/javascript; charset=utf-8')
                 self.send(200,(FRONTEND/name).read_bytes(),mime); return
             if not write and path=='/api/session':
                 _,csrf,cookie=self.session(True)
@@ -135,14 +135,18 @@ class Handler(BaseHTTPRequestHandler):
             if path=='/api/runs':
                 if write:
                     mode=data.get('mode','simulation')
+                    workflow=data.get('workflow','professional')
                     require(mode in ('simulation','live'),'INVALID_INPUT','运行模式无效')
+                    require(workflow in ('quick','professional'),'INVALID_INPUT','创作路径无效')
                     require(mode!='live' or self.server.config.ready,'KEY_REQUIRED','请先填写 .env 中的 DEEPSEEK_API_KEY 并重启服务')
-                    context=validate_brief({k:v for k,v in data.items() if k not in ('mode','operations')})
+                    context=validate_brief({k:v for k,v in data.items() if k not in ('mode','workflow','operations')})
                     context['mode']=mode
+                    context['workflow']=workflow
                     if 'operations' in data:
                         context['operations']=self.server.operations.context(owner,data['operations'],mode)
                     if mode=='live':context['scenario']='standard'
-                    run=self.server.store.create(owner,str(uuid4()),context)
+                    run=self.server.store.create(owner,str(uuid4()),context,
+                                                 validate=self.server.operations.validate_creation)
                     self.send(201,view(run,self.server.executor))
                 else: self.send(200,[view(r,self.server.executor) for r in self.server.store.list_runs(owner)])
                 return

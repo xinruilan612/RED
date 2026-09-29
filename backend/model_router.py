@@ -7,7 +7,7 @@ from backend.contracts import require, DomainError, CONTRACT, PARAMETERS
 from backend.provider import DeepSeek, RATE
 from backend.workflow import digest
 
-CREATION_STAGES = ('audience','research','strategy','outline','hook','title','body','revise','review')
+CREATION_STAGES = ('audience','research','quick','strategy','outline','hook','title','body','revise','review')
 WINDTUNNEL_STAGES = ('wt_conditions','wt_read','wt_verify','wt_patch')
 STAGES = CREATION_STAGES + WINDTUNNEL_STAGES
 FAMILY = 'SELECT run_id FROM live_lineage WHERE budget_id=?'
@@ -29,9 +29,10 @@ class ModelRouter:
 
     def policy(self, workflow_type='creation'):
         require(workflow_type in ('creation','windtunnel'),'INVALID_INPUT','工作流类型无效')
-        stages = WINDTUNNEL_STAGES if workflow_type=='windtunnel' else CREATION_STAGES
+        stages = WINDTUNNEL_STAGES if workflow_type == 'windtunnel' else CREATION_STAGES
         routes = {s: asdict(self.routes.get(s, Route('fixture' if self.client else 'deepseek', self.config.model))) for s in stages}
-        return {'version':digest(routes), 'routes':routes, 'prompt_version':'windtunnel.v1' if workflow_type=='windtunnel' else CONTRACT['runtime_extension']['prompt_version']}
+        return {'version':digest(routes), 'routes':routes,
+                'prompt_version':'windtunnel.v1' if workflow_type == 'windtunnel' else CONTRACT['runtime_extension']['prompt_version']}
 
     def route(self, policy, stage):
         require(stage in STAGES and stage in policy.get('routes',{}) and policy.get('version') == digest(policy.get('routes')), 'CONFIG_INVALID','模型路由快照无效')

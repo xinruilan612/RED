@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class ContestDocumentationTests(unittest.TestCase):
     def setUp(self):
-        self.document = (ROOT / 'docs/CONTEST_REQUIREMENTS.md').read_text()
+        self.document = (ROOT / 'docs/CONTEST_REQUIREMENTS.md').read_text(encoding='utf-8')
 
     def test_authoritative_sources_present(self):
         for url in (
@@ -37,14 +37,14 @@ class ContestDocumentationTests(unittest.TestCase):
 
     def test_repository_markdown_links_resolve(self):
         for path in (ROOT / 'AGENTS.md', ROOT / 'docs/CONTEST_REQUIREMENTS.md'):
-            for target in re.findall(r'\]\(([^)]+)\)', path.read_text()):
+            for target in re.findall(r'\]\(([^)]+)\)', path.read_text(encoding='utf-8')):
                 if '://' in target or target.startswith('#'):
                     continue
                 with self.subTest(path=path.name, target=target):
                     self.assertTrue((path.parent / target.split('#')[0]).is_file())
 
     def test_agent_entry_points_to_requirements(self):
-        self.assertIn('docs/CONTEST_REQUIREMENTS.md', (ROOT / 'AGENTS.md').read_text())
+        self.assertIn('docs/CONTEST_REQUIREMENTS.md', (ROOT / 'AGENTS.md').read_text(encoding='utf-8'))
 
 
 if __name__ == '__main__':

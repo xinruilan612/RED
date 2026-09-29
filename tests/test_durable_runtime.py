@@ -82,7 +82,7 @@ class DurableTests(unittest.TestCase):
 
     def test_public_material_snapshot_and_audit_survive_live_fixture_graph(self):
         self.action('cancel',{})
-        fixture=json.loads((Path(__file__).parent/'public_materials.json').read_text())['sources'][0]
+        fixture=json.loads((Path(__file__).parent/'public_materials.json').read_text(encoding='utf-8'))['sources'][0]
         account=self.service.operations.read(self.owner)['accounts'][0]['id']
         self.service.knowledge.save(self.owner,dict(account_id=account,title=fixture['title'],text=fixture['text']),source_type='editorial_summary',source_url=fixture['url'],metadata=fixture)
         data=dict(topic='胶囊衣橱',audience='虚构读者',tone='清楚',material='',mode='live',allow_hypothesis=True,
@@ -189,7 +189,9 @@ class DurableTests(unittest.TestCase):
                 with tempfile.TemporaryFile() as output:
                     process=subprocess.Popen([sys.executable,str(root/'tests/runtime_process_fixture.py')],env=env,stdout=output,stderr=output)
                     try:
-                        deadline=time.monotonic()+20
+                        # WSL on a Windows-mounted checkout can need more than 20s
+                        # to import the worker after a forced process crash.
+                        deadline=time.monotonic()+45
                         while not marker.exists() and process.poll() is None and time.monotonic()<deadline:time.sleep(.05)
                         if not marker.exists():
                             output.seek(0);self.fail('worker did not reach crash point: '+output.read().decode())

@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-C = json.loads((ROOT/'docs/design/design_contract.json').read_text())
+C = json.loads((ROOT/'docs/design/design_contract.json').read_text(encoding='utf-8'))
 CARDS = sorted((ROOT/'docs/agents').glob('0[1-4]*.md'))
 
 class AgentContractTests(unittest.TestCase):
@@ -15,12 +15,12 @@ class AgentContractTests(unittest.TestCase):
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         for path, expected in module.outputs().items():
-            self.assertEqual(path.read_text(), expected, str(path))
+            self.assertEqual(path.read_text(encoding='utf-8'), expected, str(path))
 
     def test_role_examples_and_privileges_match_contract(self):
         self.assertEqual(len(CARDS), 4)
         for role, path in zip(C['agents'], CARDS):
-            text = path.read_text()
+            text = path.read_text(encoding='utf-8')
             self.assertIn(f'**Agent ID**：`{role}`', text)
             example = json.loads(re.search(r'```json\n(.*?)\n```', text, re.S).group(1))
             self.assertEqual(example['agent_id'], role)
@@ -42,7 +42,7 @@ class AgentContractTests(unittest.TestCase):
         self.assertEqual(set(policy['blocking_severities']), {'blocker', 'major'})
         self.assertFalse(policy['score_gate'])
         self.assertNotIn('review_threshold', C['parameters'])
-        text = CARDS[3].read_text()
+        text = CARDS[3].read_text(encoding='utf-8')
         example = json.loads(re.search(r'```json\n(.*?)\n```', text, re.S).group(1))
         self.assertCountEqual([x['name'] for x in example['checks']], policy['checks'])
         self.assertEqual(example['decision'], 'revision_required')
@@ -50,7 +50,7 @@ class AgentContractTests(unittest.TestCase):
         self.assertTrue(any(i['severity'] in policy['blocking_severities'] and i['state']=='open' for i in example['issues']))
 
     def test_research_example_does_not_authorize_unsupported_claims(self):
-        example = json.loads(re.search(r'```json\n(.*?)\n```', CARDS[1].read_text(), re.S).group(1))
+        example = json.loads(re.search(r'```json\n(.*?)\n```', CARDS[1].read_text(encoding='utf-8'), re.S).group(1))
         for claim in example['claims']:
             if claim['support_status'] in ('unverified', 'contradicted'):
                 self.assertFalse(claim['usable'])
@@ -58,7 +58,7 @@ class AgentContractTests(unittest.TestCase):
                 self.assertIn(claim['claim_id'], example['prohibited_claims'])
 
     def test_content_example_has_full_public_text_surface(self):
-        text = CARDS[2].read_text()
+        text = CARDS[2].read_text(encoding='utf-8')
         ex = json.loads(re.search(r'```json\n(.*?)\n```', text, re.S).group(1))
         self.assertGreaterEqual(len(ex['title_candidates']), C['parameters']['title_candidate_min'])
         self.assertIn(ex['selected_title'], ex['title_candidates'])
@@ -95,8 +95,12 @@ class OperationsContractTests(unittest.TestCase):
         from backend.analytics import AnalyticsAgent, WINDOW_HOURS
         extension=C['operations_extension']
         self.assertEqual(extension['agents'],[AnalyticsAgent.agent_id])
-        self.assertEqual(extension['schema_version'],2)
+        self.assertEqual(extension['schema_version'],4)
+        self.assertTrue(extension['promotion_policy']['public_fields_explicit'])
+        self.assertTrue(extension['promotion_policy']['manual_and_simulation_separated'])
+        self.assertEqual(extension['promotion_policy']['inquiry_attribution'],['explicit','multi_touch','unknown'])
         self.assertEqual(extension['windows_hours'],WINDOW_HOURS)
-        self.assertEqual(extension['engine'],'deterministic_rules')
+        self.assertEqual(extension['engine'],'deterministic_rules_plus_explainable_ucb1')
+        self.assertFalse(extension['experiment_policy']['predicts_virality'])
         self.assertNotIn('analytics',C['join_requires'])
         self.assertEqual(extension['account_key'],'account_id')

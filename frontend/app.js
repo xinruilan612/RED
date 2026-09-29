@@ -2,11 +2,11 @@
 const $=id=>document.getElementById(id);
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const names={audience:'受众与竞品洞察',research:'热点与证据研究',content:'内容策划创作',reviewer:'主编审核',human:'人工处理 / 确认'};
-const stages={analysis:'分析',audience:'受众分析',research:'素材分析',strategy:'策略',outline:'提纲',hook:'开头',title:'标题',body:'正文',revise:'按意见改稿',review:'审核'};
+const stages={analysis:'分析',audience:'受众分析',research:'素材分析',quick:'极速初稿',strategy:'策略',outline:'提纲',hook:'开头',title:'标题',body:'正文',revise:'按意见改稿',review:'审核'};
 const states={QUEUED:'准备开始',RUNNING:'可以继续执行',WAITING_USER:'等待你的决定',SUCCEEDED:'已确认完成',CANCELLED:'已取消',FAILED:'执行失败',RETRY_WAIT:'等待重试',EXPIRED:'已过期'};
 const checks={brief_fit:'符合需求',audience_fit:'受众相关',usefulness_and_readability:'实用与易读',title_body_alignment:'标题与正文一致',evidence_integrity:'证据完整',experience_authenticity:'经历真实',originality_risk:'原创风险',privacy_and_policy:'隐私与规则'};
 let provider=null,polling=false;
-let csrf='',run=null,selected='audience',busy=false,auto=false,editing=false,viewVersion=null,detailStage=null,toastTimer,chosenHypothesis=null;
+let csrf='',run=null,selected='audience',busy=false,auto=false,editing=false,viewVersion=null,detailStage=null,toastTimer;
 async function api(path,method='GET',body){
  const r=await fetch(path,{method,headers:method==='POST'?{'Content-Type':'application/json','X-CSRF-Token':csrf}:{},body:body===undefined?undefined:JSON.stringify(body)});
  const data=await r.json(); if(!r.ok)throw new Error(data.error?.message||'请求失败');return data;
@@ -17,15 +17,18 @@ function toast(text){$('toast').textContent=text;$('toast').hidden=false;clearTi
 function json(value){return '<pre class="json">'+esc(JSON.stringify(value,null,2))+'</pre>';}
 function dirtyGuard(){return !editing||window.confirm('有尚未保存的编辑，确定放弃吗？');}
 async function history(){
- const rows=(await api('/api/runs')).filter(r=>r.workflow_type!=='windtunnel'&&(typeof matchesAccount!=='function'||matchesAccount(r)));
+ const rows=(await api('/api/runs')).filter(r=>typeof matchesAccount!=='function'||matchesAccount(r));
  $('history').innerHTML=rows.length?rows.map(r=>`<button data-run="${esc(r.run_id)}" class="${run?.run_id===r.run_id?'selected':''}">${esc(r.context.topic||'旧任务')}<small>${esc(states[r.run_status])} · ${r.drafts.length} 个版本</small></button>`).join(''):'<p class="helper">还没有创作记录</p>';
  return rows;
 }
-function currentAgent(){if(!run)return 'audience';if(run.run_status==='WAITING_USER'||run.run_status==='SUCCEEDED')return 'human';if(run.current_stage==='brief')return 'audience';return run.current_stage;}
+function currentAgent(){if(!run)return 'audience';if(run.run_status==='WAITING_USER'||run.run_status==='SUCCEEDED')return 'human';if(run.current_stage==='brief')return run.context.workflow==='quick'?'content':'audience';return run.current_stage;}
 function renderMode(mode){
  const live=mode==='live';
+ const workflow=$('workbench')?.hidden?$('workflow')?.value:run?.context?.workflow;
+ const quick=workflow==='quick';
  $('modeBadge').textContent=live?'真实 AI · DeepSeek':'模拟运行';
- $('modeNotice').textContent=live?'四个角色调用 DeepSeek；每次输出与用量可查看。可结合账号资料与已读取来源；事实仍需核查，最终由你确认。':'这是免费模拟流程，使用固定模板和本地规则，没有调用真实 AI。';
+ $('studioRouteSummary').textContent=quick?'极速生成与独立审核 · 发布后由分析角色复盘':'四个创作角色协作 · 发布后由分析角色复盘';
+ $('modeNotice').textContent=live?(quick?'内容生成与独立审核各调用一次 DeepSeek；用量可查看，事实仍需核查，最终由你确认。':'四个角色调用 DeepSeek；每次输出与用量可查看。可结合账号资料与已读取来源；事实仍需核查，最终由你确认。'):'这是免费模拟流程，使用固定模板和本地规则，没有调用真实 AI。';
  $('detailMode').textContent=live?'真实 AI 产物':'模拟产物';
 }
 function render(){
@@ -34,9 +37,9 @@ function render(){
  $('modelCalls').textContent=(run.usage?.model_calls||0)+' 次';
  $('modelCost').textContent=run.mode==='live'?'≤ $'+Number(run.usage.cost_upper_estimate_usd||0).toFixed(4)+' 估算':'¥0.00（模拟）';
  if(run.run_status==='FAILED'){const last=run.events.filter(e=>e.type==='agent.failed').at(-1);error(new Error(last?.payload.message||'执行失败，请查看运行记录'));}
- $('welcome').hidden=true;$('workbench').hidden=false;
+ document.querySelector('.entry-paths').hidden=true;$('welcome').hidden=true;$('workbench').hidden=false;
  $('runTitle').textContent=run.context.topic;
- $('runSummary').textContent=`${run.context.operations?.platform==='douyin'?'抖音 · 口播脚本':'小红书 · 图文笔记'} · 写给 ${run.context.audience} · ${run.context.tone} · ${run.snapshot_id.slice(0,8)} 输入快照`;
+ $('runSummary').textContent=`${run.context.operations?.platform==='douyin'?'抖音':'小红书'} · ${(run.context.operations?.format||(run.context.operations?.platform==='douyin'?'video':'image_text'))==='video'?'视频脚本（非成片）':'图文笔记'} · 写给 ${run.context.audience} · ${run.context.tone} · ${run.snapshot_id.slice(0,8)} 输入快照`;
  const background=run.background;
  const jobLabels={queued:background?.worker_online?'已排队，后台即将执行':'已排队，等待 Worker 启动',running:'后台执行中 · 关闭页面后继续',pausing:'正在暂停，等待当前节点保存',paused:'后台已暂停',blocked:'后台等待处理',waiting:'等待你的审核'};
  $('statusLabel').textContent=jobLabels[background?.status]|| (run.in_flight?'AI 正在处理，请稍候':states[run.run_status]);
@@ -54,8 +57,10 @@ function render(){
  const label=human?'◈ 等你处理':isCurrent?'◉ 当前步骤':done?'✓ 已有产物':'○ 尚未执行';
  return `<button class="node ${isCurrent?'current':''} ${done?'done':''} ${human?'human':''} ${selected===key?'selected':''}" data-agent="${key}" aria-pressed="${selected===key}"><span class="node-top"><span>${key==='human'?'由你决定':'AGENT '+num}</span><span>${label}</span></span><b>${names[key]}</b><small>${sub}</small></button>`;
  };
- const contentStages=['strategy','outline','hook','title','body'].map(s=>`<button class="stage-chip ${run.artifacts.some(a=>a.stage===s)?'done':''}" data-stage="${s}">${stages[s]}</button>`).join('');
- $('flow').innerHTML=`<div class="parallel">${node('audience','01','理解读者 · 明确假设')}${node('research','02','收录素材 · 标记缺口')}</div><div class="connector">同一份需求 · 并行分析<span>↓ 汇合 ↓</span></div>${node('content','03','策略与写作 · 同一角色负责返修')}<div class="stages">${contentStages}</div><div class="connector"><span>↓</span></div>${node('reviewer','04','问题定位 · 修改建议 · 再次审核')}<div class="connector">不通过 ↺ 回到创作 / 通过 ↓</div>${node('human','YOU','补资料 / 改稿 / 比较版本 / 最后确认')}`;
+ const quick=run.context.workflow==='quick';
+ const contentStages=(quick?['quick']:['strategy','outline','hook','title','body']).map(s=>`<button class="stage-chip ${run.artifacts.some(a=>a.stage===s)?'done':''}" data-stage="${s}">${stages[s]}</button>`).join('');
+ const professionalStart=`<div class="parallel">${node('audience','01','理解读者 · 明确假设')}${node('research','02','收录素材 · 标记缺口')}</div><div class="connector">同一份需求 · 并行分析<span>↓ 汇合 ↓</span></div>`;
+ $('flow').innerHTML=(quick?'':professionalStart)+node('content',quick?'01':'03',quick?'一次完成可读初稿':'策略与写作 · 同一角色负责返修')+`<div class="stages">${contentStages}</div><div class="connector"><span>↓</span></div>${node('reviewer',quick?'02':'04','独立检查 · 问题定位 · 再次审核')}<div class="connector">不通过 ↺ 回到创作 / 通过 ↓</div>${node('human','YOU','改稿 / 比较版本 / 最后确认')}`;
  renderDetails();renderHuman();renderDraft();renderTimeline();renderCalls();
  document.querySelectorAll('#workbench button').forEach(b=>{if(!b.closest('#flow')&&b.id!=='auto')b.disabled=busy||(b.dataset.titleChoice!==undefined&&run.artifacts.find(a=>a.stage==='title')?.value.candidates[Number(b.dataset.titleChoice)]===run.drafts.at(-1)?.content.selected_title);});
  $('cancel').disabled=busy&&!run.in_flight;
@@ -156,10 +161,10 @@ async function autoRun(){
  auto=false;render();
 }
 $('briefForm').addEventListener('submit',async e=>{e.preventDefault();if(busy)return;busy=true;clearError();e.submitter.disabled=true;
- try{run=await api('/api/runs','POST',{...(websiteSession?.auth_required?{knowledge:{enabled:$('useKnowledge').checked}}:{}),mode:$('mode').value,topic:$('topic').value,audience:$('audience').value,tone:$('tone').value,material:$('material').value,scenario:$('scenario').value,allow_hypothesis:$('hypothesis').checked,operations:{platform:$('targetPlatform').value,account_id:currentAccount()?.id,account:$('accountName').value,trend_id:chosenTrend?.id||null,hypothesis_id:chosenHypothesis?.id||null}});chosenHypothesis=null;selected='audience';detailStage=null;viewVersion=null;editing=false;$('editor').hidden=true;render();await history();}
+ try{run=await api('/api/runs','POST',{...(websiteSession?.auth_required?{knowledge:{enabled:$('useKnowledge').checked}}:{}),mode:$('mode').value,workflow:$('workflow').value,topic:$('topic').value,audience:$('audience').value,tone:$('tone').value,material:$('material').value,scenario:$('scenario').value,allow_hypothesis:$('hypothesis').checked,operations:{platform:$('targetPlatform').value,account_id:currentAccount()?.id,account:$('accountName').value,trend_id:chosenTrend?.id||null,hypothesis_id:chosenHypothesis?.id||null,...experimentCreationFields(),promotion_brief_id:chosenPromotion?.id||null}});chosenHypothesis=null;selected=currentAgent();detailStage=null;viewVersion=null;editing=false;$('editor').hidden=true;render();await history();}
  catch(err){error(err);}finally{busy=false;e.submitter.disabled=false;if(run&&!$('workbench').hidden)render();}});
 $('history').addEventListener('click',async e=>{const b=e.target.closest('[data-run]');if(!b||busy||!dirtyGuard())return;auto=false;editing=false;$('editor').hidden=true;clearError();showPage('studio');try{run=await api('/api/runs/'+b.dataset.run);viewVersion=null;detailStage=null;selected=currentAgent();render();await history();}catch(err){error(err);}});
-$('newRun').onclick=()=>{if(busy||!dirtyGuard())return;showPage('studio');auto=false;editing=false;$('editor').hidden=true;$('workbench').hidden=true;$('welcome').hidden=false;renderMode($('mode').value);fillAccountBrief();clearError();};
+$('newRun').onclick=()=>{if(busy||!dirtyGuard())return;if(chosenExperiment){chosenExperiment=null;$('selectedTrend').hidden=true;$('clearTrend').hidden=true;}showPage('studio');auto=false;editing=false;$('editor').hidden=true;$('workbench').hidden=true;document.querySelector('.entry-paths').hidden=false;$('welcome').hidden=false;renderMode($('mode').value);fillAccountBrief();clearError();};
 $('flow').onclick=e=>{const chip=e.target.closest('[data-stage]');const b=e.target.closest('[data-agent]');if(chip){selected='content';detailStage=chip.dataset.stage;render();}else if(b){selected=b.dataset.agent;detailStage=null;render();}};
 $('recover').onclick=()=>act('recover');
 $('next').onclick=()=>act('next');$('auto').onclick=autoRun;
@@ -184,9 +189,10 @@ window.addEventListener('beforeunload',e=>{if(editing){e.preventDefault();e.retu
 document.addEventListener('DOMContentLoaded',async()=>{try{const session=await api('/api/session');csrf=session.csrf;if(session.auth_required&&!session.user){showLogin(session);return;}showWebsiteUser(session);provider=session.provider;$('configMessage').textContent=provider.message+' · 同一步最多3次（含首次）；接口错误立即停；整单最多16次 / 40000 Token';$('liveOption').disabled=!provider.ready;$('liveOption').textContent=provider.ready?'真实 AI · DeepSeek（消耗接口额度）':'真实 AI · DeepSeek（先填写 .env）';$('connectionStatus').textContent='DeepSeek：'+(provider.ready?'已配置':'未配置');$('mode').value='simulation';$('scenario').disabled=$('mode').value==='live';renderMode($('mode').value);const rows=await history();if(rows.length){run=rows[0];selected=currentAgent();render();await history();}await initOperations();}catch(e){error(e);}});
 
 $('mode').onchange=()=>{renderMode($('mode').value);$('scenario').disabled=$('mode').value==='live';};
+$('workflow').onchange=()=>renderMode($('mode').value);
 setInterval(async()=>{
  if(!run?.in_flight||polling)return;
  polling=true;
- try{const latest=await api('/api/runs/'+run.run_id);if(run?.run_id===latest.run_id){const changed=run.status_version!==latest.status_version;run=latest;render();if(changed)await history();}}
+ try{const latest=await api('/api/runs/'+run.run_id);if(run?.run_id===latest.run_id){const changed=run.status_version!==latest.status_version;run=latest;if(changed)clearError();render();if(changed)await history();}}
  catch(_){}finally{polling=false;}
 },1500);

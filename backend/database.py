@@ -63,7 +63,9 @@ def project_operations(db, owner, state):
     for a in state['accounts']:
         db.execute('INSERT INTO social_accounts(owner,id,platform,name,revision,payload) VALUES(?,?,?,?,?,?) ON CONFLICT(owner,id) DO UPDATE SET name=excluded.name,revision=excluded.revision,payload=excluded.payload',
                    (owner,a['id'],a['platform'],a['name'],a['revision'],json.dumps(a,ensure_ascii=False)))
-    for kind in ('publications','metrics','memories','preferences','analyses','plans','competitors','signals','hypotheses'):
+    for kind in ('publications','metrics','memories','preferences','analyses','plans','competitors','experiments',
+                 'services','portfolio_items','promotion_briefs','inquiries','promotion_analyses',
+                 'signals','hypotheses'):
         for r in state.get(kind, []):
             identity = r.get('account_id')
             if identity:

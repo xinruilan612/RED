@@ -2,7 +2,7 @@
 import json
 from pathlib import Path
 
-CONTRACT = json.loads((Path(__file__).resolve().parents[1] / 'docs/design/design_contract.json').read_text())
+CONTRACT = json.loads((Path(__file__).resolve().parents[1] / 'docs/design/design_contract.json').read_text(encoding='utf-8'))
 PARAMETERS = CONTRACT['parameters']
 
 

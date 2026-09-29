@@ -56,13 +56,25 @@ class Service:
             return self.view(self.windtunnel.create(owner,{k:v for k,v in data.items() if k!='workflow_type'},policy))
         data={k:v for k,v in data.items() if k!='workflow_type'}
         mode = data.get('mode','simulation')
+        workflow = data.get('workflow','professional')
         require(mode in ('simulation','live'), 'INVALID_INPUT', '运行模式无效')
+        require(workflow in ('quick','professional'), 'INVALID_INPUT', '创作路径无效')
         require(mode!='live' or self.config.ready, 'KEY_REQUIRED', '请在服务器配置 DeepSeek Key')
-        context = validate_brief({k:v for k,v in data.items() if k not in ('mode','operations','knowledge')})
+        context = validate_brief({k:v for k,v in data.items() if k not in ('mode','workflow','operations','knowledge')})
         context['mode'] = mode
+        context['workflow'] = workflow
         context['model_policy'] = self.executor.router.policy()
         if 'operations' in data:
             context['operations'] = self.operations.context(owner,data['operations'],mode)
+            promotion = context['operations'].get('promotion')
+            if promotion:
+                extra = ('推广简报（仅含用户允许公开的信息）：\n' + promotion['material'] +
+                         '\n客户问题：' + promotion['customer_problem'] +
+                         '\n问题依据：' + promotion['problem_source_label'] +
+                         ('\n缺失材料：' + '；'.join(promotion['missing']) if promotion['missing'] else ''))
+                merged = (context['material'] + '\n\n' + extra).strip()
+                require(len(merged) <= 8000, 'INVALID_INPUT', '推广资料与补充素材合计不能超过 8000 字')
+                context['material'] = merged
         selection=data.get('knowledge',{'enabled':False})
         require(isinstance(selection,dict) and set(selection)=={'enabled'} and type(selection['enabled']) is bool,'INVALID_INPUT','资料检索设置无效')
         if selection['enabled']:
@@ -72,7 +84,7 @@ class Service:
             context['retrieval']=result
             context['evidence']=result['sources']
         if mode=='live': context['scenario']='standard'
-        return self.view(self.store.create(owner,str(uuid4()),context))
+        return self.view(self.store.create(owner,str(uuid4()),context, validate=self.operations.validate_creation))
 
     def action(self, owner, run_id, data):
         existing=self.store.get(run_id,owner)

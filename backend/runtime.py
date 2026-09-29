@@ -62,7 +62,7 @@ class Runtime:
             if run.run_status=='QUEUED':
                 run.start();self.write(db,run)
             if run.run_status=='WAITING_USER':nxt='human'
-            elif run.current_stage=='brief':nxt='brief'
+            elif run.current_stage=='brief':nxt='quick' if run.context.get('workflow')=='quick' else 'brief'
             elif run.current_stage=='reviewer':nxt='review'
             else:
                 nxt='revise' if run.review and run.review['decision']=='revision_required' else next(s for s in CONTRACT['content_stages'] if s not in {a['stage'] for a in run.artifacts})
@@ -115,6 +115,8 @@ class Runtime:
             if stage in ('audience','research'):
                 output=getattr(demo,stage)(run.context)
                 log=demo.node(agent,stage,run.context,lambda:output)
+            elif stage=='quick':
+                output=demo.quick(run);log=demo.node(agent,stage,run.context,lambda:output)
             else:
                 simulated=copy.deepcopy(run);demo.advance(simulated)
                 log=simulated.node_runs[-1];output=log['output']
@@ -124,13 +126,17 @@ class Runtime:
             current=self.jobs.guard(db,self.job,committing=True)
             if db.execute('SELECT 1 FROM runtime_nodes WHERE run_id=? AND node_key=?',(run.run_id,key)).fetchone():return {}
             require(current.snapshot_id==run.snapshot_id,'VERSION_CONFLICT','节点输入已失效')
-            expected='brief' if stage in ('audience','research') else 'reviewer' if stage=='review' else 'content'
+            expected='brief' if stage in ('audience','research','quick') else 'reviewer' if stage=='review' else 'content'
             require(current.run_status=='RUNNING' and current.current_stage==expected,'VERSION_CONFLICT','节点已过期')
             if stage in ('review','revise'):
                 require(current.drafts[-1]['ref']==state['draft'],'VERSION_CONFLICT','稿件已变化，拒绝旧结果')
             current.node_runs.append(log)
             current.event('agent.completed',agent=agent,stage=stage,mode=log['mode'],node_ref=log['id'])
             if stage in ('audience','research'):current.branch(stage,current.snapshot_id,'succeeded',output)
+            elif stage=='quick':
+                current.current_stage='content'
+                current.artifacts.append({'stage':'quick','value':output,'snapshot_id':current.snapshot_id})
+                current.event('artifact.created',stage='quick',mode=log['mode']);current.draft(output)
             elif stage=='review':
                 gates=live.review_gates(current,output) if log['mode']=='live' else {k:True for k in CONTRACT['review_policy']['required_gates']}
                 current.reviewed(output,gates,fail_on_limit=log['mode']=='live')
@@ -149,14 +155,14 @@ class Runtime:
         graph.add_node('dispatch',self.dispatch)
         graph.add_node('human',self.human)
         graph.add_node('join',self.join)
-        for stage in ('audience','research','strategy','outline','hook','title','body','revise','review'):
+        for stage in ('audience','research','quick','strategy','outline','hook','title','body','revise','review'):
             graph.add_node(stage,lambda state,s=stage:self.node(s,state))
         def route(state):
             return ['audience','research'] if state['next']=='brief' else END if state['next']=='end' else state['next']
         graph.add_edge(START,'dispatch')
         graph.add_conditional_edges('dispatch',route)
         graph.add_edge(['audience','research'],'join')
-        for stage in ('join','human','strategy','outline','hook','title','body','revise','review'):graph.add_edge(stage,'dispatch')
+        for stage in ('join','human','quick','strategy','outline','hook','title','body','revise','review'):graph.add_edge(stage,'dispatch')
         return graph.compile(checkpointer=saver)
 
     def execute(self):
