@@ -28,7 +28,11 @@ class SubmissionDocumentsTests(unittest.TestCase):
                 # must keep the old product source unchanged. Snapshots were read
                 # from verification.json's product_commit and retain its hashes.
                 archived = DOCS / 'evidence/baseline-source' / (relative + '.snapshot')
-                self.assertEqual(hashlib.sha256(archived.read_bytes()).hexdigest(), expected)
+                # Git may materialize tracked text as CRLF on Windows and LF on
+                # Unix.  Hash canonical UTF-8/LF content so the evidence means
+                # the same thing on every supported platform.
+                canonical = archived.read_text(encoding='utf-8').replace('\r\n', '\n').replace('\r', '\n')
+                self.assertEqual(hashlib.sha256(canonical.encode('utf-8')).hexdigest(), expected)
 
     def test_required_sections_and_implementation_limits(self):
         proposal = (DOCS / '01_技术方案.md').read_text(encoding='utf-8')
