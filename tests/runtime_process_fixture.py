@@ -15,7 +15,7 @@ def main():
         if point==os.environ.get('FIXTURE_POINT') and stage==os.environ.get('FIXTURE_STAGE'):
             Path(os.environ['FIXTURE_MARKER']).write_text('ready', encoding='utf-8')
             threading.Event().wait(30)
-    Worker(service,lease=1,fault=fault).once()
+    Worker(service,lease=float(os.environ.get('FIXTURE_LEASE', '1')),fault=fault).once()
 
 
 if __name__=='__main__':main()

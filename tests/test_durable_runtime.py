@@ -202,7 +202,11 @@ class DurableTests(unittest.TestCase):
                 time.sleep(1.1)
                 with self.store.connect() as db:
                     self.assertEqual(db.execute('SELECT COUNT(*) FROM live_calls WHERE run_id=?',(self.run_id,)).fetchone()[0],3)
-                clean={**env,'FIXTURE_POINT':'none'}
+                # The crash lease is deliberately one second so takeover is
+                # quick.  Recovery itself uses a realistic lease: slow Windows
+                # CI filesystems can hold SQLite's writer lock for over a second,
+                # temporarily preventing the heartbeat thread from renewing.
+                clean={**env,'FIXTURE_POINT':'none','FIXTURE_LEASE':'30'}
                 result=subprocess.run([sys.executable,str(root/'tests/runtime_process_fixture.py')],env=clean,capture_output=True,timeout=30)
                 self.assertEqual(result.returncode,0,result.stderr.decode())
                 self.assertEqual(self.run_value().wait_reason,'final_confirmation',self.job())
