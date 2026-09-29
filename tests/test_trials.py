@@ -10,6 +10,7 @@ from backend.contracts import DomainError
 from backend.operations import Operations, now
 from backend.store import Store
 from backend.workflow import Run
+from backend.trials import _wilson_interval
 
 
 class ContentTrialTests(unittest.TestCase):
@@ -98,6 +99,9 @@ class ContentTrialTests(unittest.TestCase):
         h = self.ops.read(self.owner)['hypotheses'][0]
         self.assertEqual(h['validations']['windtunnel']['evidence_class'], 'simulation')
         self.assertEqual(h['validations']['small_race']['causal_claim'], 'not_established')
+        self.assertFalse(h['validations']['small_race']['sample_sufficient'])
+        self.assertFalse(h['validations']['small_race']['support_eligible'])
+        self.assertIn('观察性分配', h['validations']['small_race']['uncertainty_note'])
         with self.assertRaises(DomainError):
             self.command('decide_hypothesis', dict(hypothesis_id=self.hyp['id'], verdict='supported', notes=''))
         simulated_publications = []
@@ -118,6 +122,46 @@ class ContentTrialTests(unittest.TestCase):
             self.command('record_trial', dict(hypothesis_id=self.hyp['id'],level='live_attribution',payload={
                 'items':[dict(publication_id=p,metric_id=m) for p,m in simulated_publications],
                 'evidence_method':'manual_entry','source_note':'模拟数据','observed_at':now()}))
+
+    def test_randomized_race_exposes_uncertainty_and_support_gate(self):
+        wind = self.make_run('wind-ref', workflow='windtunnel', hypothesis_id=self.hyp['id'])
+        self.command('record_trial', dict(hypothesis_id=self.hyp['id'], level='windtunnel',
+            payload={'run_id':wind.run_id,'notes':'预演'}))
+        a = self.make_run('draft-a', hypothesis_id=self.hyp['id'])
+        b = self.make_run('draft-b', hypothesis_id=self.hyp['id'])
+        state = self.command('record_trial', dict(hypothesis_id=self.hyp['id'], level='small_race', payload=dict(
+            allocation='randomized', unit='link_clicks', window='24h', observed_at=now(), notes='同一读者池随机分流',
+            arms=[dict(label='A',run_id=a.run_id,draft_ref='draft-a',denominator=100,outcomes=10),
+                  dict(label='B',run_id=b.run_id,draft_ref='draft-b',denominator=100,outcomes=30)])))
+        race = state['hypotheses'][0]['validations']['small_race']
+        self.assertTrue(race['sample_sufficient'])
+        self.assertTrue(race['interval_separated'])
+        self.assertTrue(race['support_eligible'])
+        self.assertEqual(race['minimum_sample_per_arm'], 30)
+        self.assertEqual(len(race['arms'][0]['rate_interval_95']), 2)
+
+    def test_observational_race_cannot_be_decided_as_supported_even_with_lift(self):
+        self.record_wind_and_race()
+        with self.store.connect() as db:
+            row = db.execute('SELECT payload FROM operations WHERE owner=?', (self.owner,)).fetchone()
+            state = json.loads(row[0])
+            hypothesis = state['hypotheses'][0]
+            self.assertTrue(hypothesis['validations']['small_race']['meets_minimum_lift'])
+            hypothesis['validations']['live_attribution'] = {'meets_minimum_lift': True}
+            hypothesis['status'] = 'awaiting_review'
+            db.execute('UPDATE operations SET payload=? WHERE owner=?',
+                       (json.dumps(state, ensure_ascii=False), self.owner))
+        with self.assertRaises(DomainError) as caught:
+            self.command('decide_hypothesis', dict(hypothesis_id=self.hyp['id'], verdict='supported', notes=''))
+        self.assertIn('随机分流', str(caught.exception))
+
+    def test_wilson_interval_is_bounded_for_zero_and_all_successes(self):
+        zero = _wilson_interval(0, 10)
+        all_success = _wilson_interval(10, 10)
+        self.assertEqual(zero[0], 0.0)
+        self.assertGreater(zero[1], 0.0)
+        self.assertLess(all_success[0], 1.0)
+        self.assertEqual(all_success[1], 1.0)
 
     def test_live_stage_requires_every_race_version_and_correction_invalidates_learning(self):
         runs = self.record_wind_and_race()

@@ -13,6 +13,7 @@ OBJECTIVE_METRICS = {
 }
 OBJECTIVE_DENOMINATORS = {'sales': 'link_clicks', 'audience_growth': 'impressions', 'lead_acquisition': 'link_clicks'}
 LEVELS = ('windtunnel', 'small_race', 'live_attribution')
+MIN_DECISION_SAMPLE_PER_ARM = 30
 
 
 def _account(state, identity):
@@ -109,6 +110,8 @@ def apply(operations, db, owner, state, action, data):
         if data['verdict'] == 'supported':
             require(all(hypothesis['validations'][level].get('meets_minimum_lift') is True for level in ('small_race', 'live_attribution')),
                     'INVALID_TRANSITION', 'A/B 两阶段都未达到预设提升门槛，不能裁决为支持')
+            require(hypothesis['validations']['small_race'].get('support_eligible') is True,
+                    'INVALID_TRANSITION', '只有随机分流、每组样本充分且 95% 区间方向一致的赛马，才可暂时支持假设')
         notes = validate_text(data['notes'], '裁决依据', 1000, True)
         hypothesis.update(verdict=data['verdict'], verdict_notes=notes, status='reviewed',
             ledger_status='proposed', reviewed_at=now(), evidence_grade='exploratory',
@@ -182,18 +185,26 @@ def _record_race(operations, db, owner, hypothesis, payload, now, timestamp):
         normalized.append(dict(label=label, run_id=run.run_id, draft_ref=ref,
             content_hash=next(d['content_hash'] for d in run.drafts if d['ref'] == ref),
             content_mode=run.context.get('mode', 'unknown'), denominator=denominator,
-            outcomes=outcomes, rate=round(outcomes/denominator, 6)))
+            outcomes=outcomes, rate=round(outcomes/denominator, 6),
+            rate_interval_95=_wilson_interval(outcomes, denominator)))
     require({arm['label'] for arm in normalized} == {'A', 'B'}, 'INVALID_INPUT', '必须明确标记 A 基线与 B 变体')
     require(len({arm['content_mode'] for arm in normalized}) == 1, 'INVALID_INPUT', '同一场赛马不能混用模拟稿和真实模型稿')
     observed = timestamp(payload['observed_at'])
     notes = validate_text(payload['notes'], '试验备注', 800, True)
     control, variant = next(a for a in normalized if a['label']=='A'), next(a for a in normalized if a['label']=='B')
     lift = _relative_lift(control['rate'], variant['rate'])
+    sample_sufficient = all(arm['denominator'] >= MIN_DECISION_SAMPLE_PER_ARM for arm in normalized)
+    interval_separated = variant['rate_interval_95'][0] > control['rate_interval_95'][1]
+    meets_lift = lift is not None and lift >= hypothesis['minimum_lift_pct']
+    support_eligible = allocation == 'randomized' and sample_sufficient and interval_separated and meets_lift
     return dict(allocation=allocation, unit=unit, arms=normalized, window=payload['window'], observed_at=observed, notes=notes,
         evidence_class='exploratory_randomized' if allocation == 'randomized' else 'observational',
         causal_claim='not_established', variant_lift_pct=lift,
-        meets_minimum_lift=lift is not None and lift >= hypothesis['minimum_lift_pct'],
-        interpretation='B 相对 A 的原始比例差异；未进行统计检验，不代表效果确定。')
+        meets_minimum_lift=meets_lift, sample_sufficient=sample_sufficient,
+        minimum_sample_per_arm=MIN_DECISION_SAMPLE_PER_ARM, interval_separated=interval_separated,
+        support_eligible=support_eligible,
+        uncertainty_note=_uncertainty_note(allocation, sample_sufficient, interval_separated),
+        interpretation='B 相对 A 的原始比例差异并显示 Wilson 95% 区间；这是探索性质量门禁，不是正式功效分析或因果证明。')
 
 
 def _record_attribution(operations, db, owner, state, hypothesis, payload, now, timestamp):
@@ -246,3 +257,24 @@ def _relative_lift(control_rate, variant_rate):
     if control_rate <= 0:
         return None
     return round((variant_rate / control_rate - 1) * 100, 2)
+
+
+def _wilson_interval(outcomes, denominator, z=1.959963984540054):
+    """Return a bounded 95% Wilson score interval for a binomial proportion."""
+    rate = outcomes / denominator
+    z2 = z * z
+    scale = 1 + z2 / denominator
+    center = (rate + z2 / (2 * denominator)) / scale
+    radius = z * ((rate * (1 - rate) / denominator + z2 / (4 * denominator * denominator)) ** 0.5) / scale
+    return [round(max(0.0, center - radius), 6), round(min(1.0, center + radius), 6)]
+
+
+def _uncertainty_note(allocation, sample_sufficient, interval_separated):
+    reasons = []
+    if allocation != 'randomized':
+        reasons.append('观察性分配不能排除人群与时段差异')
+    if not sample_sufficient:
+        reasons.append(f'每组至少需要 {MIN_DECISION_SAMPLE_PER_ARM} 个分母样本才能进入暂时支持判定')
+    if not interval_separated:
+        reasons.append('A/B 的 95% 比例区间仍重叠')
+    return '；'.join(reasons) if reasons else '随机分流、最低样本和区间方向门禁已满足；仍需结合实盘与人工复核。'
