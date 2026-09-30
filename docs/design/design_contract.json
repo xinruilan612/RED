@@ -457,5 +457,14 @@
     "marks_ai_approved": false,
     "manual_edit_after_revision_limit": true,
     "publication_requires_separate_approval": true
+  },
+  "published_archive_extension": {
+    "version": 1,
+    "action": "archive_published",
+    "state": "MANUAL_REPORTED",
+    "publication_already_completed_by_user": true,
+    "prepublication_approval_required": false,
+    "platform_verified": false,
+    "preserve_source_draft_separately": true
   }
 }

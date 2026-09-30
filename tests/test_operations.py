@@ -1,5 +1,6 @@
 """Persistent operations loop and boundaries between demo and manual evidence."""
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -9,6 +10,7 @@ from backend.contracts import DomainError
 from backend.demo import validate_brief
 from backend.operations import Operations, now
 from backend.store import Store
+from backend.workflow import digest
 
 
 class OperationsTests(unittest.TestCase):
@@ -140,6 +142,108 @@ class OperationsTests(unittest.TestCase):
         run=self.confirmed(platform='douyin')
         self.assertIn('非成片',run.drafts[-1]['content']['body'])
         self.assertIn('0–3 秒',run.drafts[-1]['content']['body'])
+
+    def archive_payload(self, run, **overrides):
+        payload=dict(run_id=run.run_id,draft_ref=run.accepted_ref,title='实际发出的标题',
+            body='博主在小红书最终发布的文字',tags=['衣橱记录'],
+            url='https://www.xiaohongshu.com/explore/actual',published_at=now())
+        return {**payload,**overrides}
+
+    def test_archive_actual_content_and_source_audit_without_approval(self):
+        run=self.confirmed('live')
+        payload=self.archive_payload(run)
+        state=self.command('archive_published',payload)
+        pub=state['publications'][0]
+        self.assertEqual(pub['status'],'MANUAL_REPORTED')
+        self.assertIsNone(pub['approved_at'])
+        self.assertIsNone(pub['acceptance'])
+        self.assertIsNone(pub['review_ref'])
+        self.assertEqual(pub['source_acceptance'],run.acceptance)
+        self.assertEqual(pub['source_content'],run.drafts[-1]['content'])
+        self.assertEqual(pub['source_content_hash'],digest(run.drafts[-1]['content']))
+        self.assertEqual(pub['content']['body'],payload['body'])
+        self.assertEqual(pub['content']['tags'],payload['tags'])
+        self.assertEqual(pub['content_hash'],digest(pub['content']))
+        self.assertNotEqual(pub['content_hash'],pub['source_content_hash'])
+        self.assertEqual(self.command('archive_published',payload)['publications'],[pub])
+        self.assertEqual(Operations(Store(self.store.path)).read(self.owner)['publications'],[pub])
+        self.assertEqual(self.metrics(pub)['metrics'][-1]['source_type'],'manual')
+
+    def test_archive_reuses_legacy_queue_and_is_idempotent(self):
+        for approved in (False,True):
+            run,pub=self.publication('live')
+            if approved:self.command('approve',dict(id=pub['id']))
+            payload=self.archive_payload(run,url='https://www.xiaohongshu.com/explore/'+run.run_id)
+            command=dict(action='archive_published',payload=payload,
+                version=self.ops.read(self.owner)['version'],key=str(uuid4()))
+            first=self.ops.command(self.owner,command)
+            self.assertEqual(self.ops.command(self.owner,command),first)
+            archived=next(p for p in first['publications'] if p['id']==pub['id'])
+            self.assertEqual(archived['status'],'MANUAL_REPORTED')
+            self.assertEqual(len([p for p in first['publications'] if p['run_id']==run.run_id]),1)
+
+    def test_archive_manually_adopted_draft_keeps_unresolved_review_on_source_only(self):
+        context=validate_brief(dict(topic='衣橱',audience='学生',tone='真实',material='本人记录',scenario='revision'))
+        context.update(mode='live',operations=self.ops.context(self.owner,{},'live'))
+        run=self.store.create(self.owner,str(uuid4()),context)
+        for _ in range(8):
+            if run.review:break
+            run=self.store.command(run.run_id,self.owner,run.status_version,str(uuid4()),'demo_step')
+        self.assertEqual(run.review['decision'],'revision_required')
+        run=self.store.command(run.run_id,self.owner,run.status_version,str(uuid4()),'adopt_manual',
+            dict(draft_ref=run.drafts[-1]['ref'],content_hash=run.drafts[-1]['content_hash'],acknowledge=True))
+        pub=self.command('archive_published',self.archive_payload(run))['publications'][0]
+        self.assertEqual(pub['source_acceptance']['mode'],'manual_override')
+        self.assertTrue(pub['source_acceptance']['acknowledged_issues'])
+        self.assertIsNone(pub['acceptance'])
+        self.assertIsNone(pub['review_ref'])
+        self.assertEqual(pub['status'],'MANUAL_REPORTED')
+
+    def test_archive_rejects_bad_source_owner_fields_and_duplicate_links_atomically(self):
+        simulation=self.confirmed()
+        with self.assertRaises(DomainError):self.command('archive_published',self.archive_payload(simulation))
+        run=self.confirmed('live');payload=self.archive_payload(run)
+        for bad in ({'draft_ref':'old'},{'tags':'tag'},{'tags':[1]},
+                    {'url':'https://evil.invalid/post'},{'published_at':'2099-01-01T00:00:00Z'}):
+            with self.assertRaises(DomainError):self.command('archive_published',{**payload,**bad})
+        with self.assertRaises(DomainError):self.command('archive_published',payload,owner='bob')
+        self.assertEqual(self.ops.read(self.owner)['publications'],[])
+        self.command('archive_published',payload)
+        with self.assertRaises(DomainError):self.command('archive_published',{**payload,'body':'不同作品'})
+        other=self.confirmed('live')
+        with self.assertRaises(DomainError):self.command('archive_published',self.archive_payload(other))
+        self.assertEqual(len(self.ops.read(self.owner)['publications']),1)
+
+    def test_import_tags_and_account_scoped_duplicate_links(self):
+        run=self.confirmed('live')
+        pub=self.command('archive_published',self.archive_payload(run))['publications'][0]
+        payload=dict(account_id=pub['account_id'],title='自行创作的笔记',body='实际正文',tags=['记录'],
+            url=pub['url'],published_at=now(),format='image_text',pillar='日常',traffic='unknown')
+        with self.assertRaises(DomainError):self.command('import_post',payload)
+        imported=self.command('import_post',{**payload,'url':'https://xhslink.com/another'})['publications'][0]
+        self.assertEqual(imported['content']['tags'],['记录'])
+        self.assertIsNone(imported['run_id'])
+        self.assertEqual(imported['status'],'MANUAL_REPORTED')
+        from backend.accounts import PROFILE_FIELDS
+        account=self.command('save_account',dict(id='',name='另一个账号',platform='xiaohongshu',
+            profile={**{k:'' for k in PROFILE_FIELDS},'weekly_frequency':3}))['accounts'][-1]
+        another=self.command('import_post',{**payload,'account_id':account['id']})['publications'][0]
+        self.assertEqual(another['account_id'],account['id'])
+
+
+@unittest.skipUnless(os.environ.get('TEST_DATABASE_URL'), 'requires actual PostgreSQL')
+class PostgresOperationsTests(OperationsTests):
+    def setUp(self):
+        import psycopg
+        self.schema='youji_ops_archive_test_'+uuid4().hex
+        self.base=os.environ['TEST_DATABASE_URL']
+        with psycopg.connect(self.base,autocommit=True) as db:db.execute('CREATE SCHEMA '+self.schema)
+        target=self.base+('&' if '?' in self.base else '?')+'options=-csearch_path%3D'+self.schema
+        self.store=Store(target);self.ops=Operations(self.store);self.owner='alice'
+
+    def tearDown(self):
+        import psycopg
+        with psycopg.connect(self.base,autocommit=True) as db:db.execute('DROP SCHEMA '+self.schema+' CASCADE')
 
 
 if __name__=='__main__':unittest.main()

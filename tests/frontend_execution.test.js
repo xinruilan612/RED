@@ -102,12 +102,38 @@ test('manual adopted result retains earlier issues and labels user choice',()=>{
  assert.equal(s.element('adoptManual').hidden,true);
 });
 
-test('publication displays manual provenance when there is no valid AI review',()=>{
+test('published archive shows actual records and hides prepublication approval queue',()=>{
  const s=setup();vm.runInContext(fs.readFileSync('frontend/operations.js','utf8'),s.sandbox);
- s.eval("accountRows=()=>[{id:'p1',platform:'xiaohongshu',mode:'live',status:'AWAITING_APPROVAL',content:{selected_title:'标题',body:'正文',cta:'问题'},draft_ref:'draft-1',content_hash:'hash',review_ref:null,acceptance:{mode:'manual_override'}}];renderPublications()");
- assert.match(s.element('operationsContent').innerHTML,/用户人工采用 · 非 AI 审核通过/);
- assert.match(s.element('operationsContent').innerHTML,/当前版本无有效 AI 审核/);
- assert.match(s.element('operationsContent').innerHTML,/确认此版本与账号/);
+ s.eval("currentAccount=()=>({name:'我的账号',platform:'xiaohongshu'});accountRows=()=>[{id:'p1',platform:'xiaohongshu',mode:'live',status:'MANUAL_REPORTED',content:{selected_title:'实际标题',body:'实际正文',tags:['日常']},draft_ref:'draft-1',content_hash:'hash',url:'https://www.xiaohongshu.com/explore/a',published_at:'2026-09-30T08:00:00Z',run_id:'r1',source_acceptance:{mode:'manual_override'}},{status:'AWAITING_APPROVAL',content:{selected_title:'旧队列稿'}}];renderPublications()");
+ assert.match(s.element('operationsContent').innerHTML,/已发布 · 人工记录/);
+ assert.match(s.element('operationsContent').innerHTML,/来源稿由用户人工采用/);
+ assert.match(s.element('operationsContent').innerHTML,/实际正文/);
+ assert.doesNotMatch(s.element('operationsContent').innerHTML,/确认此版本与账号|旧队列稿/);
+});
+test('published record prefills adopted draft then archives actual edited text in one action',async()=>{
+ const s=setup();vm.runInContext(fs.readFileSync('frontend/operations.js','utf8'),s.sandbox);
+ s.eval("ops={publications:[]};currentAccount=()=>({id:'a1',platform:'xiaohongshu'});matchesAccount=()=>true;api=async()=>[{run_id:'r1',mode:'live',run_status:'SUCCEEDED',context:{topic:'选题'},accepted_ref:'d1',drafts:[{ref:'d1',content:{selected_title:'原标题',body:'原正文',cta:'互动问题',tags:['话题']}}]}];archiveCalls=[];operate=async(action,payload)=>{archiveCalls.push({action,payload});return true;}");
+ s.eval("run.run_id='r1';showPage=()=>{}");
+ await s.element('sendToPublish').onclick();
+ assert.equal(s.eval('archiveCalls.length'),0);
+ assert.equal(s.element('archiveTitle').value,'原标题');
+ assert.equal(s.element('archiveBody').value,'原正文\n\n互动问题');
+ assert.equal(s.element('archivePublishedAt').value,'');
+ s.element('archiveTitle').value='平台实际标题';s.element('archiveBody').value='平台实际正文';
+ s.element('archiveUrl').value='https://www.xiaohongshu.com/explore/a';s.element('archivePublishedAt').value='2026-09-30T16:00';
+ await s.eval('savePublishedArchive({preventDefault(){}})');
+ assert.equal(s.eval('archiveCalls.length'),1);assert.equal(s.eval('archiveCalls[0].action'),'archive_published');
+ assert.equal(s.eval('archiveCalls[0].payload.title'),'平台实际标题');
+ assert.equal(s.eval('archiveCalls[0].payload.draft_ref'),'d1');
+ assert.equal(s.eval('confirmations'),0);
+});
+test('external published work can be archived without an AI draft',async()=>{
+ const s=setup();vm.runInContext(fs.readFileSync('frontend/operations.js','utf8'),s.sandbox);
+ s.eval("ops={publications:[]};currentAccount=()=>({id:'a1',platform:'xiaohongshu'});matchesAccount=()=>true;api=async()=>[];archiveCalls=[];operate=async(action,payload)=>{archiveCalls.push({action,payload});return true;}");
+ await s.eval('openPublishedArchive()');
+ s.element('archiveTitle').value='我自己写的作品';s.element('archiveBody').value='实际内容';s.element('archiveTags').value='日常';s.element('archiveUrl').value='https://www.xiaohongshu.com/explore/b';s.element('archivePublishedAt').value='2026-09-30T16:00';
+ await s.eval('savePublishedArchive({preventDefault(){}})');
+ assert.equal(s.eval('archiveCalls[0].action'),'import_post');assert.equal(s.eval('archiveCalls[0].payload.account_id'),'a1');
 });
 test('manual adoption is disabled during execution or unsaved editing',()=>{
  const s=setup();s.eval("run.in_flight=true;render()");

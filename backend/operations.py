@@ -64,6 +64,11 @@ def item(rows, identity):
     return found
 
 
+def post_tags(value):
+    require(isinstance(value, list) and len(value) <= 30, 'INVALID_INPUT', '话题须为不超过 30 项的列表')
+    return [validate_text(tag, '话题', 100) for tag in value]
+
+
 class Operations:
     def __init__(self, store):
         self.store = store
@@ -213,6 +218,9 @@ class Operations:
         if action == 'import_post':
             self.import_post(state, data)
             return
+        if action == 'archive_published':
+            self.archive_published(db, owner, state, data)
+            return
         if action == 'add_competitor':
             require(set(data) == {'account_id','name','url','observation','observed_at'}, 'INVALID_INPUT', '竞品观察字段无效')
             account = find_account(state, data['account_id'])
@@ -334,16 +342,57 @@ class Operations:
             refresh_plans(state)
 
 
+    def archive_published(self, db, owner, state, data):
+        require(set(data) == {'run_id','draft_ref','title','body','tags','url','published_at'},
+                'INVALID_INPUT', '发布归档字段无效')
+        run = self.store._get(db, data['run_id'], owner)
+        require(run.workflow_type == 'creation' and run.run_status == 'SUCCEEDED'
+                and run.accepted_ref == data['draft_ref'] and bool(data['draft_ref']),
+                'INVALID_TRANSITION', '请选择已确认或人工采用的准确稿件版本')
+        require(run.context.get('mode') == 'live', 'INVALID_TRANSITION', '模拟稿不能记录为真实发布')
+        draft = next((d for d in run.drafts if d['ref'] == run.accepted_ref), None)
+        require(draft is not None, 'VERSION_CONFLICT', '来源稿件版本不存在')
+        op = run.context.get('operations', {})
+        platform = op.get('platform', 'xiaohongshu')
+        name = op.get('account', '我的账号')
+        identity = op.get('account_id') or account_id(owner, platform, name)
+        link = url(data['url'], platform)
+        published = timestamp(data['published_at'])
+        content = dict(selected_title=validate_text(data['title'], '作品标题', 200),
+            body=validate_text(data['body'], '正文或脚本', 6000, True), cta='', tags=post_tags(data['tags']))
+        pub = next((p for p in state['publications'] if p['run_id'] == run.run_id
+                    and p['draft_ref'] == run.accepted_ref), None)
+        require(not any(p.get('url') == link and p.get('account_id') == identity
+                and p['platform'] == platform and (pub is None or p['id'] != pub['id'])
+                for p in state['publications']), 'DUPLICATE', '此账号已归档该作品链接')
+        if pub and pub['status'] == 'MANUAL_REPORTED':
+            require(pub['url'] == link and pub['published_at'] == published and pub['content'] == content,
+                    'DUPLICATE', '该稿件已经归档，请勿重复记录不同作品')
+            return
+        if pub is None:
+            self.apply(db, owner, state, 'prepare', dict(run_id=run.run_id, draft_ref=run.accepted_ref))
+            pub = state['publications'][0]
+        require(pub['status'] in ('AWAITING_APPROVAL', 'APPROVED') and pub['mode'] == 'live'
+                and pub['account_id'] == identity and pub['platform'] == platform,
+                'INVALID_TRANSITION', '当前记录不能转为已发布归档')
+        pub.update(source_draft_ref=run.accepted_ref, source_content=copy.deepcopy(draft['content']),
+            source_content_hash=digest(draft['content']), source_acceptance=copy.deepcopy(run.acceptance),
+            source_review_ref=(run.review or {}).get('ref'), acceptance=None, review_ref=None,
+            content=content, content_hash=digest(content), status='MANUAL_REPORTED',
+            url=link, published_at=published, archived_at=now(),
+            limitation='用户记录的实际发布内容，平台状态未独立核实；来源稿件审核不代表实际发布正文通过审核')
+
     def import_post(self, state, data):
         required = {'account_id','title','body','url','published_at','format','pillar','traffic'}
-        require(set(data) == required, 'INVALID_INPUT', '历史作品字段无效')
+        require(required <= set(data) <= required | {'tags'}, 'INVALID_INPUT', '历史作品字段无效')
         account = find_account(state, data['account_id'])
         link = url(data['url'], account['platform'])
-        require(not any(p['url'] == link for p in state['publications']), 'DUPLICATE', '此作品链接已经导入')
+        require(not any(p['url'] == link and p.get('account_id') == account['id']
+                and p['platform'] == account['platform'] for p in state['publications']), 'DUPLICATE', '此账号已归档该作品链接')
         require(data['format'] in ('image_text','video'), 'INVALID_INPUT', '内容形式无效')
         require(data['traffic'] in ('organic','paid','unknown'), 'INVALID_INPUT', '流量类型无效')
         content = dict(selected_title=validate_text(data['title'], '作品标题', 200),
-            body=validate_text(data['body'], '正文或脚本', 6000, True), cta='', tags=[])
+            body=validate_text(data['body'], '正文或脚本', 6000, True), cta='', tags=post_tags(data.get('tags', [])))
         state['publications'].insert(0, dict(id=str(uuid4()), account_id=account['id'], account=account['name'],
             platform=account['platform'], run_id=None, draft_ref='imported-'+str(uuid4()), review_ref=None,
             content=content, content_hash=digest(content), mode='imported', provenance='manual',
