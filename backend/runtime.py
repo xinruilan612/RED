@@ -61,13 +61,11 @@ class Runtime:
             run=self.jobs.guard(db,self.job)
             if run.run_status=='QUEUED':
                 run.start();self.write(db,run)
-            if run.run_status=='WAITING_USER':nxt='human'
-            elif run.current_stage=='brief':
-                web=run.context.get('web_research',{})
-                nxt='web_research' if web.get('enabled') and web.get('status')!='complete' else 'brief'
-            elif run.current_stage=='reviewer':nxt='review'
-            else:
-                nxt='revise' if run.review and run.review['decision']=='revision_required' else next(s for s in CONTRACT['content_stages'] if s not in {a['stage'] for a in run.artifacts})
+            from backend.jobs import next_creation_stage
+            nxt=next_creation_stage(run)
+            execution=run.context.get('runtime_execution',{})
+            if execution.get('mode')=='step' and nxt not in (execution.get('target'),'human'):
+                nxt='end'
             return {'snapshot':run.snapshot_id,'iteration':run.iteration,'draft':run.drafts[-1]['ref'] if run.drafts else '', 'next':nxt}
 
     def human(self, state):

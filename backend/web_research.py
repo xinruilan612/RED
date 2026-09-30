@@ -20,22 +20,23 @@ def selection(value, mode):
 def collect(queries, before_request=lambda:None):
     report={'status':'insufficient','queries':queries,'searches':[],'reads':[],'sources':[],
             'searched_at':datetime.now(timezone.utc).isoformat(),'model_calls':0,
-            'limits':{'searches':2,'reads':3,'excerpt_chars':400},
+            'limits':{'searches':2,'reads':6,'excerpt_chars':400},
             'limitation':'公开搜索线索，不是平台热榜、评论全量数据或真实受众统计；读取正文不等于独立核实。'}
     candidates=[];seen=set()
     for query in queries[:2]:
         before_request()
         try:
             result=sources.search_web(query)
-            rows=result['results'][:4]
-            report['searches'].append({'query':query,'provider':result['provider'],'results':rows,'error':None})
+            rows=result['results'][:8]
+            report['searches'].append({'query':query,'provider':result['provider'],'effective_query':result.get('effective_query',query),'results':rows,'error':None})
             for row in rows:
                 if row['url'] not in seen:
                     seen.add(row['url']);candidates.append(row)
         except DomainError as error:
             report['searches'].append({'query':query,'results':[],'error':str(error)})
     wanted=set(tokens(' '.join(queries)))
-    for candidate in candidates[:3]:
+    for candidate in candidates[:6]:
+        if len(report['sources'])>=3: break
         before_request()
         try:
             article=sources.read_article(candidate['url'])

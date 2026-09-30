@@ -145,7 +145,7 @@ def fetch_search(url):
     from urllib.request import Request, build_opener, HTTPRedirectHandler
     from urllib.error import URLError
     parsed=urlsplit(url)
-    require(parsed.scheme=='https' and (parsed.netloc,parsed.path) in (('www.bing.com','/search'),('zh.wikipedia.org','/w/api.php')),'FORBIDDEN','搜索服务地址无效')
+    require(parsed.scheme=='https' and (parsed.netloc,parsed.path) in (('www.bing.com','/search'),('cn.bing.com','/search'),('zh.wikipedia.org','/w/api.php')),'FORBIDDEN','搜索服务地址无效')
     class NoRedirect(HTTPRedirectHandler):
         def redirect_request(self,*args,**kwargs):
             raise DomainError('SOURCE_UNAVAILABLE','搜索服务要求跳转，已停止')
@@ -157,6 +157,17 @@ def fetch_search(url):
     except DomainError:raise
     except (URLError,OSError,UnicodeError):
         raise DomainError('SOURCE_UNAVAILABLE','搜索服务暂不可用，没有生成替代结果') from None
+
+
+def compact_query(query):
+    """Remove title/prompt filler, preserving topic words without a paid model."""
+    value=query
+    if re.search(r'第[一二三四五六七八九十0-9]+步',value):
+        value=re.sub(r'(^|\s)新手',r'\1',value)
+    value=re.sub(r'第[一二三四五六七八九十0-9]+步|到底|究竟|请问|帮我搜索|帮我查找', ' ', value)
+    value=re.sub(r'[，。！？：；、,!?;:]+', ' ', value)
+    value=' '.join(value.split())
+    return value if len(value)>=2 else query.strip()
 
 
 def search_web(query, fetch=None, provider='bing'):
@@ -173,11 +184,12 @@ def search_web(query, fetch=None, provider='bing'):
             raise DomainError('SOURCE_UNAVAILABLE','百科搜索返回格式变化，请稍后再试') from None
         return {'query':query,'provider':'维基百科公开 API · 背景知识','searched_at':response['fetched_at'],'results':results,
                 'note':'用于查找背景知识，不代表最新新闻或平台热度。摘要需读取正文后才能进入资料证据；百科内容仍需核实。'}
-    response=(fetch or fetch_search)('https://www.bing.com/search?format=rss&q='+quote(query.strip()))
+    effective_query=compact_query(query)
+    response=(fetch or fetch_search)('https://cn.bing.com/search?format=rss&q='+quote(effective_query))
     try: root=ET.fromstring(response['text'])
     except ET.ParseError: raise DomainError('SOURCE_UNAVAILABLE','搜索源返回格式变化，请稍后再试') from None
     from backend.knowledge import tokens
-    wanted=set(tokens(query))
+    wanted=set(tokens(effective_query))
     results=[];seen=set();excluded=0
     for node in root.findall('./channel/item'):
         url=node.findtext('link') or ''
@@ -193,6 +205,6 @@ def search_web(query, fetch=None, provider='bing'):
         results.append({'title':title,'url':url,'snippet':snippet,
                         'fetched_at':response['fetched_at'],'published_at':None,'body_read':False,'source_type':'search_result'})
         if len(results)==8:break
-    return {'query':query,'provider':'Bing 公开 RSS 搜索（实验接入）','searched_at':response['fetched_at'],'results':results,
+    return {'query':query,'provider':'Bing 中文公开 RSS 搜索（实验接入）','effective_query':effective_query,'searched_at':response['fetched_at'],'results':results,
             'excluded_unrelated':excluded,
             'note':f'只返回搜索摘要，不代表实时热榜；已隐藏 {excluded} 条无关键词匹配的结果。需读取正文后才能进入资料证据。公开渠道可能限流或无相关结果。'}

@@ -14,7 +14,8 @@ class Command(BaseModel):
 
 class JobCommand(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
-    action: Literal['start', 'pause']
+    action: Literal['start', 'pause', 'step', 'retry_research']
+    queries: list[str] | None = None
     version: int = Field(ge=0)
     key: str = Field(min_length=1, max_length=100)
 

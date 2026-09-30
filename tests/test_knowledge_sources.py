@@ -218,6 +218,22 @@ class SourceTests(unittest.TestCase):
         self.assertEqual(len(result['results']),1)
         self.assertFalse(result['results'][0]['body_read']);self.assertIsNone(result['results'][0]['published_at'])
 
+    def test_chinese_search_compacts_title_and_uses_localized_provider(self):
+        from urllib.parse import parse_qs, urlsplit
+        urls=[]
+        def fetch(url):
+            urls.append(url)
+            return dict(text='<rss><channel><item><title>护肤顺序</title><link>https://example.com/care</link><description>洗脸后先涂什么</description></item></channel></rss>',fetched_at='now')
+        result=search_web('新手护肤第一步：洗脸后到底先涂什么？',fetch=fetch)
+        parsed=urlsplit(urls[0])
+        from backend.sources import compact_query
+        self.assertEqual(compact_query('新手盒子官网'),'新手盒子官网')
+        self.assertEqual(parsed.hostname,'cn.bing.com')
+        self.assertEqual(parse_qs(parsed.query)['q'],['护肤 洗脸后 先涂什么'])
+        self.assertEqual(len(result['results']),1)
+        self.assertEqual(result['query'],'新手护肤第一步：洗脸后到底先涂什么？')
+        self.assertFalse(result['results'][0]['body_read'])
+
     def test_unrelated_search_results_are_not_presented_as_recommendations(self):
         xml='<rss><channel><item><title>Yahoo Japan</title><link>https://example.com/</link><description>unrelated</description></item></channel></rss>'
         result=search_web('白衬衫',fetch=lambda u:dict(text=xml,fetched_at='now'))

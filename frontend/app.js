@@ -22,7 +22,8 @@ function audienceWebObservations(value){
 function renderWebResearch(){
  const host=$('webResearchReport'),web=run.context.web_research||{};host.hidden=!web.enabled;if(!web.enabled)return;
  const labels={pending:'等待启动联网调查',searching:'正在搜索并读取网页',complete:'已读取公开来源',insufficient:'没有足够的相关正文，未调用模型'};
- host.innerHTML=`<h2>本次联网调查 · ${esc(labels[web.status]||'调查未完成')}</h2><p class="helper">公开网页线索，不等于平台热榜或已核实事实。搜索最多 2 次、网页读取最多 3 次；此步骤不调用模型。</p><p>搜索词：${esc((web.queries||[]).join('；'))}</p>${(web.searches||[]).map(s=>`<details><summary>${esc(s.query)} · ${s.results.length} 条搜索线索</summary>${s.error?`<p class="issue">${esc(s.error)}</p>`:''}${s.results.map(r=>`<p><a href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">${esc(r.title)}</a> · 搜索摘要，未代表已读正文</p>`).join('')}</details>`).join('')}${(web.sources||[]).map(s=>`<article class="source-card"><a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title)}</a><p class="helper">读取时间：${esc(s.fetched_at)} · 页面声明发布时间：${esc(s.published_at||'未知')} · 平台热度：未知</p><blockquote>${esc(s.text)}</blockquote></article>`).join('')}${(web.reads||[]).filter(r=>r.error).map(r=>`<p class="issue">${esc(r.url)}：${esc(r.error)}</p>`).join('')}${web.status==='insufficient'?'<p>请调整搜索词，或导入可读取的来源后新建任务。此次没有用搜索摘要冒充正文。</p>':''}`;
+ host.innerHTML=`<h2>本次联网调查 · ${esc(labels[web.status]||'调查未完成')}</h2><p class="helper">公开网页线索，不等于平台热榜或已核实事实。搜索和网页读取有次数上限；此步骤不调用模型。</p><p>搜索词：${esc((web.queries||[]).join('；'))}</p>${(web.searches||[]).map(s=>`<details><summary>${esc(s.query)} · ${s.results.length} 条搜索线索</summary>${s.effective_query?`<p class="helper">实际搜索词：${esc(s.effective_query)} · ${esc(s.provider||'公开搜索')}</p>`:''}${s.error?`<p class="issue">${esc(s.error)}</p>`:''}${s.results.map(r=>`<p><a href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">${esc(r.title)}</a> · 搜索摘要，未代表已读正文</p>`).join('')}</details>`).join('')}${(web.sources||[]).map(s=>`<article class="source-card"><a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title)}</a><p class="helper">读取时间：${esc(s.fetched_at)} · 页面声明发布时间：${esc(s.published_at||'未知')} · 平台热度：未知</p><blockquote>${esc(s.text)}</blockquote></article>`).join('')}${(web.reads||[]).filter(r=>r.error).map(r=>`<p class="issue">${esc(r.url)}：${esc(r.error)}</p>`).join('')}${web.status==='insufficient'?'<p>本次没有读到足够正文，因此未调用模型。可在下面修改关键词，留在这个任务重新搜索。</p>':''}`;
+ if(['insufficient','searching'].includes(web.status)&&!run.in_flight&&run.current_stage==='brief'){host.insertAdjacentHTML('beforeend',`<form id="retryWebResearch"><label for="retryQuery1">调整搜索词（用核心词，如：新手 护肤 顺序）</label><input id="retryQuery1" required minlength="2" maxlength="120" value="${esc(web.queries?.[0]||'')}"><label for="retryQuery2">第二组关键词（可选）</label><input id="retryQuery2" maxlength="120" value="${esc(web.queries?.[1]||'')}"><button class="primary" type="submit">重新搜索这一步（不调用模型）</button></form>`);$('retryWebResearch').onsubmit=async e=>{e.preventDefault();await backgroundCommand('retry_research',{queries:[$('retryQuery1').value,$('retryQuery2').value].map(q=>q.trim()).filter(Boolean)});};}
 }
 function renderMaterialUploads(){
  const host=$('materialUploads');if(!host)return;
@@ -67,14 +68,15 @@ function render(){
  $('runTitle').textContent=run.context.topic;
  $('runSummary').textContent=`${run.context.operations?.platform==='douyin'?'抖音 · 口播脚本':'小红书 · 图文笔记'} · 写给 ${run.context.audience} · ${run.context.tone} · ${run.snapshot_id.slice(0,8)} 输入快照`;
  const background=run.background;
- const jobLabels={queued:background?.worker_online?'已排队，后台即将执行':'已排队，等待 Worker 启动',running:'后台执行中 · 关闭页面后继续',pausing:'正在暂停，等待当前节点保存',paused:'后台已暂停',blocked:'后台等待处理',waiting:'等待你的审核'};
+ const jobLabels={queued:background?.worker_online?'已排队，后台即将执行':'已排队，等待 Worker 启动',running:'正在执行 · 结果保存后自动更新',pausing:'正在暂停，等待当前节点保存',paused:'本步已停止 · 查看结果后继续',blocked:'后台等待处理',waiting:'等待你的审核'};
  $('statusLabel').textContent=jobLabels[background?.status]|| (run.in_flight?'AI 正在处理，请稍候':states[run.run_status]);
- if(background?.error)error(new Error(background.error));$('versionCount').textContent=run.drafts.length+' 个';
+ if(background?.error)error(new Error(['insufficient','searching'].includes(run.context.web_research?.status)?'联网调查未完成。请在上方修改关键词，点击“重新搜索这一步”；无需新建任务。':background.error));$('versionCount').textContent=run.drafts.length+' 个';
  const allowed=run.allowed_actions;
  $('recover').hidden=!allowed.includes('recover');$('next').hidden=!allowed.includes('next');$('auto').hidden=!allowed.includes('next');$('cancel').hidden=!allowed.includes('cancel');
  $('next').textContent=run.current_stage==='reviewer'?'执行复审 / 审核 →':run.review?.decision==='revision_required'?'按意见改稿 →':'执行下一步 →';
  $('auto').textContent=background?(run.in_flight?'暂停后台任务':'后台运行到人工处理'):(auto?'停止自动运行':'自动运行到人工处理');
- if(background){$('next').hidden=true;$('auto').hidden=!allowed.includes('next')&&!run.in_flight;}
+ if(background){$('next').hidden=!allowed.includes('next')||run.in_flight;$('auto').hidden=!allowed.includes('next')&&!run.in_flight;$('auto').textContent=run.in_flight?'暂停执行':'连续运行到人工处理';$('next').textContent=run.current_stage==='brief'&&run.context.web_research?.enabled&&run.context.web_research.status!=='complete'?'执行一步：联网搜索 →':'执行下一步，看结果 →';}
+ if(['insufficient','searching'].includes(run.context.web_research?.status)&&!run.in_flight){$('next').hidden=true;$('auto').hidden=true;}
  const node=(key,num,sub)=>{
  const logs=run.node_runs.filter(n=>n.agent===key&&n.snapshot_id===run.snapshot_id);
  const isCurrent=(key===currentAgent()||(run.current_stage==='brief'&&key==='research'&&run.run_status!=='WAITING_USER'))&&!['SUCCEEDED','CANCELLED','FAILED'].includes(run.run_status);
@@ -160,20 +162,21 @@ function renderCalls(){
  $('timeline').insertAdjacentHTML('afterbegin',rows);
 }
 async function act(action,payload={}){
- if(action==='next'&&websiteSession?.auth_required)return backgroundCommand('start');
+ if(action==='next'&&websiteSession?.auth_required)return backgroundCommand('step');
  if(action==='next'&&run?.mode==='live'&&!confirmLiveBudget())return false;
  if(busy||!run)return false;busy=true;clearError();if(action==='next'&&run.mode==='live')run.in_flight=true;render();
  try{run=await api(`/api/runs/${run.run_id}/actions`,'POST',{action,version:run.status_version,key:crypto.randomUUID(),payload});clearError();viewVersion=null;selected=currentAgent();detailStage=null;if(action==='edit'){ops=await api('/api/operations');syncAccounts();}await history();return true;}
  catch(e){auto=false;error(e);try{run=await api('/api/runs/'+run.run_id);}catch(_){}return false;}
  finally{busy=false;render();}
 }
-async function backgroundCommand(action){
+async function backgroundCommand(action,extra={}){
  if(busy||!run)return false;
- if(action==='start'&&run.mode==='live'&&!confirmLiveBudget())return false;
- busy=true;clearError();render();
- try{run=await api(`/api/runs/${run.run_id}/background`,'POST',{action,version:run.status_version,key:crypto.randomUUID()});await history();return true;}
- catch(e){error(e);try{run=await api('/api/runs/'+run.run_id);}catch(_){}return false;}
- finally{busy=false;render();}
+ const searchOnly=action==='step'&&run.current_stage==='brief'&&run.context.web_research?.enabled&&run.context.web_research.status!=='complete';
+ if(['start','step'].includes(action)&&!searchOnly&&run.mode==='live'&&!confirmLiveBudget())return false;
+ let commandError=null;busy=true;clearError();render();
+ try{run=await api(`/api/runs/${run.run_id}/background`,'POST',{action,version:run.status_version,key:crypto.randomUUID(),...extra});selected=currentAgent();detailStage=null;await history();return true;}
+ catch(e){commandError=e;error(e);try{run=await api('/api/runs/'+run.run_id);}catch(_){}return false;}
+ finally{busy=false;render();if(commandError)error(commandError);}
 }
 async function autoRun(){
  if(websiteSession?.auth_required)return backgroundCommand(run.in_flight?'pause':'start');
@@ -238,6 +241,6 @@ $('mode').onchange=()=>{renderMode($('mode').value);$('scenario').disabled=$('mo
 setInterval(async()=>{
  if(!run?.in_flight||polling)return;
  polling=true;
- try{const latest=await api('/api/runs/'+run.run_id);if(run?.run_id===latest.run_id){const changed=run.status_version!==latest.status_version;run=latest;render();if(changed)await history();}}
+ try{const latest=await api('/api/runs/'+run.run_id);if(run?.run_id===latest.run_id){const changed=run.status_version!==latest.status_version;run=latest;render();if(changed){if(!run.in_flight){selected=currentAgent();const last=run.node_runs.at(-1);if(last){selected=last.agent;detailStage=last.stage;}render();}await history();}}}
  catch(_){}finally{polling=false;}
 },1500);

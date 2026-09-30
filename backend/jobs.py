@@ -17,11 +17,23 @@ def graph_policy(run):
     return expected
 
 
+def next_creation_stage(run):
+    if run.run_status == 'WAITING_USER':return 'human'
+    if run.current_stage == 'brief':
+        web=run.context.get('web_research',{})
+        return 'web_research' if web.get('enabled') and web.get('status')!='complete' else 'brief'
+    if run.current_stage == 'reviewer':return 'review'
+    if run.review and run.review['decision']=='revision_required':return 'revise'
+    return next(stage for stage in CONTRACT['content_stages'] if stage not in {a['stage'] for a in run.artifacts})
+
+
 class Jobs:
     def __init__(self, store): self.store=store
 
     def command(self, owner, run_id, data):
         data=parse(JobCommand,data)
+        if data.get('queries') is None:data.pop('queries',None)
+        require(data['action']=='retry_research' or 'queries' not in data,'INVALID_INPUT','只有重新调查可以修改搜索词')
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             run=self.store._get(db,run_id,owner)
@@ -33,10 +45,29 @@ class Jobs:
                 return
             require(run.status_version==data['version'],'VERSION_CONFLICT','任务已更新，请刷新')
             row=db.execute('SELECT status FROM runtime_jobs WHERE run_id=?',(run_id,)).fetchone()
-            if data['action']=='start':
+            if data['action'] in ('start','step','retry_research'):
                 require(run.run_status in ('QUEUED','RUNNING'),'INVALID_TRANSITION','请先完成人工操作')
                 require(not db.execute("SELECT 1 FROM live_steps WHERE run_id=? AND state='running'",(run_id,)).fetchone(),'STEP_ALREADY_ATTEMPTED','旧同步调用未决，需先核对')
                 require(not row or row[0] not in ACTIVE,'JOB_ACTIVE','任务已在后台执行')
+                if data['action'] in ('step','retry_research'):
+                    require(run.workflow_type=='creation','INVALID_INPUT','逐步执行仅用于创作任务')
+                if data['action']=='retry_research':
+                    from backend.web_research import selection
+                    web=run.context.get('web_research',{})
+                    require(run.current_stage=='brief' and not run.branches and not run.node_runs and
+                            not db.execute('SELECT 1 FROM live_calls WHERE run_id=?',(run_id,)).fetchone(),
+                            'INVALID_TRANSITION','分析已开始，不能修改本次调查快照')
+                    require(web.get('enabled') and web.get('status') in ('insufficient','searching'),
+                            'INVALID_TRANSITION','只有失败或中断的联网调查可以重新搜索')
+                    replacement=selection({'enabled':True,'queries':data.get('queries')},run.context.get('mode'))
+                    run.context.setdefault('web_research_history',[]).append(web)
+                    run.context['web_research']=replacement
+                    run.snapshot_id=digest({'previous':run.snapshot_id,'queries':replacement['queries'],'retry':len(run.context['web_research_history'])})
+                    # The old checkpoint may hold an interrupted tool cursor. Fresh graph,
+                    # same durable run/budget, with the previous report retained above.
+                    if row:db.execute('UPDATE runtime_jobs SET thread_id=? WHERE run_id=?',(str(uuid4()),run_id))
+                run.context['runtime_execution']={'mode':'automatic' if data['action']=='start' else 'step'}
+                if data['action']!='start':run.context['runtime_execution']['target']=next_creation_stage(run)
                 if row:
                     db.execute("UPDATE runtime_jobs SET status='queued',error=NULL,token=NULL,lease_until=NULL,updated=? WHERE run_id=?",(time.time(),run_id))
                 else:

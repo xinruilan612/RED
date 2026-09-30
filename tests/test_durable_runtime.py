@@ -39,6 +39,68 @@ class DurableTests(unittest.TestCase):
     def action(self, action, payload):
         return self.service.action(self.owner,self.run_id,dict(action=action,version=self.run_value().status_version,key=str(uuid4()),payload=payload))
 
+    def step(self, action='step', **extra):
+        return self.service.background(self.owner,self.run_id,dict(action=action,version=self.run_value().status_version,key=str(uuid4()),**extra))
+
+    def test_step_pauses_after_each_business_stage_and_survives_restart(self):
+        for expected_calls in (2,3,4,5,6,7,8):
+            self.step()
+            Worker(Service(Store(self.store.path),self.config,self.model)).once()
+            self.assertEqual(len(self.model.calls),expected_calls,self.job())
+            self.assertEqual(self.job()['status'],'waiting' if expected_calls==8 else 'paused')
+            self.assertIsNone(self.job()['error'])
+        self.assertEqual(self.run_value().wait_reason,'final_confirmation')
+
+    def test_step_command_is_idempotent_and_cannot_replace_active_job(self):
+        command=dict(action='step',version=self.run_value().status_version,key=str(uuid4()))
+        self.service.background(self.owner,self.run_id,command)
+        self.service.background(self.owner,self.run_id,command)
+        with self.assertRaises(DomainError) as rejected:self.step()
+        self.assertEqual(rejected.exception.code,'JOB_ACTIVE')
+        Worker(self.service).once()
+        self.service.background(self.owner,self.run_id,command)
+        self.assertEqual(self.job()['status'],'paused')
+        self.assertEqual(len(self.model.calls),2)
+        with self.assertRaises(DomainError):self.step('retry_research',queries=['改词'])
+        self.start();Worker(self.service).once()
+        self.assertEqual(self.job()['status'],'waiting')
+        self.assertEqual(len(self.model.calls),8)
+
+    def test_step_replay_does_not_advance_past_requested_stage(self):
+        self.step();Worker(self.service).once()
+        self.step()
+        def crash(point,stage):
+            if point=='after_commit' and stage=='strategy':raise RuntimeError('crash before checkpoint')
+        Worker(self.service,fault=crash).once()
+        self.assertEqual(self.job()['status'],'blocked')
+        # Reclaimed worker continues the original command after a process crash.
+        with self.store.connect() as db:
+            db.execute("UPDATE runtime_jobs SET status='queued' WHERE run_id=?",(self.run_id,))
+        Worker(self.service).once()
+        self.assertEqual(self.model.calls.count('strategy'),1)
+        self.assertEqual(len(self.model.calls),3)
+        self.assertEqual(self.job()['status'],'paused')
+
+    def test_research_retry_keeps_report_and_stops_before_model(self):
+        from unittest.mock import patch
+        self.action('cancel',{})
+        self.run_id=self.service.create(self.owner,dict(topic='公开护肤资料',audience='读者',tone='朴实',material='',allow_hypothesis=True,mode='live',web_research={'enabled':True,'queries':['护肤顺序']}))['run_id']
+        failed={'status':'insufficient','searches':[],'reads':[],'sources':[]}
+        with patch('backend.web_research.collect',return_value=failed):
+            self.step();Worker(self.service).once()
+        self.assertEqual(self.job()['status'],'blocked')
+        old_snapshot=self.run_value().snapshot_id
+        self.step('retry_research',queries=['洁面 保湿'])
+        success={'status':'complete','searches':[],'reads':[],'sources':[{'source_id':'test-source','text':'公开原文'}]}
+        with patch('backend.web_research.collect',return_value=success):Worker(self.service).once()
+        run=self.run_value()
+        self.assertEqual(self.job()['status'],'paused',self.job())
+        self.assertEqual(self.model.calls,[])
+        self.assertEqual(run.context['web_research_history'][0]['status'],'insufficient')
+        self.assertNotEqual(run.snapshot_id,old_snapshot)
+        self.assertEqual(run.context['web_research']['queries'],['洁面 保湿'])
+        with self.assertRaises(DomainError):self.step('retry_research',queries=['其他主题'])
+
     def test_independent_worker_stops_at_human_and_reaudits_edit(self):
         response=self.start();self.assertTrue(response['in_flight']);self.assertEqual(self.model.calls,[])
         # A new application/worker instance runs after the request has returned.
