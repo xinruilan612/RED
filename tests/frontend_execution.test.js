@@ -5,7 +5,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 function setup(){
  const elements=new Map();
- const element=id=>{if(!elements.has(id))elements.set(id,{hidden:false,disabled:false,value:'',textContent:'',innerHTML:'',selectedOptions:[],addEventListener(){},insertAdjacentHTML(_where,text){this.innerHTML+=text;}});return elements.get(id);};
+ const element=id=>{if(!elements.has(id))elements.set(id,{hidden:false,disabled:false,value:'',textContent:'',innerHTML:'',selectedOptions:[],addEventListener(){},scrollIntoView(){},insertAdjacentHTML(_where,text){this.innerHTML+=text;}});return elements.get(id);};
  const sandbox={document:{getElementById:element,addEventListener(){},querySelectorAll(){return [];}},window:{addEventListener(){},confirm(){return true;}},setInterval(){},setTimeout(){},clearTimeout(){},crypto:{randomUUID:()=> 'test-key'},websiteSession:{auth_required:true}};
  vm.createContext(sandbox);vm.runInContext(fs.readFileSync('frontend/app.js','utf8'),sandbox);
  vm.runInContext(`run={run_id:'run-1',mode:'live',current_stage:'brief',status_version:1,run_status:'RUNNING',context:{topic:'护肤',tone:'清楚',audience:'新手',web_research:{enabled:true,status:'pending',queries:['护肤']}},usage:{},drafts:[],node_runs:[],artifacts:[],events:[],snapshot_id:'snapshot',allowed_actions:['next','cancel'],background:{status:'paused'},in_flight:false};
@@ -35,4 +35,23 @@ test('continuous execution remains an explicit separate command',async()=>{
 test('request errors remain visible instead of being replaced by stale job errors',async()=>{
  const s=setup();s.eval("run.context.web_research.status='insufficient';run.background.error='old failure';api=async(_p,method)=>{if(method==='POST')throw new Error('任务已更新，请刷新');return run;}");
  await s.eval("backgroundCommand('retry_research',{queries:['护肤']})");assert.equal(s.element('error').textContent,'任务已更新，请刷新');
+});
+test('rejected review shows a free recovery action and hides pointless repeat execution',()=>{
+ const s=setup();s.eval("run.current_stage='reviewer';run.drafts=[{}];run.allowed_actions=['next','cancel','repair_review'];run.calls=[{stage:'review',status:'invalid',diagnostic_response:{issues:[{excerpt:'标题',reason:'没有依据',suggestion:'修正标题'}]}}];renderRecovery()");
+ assert.equal(s.element('reviewRecovery').hidden,false);assert.equal(s.element('repairReview').hidden,false);
+ assert.equal(s.element('next').hidden,true);assert.equal(s.element('auto').hidden,true);
+ assert.match(s.element('reviewRecoveryIssues').innerHTML,/修正标题/);
+});
+test('free recovery dispatches repair action rather than approval or model execution',async()=>{
+ const s=setup();await s.element('repairReview').onclick();
+ assert.equal(s.eval('calls[0].action'),'repair_review');assert.equal(s.eval('confirmations'),0);
+});
+test('review recovery is hidden once final confirmation is available',()=>{
+ const s=setup();s.eval("run.current_stage='reviewer';run.drafts=[{}];run.allowed_actions=['accept','edit'];renderRecovery()");
+ assert.equal(s.element('reviewRecovery').hidden,true);assert.equal(s.element('repairReview').hidden,true);
+});
+test('unavailable confirmation buttons remain disabled after workbench rendering',()=>{
+ const s=setup();s.eval('render()');
+ assert.equal(s.element('reviewConfirmUnavailable').disabled,true);
+ assert.equal(s.element('confirmationPending').disabled,true);
 });

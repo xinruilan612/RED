@@ -50,7 +50,7 @@ async function history(){
  $('history').innerHTML=rows.length?rows.map(r=>`<button data-run="${esc(r.run_id)}" class="${run?.run_id===r.run_id?'selected':''}">${esc(r.context.topic||'旧任务')}<small>${esc(states[r.run_status])} · ${r.drafts.length} 个版本</small></button>`).join(''):'<p class="helper">还没有创作记录</p>';
  return rows;
 }
-function currentAgent(){if(!run)return 'audience';if(run.run_status==='WAITING_USER'||run.run_status==='SUCCEEDED')return 'human';if(run.current_stage==='brief')return 'audience';return run.current_stage;}
+function currentAgent(){if(!run)return 'audience';if(run.run_status==='WAITING_USER'||run.run_status==='SUCCEEDED'||(!run.in_flight&&run.review?.decision==='revision_required'&&run.allowed_actions.includes('edit')))return 'human';if(run.current_stage==='brief')return 'audience';return run.current_stage;}
 function renderMode(mode){
  const live=mode==='live';
  $('modeBadge').textContent=live?'真实 AI · DeepSeek':'模拟运行';
@@ -81,15 +81,15 @@ function render(){
  const logs=run.node_runs.filter(n=>n.agent===key&&n.snapshot_id===run.snapshot_id);
  const isCurrent=(key===currentAgent()||(run.current_stage==='brief'&&key==='research'&&run.run_status!=='WAITING_USER'))&&!['SUCCEEDED','CANCELLED','FAILED'].includes(run.run_status);
  const done=key==='human'?run.run_status==='SUCCEEDED':logs.length>0;
- const human=key==='human'&&run.run_status==='WAITING_USER';
+ const human=key==='human'&&(run.run_status==='WAITING_USER'||(!run.in_flight&&run.review?.decision==='revision_required'&&run.allowed_actions.includes('edit')));
  const label=human?'◈ 等你处理':isCurrent?'◉ 当前步骤':done?'✓ 已有产物':'○ 尚未执行';
  return `<button class="node ${isCurrent?'current':''} ${done?'done':''} ${human?'human':''} ${selected===key?'selected':''}" data-agent="${key}" aria-pressed="${selected===key}"><span class="node-top"><span>${key==='human'?'由你决定':'AGENT '+num}</span><span>${label}</span></span><b>${names[key]}</b><small>${sub}</small></button>`;
  };
  const contentStages=['strategy','outline','hook','title','body'].map(s=>`<button class="stage-chip ${run.artifacts.some(a=>a.stage===s)?'done':''}" data-stage="${s}">${stages[s]}</button>`).join('');
  $('flow').innerHTML=`<div class="parallel">${node('audience','01','理解读者 · 明确假设')}${node('research','02','收录素材 · 标记缺口')}</div><div class="connector">同一份需求 · 并行分析<span>↓ 汇合 ↓</span></div>${node('content','03','策略与写作 · 同一角色负责返修')}<div class="stages">${contentStages}</div><div class="connector"><span>↓</span></div>${node('reviewer','04','问题定位 · 修改建议 · 再次审核')}<div class="connector">不通过 ↺ 回到创作 / 通过 ↓</div>${node('human','YOU','补资料 / 改稿 / 比较版本 / 最后确认')}`;
- renderDetails();renderHuman();renderDraft();renderTimeline();renderCalls();
+ renderDetails();renderHuman();renderRecovery();renderDraft();renderTimeline();renderCalls();
  document.querySelectorAll('#workbench button').forEach(b=>{if(!b.closest('#flow')&&b.id!=='auto')b.disabled=busy||(b.dataset.titleChoice!==undefined&&run.artifacts.find(a=>a.stage==='title')?.value.candidates[Number(b.dataset.titleChoice)]===run.drafts.at(-1)?.content.selected_title);});
- $('cancel').disabled=busy&&!run.in_flight;
+ $('cancel').disabled=busy&&!run.in_flight;$('reviewConfirmUnavailable').disabled=true;$('confirmationPending').disabled=true;
  if(background&&run.in_flight){for(const id of ['editButton','accept','revise','recover'])$(id).disabled=true;}
  if(editing){$('next').disabled=true;$('auto').disabled=true;$('accept').disabled=true;$('revise').disabled=true;$('editButton').disabled=true;}
  else $('auto').disabled=busy&&!auto;
@@ -119,6 +119,18 @@ function renderDetails(){
  $('details').innerHTML=`${selected==='content'&&run.drafts.length>1?'<p class="editor-note">这些是生成时保存的阶段记录。最新修改后的稿件，请查看下方“文案与版本对比”。</p>':''}<p class="muted">最近阶段：${esc(stages[current.stage])} · ${current.duration_ms} ms · 真实模型调用 ${current.model_calls||0} 次 · ${current.tokens??'未知'} Token</p><div class="detail-block"><h3>当前产物</h3>${friendly(current.agent,current.stage,current.output)}<details><summary>查看原始结构化记录</summary>${json(current.output)}</details></div><details><summary>查看这一阶段的输入</summary>${json(current.input)}</details><div class="detail-block"><h3>工具与记忆</h3><p>${run.context.evidence?.length?'已使用资料检索快照，来源与片段可在本阶段输入中查看。':'本次未使用检索片段。'}${esc(current.memory)}</p><p>${run.mode==='live'?'由 DeepSeek 生成；审核不代表外部事实已核实。':'采用固定模板 / 本地规则，未使用模型推理。'}</p></div>${logs.length>1?'<details><summary>所有阶段与历史记录（'+logs.length+'）</summary>'+logs.map(l=>'<h3>'+esc(stages[l.stage])+' · '+esc(l.snapshot_id.slice(0,8))+'</h3>'+friendly(l.agent,l.stage,l.output)).join('')+'</details>':''}`;
  if(selected==='reviewer'&&run.review){$('details').insertAdjacentHTML('afterbegin',run.review.checks.map(c=>`<div class="review-check"><span>${esc(checks[c.name])}</span><span class="${esc(c.result)}">${c.result==='pass'?(run.mode==='live'?'模型判断通过':'模拟通过'):c.result==='fail'?'发现问题':'未完成'}</span></div>`).join(''));}
 }
+function renderRecovery(){
+ const canRepair=run.allowed_actions.includes('repair_review');
+ const blocked=run.current_stage==='reviewer'&&run.drafts.length&&!run.allowed_actions.includes('accept');
+ $('reviewRecovery').hidden=!blocked;
+ $('repairReview').hidden=!canRepair;
+ if(!blocked)return;
+ $('reviewRecoveryTitle').textContent=canRepair?'稿件已保存，先处理审核问题':'稿件已保存，审核尚未完成';
+ $('reviewRecoveryMessage').textContent=canRepair?'审核返回了意见，但其中的引用没有通过原文校验。点击下方按钮可免费整理已收到的意见并进入人工改稿，保留当前稿件，不重新搜索、不再次调用模型。修改后仍需复审，才能最终确认。':run.in_flight?'正在审核，完成后这里会显示下一步。你可以先阅读下方稿件。':'当前不能确认稿件。请查看上方具体错误与运行记录；不要反复启动同一个失败步骤。';
+ const rejected=[...(run.calls||[])].reverse().find(c=>c.stage==='review'&&c.status==='invalid'&&!c.inherited);
+ $('reviewRecoveryIssues').innerHTML=(rejected?.diagnostic_response?.issues||[]).map(i=>`<div class="issue"><b>${esc(i.excerpt||i.location||'稿件问题')}</b><p>${esc(i.reason)}</p><p>修改建议：${esc(i.suggestion)}</p></div>`).join('');
+ if(canRepair){$('next').hidden=true;$('auto').hidden=true;}
+}
 function renderHuman(){
  const allowed=run.allowed_actions,review=run.review;
  const revision=review?.decision==='revision_required';
@@ -126,6 +138,7 @@ function renderHuman(){
  $('humanPanel').hidden=!visible;
  $('supplyForm').hidden=!allowed.includes('supplement');
  $('revise').hidden=!(revision&&allowed.includes('next'));
+ $('confirmationPending').hidden=allowed.includes('accept')||run.run_status==='SUCCEEDED';
  $('editButton').hidden=!allowed.includes('edit');$('accept').hidden=!allowed.includes('accept');$('export').hidden=!allowed.includes('export');
  $('export').href=`/api/runs/${run.run_id}/export`;
  $('sendToPublish').hidden=run.run_status!=='SUCCEEDED';
@@ -197,6 +210,7 @@ $('history').addEventListener('click',async e=>{const b=e.target.closest('[data-
 $('newRun').onclick=()=>{if(busy||!dirtyGuard())return;showPage('studio');auto=false;editing=false;$('editor').hidden=true;$('workbench').hidden=true;$('welcome').hidden=false;renderMode($('mode').value);fillAccountBrief();clearError();};
 $('flow').onclick=e=>{const chip=e.target.closest('[data-stage]');const b=e.target.closest('[data-agent]');if(chip){selected='content';detailStage=chip.dataset.stage;render();}else if(b){selected=b.dataset.agent;detailStage=null;render();}};
 $('recover').onclick=()=>act('recover');
+$('repairReview').onclick=async()=>{if(await act('repair_review')){clearError();selected='human';render();$('humanPanel').scrollIntoView({behavior:'smooth',block:'center'});toast('已有审核意见已整理。请查看问题并修改稿件；本次没有调用 AI。');}};
 $('next').onclick=()=>act('next');$('auto').onclick=autoRun;
 $('cancel').onclick=async()=>{
  if(!window.confirm('取消当前任务？已有版本会保留。已发送给模型的请求可能仍产生费用。'))return;

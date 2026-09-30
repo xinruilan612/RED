@@ -42,6 +42,63 @@ class DurableTests(unittest.TestCase):
     def step(self, action='step', **extra):
         return self.service.background(self.owner,self.run_id,dict(action=action,version=self.run_value().status_version,key=str(uuid4()),**extra))
 
+    def invalid_citation_review(self):
+        base=self.model.complete
+        def invalid(messages):
+            value,tokens=base(messages)
+            if self.model.calls[-1]=='review' and self.model.calls.count('review')==1:
+                value['claim_map']=[{'excerpt':'完整正文','source_id':'user-material','quote':'published_at: null'},
+                    {'excerpt':'完整正文','source_id':'user-material','quote':'公开资料'}]
+            return value,tokens
+        self.model.complete=invalid
+        self.start();Worker(self.service).once()
+        self.assertEqual(self.job()['status'],'blocked')
+        self.assertEqual(self.run_value().current_stage,'reviewer')
+
+    def test_invalid_review_can_be_recovered_free_then_edited_reaudited_and_confirmed(self):
+        self.invalid_citation_review()
+        before=self.service.view(self.run_value())
+        self.assertIn('repair_review',before['allowed_actions'])
+        self.assertEqual(len(before['review_recovery']['invalid_quotes']),1)
+        with self.assertRaises(DomainError):self.step()
+        self.assertEqual(len(self.model.calls),8)
+        command=dict(action='repair_review',payload={},version=self.run_value().status_version,key=str(uuid4()))
+        repaired=self.service.action(self.owner,self.run_id,command)
+        replay=self.service.action(self.owner,self.run_id,command)
+        self.assertEqual(replay['status_version'],repaired['status_version'])
+        self.assertEqual(repaired['review']['decision'],'revision_required')
+        self.assertIn('edit',repaired['allowed_actions']);self.assertNotIn('accept',repaired['allowed_actions'])
+        self.assertEqual(repaired['usage'],before['usage'])
+        self.assertEqual(repaired['calls'],before['calls'])
+        self.assertEqual(len(repaired['review']['claim_map']),1)
+        self.assertEqual(repaired['background']['status'],'paused');self.assertIsNone(repaired['background']['error'])
+        with self.assertRaises(DomainError):self.action('accept',dict(draft_ref=repaired['drafts'][-1]['ref'],review_ref=repaired['review']['ref']))
+        changed=dict(repaired['drafts'][-1]['content']);changed['body']='我按照课程建立资料文件夹。'
+        edited=self.action('edit',changed)
+        self.assertEqual(edited['current_stage'],'reviewer')
+        self.step();Worker(self.service).once()
+        ready=self.service.view(self.run_value())
+        self.assertEqual(len(self.model.calls),9)
+        self.assertIn('accept',ready['allowed_actions'])
+        accepted=self.action('accept',dict(draft_ref=ready['drafts'][-1]['ref'],review_ref=ready['review']['ref']))
+        self.assertEqual(accepted['run_status'],'SUCCEEDED')
+
+    def test_review_recovery_rejects_stale_owner_active_and_nonquote_errors(self):
+        self.invalid_citation_review()
+        command=dict(action='repair_review',payload={},version=self.run_value().status_version,key=str(uuid4()))
+        with self.assertRaises(DomainError):self.service.action('other-owner',self.run_id,command)
+        with self.assertRaises(DomainError):self.service.action(self.owner,self.run_id,{**command,'version':0})
+        with self.store.connect() as db:db.execute("UPDATE runtime_jobs SET status='running' WHERE run_id=?",(self.run_id,))
+        with self.assertRaises(DomainError):self.service.action(self.owner,self.run_id,command)
+        with self.store.connect() as db:
+            db.execute("UPDATE runtime_jobs SET status='blocked' WHERE run_id=?",(self.run_id,))
+            call_id,raw=db.execute("SELECT id,response_json FROM live_calls WHERE run_id=? AND stage='review'",(self.run_id,)).fetchone()
+            value=json.loads(raw);value['checks']=[]
+            db.execute('UPDATE live_calls SET response_json=? WHERE id=?',(json.dumps(value),call_id))
+        self.assertFalse(self.service.view(self.run_value())['review_recovery']['available'])
+        with self.assertRaises(DomainError):self.service.action(self.owner,self.run_id,command)
+        self.assertEqual(len(self.model.calls),8)
+
     def test_step_pauses_after_each_business_stage_and_survives_restart(self):
         for expected_calls in (2,3,4,5,6,7,8):
             self.step()

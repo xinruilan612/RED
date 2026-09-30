@@ -42,6 +42,9 @@ class Service:
         result['workflow_type']=run.workflow_type
         result['background']=self.jobs.public(run.run_id,run.owner_id)
         result['in_flight']=result.get('in_flight',False) or result['background']['status'] in ('queued','running','pausing')
+        from backend.review_recovery import public as recovery_public
+        result['review_recovery']=recovery_public(self.store,run)
+        if result['review_recovery']['available']:result['allowed_actions'].append('repair_review')
         return result
 
     def background(self, owner, run_id, data):
@@ -88,7 +91,7 @@ class Service:
         data = parse(Command, data)
         require(set(data)=={'action','version','key','payload'}, 'INVALID_INPUT', '命令字段无效')
         action, payload = data['action'],data['payload']
-        require(isinstance(action,str) and action in ('next','edit','supplement','accept','cancel','recover'), 'INVALID_INPUT', '未知操作')
+        require(isinstance(action,str) and action in ('next','edit','supplement','accept','cancel','recover','repair_review'), 'INVALID_INPUT', '未知操作')
         integer(data['version'],'version')
         require(isinstance(data['key'],str) and 0<len(data['key'])<=100 and isinstance(payload,dict), 'INVALID_INPUT', '命令参数无效')
         run = self.store.get(run_id,owner)
@@ -96,8 +99,11 @@ class Service:
             job=self.jobs.public(run_id,owner)
             require(job['status'] not in ('queued','running','pausing'),'JOB_ACTIVE','任务正在后台执行，请等待或暂停')
             require(job['status']=='idle','INVALID_TRANSITION','此任务使用后台执行，请点击后台继续')
-        if action in ('next','cancel','recover'):
+        if action in ('next','cancel','recover','repair_review'):
             require(not payload,'INVALID_INPUT','此操作无需参数')
+        if action=='repair_review':
+            from backend.review_recovery import repair
+            return self.view(repair(self.store,run_id,owner,data['version'],data['key']))
         if action=='recover':
             return self.view(self.executor.recover(run_id,owner,data['version']))
         if action=='next' and run.context.get('mode')=='live':
