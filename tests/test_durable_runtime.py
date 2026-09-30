@@ -99,6 +99,55 @@ class DurableTests(unittest.TestCase):
         with self.assertRaises(DomainError):self.service.action(self.owner,self.run_id,command)
         self.assertEqual(len(self.model.calls),8)
 
+    def historical_extra_review(self):
+        self.invalid_citation_review()
+        self.action('repair_review',{})
+        historical=self.run_value().review['issues'][0]['issue_id']
+        base=self.model.complete
+        def reviews(messages):
+            value,tokens=base(messages)
+            if self.model.calls[-1]=='review':
+                value.update(decision='revision_required',next_action='revise',issues=[{
+                    'issue_id':'current','severity':'major','state':'open','location':'body',
+                    'excerpt':'完整正文','reason':'缺少依据','suggestion':'补充原始资料'}])
+                if self.model.calls.count('review')==3:
+                    value['previous_issue_results']=[{'issue_id':'current','result':'unresolved'},
+                                                     {'issue_id':historical,'result':'unresolved'}]
+            return value,tokens
+        self.model.complete=reviews
+        for _ in range(4):self.step();Worker(self.service).once()
+        self.assertEqual(self.run_value().iteration,2)
+        self.assertEqual(self.job()['status'],'blocked')
+        return historical
+
+    def test_historical_extra_ids_recover_without_changing_unresolved_or_restarting_calls(self):
+        historical=self.historical_extra_review()
+        before=self.service.view(self.run_value());calls=list(self.model.calls)
+        self.assertTrue(before['review_recovery']['available'])
+        self.assertEqual(before['review_recovery']['excluded_previous_results'],[{'issue_id':historical,'result':'unresolved'}])
+        repaired=self.action('repair_review',{})
+        self.assertEqual(repaired['review']['previous_issue_results'],[{'issue_id':'current','result':'unresolved'}])
+        self.assertEqual(repaired['review']['decision'],'revision_required')
+        self.assertEqual(repaired['wait_reason'],'revision_limit')
+        self.assertNotIn('accept',repaired['allowed_actions'])
+        self.assertEqual(repaired['usage'],before['usage']);self.assertEqual(self.model.calls,calls)
+        self.assertEqual(repaired['node_runs'][-1]['input']['excluded_previous_results'][0]['issue_id'],historical)
+
+    def test_historical_recovery_rejects_missing_duplicate_unknown_and_approval(self):
+        historical=self.historical_extra_review()
+        with self.store.connect() as db:
+            call_id,raw=db.execute(f"SELECT id,response_json FROM live_calls WHERE run_id=? AND stage='review' ORDER BY {self.store.order_column} DESC LIMIT 1",(self.run_id,)).fetchone()
+        original=json.loads(raw)
+        variants=[[],[{'issue_id':'current','result':'unresolved'}]*2,
+            [{'issue_id':'current','result':'unresolved'},{'issue_id':'unknown','result':'unresolved'}]]
+        for results in variants:
+            value=dict(original,previous_issue_results=results)
+            with self.store.connect() as db:db.execute('UPDATE live_calls SET response_json=? WHERE id=?',(json.dumps(value),call_id))
+            self.assertFalse(self.service.view(self.run_value())['review_recovery']['available'])
+        value=dict(original,decision='approved',next_action='await_user_confirmation')
+        with self.store.connect() as db:db.execute('UPDATE live_calls SET response_json=? WHERE id=?',(json.dumps(value),call_id))
+        self.assertFalse(self.service.view(self.run_value())['review_recovery']['available'])
+
     def test_step_pauses_after_each_business_stage_and_survives_restart(self):
         for expected_calls in (2,3,4,5,6,7,8):
             self.step()

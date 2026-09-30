@@ -54,10 +54,10 @@ async function history(){
 }
 function currentAgent(){if(!run)return 'audience';if(run.run_status==='WAITING_USER'||run.run_status==='SUCCEEDED'||(!run.in_flight&&run.review?.decision==='revision_required'&&run.allowed_actions.includes('edit')))return 'human';if(run.current_stage==='brief')return 'audience';return run.current_stage;}
 function renderTestingBudget(){
- const budget=run?.testing_budget,host=$('testingBudget');
- host.hidden=!budget;if(!budget)return;
- host.textContent=`参考预算 ¥${Number(budget.target_cny).toFixed(2)}，希望约写 ${budget.target_runs} 轮 · 已计入约 ¥${Number(budget.spent_cny).toFixed(4)} · 参考余额约 ¥${Number(budget.remaining_cny).toFixed(4)} · 已进行 ${budget.run_count} 轮（含未完成任务）。${budget.warning?`提醒：${budget.warning} `:''}超出金额或轮数仍可继续；改稿与复审计入费用，重启或换天不重置。费用按高峰价估算，未决调用保守占用。`;
+ const warning=run?.testing_budget?.warning,host=$('testingBudget');
+ host.hidden=!warning;host.textContent=warning?`预算提醒：${warning}`:'';
 }
+
 function renderMode(mode){
  const live=mode==='live';
  $('modeBadge').textContent=live?'真实 AI · DeepSeek':'模拟运行';
@@ -129,12 +129,12 @@ function renderDetails(){
 }
 function renderRecovery(){
  const canRepair=run.allowed_actions.includes('repair_review');
- const blocked=run.current_stage==='reviewer'&&run.drafts.length&&!run.allowed_actions.includes('accept');
+ const blocked=run.current_stage==='reviewer'&&run.drafts.length&&!run.review&&!run.allowed_actions.includes('accept');
  $('reviewRecovery').hidden=!blocked;
  $('repairReview').hidden=!canRepair;
  if(!blocked)return;
  $('reviewRecoveryTitle').textContent=canRepair?'稿件已保存，先处理审核问题':'稿件已保存，审核尚未完成';
- $('reviewRecoveryMessage').textContent=canRepair?'审核返回了意见，但其中的引用没有通过原文校验。点击下方按钮可免费整理已收到的意见并进入人工改稿，保留当前稿件，不重新搜索、不再次调用模型。修改后仍需复审，才能最终确认。':run.in_flight?'正在审核，完成后这里会显示下一步。你可以先阅读下方稿件。':'当前不能确认稿件。请查看上方具体错误与运行记录；不要反复启动同一个失败步骤。';
+ $('reviewRecoveryMessage').textContent=canRepair?(run.review_recovery?.reason||'审核结果未通过格式校验。可以免费整理已收到的意见，保留稿件和问题，进入人工处理，不再次调用模型。'):run.in_flight?'正在审核，完成后这里会显示下一步。你可以先阅读下方稿件。':'当前不能确认稿件。请查看上方具体错误与运行记录；不要反复启动同一个失败步骤。';
  const rejected=[...(run.calls||[])].reverse().find(c=>c.stage==='review'&&c.status==='invalid'&&!c.inherited);
  $('reviewRecoveryIssues').innerHTML=(rejected?.diagnostic_response?.issues||[]).map(i=>`<div class="issue"><b>${esc(i.excerpt||i.location||'稿件问题')}</b><p>${esc(i.reason)}</p><p>修改建议：${esc(i.suggestion)}</p></div>`).join('');
  if(canRepair){$('next').hidden=true;$('auto').hidden=true;}
@@ -154,7 +154,7 @@ function renderHuman(){
  if(run.run_status==='SUCCEEDED'){title='这个版本，已由你确认';message='可以下载已确认稿件。审核不能保证事实正确，发布前仍需你检查。';}
  else if(run.wait_reason==='missing_material'){title='资料还不够，请补充';message='请提供缺失的真实素材。保存后，两个分析角色会使用新快照重新执行。';}
  else if(run.wait_reason==='hypothesis_permission'){title='没有历史数据，需要你选择';message='本次账号快照没有可用的历史指标。可以允许明确标注的假设模式；也可取消任务，导入历史指标后新建创作。';}
- else if(run.wait_reason==='revision_limit'){title='已达到自动改稿上限';message='没有自动通过。请查看未解决的问题，取消本任务后带着补充资料新建任务。';}
+ else if(run.wait_reason==='revision_limit'){title='已达到自动改稿上限';message='连续改稿仍未解决下方问题，系统不会自动确认。若问题是缺少来源，继续改写不能补出事实依据：请先准备支持关键结论的资料正文和来源链接，再取消本任务并新建创作；已有三个版本会保留。';}
  else if(revision){title='主编发现了问题，你可以介入';message='选择自动改稿，或亲自修改。两种方式都会保存新版本，然后再次审核。';}
  else if(allowed.includes('accept')){title='审核结束，最后由你决定';message='请检查正文与素材。你可以先修改，也可以确认当前版本；修改后必须重新审核。';}
  if(run.run_status==='WAITING_USER'&&['missing_material','hypothesis_permission'].includes(run.wait_reason)&&!allowed.includes('supplement')){title='已达到本轮补充上限';message='已有记录会保留。请取消本任务，带着完整资料新建创作。';}
@@ -218,7 +218,7 @@ $('history').addEventListener('click',async e=>{const b=e.target.closest('[data-
 $('newRun').onclick=()=>{if(busy||!dirtyGuard())return;showPage('studio');auto=false;editing=false;$('editor').hidden=true;$('workbench').hidden=true;$('welcome').hidden=false;renderMode($('mode').value);fillAccountBrief();clearError();};
 $('flow').onclick=e=>{const chip=e.target.closest('[data-stage]');const b=e.target.closest('[data-agent]');if(chip){selected='content';detailStage=chip.dataset.stage;render();}else if(b){selected=b.dataset.agent;detailStage=null;render();}};
 $('recover').onclick=()=>act('recover');
-$('repairReview').onclick=async()=>{if(await act('repair_review')){clearError();selected='human';render();$('humanPanel').scrollIntoView({behavior:'smooth',block:'center'});toast('已有审核意见已整理。请查看问题并修改稿件；本次没有调用 AI。');}};
+$('repairReview').onclick=async()=>{if(await act('repair_review')){clearError();selected='human';render();$('humanPanel').scrollIntoView({behavior:'smooth',block:'center'});toast('已有审核意见已整理。请按提示补充资料或修改稿件；本次没有调用 AI。');}};
 $('next').onclick=()=>act('next');$('auto').onclick=autoRun;
 $('cancel').onclick=async()=>{
  if(!window.confirm('取消当前任务？已有版本会保留。已发送给模型的请求可能仍产生费用。'))return;

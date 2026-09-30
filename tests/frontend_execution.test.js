@@ -55,19 +55,23 @@ test('unavailable confirmation buttons remain disabled after workbench rendering
  assert.equal(s.element('reviewConfirmUnavailable').disabled,true);
  assert.equal(s.element('confirmationPending').disabled,true);
 });
-test('experiment target displays cost without a three-run hard limit',()=>{
- const s=setup();s.eval("run.testing_budget={active:true,target_cny:0.30,spent_cny:0.081182,remaining_cny:0.218818,target_runs:3,run_count:1};renderTestingBudget()");
+test('routine budget explanation stays hidden',()=>{
+ const s=setup();s.eval("run.testing_budget={target_cny:0.30,target_runs:3,spent_cny:0.09,warning:''};renderTestingBudget()");
+ assert.equal(s.element('testingBudget').hidden,true);
+ assert.equal(s.element('testingBudget').textContent,'');
+});
+test('only actionable budget warning is shown without disabling continuation',()=>{
+ const s=setup();s.eval("run.testing_budget={warning:'已超过参考预算，仍可继续'};renderTestingBudget()");
  assert.equal(s.element('testingBudget').hidden,false);
- assert.match(s.element('testingBudget').textContent,/¥0.30/);
- assert.match(s.element('testingBudget').textContent,/已进行 1 轮/);
- assert.match(s.element('testingBudget').textContent,/0.2188/);
- assert.match(s.element('testingBudget').textContent,/不重置/);
- s.eval('run.testing_budget=null;renderTestingBudget()');assert.equal(s.element('testingBudget').hidden,true);
+ assert.equal(s.element('testingBudget').textContent,'预算提醒：已超过参考预算，仍可继续');
+ assert.equal(s.element('start').disabled,false);
+ s.eval('run.testing_budget=null;renderTestingBudget()');
+ assert.equal(s.element('testingBudget').hidden,true);
 });
 
-test('over target warning leaves continuation controls available',()=>{
- const s=setup();s.eval("run.testing_budget={target_cny:0.30,target_runs:3,spent_cny:0.32,remaining_cny:0,run_count:4,warning:'已超过参考预算，仍可继续'};renderTestingBudget()");
- assert.match(s.element('testingBudget').textContent,/提醒：已超过参考预算/);
- assert.match(s.element('testingBudget').textContent,/已进行 4 轮/);
- assert.equal(s.element('start').disabled,false);
+test('recovered review hides stale failure panel and explains current recovery',()=>{
+ const s=setup();s.eval("run.current_stage='reviewer';run.drafts=[{}];run.allowed_actions=['repair_review'];run.review_recovery={reason:'复审编号不一致，可免费整理并补充资料'};renderRecovery()");
+ assert.match(s.element('reviewRecoveryMessage').textContent,/复审编号不一致/);
+ s.eval("run.review={decision:'needs_human'};run.allowed_actions=['supplement','cancel'];renderRecovery()");
+ assert.equal(s.element('reviewRecovery').hidden,true);
 });

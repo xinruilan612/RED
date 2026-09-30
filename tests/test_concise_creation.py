@@ -38,3 +38,15 @@ class ConciseCreationTests(unittest.TestCase):
         self.assertEqual(data['upstream']['title']['selected'],'候选一')
         self.assertIn('150至250字',messages[0]['content'])
         self.assertIn('全部8项',messages[0]['content'])
+
+    def test_reaudit_prompt_only_tracks_immediate_issue_ids(self):
+        run=self.fixture()
+        run.prior_review['previous_issue_results']=[{'issue_id':'obsolete','result':'unresolved'}]
+        before=copy.deepcopy(run.prior_review)
+        messages,data=messages_for(run,'review')
+        self.assertEqual(data['required_previous_issue_ids'],['prior'])
+        self.assertNotIn('previous_issue_results',data['previous_review'])
+        self.assertNotIn('obsolete',messages[1]['content'])
+        self.assertIn('"issue_id": "prior", "result": "unresolved"',messages[0]['content'])
+        self.assertIn('必须needs_human',messages[0]['content'])
+        self.assertEqual(run.prior_review,before)
