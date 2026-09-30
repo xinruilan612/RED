@@ -84,6 +84,43 @@ def make_plan(state, data, created_at):
         limitation='计划是可撤销的建议；不会自动创作、批准或发布。'))
 
 
+def make_agent_plan(state, data, created_at):
+    required={'account_id','week_start','source_type','profile_revision','goal','context_fingerprint','profile_snapshot',
+              'memory_refs','weekly_summary','data_gaps','basis_refs','execution','tasks'}
+    require(set(data)==required,'INVALID_INPUT','Agent 计划字段无效')
+    account=find_account(state,data['account_id'])
+    require(data['source_type'] in ('manual','simulation'),'INVALID_INPUT','计划数据来源无效')
+    require(data['profile_revision']==account['revision'],'VERSION_CONFLICT','账号档案已更新，请重新生成计划')
+    require(isinstance(data['context_fingerprint'],str) and len(data['context_fingerprint'])==64,
+            'INVALID_INPUT','Agent 计划依据指纹无效')
+    try:start=date.fromisoformat(data['week_start'])
+    except (TypeError,ValueError):require(False,'INVALID_INPUT','周开始日期无效')
+    require(start.weekday()==0,'INVALID_INPUT','请选择周一作为计划开始日期')
+    require(not any(p['account_id']==account['id'] and p['week_start']==start.isoformat()
+                    and p['source_type']==data['source_type'] and p['status'] in ('draft','accepted') for p in state['plans']),
+            'DUPLICATE','本周已有有效计划；撤销后可重新生成')
+    require(isinstance(data['tasks'],list) and len(data['tasks'])==account['profile']['weekly_frequency'],
+            'INVALID_INPUT','计划篇数与账号档案不符')
+    require(isinstance(data['execution'],dict) and data['execution'].get('stage')=='operations_plan'
+            and data['execution'].get('model_calls')==1,'INVALID_INPUT','缺少 Agent 调用记录')
+    tasks=[]
+    for task in data['tasks']:
+        require(set(task)=={'id','date','title','pillar','format','angle','action','success_signal','basis_refs','reason','status','publication_id'},
+                'INVALID_INPUT','Agent 待办字段无效')
+        try:day=date.fromisoformat(task['date'])
+        except (TypeError,ValueError):require(False,'INVALID_INPUT','待办日期无效')
+        require(0<=(day-start).days<=6,'INVALID_INPUT','待办日期需在计划周内')
+        require(task['status']=='planned' and task['publication_id'] is None,'INVALID_INPUT','Agent 待办初始状态无效')
+        tasks.append(dict(task))
+    state['plans'].insert(0,dict(id=str(uuid4()),account_id=account['id'],week_start=start.isoformat(),
+        source_type=data['source_type'],status='draft',created_at=created_at,goal=data['goal'],
+        profile_revision=account['revision'],profile_snapshot=data['profile_snapshot'],
+        context_fingerprint=data['context_fingerprint'],
+        memory_refs=data['memory_refs'],weekly_summary=data['weekly_summary'],data_gaps=data['data_gaps'],
+        basis_refs=data['basis_refs'],execution=data['execution'],tasks=tasks,
+        limitation='AI 生成的待确认建议；依据仅限列出的账号记录，不能保证增长或转化，不会自动发布。'))
+
+
 def update_plan(state, data):
     require(set(data) == {'id','status'}, 'INVALID_INPUT', '计划状态字段无效')
     plan = next((p for p in state['plans'] if p['id'] == data['id']), None)

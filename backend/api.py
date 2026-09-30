@@ -168,6 +168,11 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
     @app.post('/api/operations')
     def operate(data: dict, user=Depends(logged)): return service.operations.command(user['owner'],data)
 
+    @app.post('/api/operations/agent-plan')
+    def agent_plan(data: dict, user=Depends(logged)):
+        auth.throttle('operations-plan:'+user['owner'],12,3600)
+        return service.operations_planner.generate(user['owner'],data)
+
     @app.get('/api/operations/due')
     def due(user=Depends(logged)):
         from backend.planning import due_reviews

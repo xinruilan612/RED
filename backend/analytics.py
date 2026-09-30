@@ -132,5 +132,10 @@ def refresh_plans(state):
         account = accounts.get(plan['account_id'])
         profile_changed = account is None or plan.get('profile_revision') != account['revision']
         memory_changed = not set(plan['memory_refs']) <= valid
-        if plan['status'] not in ('revoked', 'needs_review') and (profile_changed or memory_changed):
+        context_changed = False
+        if account and plan.get('context_fingerprint'):
+            from backend.operations_planner import build_snapshot
+            from backend.workflow import digest
+            context_changed = digest(build_snapshot(state, account['id'], plan['source_type'])) != plan['context_fingerprint']
+        if plan['status'] not in ('revoked', 'needs_review') and (profile_changed or memory_changed or context_changed):
             plan['status'] = 'needs_review'

@@ -14,6 +14,8 @@ class Service:
         upgrade(store)
         self.operations = Operations(store)
         self.executor = Executor(store,config,client)
+        from backend.operations_planner import OperationsPlanner
+        self.operations_planner=OperationsPlanner(store,self.operations,self.executor)
         from backend.knowledge import Knowledge
         self.knowledge = Knowledge(store)
         from backend.jobs import Jobs

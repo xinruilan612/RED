@@ -9,7 +9,8 @@ from backend.workflow import digest
 
 CREATION_STAGES = ('audience','research','strategy','outline','hook','title','body','revise','review')
 WINDTUNNEL_STAGES = ('wt_conditions','wt_read','wt_verify','wt_patch')
-STAGES = CREATION_STAGES + WINDTUNNEL_STAGES
+OPERATIONS_STAGES = ('operations_plan',)
+STAGES = CREATION_STAGES + WINDTUNNEL_STAGES + OPERATIONS_STAGES
 FAMILY = 'SELECT run_id FROM live_lineage WHERE budget_id=?'
 
 
@@ -28,10 +29,11 @@ class ModelRouter:
         self.client = client
 
     def policy(self, workflow_type='creation'):
-        require(workflow_type in ('creation','windtunnel'),'INVALID_INPUT','工作流类型无效')
-        stages = WINDTUNNEL_STAGES if workflow_type=='windtunnel' else CREATION_STAGES
+        require(workflow_type in ('creation','windtunnel','operations'),'INVALID_INPUT','工作流类型无效')
+        stages = {'windtunnel':WINDTUNNEL_STAGES,'operations':OPERATIONS_STAGES}.get(workflow_type,CREATION_STAGES)
         routes = {s: asdict(self.routes.get(s, Route('fixture' if self.client else 'deepseek', self.config.model))) for s in stages}
-        return {'version':digest(routes), 'routes':routes, 'prompt_version':'windtunnel.v1' if workflow_type=='windtunnel' else CONTRACT['runtime_extension']['prompt_version']}
+        prompt={'windtunnel':'windtunnel.v1','operations':'operations_plan.v1'}.get(workflow_type,CONTRACT['runtime_extension']['prompt_version'])
+        return {'version':digest(routes), 'routes':routes, 'prompt_version':prompt}
 
     def route(self, policy, stage):
         require(stage in STAGES and stage in policy.get('routes',{}) and policy.get('version') == digest(policy.get('routes')), 'CONFIG_INVALID','模型路由快照无效')

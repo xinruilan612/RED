@@ -10,7 +10,7 @@ from backend.demo import validate_text
 from backend.workflow import digest
 from backend.accounts import migrate, find_account, save_account, account_id, new_account
 from backend.analytics import AnalyticsAgent, invalidate, refresh_plans
-from backend.planning import make_plan, update_plan, update_task
+from backend.planning import make_plan, make_agent_plan, update_plan, update_task
 
 PLATFORMS = ('xiaohongshu', 'douyin')
 
@@ -125,11 +125,12 @@ class Operations:
                 'preferences': [copy.deepcopy(p) for p in state['preferences'] if p['account_id'] == identity
                                 and p['mode'] == mode][-10:]}
 
-    def command(self, owner, command):
+    def command(self, owner, command, internal=False):
         require(set(command) == {'action','payload','version','key'}, 'INVALID_INPUT', '操作字段无效')
         integer(command['version'], 'version')
         key = validate_text(command['key'], '操作标识', 100)
         require(isinstance(command['payload'],dict), 'INVALID_INPUT', '参数无效')
+        require(internal or command['action']!='create_agent_plan','INVALID_INPUT','该计划只能由运营 Agent 生成')
         fingerprint = digest(command)
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
@@ -140,6 +141,7 @@ class Operations:
             state = self.read(owner, db)
             require(state['version'] == command['version'], 'VERSION_CONFLICT', '运营数据已更新，请刷新后重试')
             self.apply(db, owner, state, command['action'], command['payload'])
+            refresh_plans(state)
             state['version'] += 1
             encoded = json.dumps(state, ensure_ascii=False)
             db.execute('INSERT INTO operations VALUES(?,?) ON CONFLICT(owner) DO UPDATE SET payload=excluded.payload', (owner,encoded))
@@ -182,6 +184,8 @@ class Operations:
             return
         if action == 'create_plan':
             make_plan(state, data, now()); return
+        if action == 'create_agent_plan':
+            make_agent_plan(state,data,now()); return
         if action == 'plan_status':
             update_plan(state, data); return
         if action == 'plan_task':

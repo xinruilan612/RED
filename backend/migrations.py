@@ -41,6 +41,14 @@ CREATE INDEX windtunnel_checklists_scope ON windtunnel_checklists(owner,account_
 CREATE TABLE windtunnel_checklist_commands (
  owner TEXT NOT NULL, key TEXT NOT NULL, fingerprint TEXT NOT NULL,
  response TEXT NOT NULL, PRIMARY KEY(owner,key));
+'''), (4, '''
+CREATE TABLE operations_plan_attempts (
+ owner TEXT NOT NULL, key TEXT NOT NULL, fingerprint TEXT NOT NULL,
+ account_id TEXT NOT NULL, week_start TEXT NOT NULL,
+ status TEXT NOT NULL, response TEXT, error TEXT,
+ created_at DOUBLE PRECISION NOT NULL,
+ PRIMARY KEY(owner,key));
+CREATE UNIQUE INDEX operations_plan_one_active_week ON operations_plan_attempts(owner,account_id,week_start) WHERE status='running';
 '''))
 
 
