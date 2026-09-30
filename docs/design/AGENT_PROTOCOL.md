@@ -56,7 +56,7 @@ approved 要求七项 required_pass 全部 pass，originality_risk 允许 pass�
 
 对证据的语义判断由 Reviewer 检查原始文本快照；Tool 做引用/位置/规则的确定性检查。若工具内部另用模型，必须计入统一预算并记录真实调用。审核不得仅相信研究包的 supported 标记。取消、次数上限和预算判断由编排器执行。
 
-模型返回 approved 时 next_action 必须 await_user_confirmation；revision_required 必须 revise；needs_human 必须 request_human 且 human_questions 非空。人工接受需以事务重新核对 run_status、wait_reason、status_version、draft_ref、review_ref、snapshot_id、policy_ref 和内容 hash。用户编辑使旧审核失效；新稿复审前拒绝接受和正式导出。
+模型返回 approved 时 next_action 必须 await_user_confirmation；revision_required 必须 revise；needs_human 必须 request_human 且 human_questions 非空。人工接受需以事务重新核对 run_status、wait_reason、status_version、draft_ref、review_ref、snapshot_id、policy_ref 和内容 hash。用户编辑使旧审核失效；新稿复审前拒绝作为 AI 审核通过的版本接受。用户显式知晓问题后可走下述独立人工采用路径。
 
 ## 5. 调用预算、工具与记忆
 
@@ -92,3 +92,10 @@ search_public_sources/fetch_source_text 虽属于 research 能力名单，MVP �
 - 真实历史导入与模型生成模式分离：imported + manual 表示用户记录，未由平台核实；simulation 永不进入 live 的历史指标或经验。恢复码是本地空间凭证，数据库只存哈希，可重新生成；不是平台 OAuth。
 
 四张角色卡文末明确本机适配字段，不将生产示例字段标成已全面实现。旧 learn 命令为兼容 v0.4 单篇描述性复盘保留，新 UI 使用 analyze。
+
+
+### 2026-09-30 用户人工采用扩展
+
+用户本次明确授权覆盖原规则“新稿复审前拒绝接受和正式导出”：保留正常审核确认路径，另提供 `adopt_manual`。人工采用绑定用户身份、状态版本、最新稿件引用与内容哈希，要求明确 acknowledge=true；活动后台任务、已结束/取消任务及过期版本不可采用。记录 acceptance.mode=manual_override 及原审核/问题快照，不将问题改为 resolved，不伪造 approved。
+
+自动改稿上限只阻止继续自动改稿，不阻止手动编辑。手动编辑保存新版本，旧审核失效；用户可请求复审，也可单独人工采用该版本。导出必须标明人工采用与审核状态。SUCCEEDED 表示该创作版本已由用户决定采用，不等于 AI 审核通过或已发布；进入发布中心后仍需单独批准准确账号及稿件。原 workflow 图描述自动审核路径，人工采用扩展见机器契约 manual_adoption_extension。

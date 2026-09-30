@@ -94,12 +94,12 @@ function render(){
  return `<button class="node ${isCurrent?'current':''} ${done?'done':''} ${human?'human':''} ${selected===key?'selected':''}" data-agent="${key}" aria-pressed="${selected===key}"><span class="node-top"><span>${key==='human'?'由你决定':'AGENT '+num}</span><span>${label}</span></span><b>${names[key]}</b><small>${sub}</small></button>`;
  };
  const contentStages=['strategy','outline','hook','title','body'].map(s=>`<button class="stage-chip ${run.artifacts.some(a=>a.stage===s)?'done':''}" data-stage="${s}">${stages[s]}</button>`).join('');
- $('flow').innerHTML=`<div class="parallel">${node('audience','01','理解读者 · 明确假设')}${node('research','02','收录素材 · 标记缺口')}</div><div class="connector">同一份需求 · 并行分析<span>↓ 汇合 ↓</span></div>${node('content','03','策略与写作 · 同一角色负责返修')}<div class="stages">${contentStages}</div><div class="connector"><span>↓</span></div>${node('reviewer','04','问题定位 · 修改建议 · 再次审核')}<div class="connector">不通过 ↺ 回到创作 / 通过 ↓</div>${node('human','YOU','补资料 / 改稿 / 比较版本 / 最后确认')}`;
+ $('flow').innerHTML=`<div class="parallel">${node('audience','01','理解读者 · 明确假设')}${node('research','02','收录素材 · 标记缺口')}</div><div class="connector">同一份需求 · 并行分析<span>↓ 汇合 ↓</span></div>${node('content','03','策略与写作 · 同一角色负责返修')}<div class="stages">${contentStages}</div><div class="connector"><span>↓</span></div>${node('reviewer','04','问题定位 · 修改建议 · 再次审核')}<div class="connector">审核意见保留 ↓ 最后由你决定</div>${node('human','YOU','补资料 / 改稿 / 比较版本 / 最后确认')}`;
  renderDetails();renderHuman();renderRecovery();renderDraft();renderTimeline();renderCalls();
  document.querySelectorAll('#workbench button').forEach(b=>{if(!b.closest('#flow')&&b.id!=='auto')b.disabled=busy||(b.dataset.titleChoice!==undefined&&run.artifacts.find(a=>a.stage==='title')?.value.candidates[Number(b.dataset.titleChoice)]===run.drafts.at(-1)?.content.selected_title);});
  $('cancel').disabled=busy&&!run.in_flight;$('reviewConfirmUnavailable').disabled=true;$('confirmationPending').disabled=true;
- if(background&&run.in_flight){for(const id of ['editButton','accept','revise','recover'])$(id).disabled=true;}
- if(editing){$('next').disabled=true;$('auto').disabled=true;$('accept').disabled=true;$('revise').disabled=true;$('editButton').disabled=true;}
+ if(background&&run.in_flight){for(const id of ['editButton','accept','adoptManual','revise','recover'])$(id).disabled=true;}
+ if(editing){$('next').disabled=true;$('auto').disabled=true;$('accept').disabled=true;$('adoptManual').disabled=true;$('revise').disabled=true;$('editButton').disabled=true;}
  else $('auto').disabled=busy&&!auto;
 }
 function friendly(agent,stage,value){
@@ -117,7 +117,7 @@ function friendly(agent,stage,value){
 function renderDetails(){
  $('detailTitle').textContent=names[selected]||'步骤详情';
  if(selected==='human'){
- $('details').innerHTML='<div class="detail-block"><h3>最后决定由你做</h3><p>修改会创建新版本，必须再次审核。只有你确认准确版本后才能导出。</p></div>'+ (run.accepted_ref?'<p>✓ 已确认版本 '+esc(run.accepted_ref.slice(0,8))+'</p>':'<p class="muted">尚未确认任何版本。</p>');return;
+ $('details').innerHTML='<div class="detail-block"><h3>最后决定由你做</h3><p>修改会创建新版本。你可以申请 AI 复审，也可以知晓现有问题后人工采用准确版本；人工采用不会标为 AI 审核通过。</p></div>'+ (run.accepted_ref?'<p>✓ 已确认版本 '+esc(run.accepted_ref.slice(0,8))+'</p>':'<p class="muted">尚未确认任何版本。</p>');return;
  }
  const logs=run.node_runs.filter(n=>n.agent===selected);
  if(!logs.length){$('details').innerHTML='<div class="empty">这个角色还没有执行。<br>启动运行后，可以查看它的输入和产物。</div>';return;}
@@ -129,7 +129,7 @@ function renderDetails(){
 }
 function renderRecovery(){
  const canRepair=run.allowed_actions.includes('repair_review');
- const blocked=run.current_stage==='reviewer'&&run.drafts.length&&!run.review&&!run.allowed_actions.includes('accept');
+ const blocked=run.current_stage==='reviewer'&&run.drafts.length&&!run.review&&!run.allowed_actions.includes('accept')&&!run.allowed_actions.includes('adopt_manual');
  $('reviewRecovery').hidden=!blocked;
  $('repairReview').hidden=!canRepair;
  if(!blocked)return;
@@ -141,25 +141,29 @@ function renderRecovery(){
 }
 function renderHuman(){
  const allowed=run.allowed_actions,review=run.review;
+ const issueReview=review||run.prior_review||[...(run.calls||[])].reverse().find(c=>c.stage==='review'&&c.status==='invalid'&&!c.inherited)?.diagnostic_response;
  const revision=review?.decision==='revision_required';
- const visible=run.run_status==='WAITING_USER'||revision||run.run_status==='SUCCEEDED';
+ const visible=run.run_status==='WAITING_USER'||revision||allowed.includes('adopt_manual')||run.run_status==='SUCCEEDED';
  $('humanPanel').hidden=!visible;
  $('supplyForm').hidden=!allowed.includes('supplement');
  $('revise').hidden=!(revision&&allowed.includes('next'));
- $('confirmationPending').hidden=allowed.includes('accept')||run.run_status==='SUCCEEDED';
+ $('confirmationPending').hidden=allowed.includes('accept')||allowed.includes('adopt_manual')||run.run_status==='SUCCEEDED';
+ $('adoptManual').hidden=!allowed.includes('adopt_manual');
+ $('adoptManual').textContent=`已知晓问题，采用当前版本（第 ${run.drafts.length} 版）`;
  $('editButton').hidden=!allowed.includes('edit');$('accept').hidden=!allowed.includes('accept');$('export').hidden=!allowed.includes('export');
  $('export').href=`/api/runs/${run.run_id}/export`;
  $('sendToPublish').hidden=run.run_status!=='SUCCEEDED';
  let title='需要你的决定',message='';
- if(run.run_status==='SUCCEEDED'){title='这个版本，已由你确认';message='可以下载已确认稿件。审核不能保证事实正确，发布前仍需你检查。';}
+ if(run.run_status==='SUCCEEDED'){title=run.acceptance?.mode==='manual_override'?'这个版本，已由你人工采用':'这个版本，已由你确认';message=run.acceptance?.mode==='manual_override'?'你已知晓审核问题并采用此版本。审核意见仍保留，这不表示 AI 审核通过；可以下载，发布需另行批准。':'可以下载已确认稿件。审核不能保证事实正确，发布前仍需你检查。';}
  else if(run.wait_reason==='missing_material'){title='资料还不够，请补充';message='请提供缺失的真实素材。保存后，两个分析角色会使用新快照重新执行。';}
  else if(run.wait_reason==='hypothesis_permission'){title='没有历史数据，需要你选择';message='本次账号快照没有可用的历史指标。可以允许明确标注的假设模式；也可取消任务，导入历史指标后新建创作。';}
- else if(run.wait_reason==='revision_limit'){title='已达到自动改稿上限';message='连续改稿仍未解决下方问题，系统不会自动确认。若问题是缺少来源，继续改写不能补出事实依据：请先准备支持关键结论的资料正文和来源链接，再取消本任务并新建创作；已有三个版本会保留。';}
- else if(revision){title='主编发现了问题，你可以介入';message='选择自动改稿，或亲自修改。两种方式都会保存新版本，然后再次审核。';}
+ else if(run.wait_reason==='revision_limit'){title='已达到自动改稿上限';message='AI 自动改稿已停止。你仍可手动修改，或知晓下方问题后采用当前版本；人工采用会单独记录，不表示 AI 审核通过。';}
+ else if(revision){title='主编发现了问题，最后由你决定';message='你可以按意见改稿、手动修改，或知晓问题后人工采用当前版本。';}
+ else if(allowed.includes('adopt_manual')){title='当前稿件，最后由你决定';message='这个版本尚未通过 AI 审核。可以继续修改或复审，也可以知晓问题后人工采用。';}
  else if(allowed.includes('accept')){title='审核结束，最后由你决定';message='请检查正文与素材。你可以先修改，也可以确认当前版本；修改后必须重新审核。';}
- if(run.run_status==='WAITING_USER'&&['missing_material','hypothesis_permission'].includes(run.wait_reason)&&!allowed.includes('supplement')){title='已达到本轮补充上限';message='已有记录会保留。请取消本任务，带着完整资料新建创作。';}
+ if(run.run_status==='WAITING_USER'&&['missing_material','hypothesis_permission'].includes(run.wait_reason)&&!allowed.includes('supplement')){title='已达到本轮补充上限';message=allowed.includes('adopt_manual')?'你仍可修改现有稿件，或知晓问题后人工采用。':'已有记录会保留。请取消本任务，带着完整资料新建创作。';}
  $('humanTitle').textContent=title;$('humanMessage').textContent=message;
- $('issues').innerHTML=(review?.human_questions||[]).map(q=>'<p class="issue">'+esc(q)+'</p>').join('')+(review?.issues||[]).map(i=>`<div class="issue"><b>${esc(({selected_title:'标题',body:'正文',cta:'互动引导',tags:'标签'})[i.location]||i.location)} · ${esc(i.excerpt)}</b><p>${esc(i.reason)}</p><p>修改建议：${esc(i.suggestion)}</p></div>`).join('');
+ $('issues').innerHTML=(!review&&issueReview?'<p class="helper">以下为已有审核意见，仅供参考；当前版本尚未完成有效复审。</p>':'')+(issueReview?.human_questions||[]).map(q=>'<p class="issue">'+esc(q)+'</p>').join('')+(issueReview?.issues||[]).map(i=>`<div class="issue"><b>${esc(({selected_title:'标题',body:'正文',cta:'互动引导',tags:'标签'})[i.location]||i.location)} · ${esc(i.excerpt)}</b><p>${esc(i.reason)}</p><p>修改建议：${esc(i.suggestion)}</p></div>`).join('');
 }
 function draftHTML(d,index,changed=false){const c=d.content;return `<article class="draft-copy ${changed?'changed':''}"><span class="version-tag">版本 ${index+1} · ${d.actor==='user'?'你手动修改':run.mode==='live'?'AI 创作':'模拟创作'} · ${esc(d.ref.slice(0,8))}${run.accepted_ref===d.ref?' · 已确认':''}</span><h3>${esc(c.selected_title)}</h3><pre>${esc(c.body)}</pre><p>${esc(c.cta)}</p><div>${(c.tags||[]).map(t=>'<span class="tag">#'+esc(t)+'</span>').join('')}</div></article>`;}
 function renderDraft(){
@@ -233,8 +237,9 @@ $('cancel').onclick=async()=>{
 $('revise').onclick=()=>act('next');
 $('editButton').onclick=()=>{auto=false;const c=run.drafts.at(-1).content;$('editTitle').value=c.selected_title;$('editBody').value=c.body;$('editCta').value=c.cta;$('editTags').value=c.tags.join('，');editing=true;$('editor').hidden=false;render();$('editor').scrollIntoView({behavior:'smooth',block:'center'});$('editTitle').focus();};
 $('discardEdit').onclick=()=>{editing=false;$('editor').hidden=true;render();};
-$('editor').onsubmit=async e=>{e.preventDefault();const data={selected_title:$('editTitle').value,body:$('editBody').value,cta:$('editCta').value,tags:$('editTags').value.split(/[,，]/).map(x=>x.trim()).filter(Boolean)};if(await act('edit',data)){editing=false;$('editor').hidden=true;render();toast('新版本已保存。请启动后台运行，重新审核。');}};
+$('editor').onsubmit=async e=>{e.preventDefault();const data={selected_title:$('editTitle').value,body:$('editBody').value,cta:$('editCta').value,tags:$('editTags').value.split(/[,，]/).map(x=>x.trim()).filter(Boolean)};if(await act('edit',data)){editing=false;$('editor').hidden=true;render();toast('新版本已保存。可以申请复审，也可以知晓问题后人工采用。');}};
 $('accept').onclick=async()=>{if(await act('accept',{draft_ref:run.drafts.at(-1).ref,review_ref:run.review.ref}))toast('已确认当前版本，可以下载。');};
+$('adoptManual').onclick=async()=>{const draft=run.drafts.at(-1);if(await act('adopt_manual',{draft_ref:draft.ref,content_hash:draft.content_hash,acknowledge:true})){clearError();toast('已人工采用当前版本，审核意见保留，可以下载。');}};
 $('supplyForm').onsubmit=async e=>{e.preventDefault();if(await act('supplement',{material:$('supply').value,allow_hypothesis:$('supplyHypothesis').checked}))toast('补充已保存，请启动运行重新分析。');};
 $('versionSelect').onchange=e=>{viewVersion=Number(e.target.value);renderDraft();};
 window.addEventListener('beforeunload',e=>{if(editing){e.preventDefault();e.returnValue='';}});

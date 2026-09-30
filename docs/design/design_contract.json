@@ -440,5 +440,22 @@
     "unknown_provider_outcome": "block_without_retry",
     "frontend_execution": "enqueue_and_poll",
     "node_effects": "transactional_ledger_and_domain_commit"
+  },
+  "manual_adoption_extension": {
+    "version": 1,
+    "action": "adopt_manual",
+    "acceptance_mode": "manual_override",
+    "explicit_acknowledgement": true,
+    "binds": [
+      "owner",
+      "status_version",
+      "draft_ref",
+      "content_hash",
+      "snapshot_id"
+    ],
+    "preserves_review_issues": true,
+    "marks_ai_approved": false,
+    "manual_edit_after_revision_limit": true,
+    "publication_requires_separate_approval": true
   }
 }

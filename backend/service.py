@@ -47,6 +47,7 @@ class Service:
         from backend.review_recovery import public as recovery_public
         result['review_recovery']=recovery_public(self.store,run)
         if result['review_recovery']['available']:result['allowed_actions'].append('repair_review')
+        if result['in_flight']:result['allowed_actions']=[a for a in result['allowed_actions'] if a=='cancel']
         return result
 
     def background(self, owner, run_id, data):
@@ -93,7 +94,7 @@ class Service:
         data = parse(Command, data)
         require(set(data)=={'action','version','key','payload'}, 'INVALID_INPUT', '命令字段无效')
         action, payload = data['action'],data['payload']
-        require(isinstance(action,str) and action in ('next','edit','supplement','accept','cancel','recover','repair_review'), 'INVALID_INPUT', '未知操作')
+        require(isinstance(action,str) and action in ('next','edit','supplement','accept','adopt_manual','cancel','recover','repair_review'), 'INVALID_INPUT', '未知操作')
         integer(data['version'],'version')
         require(isinstance(data['key'],str) and 0<len(data['key'])<=100 and isinstance(payload,dict), 'INVALID_INPUT', '命令参数无效')
         run = self.store.get(run_id,owner)
@@ -115,6 +116,8 @@ class Service:
         if action=='edit': payload={'content':validate_edit(payload)}
         if action=='supplement': require(set(payload)=={'material','allow_hypothesis'},'INVALID_INPUT','补料字段无效')
         if action=='accept': require(set(payload)=={'draft_ref','review_ref'} and all(isinstance(v,str) for v in payload.values()),'INVALID_INPUT','确认版本无效')
+        if action=='adopt_manual':
+            require(set(payload)=={'draft_ref','content_hash','acknowledge'} and all(isinstance(payload[k],str) and payload[k] for k in ('draft_ref','content_hash')) and payload['acknowledge'] is True,'INVALID_INPUT','请明确确认准确稿件并知晓审核问题')
         return self.view(self.store.command(run_id,owner,data['version'],data['key'],command,payload))
 
     def export(self, owner, run_id):
@@ -123,4 +126,5 @@ class Service:
         require('export' in actions(run),'INVALID_TRANSITION','请先确认准确版本')
         c = run.drafts[-1]['content']
         label = 'AI 创作稿（已人工确认；事实仍需核实）' if run.context.get('mode')=='live' else '模拟创作稿（未调用真实 AI）'
+        if (run.acceptance or {}).get('mode')=='manual_override':label += ' · 用户人工采用（未通过 AI 审核；审核意见保留）'
         return '# '+label+'\n\n# '+c['selected_title']+'\n\n'+c['body']+'\n\n'+c['cta']+'\n\n'+' '.join('#'+t for t in c['tags'])

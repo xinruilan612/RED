@@ -154,12 +154,13 @@ class Handler(BaseHTTPRequestHandler):
                 require(parts[3]=='export' and 'export' in actions(run),'INVALID_TRANSITION','确认稿件后才能导出')
                 draft=run.drafts[-1]['content']
                 heading='AI 创作稿（已人工确认；事实仍需核实）' if run.context.get('mode')=='live' else '模拟创作稿（未调用真实 AI）'
+                if (run.acceptance or {}).get('mode')=='manual_override':heading += ' · 用户人工采用（未通过 AI 审核；审核意见保留）'
                 body='# '+heading+'\n\n# '+draft['selected_title']+'\n\n'+draft['body']+'\n\n'+draft['cta']+'\n\n'+' '.join('#'+t for t in draft['tags'])
                 self.send(200,body.encode(),'text/markdown; charset=utf-8',filename='xhs-draft.md' if run.context.get('mode')=='live' else 'xhs-demo.md'); return
             require(len(parts)==4 and parts[3]=='actions','RESOURCE_NOT_FOUND','操作不存在')
             require(set(data)=={'action','version','key','payload'},'INVALID_INPUT','命令字段无效')
             action=data['action']; payload=data['payload']
-            require(isinstance(action,str) and action in ('next','edit','supplement','accept','cancel','recover'),'INVALID_TRANSITION','当前不能执行这个操作')
+            require(isinstance(action,str) and action in ('next','edit','supplement','accept','adopt_manual','cancel','recover'),'INVALID_TRANSITION','当前不能执行这个操作')
             integer(data['version'],'version')
             require(isinstance(data['key'],str) and 0<len(data['key'])<=100,'INVALID_INPUT','操作标识无效')
             require(isinstance(payload,dict),'INVALID_INPUT','操作参数无效')
@@ -174,6 +175,8 @@ class Handler(BaseHTTPRequestHandler):
                 require(set(payload)=={'material','allow_hypothesis'},'INVALID_INPUT','补料字段无效'); command='demo_supplement'
             elif action=='accept':
                 require(set(payload)=={'draft_ref','review_ref'} and all(isinstance(v,str) for v in payload.values()),'INVALID_INPUT','确认版本无效'); command='accept'
+            elif action=='adopt_manual':
+                require(set(payload)=={'draft_ref','content_hash','acknowledge'} and all(isinstance(payload[k],str) and payload[k] for k in ('draft_ref','content_hash')) and payload['acknowledge'] is True,'INVALID_INPUT','请明确确认准确稿件并知晓审核问题'); command='adopt_manual'
             elif action=='cancel':
                 require(not payload,'INVALID_INPUT','取消不能带额外参数'); command='cancel'
             else: raise DomainError('INVALID_INPUT','未知动作')

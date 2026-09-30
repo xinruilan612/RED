@@ -36,6 +36,7 @@ class Run:
     review: Optional[dict] = None
     prior_review: Optional[dict] = None
     accepted_ref: Optional[str] = None
+    acceptance: Optional[dict] = None
     events: list = field(default_factory=list)
     workflow_type: str = 'creation'
     windtunnel: dict = field(default_factory=dict)
@@ -161,20 +162,55 @@ class Run:
         # Explicit queued/running transitions preserve the approved lifecycle graph.
         self._transition('QUEUED')
         self._transition('RUNNING')
+        self.acceptance = {'mode':'reviewed','draft_ref':draft_ref,'content_hash':draft['content_hash'],
+                           'snapshot_id':self.snapshot_id,'review_ref':review_ref}
         self.accepted_ref = draft_ref
         self.event('human.accepted', draft_ref=draft_ref)
         self._transition('SUCCEEDED')
         self.event('run.completed')
 
+    def can_manual_adopt(self):
+        if self.workflow_type != 'creation' or not self.drafts:
+            return False
+        draft = self.drafts[-1]
+        if draft['snapshot_id'] != self.snapshot_id:
+            return False
+        return (self.run_status == 'WAITING_USER' and self.wait_reason in
+                ('final_confirmation', 'missing_material', 'revision_limit')) or (
+                self.run_status == 'RUNNING' and self.current_stage in ('content', 'reviewer'))
+
+    def adopt_manual(self, draft_ref, content_hash, acknowledge):
+        require(acknowledge is True, 'INVALID_INPUT', '请明确知晓审核问题后采用')
+        require(self.can_manual_adopt(), 'INVALID_TRANSITION', '当前不能人工采用稿件')
+        draft = self.drafts[-1]
+        require(not (self.review and self.review.get('decision') == 'approved'),
+                'INVALID_TRANSITION', '审核已通过，请使用确认当前版本')
+        require(draft_ref == draft['ref'] and content_hash == draft['content_hash'] == digest(draft['content']),
+                'VERSION_CONFLICT', '采用的稿件版本已失效')
+        report = self.review or self.prior_review
+        self.acceptance = {'mode':'manual_override','draft_ref':draft_ref,'content_hash':content_hash,
+                           'snapshot_id':self.snapshot_id,
+                           'review_ref':self.review['ref'] if self.review else None,
+                           'acknowledged_review_ref':report['ref'] if report else None,
+                           'acknowledged_issues':json.loads(json.dumps([i for i in (report or {}).get('issues', []) if i.get('state') != 'resolved'])),
+                           'acknowledged_at':datetime.now(timezone.utc).isoformat()}
+        if self.run_status == 'WAITING_USER':
+            self._transition('QUEUED')
+            self._transition('RUNNING')
+        self.accepted_ref = draft_ref
+        self.event('human.accepted', draft_ref=draft_ref, acceptance=self.acceptance)
+        self._transition('SUCCEEDED')
+        self.event('run.completed', acceptance_mode='manual_override')
+
     def edit(self, content):
-        waiting = self.run_status == 'WAITING_USER' and self.wait_reason == 'final_confirmation'
-        revision = self.run_status == 'RUNNING' and self.current_stage == 'content' and self.review and self.review['decision'] == 'revision_required'
-        require(waiting or revision, 'INVALID_TRANSITION', '当前不能编辑稿件')
-        if waiting:
+        require(self.can_manual_adopt(), 'INVALID_TRANSITION', '当前不能编辑稿件')
+        if self.run_status == 'WAITING_USER':
             self._transition('QUEUED')
             self._transition('RUNNING')
         self.current_stage = 'content'
+        prior = self.review or self.prior_review
         ref = self.draft(content)
+        self.prior_review = prior
         self.drafts[-1]['actor'] = 'user'
         return ref
 

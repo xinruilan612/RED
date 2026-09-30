@@ -171,6 +171,15 @@ class DesignDocumentationTests(unittest.TestCase):
         predecessors = {a for a,bs in self.contract['workflow'].items() if 'join' in bs}
         self.assertEqual(predecessors, set(self.contract['join_requires']))
 
+    def test_explicit_manual_adoption_is_distinct_from_ai_approval(self):
+        policy=self.contract['manual_adoption_extension']
+        self.assertEqual(policy['acceptance_mode'],'manual_override')
+        self.assertTrue(policy['explicit_acknowledgement'])
+        self.assertTrue(policy['manual_edit_after_revision_limit'])
+        self.assertFalse(policy['marks_ai_approved'])
+        self.assertIn('content_hash',policy['binds'])
+        self.assertTrue(policy['publication_requires_separate_approval'])
+
     def test_revision_cannot_bypass_review_or_human_acceptance(self):
         flow = self.contract['workflow']
         self.assertEqual(flow['revise'], ['content'])

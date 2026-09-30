@@ -258,7 +258,7 @@ class Operations:
                 account = new_account(identity, name, platform); state['accounts'].append(account)
             state['publications'].insert(0, dict(id=str(uuid4()), run_id=run.run_id, draft_ref=run.accepted_ref,
                 hypothesis_id=op.get('hypothesis_id'),
-                review_ref=run.review['ref'], content=copy.deepcopy(run.drafts[-1]['content']),
+                review_ref=(run.review or {}).get('ref'), acceptance=copy.deepcopy(run.acceptance), content=copy.deepcopy(run.drafts[-1]['content']),
                 content_hash=digest(run.drafts[-1]['content']), platform=op.get('platform','xiaohongshu'),
                 account=account['name'], account_id=account['id'], mode=run.context.get('mode','simulation'),
                 provenance='simulation' if run.context.get('mode','simulation') == 'simulation' else 'manual',
@@ -269,7 +269,8 @@ class Operations:
             if action == 'approve':
                 require(pub['status'] == 'AWAITING_APPROVAL', 'INVALID_TRANSITION', '当前不能重复批准')
                 run = self.store._get(db, pub['run_id'], owner)
-                require(run.accepted_ref == pub['draft_ref'] and run.review['ref'] == pub['review_ref']
+                require(run.accepted_ref == pub['draft_ref'] and (run.review or {}).get('ref') == pub['review_ref']
+                        and run.acceptance == pub.get('acceptance')
                         and digest(run.drafts[-1]['content']) == pub['content_hash'], 'VERSION_CONFLICT', '确认版本已变化')
                 pub.update(status='APPROVED', approved_at=now())
             else:
