@@ -127,7 +127,19 @@ class Runtime:
         started=time.monotonic()
         if run.context.get('mode')=='live':
             messages,inputs=live.messages_for(run,stage)
-            value,tokens,call_id=self.service.executor.calls.invoke(run,agent,stage,messages,lambda db:self.jobs.guard(db,self.job),reuse=True)
+            try:
+                value,tokens,call_id=self.service.executor.calls.invoke(run,agent,stage,messages,lambda db:self.jobs.guard(db,self.job),reuse=True)
+            except DomainError as error:
+                if error.code!='STAGE_ATTEMPT_LIMIT' or stage not in ('review','revise') or not run.drafts:
+                    raise
+                with self.store.connect() as db:
+                    db.execute('BEGIN IMMEDIATE')
+                    current=self.jobs.guard(db,self.job,committing=True)
+                    require(current.snapshot_id==run.snapshot_id and current.drafts[-1]['ref']==state['draft'],
+                            'VERSION_CONFLICT','稿件已变化，不能结束旧阶段')
+                    current._transition('WAITING_USER','revision_limit')
+                    self.write(db,current)
+                return {}
             self.fault('after_response',stage)
             try:output=enrich(stage,live.normalize(run,stage,value),run.context)
             except DomainError as error:
@@ -137,6 +149,9 @@ class Runtime:
                  'input':inputs,'output':output,'duration_ms':round((time.monotonic()-started)*1000),
                  'model_calls':1,'tokens':tokens,'cost':None,'call_id':call_id,'tools':['knowledge_snapshot'] if run.context.get('evidence') else [],
                  'memory':'读取本任务的账号与证据快照'}
+            from backend.citation_ids import repair
+            _,repairs=repair(stage,value,live.material_records(run.context))
+            if repairs:log['citation_repairs']=repairs
         else:
             # Template execution shares graph persistence without pretending to call a model.
             if stage in ('audience','research'):

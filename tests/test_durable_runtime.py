@@ -76,6 +76,81 @@ class DurableTests(unittest.TestCase):
         self.assertEqual(json.loads(raw)['decision'],'approved')
         self.assertIn('adopt_manual',self.service.view(run)['allowed_actions'])
 
+    def test_received_analysis_id_typo_replays_free_and_keeps_raw_audit(self):
+        from unittest.mock import patch
+        base=self.model.complete
+        def typo(messages):
+            value,tokens=base(messages)
+            if self.model.calls[-1]=='audience':
+                value['observations']=[{'source_id':'usermaterial','quote':'这是一份公开资料的测试摘要。','interpretation':'原文观察'}]
+            return value,tokens
+        self.model.complete=typo
+        # Simulate the older validator rejecting the already-paid response.
+        with patch('backend.citation_ids.repair',side_effect=lambda stage,value,sources:(value,[])):
+            self.start();Worker(self.service).once()
+        self.assertEqual(self.job()['status'],'blocked')
+        self.assertEqual(self.model.calls.count('audience'),1)
+        self.start();Worker(self.service).once()
+        run=self.run_value()
+        self.assertEqual(run.wait_reason,'final_confirmation')
+        self.assertEqual(self.model.calls.count('audience'),1)
+        self.assertEqual(len(self.model.calls),8)
+        node=next(n for n in run.node_runs if n['stage']=='audience')
+        self.assertEqual(node['citation_repairs'][0]['to'],'user-material')
+        self.assertEqual(node['output']['observations'][0]['source_id'],'user-material')
+        with self.store.connect() as db:
+            raw=db.execute("SELECT response_json FROM live_calls WHERE run_id=? AND stage='audience'",(run.run_id,)).fetchone()[0]
+        self.assertEqual(json.loads(raw)['observations'][0]['source_id'],'usermaterial')
+
+    def test_unmatched_analysis_quote_stays_blocked_without_extra_call(self):
+        base=self.model.complete
+        def invalid(messages):
+            value,tokens=base(messages)
+            if self.model.calls[-1]=='audience':
+                value['observations']=[{'source_id':'usermaterial','quote':'不存在的原文','interpretation':'观察'}]
+            return value,tokens
+        self.model.complete=invalid
+        self.start();Worker(self.service).once()
+        self.assertEqual(self.job()['status'],'blocked')
+        before=len(self.model.calls)
+        self.start();Worker(self.service).once()
+        self.assertEqual(self.job()['status'],'blocked')
+        self.assertEqual(len(self.model.calls),before)
+        self.assertFalse(self.run_value().drafts)
+
+    def test_review_outer_whitespace_recovers_without_new_model_call(self):
+        from unittest.mock import patch
+        base=self.model.complete
+        def padded(messages):
+            value,tokens=base(messages)
+            if self.model.calls[-1]=='review':
+                value['claim_map']=[{'source_id':'user-material','quote':' 这是一份公开资料的测试摘要。 ','excerpt':'完整正文'}]
+            return value,tokens
+        self.model.complete=padded
+        with patch('backend.citation_ids.repair',side_effect=lambda stage,value,sources:(value,[])):
+            self.start();Worker(self.service).once()
+        self.assertEqual(self.job()['status'],'blocked')
+        self.start();Worker(self.service).once()
+        self.assertEqual(self.run_value().wait_reason,'final_confirmation')
+        self.assertEqual(len(self.model.calls),8)
+        self.assertEqual(self.run_value().node_runs[-1]['citation_repairs'][0]['reason'],'quote_outer_whitespace')
+
+    def test_review_attempt_limit_keeps_draft_for_human_without_error_or_approval(self):
+        self.start();Worker(self.service).once()
+        for i in range(3):
+            content=dict(self.run_value().drafts[-1]['content']);content['body']='用户改稿'+str(i)
+            self.action('edit',content)
+            self.start();Worker(self.service).once()
+        run=self.run_value()
+        self.assertEqual(run.run_status,'WAITING_USER')
+        self.assertEqual(run.wait_reason,'revision_limit')
+        self.assertIsNone(run.review)
+        self.assertIsNone(run.accepted_ref)
+        self.assertEqual(len(self.model.calls),10)
+        self.assertEqual(self.job()['status'],'waiting')
+        self.assertFalse(self.job().get('error'))
+        self.assertEqual(run.drafts[-1]['content']['body'],'用户改稿2')
+
     def test_invalid_review_can_be_recovered_free_then_edited_reaudited_and_confirmed(self):
         self.invalid_citation_review()
         before=self.service.view(self.run_value())

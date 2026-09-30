@@ -11,8 +11,9 @@ async function api(path,method='GET',body){
  const r=await fetch(path,{method,headers:method==='POST'?{'Content-Type':'application/json','X-CSRF-Token':csrf}:{},body:body===undefined?undefined:JSON.stringify(body)});
  const data=await r.json(); if(!r.ok)throw new Error(data.error?.message||'请求失败');return data;
 }
-function error(e){$('error').textContent=e.message||String(e);$('error').hidden=false;}
-function clearError(){$('error').hidden=true;}
+let errorSource=null;
+function error(e,source='request'){$('error').textContent=e.message||String(e);$('error').hidden=false;errorSource=source;}
+function clearError(){$('error').hidden=true;errorSource=null;}
 function toast(text){$('toast').textContent=text;$('toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').hidden=true,3500);}
 function json(value){return '<pre class="json">'+esc(JSON.stringify(value,null,2))+'</pre>';}
 function dirtyGuard(){return !editing||window.confirm('有尚未保存的编辑，确定放弃吗？');}
@@ -66,19 +67,20 @@ function renderMode(mode){
 }
 function render(){
  if(!run)return;
+ if(errorSource==='run')clearError();
  renderWebResearch();
  renderMode(run.mode);
  renderTestingBudget();
  $('modelCalls').textContent=(run.usage?.model_calls||0)+' 次';
  $('modelCost').textContent=run.mode==='live'?'≤ $'+Number(run.usage.cost_upper_estimate_usd||0).toFixed(4)+' 估算':'¥0.00（模拟）';
- if(run.run_status==='FAILED'){const last=run.events.filter(e=>e.type==='agent.failed').at(-1);error(new Error(last?.payload.message||'执行失败，请查看运行记录'));}
+ if(run.run_status==='FAILED'){const last=run.events.filter(e=>e.type==='agent.failed').at(-1);error(new Error(last?.payload.message||'执行失败，请查看运行记录'),'run');}
  $('welcome').hidden=true;$('workbench').hidden=false;
  $('runTitle').textContent=run.context.topic;
  $('runSummary').textContent=`${run.context.operations?.platform==='douyin'?'抖音 · 口播脚本':'小红书 · 图文笔记'} · 写给 ${run.context.audience} · ${run.context.tone} · ${run.snapshot_id.slice(0,8)} 输入快照`;
  const background=run.background;
  const jobLabels={queued:background?.worker_online?'已排队，后台即将执行':'已排队，等待 Worker 启动',running:'正在执行 · 结果保存后自动更新',pausing:'正在暂停，等待当前节点保存',paused:'本步已停止 · 查看结果后继续',blocked:'后台等待处理',waiting:'等待你的审核'};
  $('statusLabel').textContent=jobLabels[background?.status]|| (run.in_flight?'AI 正在处理，请稍候':states[run.run_status]);
- if(background?.error)error(new Error(['insufficient','searching'].includes(run.context.web_research?.status)?'联网调查未完成。请在上方修改关键词，点击“重新搜索这一步”；无需新建任务。':background.error));$('versionCount').textContent=run.drafts.length+' 个';
+ if(background?.error)error(new Error(['insufficient','searching'].includes(run.context.web_research?.status)?'联网调查未完成。请在上方修改关键词，点击“重新搜索这一步”；无需新建任务。':background.error),'run');$('versionCount').textContent=run.drafts.length+' 个';
  const allowed=run.allowed_actions;
  $('recover').hidden=!allowed.includes('recover');$('next').hidden=!allowed.includes('next');$('auto').hidden=!allowed.includes('next');$('cancel').hidden=!allowed.includes('cancel');
  $('next').textContent=run.current_stage==='reviewer'?'执行复审 / 审核 →':run.review?.decision==='revision_required'?'按意见改稿 →':'执行下一步 →';
@@ -119,12 +121,14 @@ function renderDetails(){
  if(selected==='human'){
  $('details').innerHTML='<div class="detail-block"><h3>最后决定由你做</h3><p>修改会创建新版本。你可以申请 AI 复审，也可以知晓现有问题后人工采用准确版本；人工采用不会标为 AI 审核通过。</p></div>'+ (run.accepted_ref?'<p>✓ 已确认版本 '+esc(run.accepted_ref.slice(0,8))+'</p>':'<p class="muted">尚未确认任何版本。</p>');return;
  }
- const logs=run.node_runs.filter(n=>n.agent===selected);
- if(!logs.length){$('details').innerHTML='<div class="empty">这个角色还没有执行。<br>启动运行后，可以查看它的输入和产物。</div>';return;}
+ const previousLogs=run.node_runs.filter(n=>n.agent===selected&&n.snapshot_id!==run.snapshot_id);
+ const previousHistory=previousLogs.length?'<details><summary>之前输入的历史记录（'+previousLogs.length+'，不代表本轮产物）</summary>'+previousLogs.map(l=>'<h3>'+esc(stages[l.stage])+' · '+esc(l.snapshot_id.slice(0,8))+'</h3>'+friendly(l.agent,l.stage,l.output)).join('')+'</details>':'';
+ const logs=run.node_runs.filter(n=>n.agent===selected&&n.snapshot_id===run.snapshot_id);
+ if(!logs.length){$('details').innerHTML='<div class="empty">本次输入尚无通过校验的产物。<br>执行完成后，可以查看它的输入和产物。</div>'+previousHistory;return;}
  const matches=detailStage?logs.filter(n=>n.stage===detailStage):logs;
- if(!matches.length){$('details').innerHTML='<div class="empty">这个创作阶段还没有执行。</div>';return;}
+ if(!matches.length){$('details').innerHTML='<div class="empty">本次输入的这个创作阶段还没有执行。</div>'+previousHistory;return;}
  const current=matches[matches.length-1];
- $('details').innerHTML=`${selected==='content'&&run.drafts.length>1?'<p class="editor-note">这些是生成时保存的阶段记录。最新修改后的稿件，请查看下方“文案与版本对比”。</p>':''}<p class="muted">最近阶段：${esc(stages[current.stage])} · ${current.duration_ms} ms · 真实模型调用 ${current.model_calls||0} 次 · ${current.tokens??'未知'} Token</p><div class="detail-block"><h3>当前产物</h3>${friendly(current.agent,current.stage,current.output)}<details><summary>查看原始结构化记录</summary>${json(current.output)}</details></div><details><summary>查看这一阶段的输入</summary>${json(current.input)}</details><div class="detail-block"><h3>工具与记忆</h3><p>${run.context.evidence?.length?'已使用资料检索快照，来源与片段可在本阶段输入中查看。':'本次未使用检索片段。'}${esc(current.memory)}</p><p>${run.mode==='live'?'由 DeepSeek 生成；审核不代表外部事实已核实。':'采用固定模板 / 本地规则，未使用模型推理。'}</p></div>${logs.length>1?'<details><summary>所有阶段与历史记录（'+logs.length+'）</summary>'+logs.map(l=>'<h3>'+esc(stages[l.stage])+' · '+esc(l.snapshot_id.slice(0,8))+'</h3>'+friendly(l.agent,l.stage,l.output)).join('')+'</details>':''}`;
+ $('details').innerHTML=`${selected==='content'&&run.drafts.length>1?'<p class="editor-note">这些是生成时保存的阶段记录。最新修改后的稿件，请查看下方“文案与版本对比”。</p>':''}<p class="muted">最近阶段：${esc(stages[current.stage])} · ${current.duration_ms} ms · 真实模型调用 ${current.model_calls||0} 次 · ${current.tokens??'未知'} Token</p><div class="detail-block"><h3>当前产物</h3>${friendly(current.agent,current.stage,current.output)}<details><summary>查看原始结构化记录</summary>${json(current.output)}</details></div><details><summary>查看这一阶段的输入</summary>${json(current.input)}</details><div class="detail-block"><h3>工具与记忆</h3><p>${run.context.evidence?.length?'已使用资料检索快照，来源与片段可在本阶段输入中查看。':'本次未使用检索片段。'}${esc(current.memory)}</p><p>${run.mode==='live'?'由 DeepSeek 生成；审核不代表外部事实已核实。':'采用固定模板 / 本地规则，未使用模型推理。'}</p></div>${logs.length>1?'<details><summary>所有阶段与历史记录（'+logs.length+'）</summary>'+logs.map(l=>'<h3>'+esc(stages[l.stage])+' · '+esc(l.snapshot_id.slice(0,8))+'</h3>'+friendly(l.agent,l.stage,l.output)).join('')+'</details>':''}${previousHistory}`;
  if(selected==='reviewer'&&run.review){$('details').insertAdjacentHTML('afterbegin',run.review.checks.map(c=>`<div class="review-check"><span>${esc(checks[c.name])}</span><span class="${esc(c.result)}">${c.result==='pass'?(run.mode==='live'?'模型判断通过':'模拟通过'):c.result==='fail'?'发现问题':'未完成'}</span></div>`).join(''));}
 }
 function renderRecovery(){
@@ -199,7 +203,7 @@ async function backgroundCommand(action,extra={}){
  const searchOnly=action==='step'&&run.current_stage==='brief'&&run.context.web_research?.enabled&&run.context.web_research.status!=='complete';
  if(['start','step'].includes(action)&&!searchOnly&&run.mode==='live'&&!confirmLiveBudget())return false;
  let commandError=null;busy=true;clearError();render();
- try{run=await api(`/api/runs/${run.run_id}/background`,'POST',{action,version:run.status_version,key:crypto.randomUUID(),...extra});selected=currentAgent();detailStage=null;await history();return true;}
+ try{run=await api(`/api/runs/${run.run_id}/background`,'POST',{action,version:run.status_version,key:crypto.randomUUID(),...extra});clearError();selected=currentAgent();detailStage=null;await history();return true;}
  catch(e){commandError=e;error(e);try{run=await api('/api/runs/'+run.run_id);}catch(_){}return false;}
  finally{busy=false;render();if(commandError)error(commandError);}
 }

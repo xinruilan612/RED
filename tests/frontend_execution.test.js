@@ -9,7 +9,7 @@ function setup(){
  const sandbox={document:{getElementById:element,addEventListener(){},querySelector:element,querySelectorAll(){return [];}},window:{addEventListener(){},confirm(){return true;}},setInterval(){},setTimeout(){},clearTimeout(){},crypto:{randomUUID:()=> 'test-key'},websiteSession:{auth_required:true}};
  vm.createContext(sandbox);vm.runInContext(fs.readFileSync('frontend/app.js','utf8'),sandbox);
  vm.runInContext(`run={run_id:'run-1',mode:'live',current_stage:'brief',status_version:1,run_status:'RUNNING',context:{topic:'护肤',tone:'清楚',audience:'新手',web_research:{enabled:true,status:'pending',queries:['护肤']}},usage:{},drafts:[],node_runs:[],artifacts:[],events:[],snapshot_id:'snapshot',allowed_actions:['next','cancel'],background:{status:'paused'},in_flight:false};
- actualRenderHuman=renderHuman; renderDetails=renderHuman=renderDraft=renderTimeline=renderCalls=()=>{};
+ actualRenderDetails=renderDetails; actualRenderHuman=renderHuman; renderDetails=renderHuman=renderDraft=renderTimeline=renderCalls=()=>{};
  history=async()=>[]; currentAgent=()=> 'research'; calls=[]; confirmations=0;
  confirmLiveBudget=()=>{confirmations++;return true;};
  api=async(path,method,body)=>{calls.push(body);return run;};`,sandbox);
@@ -140,4 +140,44 @@ test('manual adoption is disabled during execution or unsaved editing',()=>{
  assert.equal(s.element('adoptManual').disabled,true);
  s.eval("run.in_flight=false;editing=true;render()");
  assert.equal(s.element('adoptManual').disabled,true);
+});
+
+
+test('supplemented input does not label previous snapshot output as current',()=>{
+ const s=setup();s.eval("run.node_runs=[{agent:'audience',stage:'audience',snapshot_id:'old-input',output:{primary_audience:'旧读者',basis:'旧分析',content_opportunities:[]}}];actualRenderDetails()");
+ const html=s.element('details').innerHTML;
+ assert.match(html,/本次输入尚无通过校验的产物/);
+ assert.doesNotMatch(html,/<h3>当前产物<\/h3>/);
+ assert.match(html,/<details><summary>之前输入的历史记录（1，不代表本轮产物）<\/summary>/);
+ assert.match(html,/旧分析/);
+});
+test('current snapshot output takes precedence over later previous snapshot records',()=>{
+ const s=setup();s.eval("run.node_runs=[{agent:'audience',stage:'audience',snapshot_id:'snapshot',duration_ms:1,output:{primary_audience:'新读者',basis:'新分析',content_opportunities:[]}},{agent:'audience',stage:'audience',snapshot_id:'old-input',output:{primary_audience:'旧读者',basis:'旧分析',content_opportunities:[]}}];actualRenderDetails()");
+ const html=s.element('details').innerHTML;
+ const current=html.split('之前输入的历史记录')[0];
+ assert.match(current,/<h3>当前产物<\/h3>/);
+ assert.match(current,/新分析/);
+ assert.doesNotMatch(current,/旧分析/);
+ assert.match(html,/旧分析/);
+});
+
+
+test('successful background continuation clears stale failure while active failures remain visible',async()=>{
+ const s=setup();s.eval("run.background={status:'blocked',error:'上次输出未通过校验'};render();api=async()=>({...run,background:{status:'running'},in_flight:true})");
+ assert.equal(s.element('error').hidden,false);
+ await s.eval("backgroundCommand('start')");
+ assert.equal(s.element('error').hidden,true);
+ s.eval("run.background={status:'blocked',error:'新的失败'};run.in_flight=false;render()");
+ assert.equal(s.element('error').hidden,false);
+ assert.equal(s.element('error').textContent,'新的失败');
+});
+test('fresh background render removes resolved run error without hiding unrelated request errors',()=>{
+ const s=setup();s.eval("run.background={status:'blocked',error:'旧失败'};render();run.background={status:'waiting'};render()");
+ assert.equal(s.element('error').hidden,true);
+ s.eval("error(new Error('上传失败'));render()");
+ assert.equal(s.element('error').hidden,false);
+ assert.equal(s.element('error').textContent,'上传失败');
+ s.eval("run.run_status='FAILED';run.events=[{type:'agent.failed',payload:{message:'当前执行失败'}}];render()");
+ assert.equal(s.element('error').hidden,false);
+ assert.equal(s.element('error').textContent,'当前执行失败');
 });

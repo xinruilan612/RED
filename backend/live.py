@@ -159,6 +159,8 @@ def draft_text(content):
 
 def normalize(run,stage,value):
     require(isinstance(value,dict),'MODEL_OUTPUT_INVALID','模型输出必须为对象')
+    from backend.citation_ids import repair
+    value,_=repair(stage,value,material_records(run.context))
     if stage=='audience':
         for k in ('primary_audience','basis'):text(value.get(k))
         for k in ('pain_points','content_opportunities'):strings(value.get(k))
