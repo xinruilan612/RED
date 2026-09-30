@@ -78,7 +78,7 @@
     "download_url_s": 300,
     "output_tokens_max": 3000,
     "run_attempts_max": 16,
-    "run_tokens_max": 40000,
+    "run_tokens_max": 80000,
     "run_currency_budget": null,
     "user_daily_currency_budget": null,
     "paid_provider_enabled": false,

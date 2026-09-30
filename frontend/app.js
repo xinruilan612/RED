@@ -40,8 +40,10 @@ async function refreshMaterialDocuments(){
 function confirmLiveBudget(){
  if(!run||run.mode!=='live'||!provider)return true;
  if(confirmedLiveRuns.has(run.run_id))return true;
- const calls=provider.run_attempts_max??16,tokens=provider.run_tokens_max??40000,runUsd=provider.run_budget_usd??0.10,dayUsd=provider.day_budget_usd??0.50;
- const accepted=window.confirm(`即将调用真实模型，可能产生费用。\n\n本任务硬上限：最多 ${calls} 次调用、${tokens.toLocaleString()} Token、$${Number(runUsd).toFixed(2)}；今日累计上限 $${Number(dayUsd).toFixed(2)}。\n上传资料最多 3 段，联网资料最多再加 3 段（每段最多 400 字）；达到任一上限会由服务器停止，不自动重试。\n\n现在开始吗？`);
+ const calls=provider.run_attempts_max??16,tokens=provider.run_tokens_max??80000,runUsd=provider.run_budget_usd??0.10,dayUsd=provider.day_budget_usd??0.50;
+ const experiment=run.testing_budget;
+ const experimentNotice=experiment?`本轮参考预算：¥${Number(experiment.target_cny).toFixed(2)}，希望约写 ${experiment.target_runs} 轮；已计入约¥${Number(experiment.spent_cny).toFixed(4)}，已进行 ${experiment.run_count} 轮（包含未完成任务）。\n接近或超过参考预算会提示，不因金额或轮数超出而停止。${experiment.warning||''}\n\n`:'';
+ const accepted=window.confirm(`即将调用真实模型，可能产生费用。\n\n${experimentNotice}\n\n本任务硬上限：最多 ${calls} 次调用、${tokens.toLocaleString()} Token、$${Number(runUsd).toFixed(2)}；今日累计上限 $${Number(dayUsd).toFixed(2)}。\n上传资料最多 3 段，联网资料最多再加 3 段（每段最多 400 字）；达到任一上限会由服务器停止，不自动重试。\n\n现在开始吗？`);
  if(accepted)confirmedLiveRuns.add(run.run_id);
  return accepted;
 }
@@ -51,6 +53,11 @@ async function history(){
  return rows;
 }
 function currentAgent(){if(!run)return 'audience';if(run.run_status==='WAITING_USER'||run.run_status==='SUCCEEDED'||(!run.in_flight&&run.review?.decision==='revision_required'&&run.allowed_actions.includes('edit')))return 'human';if(run.current_stage==='brief')return 'audience';return run.current_stage;}
+function renderTestingBudget(){
+ const budget=run?.testing_budget,host=$('testingBudget');
+ host.hidden=!budget;if(!budget)return;
+ host.textContent=`参考预算 ¥${Number(budget.target_cny).toFixed(2)}，希望约写 ${budget.target_runs} 轮 · 已计入约 ¥${Number(budget.spent_cny).toFixed(4)} · 参考余额约 ¥${Number(budget.remaining_cny).toFixed(4)} · 已进行 ${budget.run_count} 轮（含未完成任务）。${budget.warning?`提醒：${budget.warning} `:''}超出金额或轮数仍可继续；改稿与复审计入费用，重启或换天不重置。费用按高峰价估算，未决调用保守占用。`;
+}
 function renderMode(mode){
  const live=mode==='live';
  $('modeBadge').textContent=live?'真实 AI · DeepSeek':'模拟运行';
@@ -61,6 +68,7 @@ function render(){
  if(!run)return;
  renderWebResearch();
  renderMode(run.mode);
+ renderTestingBudget();
  $('modelCalls').textContent=(run.usage?.model_calls||0)+' 次';
  $('modelCost').textContent=run.mode==='live'?'≤ $'+Number(run.usage.cost_upper_estimate_usd||0).toFixed(4)+' 估算':'¥0.00（模拟）';
  if(run.run_status==='FAILED'){const last=run.events.filter(e=>e.type==='agent.failed').at(-1);error(new Error(last?.payload.message||'执行失败，请查看运行记录'));}
@@ -230,7 +238,7 @@ $('accept').onclick=async()=>{if(await act('accept',{draft_ref:run.drafts.at(-1)
 $('supplyForm').onsubmit=async e=>{e.preventDefault();if(await act('supplement',{material:$('supply').value,allow_hypothesis:$('supplyHypothesis').checked}))toast('补充已保存，请启动运行重新分析。');};
 $('versionSelect').onchange=e=>{viewVersion=Number(e.target.value);renderDraft();};
 window.addEventListener('beforeunload',e=>{if(editing){e.preventDefault();e.returnValue='';}});
-document.addEventListener('DOMContentLoaded',async()=>{try{const session=await api('/api/session');csrf=session.csrf;if(session.auth_required&&!session.user){showLogin(session);return;}showWebsiteUser(session);provider=session.provider;$('configMessage').textContent=provider.message+' · 同一步最多3次（含首次）；接口错误立即停；整单最多16次 / 40000 Token';$('liveOption').disabled=!provider.ready;$('liveOption').textContent=provider.ready?'真实 AI · DeepSeek（消耗接口额度）':'真实 AI · DeepSeek（先填写 .env）';$('connectionStatus').textContent='DeepSeek：'+(provider.ready?'已配置':'未配置');$('mode').value='simulation';$('scenario').disabled=$('mode').value==='live';renderMode($('mode').value);const rows=await history();if(rows.length){run=rows[0];selected=currentAgent();render();await history();}await initOperations();}catch(e){error(e);}});
+document.addEventListener('DOMContentLoaded',async()=>{try{const session=await api('/api/session');csrf=session.csrf;if(session.auth_required&&!session.user){showLogin(session);return;}showWebsiteUser(session);provider=session.provider;$('configMessage').textContent=provider.message+' · 同一步最多3次（含首次）；接口错误立即停；整单最多'+(provider.run_attempts_max??16)+'次 / '+(provider.run_tokens_max??80000).toLocaleString()+' Token';$('liveOption').disabled=!provider.ready;$('liveOption').textContent=provider.ready?'真实 AI · DeepSeek（消耗接口额度）':'真实 AI · DeepSeek（先填写 .env）';$('connectionStatus').textContent='DeepSeek：'+(provider.ready?'已配置':'未配置');$('mode').value='simulation';$('scenario').disabled=$('mode').value==='live';renderMode($('mode').value);const rows=await history();if(rows.length){run=rows[0];selected=currentAgent();render();await history();}await initOperations();}catch(e){error(e);}});
 
 const materialFiles=$('materialFiles');
 $('useWebResearch').onchange=()=>{if($('useWebResearch').checked&&$('mode').value!=='live'){$('useWebResearch').checked=false;error(new Error('请先选择“真实 AI”运行方式；模拟模式不会联网。'));} $('webResearchFields').hidden=!$('useWebResearch').checked;if($('useWebResearch').checked){const topic=$('topic').value.trim().slice(0,90);if(!$('webQuery1').value)$('webQuery1').value=topic;if(!$('webQuery2').value)$('webQuery2').value=($('targetPlatform').value==='douyin'?'抖音 ':'小红书 ')+topic+' 讨论';}};

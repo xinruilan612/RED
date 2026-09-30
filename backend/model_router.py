@@ -93,6 +93,8 @@ class Calls:
             require(used+reserve<=PARAMETERS['run_tokens_max'],'BUDGET_EXCEEDED',f'Token预留不足：已计入 {used}，下一步保守预留 {reserve}，上限 {PARAMETERS["run_tokens_max"]}；预留不等于实际消费')
             require(cost+reserve*route.rate<=self.config.run_budget_usd,'BUDGET_EXCEEDED','本任务费用预留将超过上限；未发起调用')
             require(daily+reserve*route.rate<=self.config.day_budget_usd,'BUDGET_EXCEEDED','今日费用预留将超过上限；未发起调用')
+            from backend.testing_budget import reserve as reserve_testing_budget
+            reserve_testing_budget(db,run,root,route,messages,call_id)
             db.execute('INSERT INTO live_calls(id,run_id,agent,stage,reserved,state) VALUES(?,?,?,?,?,?)',(call_id,run.run_id,agent,stage,reserve,'calling'))
             db.execute('INSERT INTO model_audit(call_id,run_id,agent,stage,provider,model,route_version,prompt_version,input_hash,sources,snapshot_id,started,rate,outcome) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)',(call_id,run.run_id,agent,stage,route.provider,route.model,policy['version'],policy['prompt_version'],input_hash,json.dumps(sources),run.snapshot_id,time.time(),route.rate,'calling'))
         started=time.monotonic()

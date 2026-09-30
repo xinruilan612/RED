@@ -6,7 +6,7 @@ from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, build_opener, HTTPRedirectHandler
 
-from backend.contracts import DomainError, require
+from backend.contracts import DomainError, require, PARAMETERS
 
 ROOT = Path(__file__).resolve().parents[1]
 MODEL = 'deepseek-flash'
@@ -29,6 +29,7 @@ class Config:
     def public(self):
         return {'ready':self.ready, 'provider':'DeepSeek', 'model':self.model,
                 'run_budget_usd':self.run_budget_usd, 'day_budget_usd':self.day_budget_usd,
+                'run_tokens_max':PARAMETERS['run_tokens_max'],'run_attempts_max':PARAMETERS['run_attempts_max'],
                 'message':'已配置，可新建真实 AI 创作' if self.ready else '请在项目根目录 .env 填写 DEEPSEEK_API_KEY，然后重启服务'}
 
 

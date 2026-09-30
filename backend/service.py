@@ -39,6 +39,8 @@ class Service:
             result.update(self.executor.public(run))
         else:
             result=view(run,self.executor)
+        from backend.testing_budget import public as testing_budget_public
+        result['testing_budget']=testing_budget_public(self.store,run.owner_id)
         result['workflow_type']=run.workflow_type
         result['background']=self.jobs.public(run.run_id,run.owner_id)
         result['in_flight']=result.get('in_flight',False) or result['background']['status'] in ('queued','running','pausing')

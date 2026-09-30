@@ -5,7 +5,7 @@ import unittest
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from backend.contracts import CONTRACT, DomainError, legacy_candidate, tool_allowed
+from backend.contracts import CONTRACT, PARAMETERS, DomainError, legacy_candidate, tool_allowed
 from backend.store import Store
 
 
@@ -169,7 +169,7 @@ class WorkflowTests(unittest.TestCase):
         self.command('start')
         def reserve(call):
             try:
-                self.store.reserve(self.run.run_id,'alice',call,25000)
+                self.store.reserve(self.run.run_id,'alice',call,PARAMETERS['run_tokens_max']//2+1)
                 return 'ok'
             except DomainError as error:
                 return error.code
@@ -180,7 +180,7 @@ class WorkflowTests(unittest.TestCase):
     def test_unknown_usage_stays_reserved_and_settlement_is_idempotent(self):
         self.command('start')
         rid=self.run.run_id
-        self.store.reserve(rid,'alice','a',30000)
+        self.store.reserve(rid,'alice','a',PARAMETERS['run_tokens_max']-10000)
         self.store.settle(rid,'alice','a',None)
         self.assert_code('BUDGET_EXCEEDED',lambda:self.store.reserve(rid,'alice','b',15000))
         self.store.settle(rid,'alice','a',1000)

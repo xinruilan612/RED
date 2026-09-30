@@ -55,3 +55,19 @@ test('unavailable confirmation buttons remain disabled after workbench rendering
  assert.equal(s.element('reviewConfirmUnavailable').disabled,true);
  assert.equal(s.element('confirmationPending').disabled,true);
 });
+test('experiment target displays cost without a three-run hard limit',()=>{
+ const s=setup();s.eval("run.testing_budget={active:true,target_cny:0.30,spent_cny:0.081182,remaining_cny:0.218818,target_runs:3,run_count:1};renderTestingBudget()");
+ assert.equal(s.element('testingBudget').hidden,false);
+ assert.match(s.element('testingBudget').textContent,/¥0.30/);
+ assert.match(s.element('testingBudget').textContent,/已进行 1 轮/);
+ assert.match(s.element('testingBudget').textContent,/0.2188/);
+ assert.match(s.element('testingBudget').textContent,/不重置/);
+ s.eval('run.testing_budget=null;renderTestingBudget()');assert.equal(s.element('testingBudget').hidden,true);
+});
+
+test('over target warning leaves continuation controls available',()=>{
+ const s=setup();s.eval("run.testing_budget={target_cny:0.30,target_runs:3,spent_cny:0.32,remaining_cny:0,run_count:4,warning:'已超过参考预算，仍可继续'};renderTestingBudget()");
+ assert.match(s.element('testingBudget').textContent,/提醒：已超过参考预算/);
+ assert.match(s.element('testingBudget').textContent,/已进行 4 轮/);
+ assert.equal(s.element('start').disabled,false);
+});

@@ -49,6 +49,15 @@ CREATE TABLE operations_plan_attempts (
  created_at DOUBLE PRECISION NOT NULL,
  PRIMARY KEY(owner,key));
 CREATE UNIQUE INDEX operations_plan_one_active_week ON operations_plan_attempts(owner,account_id,week_start) WHERE status='running';
+'''), (5, '''
+CREATE TABLE testing_budgets (
+ owner TEXT PRIMARY KEY, cap_micro INTEGER NOT NULL, max_runs INTEGER NOT NULL,
+ created_at DOUBLE PRECISION NOT NULL);
+CREATE TABLE testing_budget_roots (
+ owner TEXT NOT NULL REFERENCES testing_budgets(owner), root TEXT NOT NULL,
+ PRIMARY KEY(owner,root));
+CREATE TABLE testing_budget_reservations (
+ call_id TEXT PRIMARY KEY, reserved_micro INTEGER NOT NULL);
 '''))
 
 
