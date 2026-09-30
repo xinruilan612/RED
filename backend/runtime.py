@@ -62,7 +62,9 @@ class Runtime:
             if run.run_status=='QUEUED':
                 run.start();self.write(db,run)
             if run.run_status=='WAITING_USER':nxt='human'
-            elif run.current_stage=='brief':nxt='brief'
+            elif run.current_stage=='brief':
+                web=run.context.get('web_research',{})
+                nxt='web_research' if web.get('enabled') and web.get('status')!='complete' else 'brief'
             elif run.current_stage=='reviewer':nxt='review'
             else:
                 nxt='revise' if run.review and run.review['decision']=='revision_required' else next(s for s in CONTRACT['content_stages'] if s not in {a['stage'] for a in run.artifacts})
@@ -73,6 +75,33 @@ class Runtime:
         run=self.read()
         if run.run_status=='WAITING_USER':
             interrupt({'reason':run.wait_reason,'draft_ref':run.drafts[-1]['ref'] if run.drafts else None,'review_ref':run.review['ref'] if run.review else None})
+        return {}
+
+    def web_research(self, state):
+        from backend.web_research import collect
+        with self.store.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            run=self.jobs.guard(db,self.job)
+            web=run.context.get('web_research',{})
+            if web.get('status')=='complete':return {}
+            require(web.get('enabled') and run.context.get('mode')=='live','INVALID_INPUT','没有授权本次联网调查')
+            require(web.get('status')=='pending','SOURCE_UNAVAILABLE','联网调查未完成或已中断。未重复搜索、未调用模型；请查看调查记录，调整搜索词后新建任务。')
+            web['status']='searching'
+            run.event('tool.started',tool='public_web_research',queries=web['queries'])
+            self.write(db,run)
+        def guard():
+            with self.store.connect() as db:self.jobs.guard(db,self.job)
+        report=collect(web['queries'],before_request=guard)
+        self.fault('after_web_response','web_research')
+        with self.store.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            current=self.jobs.guard(db,self.job,committing=True)
+            require(current.snapshot_id==run.snapshot_id,'VERSION_CONFLICT','调查输入已变化')
+            current.context['web_research']={**web,**report}
+            current.context['evidence']=current.context.get('evidence',[])+report['sources']
+            current.event('tool.completed' if report['status']=='complete' else 'tool.failed',tool='public_web_research',status=report['status'],source_count=len(report['sources']))
+            self.write(db,current)
+        require(report['status']=='complete','SOURCE_UNAVAILABLE','没有读到相关网页正文，已停止在模型调用前。请查看联网记录，调整搜索词后新建任务。')
         return {}
 
     def join(self, state):
@@ -149,6 +178,8 @@ class Runtime:
         graph.add_node('dispatch',self.dispatch)
         graph.add_node('human',self.human)
         graph.add_node('join',self.join)
+        graph.add_node('web_research',self.web_research)
+        graph.add_edge('web_research','dispatch')
         for stage in ('audience','research','strategy','outline','hook','title','body','revise','review'):
             graph.add_node(stage,lambda state,s=stage:self.node(s,state))
         def route(state):

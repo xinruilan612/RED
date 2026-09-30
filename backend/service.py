@@ -60,7 +60,9 @@ class Service:
         mode = data.get('mode','simulation')
         require(mode in ('simulation','live'), 'INVALID_INPUT', '运行模式无效')
         require(mode!='live' or self.config.ready, 'KEY_REQUIRED', '请在服务器配置 DeepSeek Key')
-        context = validate_brief({k:v for k,v in data.items() if k not in ('mode','operations','knowledge')})
+        context = validate_brief({k:v for k,v in data.items() if k not in ('mode','operations','knowledge','web_research')})
+        from backend.web_research import selection as web_selection
+        context['web_research']=web_selection(data.get('web_research'),mode)
         context['mode'] = mode
         context['model_policy'] = self.executor.router.policy()
         if 'operations' in data:
@@ -99,6 +101,7 @@ class Service:
         if action=='recover':
             return self.view(self.executor.recover(run_id,owner,data['version']))
         if action=='next' and run.context.get('mode')=='live':
+            require(not run.context.get('web_research',{}).get('enabled'),'INVALID_TRANSITION','联网调查任务请使用后台启动按钮执行')
             return self.view(self.executor.step(run_id,owner,data['version'],data['key']))
         command = {'next':'demo_step','supplement':'demo_supplement'}.get(action,action)
         if action=='edit': payload={'content':validate_edit(payload)}

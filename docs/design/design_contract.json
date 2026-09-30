@@ -396,7 +396,16 @@
     "snapshot_sources": "server_generated_immutable_excerpts",
     "new_task_excludes_deleted_documents": true,
     "old_task_keeps_evidence_for_audit": true,
-    "platform_oauth": false
+    "platform_oauth": false,
+    "authorized_web_research": {
+      "trigger": "explicit_run_opt_in_and_background_start",
+      "searches_max": 2,
+      "pages_max": 3,
+      "excerpt_chars_max": 400,
+      "extra_model_calls": 0,
+      "no_body_blocks_paid_calls": true,
+      "platform_heat_verified": false
+    }
   },
   "windtunnel_extension": {
     "version": "1.0.0",
@@ -413,7 +422,7 @@
   "runtime_extension": {
     "version": "0.7.0",
     "graph_policy": "four-role-graph@1",
-    "prompt_version": "four-role-v0.6.1",
+    "prompt_version": "four-role-v0.7-web1",
     "lease_s": 30,
     "heartbeat_s": 10,
     "stage_attempts_max": 3,

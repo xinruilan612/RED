@@ -16,6 +16,14 @@ function clearError(){$('error').hidden=true;}
 function toast(text){$('toast').textContent=text;$('toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').hidden=true,3500);}
 function json(value){return '<pre class="json">'+esc(JSON.stringify(value,null,2))+'</pre>';}
 function dirtyGuard(){return !editing||window.confirm('有尚未保存的编辑，确定放弃吗？');}
+function audienceWebObservations(value){
+ return (value.observations||[]).map(o=>{const source=(run.context.evidence||[]).find(s=>s.source_id===o.source_id);return `<article class="source-card"><h3>有原文依据的观察</h3><blockquote>${esc(o.quote)}</blockquote><p>${esc(o.interpretation)}</p>${source?.url?`<a href="${esc(source.url)}" target="_blank" rel="noopener noreferrer">${esc(source.title||'查看来源')}</a>`:''}</article>`;}).join('');
+}
+function renderWebResearch(){
+ const host=$('webResearchReport'),web=run.context.web_research||{};host.hidden=!web.enabled;if(!web.enabled)return;
+ const labels={pending:'等待启动联网调查',searching:'正在搜索并读取网页',complete:'已读取公开来源',insufficient:'没有足够的相关正文，未调用模型'};
+ host.innerHTML=`<h2>本次联网调查 · ${esc(labels[web.status]||'调查未完成')}</h2><p class="helper">公开网页线索，不等于平台热榜或已核实事实。搜索最多 2 次、网页读取最多 3 次；此步骤不调用模型。</p><p>搜索词：${esc((web.queries||[]).join('；'))}</p>${(web.searches||[]).map(s=>`<details><summary>${esc(s.query)} · ${s.results.length} 条搜索线索</summary>${s.error?`<p class="issue">${esc(s.error)}</p>`:''}${s.results.map(r=>`<p><a href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">${esc(r.title)}</a> · 搜索摘要，未代表已读正文</p>`).join('')}</details>`).join('')}${(web.sources||[]).map(s=>`<article class="source-card"><a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title)}</a><p class="helper">读取时间：${esc(s.fetched_at)} · 页面声明发布时间：${esc(s.published_at||'未知')} · 平台热度：未知</p><blockquote>${esc(s.text)}</blockquote></article>`).join('')}${(web.reads||[]).filter(r=>r.error).map(r=>`<p class="issue">${esc(r.url)}：${esc(r.error)}</p>`).join('')}${web.status==='insufficient'?'<p>请调整搜索词，或导入可读取的来源后新建任务。此次没有用搜索摘要冒充正文。</p>':''}`;
+}
 function renderMaterialUploads(){
  const host=$('materialUploads');if(!host)return;
  const docs=materialDocsCache.filter(d=>d.account_id===currentAccount()?.id),picker=$('materialDocumentSelect');
@@ -32,7 +40,7 @@ function confirmLiveBudget(){
  if(!run||run.mode!=='live'||!provider)return true;
  if(confirmedLiveRuns.has(run.run_id))return true;
  const calls=provider.run_attempts_max??16,tokens=provider.run_tokens_max??40000,runUsd=provider.run_budget_usd??0.10,dayUsd=provider.day_budget_usd??0.50;
- const accepted=window.confirm(`即将调用真实模型，可能产生费用。\n\n本任务硬上限：最多 ${calls} 次调用、${tokens.toLocaleString()} Token、$${Number(runUsd).toFixed(2)}；今日累计上限 $${Number(dayUsd).toFixed(2)}。\n资料最多带入 3 段原文（每段最多 400 字）；达到任一上限会由服务器停止，不自动重试。\n\n现在开始吗？`);
+ const accepted=window.confirm(`即将调用真实模型，可能产生费用。\n\n本任务硬上限：最多 ${calls} 次调用、${tokens.toLocaleString()} Token、$${Number(runUsd).toFixed(2)}；今日累计上限 $${Number(dayUsd).toFixed(2)}。\n上传资料最多 3 段，联网资料最多再加 3 段（每段最多 400 字）；达到任一上限会由服务器停止，不自动重试。\n\n现在开始吗？`);
  if(accepted)confirmedLiveRuns.add(run.run_id);
  return accepted;
 }
@@ -50,6 +58,7 @@ function renderMode(mode){
 }
 function render(){
  if(!run)return;
+ renderWebResearch();
  renderMode(run.mode);
  $('modelCalls').textContent=(run.usage?.model_calls||0)+' 次';
  $('modelCost').textContent=run.mode==='live'?'≤ $'+Number(run.usage.cost_upper_estimate_usd||0).toFixed(4)+' 估算':'¥0.00（模拟）';
@@ -86,7 +95,7 @@ function render(){
 function friendly(agent,stage,value){
  const p=text=>'<p class="readable">'+esc(text)+'</p>';
  const list=items=>'<ol class="readable">'+items.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ol>';
- if(agent==='audience')return p('目标读者：'+value.primary_audience)+p('可用历史作品：'+(value.sample_size||0)+' 条 · 可信程度：低（待验证）')+p(value.basis)+list(value.content_opportunities||[])+(value.competitor_observations?.length?'<h3>同类账号观察 · 用户记录</h3>'+list(value.competitor_observations.map(c=>c.name+'：'+c.observation)):'');
+ if(agent==='audience')return p('目标读者：'+value.primary_audience)+p('可用历史作品：'+(value.sample_size||0)+' 条 · 可信程度：低（待验证）')+p(value.basis)+list(value.content_opportunities||[])+audienceWebObservations(value)+(value.competitor_observations?.length?'<h3>同类账号观察 · 用户记录</h3>'+list(value.competitor_observations.map(c=>c.name+'：'+c.observation)):'');
  if(agent==='research')return (value.topic_card?'<h3>结构化选题卡</h3>'+p('为什么现在：'+value.topic_card.why_now)+p('账号关联：'+value.topic_card.account_fit)+list(value.topic_card.content_angles):'')+p(value.scope)+(value.trend_context?p('选题线索：'+value.trend_context.title)+p(value.trend_context.source_type==='example'?'固定示例，不是实时热点':'来源链接仅保存，未抓取页面：'+value.trend_context.source_url):'')+(value.sources.length?value.sources.map(source=>'<h3>'+esc(source.title||'用户提供的素材')+'</h3>'+p(source.page?'第 '+source.page+' 页 · 资料版本 '+source.version:'本次输入')+p(source.text)+p(source.verification)+(source.url?'<a href="'+esc(source.url)+'" target="_blank" rel="noopener noreferrer">查看来源 ↗</a>':'')).join(''):p('没有可用素材，不能虚构经历或效果数字。'))+list(value.gaps||[]);
  if(agent==='reviewer')return p(({approved:'审核通过，等待你确认',revision_required:'发现问题，需要修改',needs_human:'需要你补充信息'})[value.decision])+list(value.limitations||[]);
  if(stage==='strategy')return (value.content_brief?'<h3>创作简报</h3>'+p('目标：'+value.content_brief.goal)+p('内容形式：'+value.content_brief.content_type)+p('推荐依据：'+value.content_brief.recommendation_reason)+p('禁用表达：'+(value.content_brief.banned||'未设置'))+p('互动引导：'+value.content_brief.cta)+p(value.content_brief.publishing_window):'')+p('创作角度：'+value.angle)+p('服务读者：'+value.reader)+p('内容承诺：'+value.promise)+p('表达风格：'+value.tone)+list(value.assumptions||[])+((value.next_experiments||[]).length?'<h3>已接受的实验建议</h3>'+list(value.next_experiments):'');
@@ -179,7 +188,7 @@ async function autoRun(){
  auto=false;render();
 }
 $('briefForm').addEventListener('submit',async e=>{e.preventDefault();if(busy)return;busy=true;clearError();e.submitter.disabled=true;
- try{const accountId=currentAccount()?.id,documentIds=[...$('materialDocumentSelect').selectedOptions].map(o=>o.value);if(documentIds.length>3)throw new Error('本次最多选择 3 份资料');run=await api('/api/runs','POST',{...(websiteSession?.auth_required?{knowledge:{enabled:$('useKnowledge').checked,document_ids:$('useKnowledge').checked?documentIds:[]}}:{}),mode:$('mode').value,topic:$('topic').value,audience:$('audience').value,tone:$('tone').value,material:$('material').value,scenario:$('scenario').value,allow_hypothesis:$('hypothesis').checked,operations:{platform:$('targetPlatform').value,account_id:accountId,account:$('accountName').value,trend_id:chosenTrend?.id||null,hypothesis_id:chosenHypothesis?.id||null}});chosenHypothesis=null;selected='audience';detailStage=null;viewVersion=null;editing=false;$('editor').hidden=true;render();await history();}
+ try{const accountId=currentAccount()?.id,documentIds=[...$('materialDocumentSelect').selectedOptions].map(o=>o.value);if(documentIds.length>3)throw new Error('本次最多选择 3 份资料');run=await api('/api/runs','POST',{...(websiteSession?.auth_required?{knowledge:{enabled:$('useKnowledge').checked,document_ids:$('useKnowledge').checked?documentIds:[]}}:{}),...($('useWebResearch').checked?{web_research:{enabled:true,queries:[$('webQuery1').value,$('webQuery2').value].map(q=>q.trim()).filter(Boolean)}}:{}),mode:$('mode').value,topic:$('topic').value,audience:$('audience').value,tone:$('tone').value,material:$('material').value,scenario:$('scenario').value,allow_hypothesis:$('hypothesis').checked,operations:{platform:$('targetPlatform').value,account_id:accountId,account:$('accountName').value,trend_id:chosenTrend?.id||null,hypothesis_id:chosenHypothesis?.id||null}});chosenHypothesis=null;selected='audience';detailStage=null;viewVersion=null;editing=false;$('editor').hidden=true;render();await history();}
  catch(err){error(err);}finally{busy=false;e.submitter.disabled=false;if(run&&!$('workbench').hidden)render();}});
 $('history').addEventListener('click',async e=>{const b=e.target.closest('[data-run]');if(!b||busy||!dirtyGuard())return;auto=false;editing=false;$('editor').hidden=true;clearError();showPage('studio');try{run=await api('/api/runs/'+b.dataset.run);viewVersion=null;detailStage=null;selected=currentAgent();render();await history();}catch(err){error(err);}});
 $('newRun').onclick=()=>{if(busy||!dirtyGuard())return;showPage('studio');auto=false;editing=false;$('editor').hidden=true;$('workbench').hidden=true;$('welcome').hidden=false;renderMode($('mode').value);fillAccountBrief();clearError();};
@@ -207,6 +216,7 @@ window.addEventListener('beforeunload',e=>{if(editing){e.preventDefault();e.retu
 document.addEventListener('DOMContentLoaded',async()=>{try{const session=await api('/api/session');csrf=session.csrf;if(session.auth_required&&!session.user){showLogin(session);return;}showWebsiteUser(session);provider=session.provider;$('configMessage').textContent=provider.message+' · 同一步最多3次（含首次）；接口错误立即停；整单最多16次 / 40000 Token';$('liveOption').disabled=!provider.ready;$('liveOption').textContent=provider.ready?'真实 AI · DeepSeek（消耗接口额度）':'真实 AI · DeepSeek（先填写 .env）';$('connectionStatus').textContent='DeepSeek：'+(provider.ready?'已配置':'未配置');$('mode').value='simulation';$('scenario').disabled=$('mode').value==='live';renderMode($('mode').value);const rows=await history();if(rows.length){run=rows[0];selected=currentAgent();render();await history();}await initOperations();}catch(e){error(e);}});
 
 const materialFiles=$('materialFiles');
+$('useWebResearch').onchange=()=>{if($('useWebResearch').checked&&$('mode').value!=='live'){$('useWebResearch').checked=false;error(new Error('请先选择“真实 AI”运行方式；模拟模式不会联网。'));} $('webResearchFields').hidden=!$('useWebResearch').checked;if($('useWebResearch').checked){const topic=$('topic').value.trim().slice(0,90);if(!$('webQuery1').value)$('webQuery1').value=topic;if(!$('webQuery2').value)$('webQuery2').value=($('targetPlatform').value==='douyin'?'抖音 ':'小红书 ')+topic+' 讨论';}};
 const materialDocumentSelect=$('materialDocumentSelect');
 if(materialDocumentSelect)materialDocumentSelect.addEventListener('change',()=>{if(materialDocumentSelect.selectedOptions.length>3){[...materialDocumentSelect.options].forEach(o=>{if(!o.selected)return;const before=[...materialDocumentSelect.options].slice(0,o.index).filter(x=>x.selected).length;if(before>=3)o.selected=false;});error(new Error('本次最多选择 3 份资料'));}});
 if(materialFiles)materialFiles.addEventListener('change',async()=>{

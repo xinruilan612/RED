@@ -30,6 +30,12 @@ def enrich(stage, value, context):
             risk=result.get('prohibited_claims', []),
             content_angles=[trend['angle']] if trend else ['结合真实场景解释问题', '整理可验证的尝试步骤'],
             limitation='选题卡基于用户线索；没有自动抓取、热度统计或时效核实。')
+        web=context.get('web_research',{})
+        if web.get('status')=='complete':
+            result['topic_card'].update(
+                why_now='已读取公开网页；是否适合追热点仍需核对发布时间与平台指标',
+                evidence=[{k:s.get(k) for k in ('source_id','url','fetched_at','published_at')} for s in web['sources']],
+                limitation=web['limitation'])
     if stage == 'strategy':
         active = op.get('active_hypothesis')
         result['content_brief'] = dict(**identity, goal=profile.get('goal') or '先验证内容是否对目标受众有用',
