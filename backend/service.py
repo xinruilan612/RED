@@ -66,11 +66,13 @@ class Service:
         if 'operations' in data:
             context['operations'] = self.operations.context(owner,data['operations'],mode)
         selection=data.get('knowledge',{'enabled':False})
-        require(isinstance(selection,dict) and set(selection)=={'enabled'} and type(selection['enabled']) is bool,'INVALID_INPUT','资料检索设置无效')
+        require(isinstance(selection,dict) and set(selection)<={'enabled','document_ids'} and 'enabled' in selection and type(selection['enabled']) is bool,'INVALID_INPUT','资料检索设置无效')
+        document_ids=selection.get('document_ids',[])
+        require(isinstance(document_ids,list) and len(document_ids)<=3 and all(isinstance(x,str) and x for x in document_ids),'INVALID_INPUT','最多选择 3 份资料')
         if selection['enabled']:
             account=context.get('operations',{}).get('account_id')
             require(account,'INVALID_INPUT','请先选择资料所属账号')
-            result=self.knowledge.retrieve(owner,account,(context['topic']+' '+context['audience'])[:300])
+            result=self.knowledge.retrieve(owner,account,(context['topic']+' '+context['audience'])[:300],limit=3,document_ids=document_ids if 'document_ids' in selection else None)
             context['retrieval']=result
             context['evidence']=result['sources']
         if mode=='live': context['scenario']='standard'

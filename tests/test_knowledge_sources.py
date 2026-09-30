@@ -5,6 +5,7 @@ import os
 import socket
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 from unittest.mock import patch
 from uuid import uuid4
@@ -32,6 +33,15 @@ def text_pdf():
         stream=DecodedStreamObject();stream.set_data(('BT /F1 12 Tf 20 200 Td ('+text+') Tj ET').encode())
         page[NameObject('/Contents')]=writer._add_object(stream)
     output=io.BytesIO();writer.write(output);return output.getvalue()
+
+
+def text_docx():
+    xml='''<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>白衬衫采用纯棉面料。</w:t></w:r></w:p><w:tbl><w:tr><w:tc><w:p><w:r><w:t>使用冷水清洗并自然晾干。</w:t></w:r></w:p></w:tc></w:tr></w:tbl></w:body></w:document>'''
+    output=io.BytesIO()
+    with zipfile.ZipFile(output,'w',zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr('[Content_Types].xml','<Types/>')
+        archive.writestr('word/document.xml',xml)
+    return output.getvalue()
 
 
 class KnowledgeTests(unittest.TestCase):
@@ -77,6 +87,21 @@ class KnowledgeTests(unittest.TestCase):
         for name,data in [('x.pdf',b'broken'),('x.exe',b'no'),('x.txt',b'\xff'),('x.txt',b'x'*3000001)]:
             with self.assertRaises(ValueError):parse_file(name,data)
 
+    def test_docx_paragraphs_and_selected_document_scope(self):
+        raw=text_docx();paragraphs=parse_file('care.docx',raw)
+        self.assertEqual([p for p,_ in paragraphs],[1,2]);self.assertIn('纯棉',paragraphs[0][1]);self.assertIn('冷水',paragraphs[1][1])
+        first=self.kb.save(self.owner,dict(account_id=self.account,title='DOCX护理',filename='care.docx',file_base64=base64.b64encode(raw).decode()))
+        second=self.kb.save(self.owner,dict(account_id=self.account,title='其他资料',text='相机摄影使用三脚架和长曝光技巧。'))
+        self.assertEqual(first['metadata']['location_type'],'paragraph')
+        result=self.kb.retrieve(self.owner,self.account,'白衬衫纯棉冷水清洗',limit=3,document_ids=[first['id']])
+        self.assertTrue(result['sources']);self.assertTrue(all(s['document_id']==first['id'] for s in result['sources']))
+        self.assertEqual(result['sources'][0]['location_type'],'paragraph')
+        self.assertTrue(self.kb.retrieve(self.owner,self.account,'白衬衫纯棉冷水',document_ids=[])['insufficient'])
+        with self.assertRaises(DomainError):self.kb.retrieve(self.owner,self.account,'白衬衫纯棉',document_ids=[second['id'],'not-owned'])
+
+    def test_docx_upload_rejects_invalid_archive(self):
+        with self.assertRaises((ValueError,DomainError)):parse_file('broken.docx',b'not a zip')
+
     def test_creation_snapshots_and_citations_do_not_trust_external_instructions(self):
         self.save()
         service=Service(self.store,Config())
@@ -117,7 +142,16 @@ class KnowledgeTests(unittest.TestCase):
             r=post('/api/auth/register',dict(username='kbuser',password='Long-test-password'));csrf=r.json()['csrf']
             account=client.get('/api/operations').json()['accounts'][0]['id']
             r=post('/api/knowledge',dict(account_id=account,title='面料',text='白衬衫为纯棉面料，建议用冷水清洗。'));self.assertEqual(r.status_code,200,r.text)
-            r=post('/api/knowledge/retrieve',dict(account_id=account,query='白衬衫'));self.assertEqual(len(r.json()['sources']),1)
+            uploaded=post('/api/knowledge',dict(account_id=account,title='DOCX护理',filename='care.docx',file_base64=base64.b64encode(text_docx()).decode()))
+            self.assertEqual(uploaded.status_code,200,uploaded.text);self.assertNotIn('chunks',uploaded.json())
+            self.assertEqual(uploaded.json()['metadata']['location_type'],'paragraph')
+            listing=client.get('/api/knowledge?account_id='+account).json()
+            self.assertTrue(any(d['id']==uploaded.json()['id'] and d['metadata']['extracted_chars']>0 for d in listing))
+            creation=post('/api/runs',dict(topic='白衬衫纯棉冷水清洗',audience='学生',tone='真实',material='',scenario='standard',allow_hypothesis=True,
+                operations={'account_id':account,'platform':'xiaohongshu','account':'我的账号'},knowledge={'enabled':True,'document_ids':[uploaded.json()['id']]}))
+            self.assertEqual(creation.status_code,201,creation.text)
+            self.assertTrue(creation.json()['context']['evidence']);self.assertTrue(all(s['document_id']==uploaded.json()['id'] for s in creation.json()['context']['evidence']))
+            r=post('/api/knowledge/retrieve',dict(account_id=account,query='白衬衫'));self.assertEqual(len(r.json()['sources']),2)
             with patch('backend.sources.search_web') as search:
                 r=post('/api/sources/search',dict(account_id=self.account,query='白衬衫'))
                 self.assertEqual(r.status_code,404);search.assert_not_called()

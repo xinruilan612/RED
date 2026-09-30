@@ -45,8 +45,19 @@ def parse_file(name, data):
             pages=packet['pages']
         except (subprocess.TimeoutExpired,ValueError):
             raise ValueError('无法读取 PDF、解析超时或超出限制；扫描件暂不支持 OCR') from None
+    elif suffix=='docx':
+        import subprocess
+        import sys
+        from pathlib import Path
+        try:
+            proc=subprocess.run([sys.executable,'-m','backend.word_parser'],input=data,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,timeout=12,cwd=Path(__file__).resolve().parents[1])
+            packet=json.loads(proc.stdout)
+            require('paragraphs' in packet,'INVALID_INPUT',packet.get('error','无法读取 Word 文档'))
+            pages=packet['paragraphs']
+        except (subprocess.TimeoutExpired,ValueError):
+            raise ValueError('无法读取 DOCX、解析超时或超出限制；请另存为 .docx 后重试') from None
     else:
-        raise ValueError('目前支持 UTF-8 TXT、Markdown 和文本型 PDF')
+        raise ValueError('目前支持 UTF-8 TXT、Markdown、文本型 PDF 和 DOCX Word 文档')
     require(sum(len(t) for _,t in pages)<=MAX_TEXT and any(t.strip() for _,t in pages),'INVALID_INPUT','没有可提取文字，或正文超过 10 万字符；扫描件尚不支持 OCR')
     return pages
 
@@ -122,7 +133,9 @@ class Knowledge:
                 db.execute('UPDATE knowledge_documents SET title=?,version=?,source_type=?,source_url=?,updated_at=? WHERE id=?',(title,version,source_type,source_url,now,identity))
             else:
                 db.execute('INSERT INTO knowledge_documents VALUES(?,?,?,?,?,?,?,?,?)',(identity,owner,account,title,version,'active',source_type,source_url,now))
-            meta={**(metadata or {}),'title':title,'source_type':source_type,'source_url':source_url,'stored_at':now,'page_count':len(pages)}
+            meta={**(metadata or {}),'title':title,'source_type':source_type,'source_url':source_url,'stored_at':now,
+                  'location_type':'paragraph' if name.lower().endswith('.docx') else 'page','page_count':len(pages),
+                  'extracted_chars':sum(len(text) for _,text in pages)}
             db.execute('INSERT INTO knowledge_versions VALUES(?,?,?,?,?,?)',(identity,version,fingerprint,base64.b64encode(raw).decode(),name,json.dumps(meta,ensure_ascii=False)))
             for part in parts:
                 db.execute('INSERT INTO knowledge_chunks VALUES(?,?,?,?,?,?,?)',(str(uuid4()),identity,version,part['page'],part['offset'],part['text'],json.dumps(Counter(tokens(part['text'])),ensure_ascii=False)))
@@ -131,8 +144,8 @@ class Knowledge:
     def list(self, owner, account):
         self.account(owner,account)
         with self.store.connect() as db:
-            rows=db.execute("SELECT id,title,version,source_type,source_url,updated_at FROM knowledge_documents WHERE owner=? AND account_id=? AND status='active' ORDER BY updated_at DESC,id",(owner,account)).fetchall()
-        return [dict(zip(('id','title','version','source_type','source_url','updated_at'),r)) for r in rows]
+            rows=db.execute("SELECT d.id,d.title,d.version,d.source_type,d.source_url,d.updated_at,v.filename,v.metadata FROM knowledge_documents d JOIN knowledge_versions v ON v.document_id=d.id AND v.version=d.version WHERE d.owner=? AND d.account_id=? AND d.status='active' ORDER BY d.updated_at DESC,d.id",(owner,account)).fetchall()
+        return [dict(zip(('id','title','version','source_type','source_url','updated_at','filename'),r[:7]),metadata=json.loads(r[7])) for r in rows]
 
     def get(self, owner, account, identity):
         self.account(owner,account)
@@ -154,11 +167,23 @@ class Knowledge:
             db.execute("UPDATE knowledge_documents SET status='deleted' WHERE id=?",(identity,))
         return {'deleted':True,'note':'后续检索已排除；已有任务的证据快照保留审计'}
 
-    def retrieve(self, owner, account, query, limit=4):
+    def retrieve(self, owner, account, query, limit=4, document_ids=None):
         self.account(owner,account);query=validate_text(query,'检索内容',300)
+        if document_ids is not None:
+            require(isinstance(document_ids,list) and len(document_ids)<=3 and all(isinstance(x,str) and x for x in document_ids),'INVALID_INPUT','最多选择 3 份资料')
+            document_ids=list(dict.fromkeys(document_ids))
+            if document_ids:
+                with self.store.connect() as db:
+                    found=db.execute("SELECT id FROM knowledge_documents WHERE owner=? AND account_id=? AND status='active' AND id IN ("+','.join('?' for _ in document_ids)+")",(owner,account,*document_ids)).fetchall()
+                require(len(found)==len(document_ids),'RESOURCE_NOT_FOUND','所选资料不属于当前账号或已失效')
         wanted=set(tokens(query))
         with self.store.connect() as db:
-            rows=db.execute("SELECT c.id,c.document_id,c.version,c.page,c.offset_start,c.text,c.terms,d.title,d.source_url,d.source_type FROM knowledge_chunks c JOIN knowledge_documents d ON d.id=c.document_id AND d.version=c.version WHERE d.owner=? AND d.account_id=? AND d.status='active'",(owner,account)).fetchall()
+            sql="SELECT c.id,c.document_id,c.version,c.page,c.offset_start,c.text,c.terms,d.title,d.source_url,d.source_type,v.filename,v.metadata FROM knowledge_chunks c JOIN knowledge_documents d ON d.id=c.document_id AND d.version=c.version JOIN knowledge_versions v ON v.document_id=c.document_id AND v.version=c.version WHERE d.owner=? AND d.account_id=? AND d.status='active'"
+            args=[owner,account]
+            if document_ids is not None:
+                if not document_ids: return {'engine':'bm25-zh-bigram-v1','query':query,'sources':[],'insufficient':True,'note':'没有选择资料'}
+                sql+=' AND d.id IN ('+','.join('?' for _ in document_ids)+')';args.extend(document_ids)
+            rows=db.execute(sql,args).fetchall()
         documents=[(r,json.loads(r[6])) for r in rows]
         n=len(documents);avg=sum(sum(t.values()) for _,t in documents)/max(1,n)
         df={t:sum(t in terms for _,terms in documents) for t in wanted}
@@ -170,7 +195,8 @@ class Knowledge:
             score=sum(math.log(1+(n-df[t]+0.5)/(df[t]+0.5))*(terms[t]*2.2)/(terms[t]+1.2*(.25+.75*length/max(1,avg))) for t in matched)
             # A lone accidental bigram in a long question is insufficient evidence.
             if len(wanted)>3 and len(matched)<2: continue
-            results.append(dict(source_id='kb:'+r[0],document_id=r[1],version=r[2],page=r[3],offset=r[4],text=r[5],title=r[7],url=r[8],source_type=r[9],score=round(score,4),verification='原文片段匹配，来源真实性仍需核查'))
+            metadata=json.loads(r[11])
+            results.append(dict(source_id='kb:'+r[0],document_id=r[1],version=r[2],page=r[3],offset=r[4],text=r[5],title=r[7],url=r[8],source_type=r[9],filename=r[10],location_type=metadata.get('location_type','page'),score=round(score,4),verification='原文片段匹配，来源真实性仍需核查'))
         results.sort(key=lambda x:(-x['score'],x['source_id']))
         selected=results[:limit]
         # Keep input costs bounded while preserving exact substrings and locations.

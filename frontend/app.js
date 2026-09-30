@@ -5,7 +5,7 @@ const names={audience:'受众与竞品洞察',research:'热点与证据研究',c
 const stages={analysis:'分析',audience:'受众分析',research:'素材分析',strategy:'策略',outline:'提纲',hook:'开头',title:'标题',body:'正文',revise:'按意见改稿',review:'审核'};
 const states={QUEUED:'准备开始',RUNNING:'可以继续执行',WAITING_USER:'等待你的决定',SUCCEEDED:'已确认完成',CANCELLED:'已取消',FAILED:'执行失败',RETRY_WAIT:'等待重试',EXPIRED:'已过期'};
 const checks={brief_fit:'符合需求',audience_fit:'受众相关',usefulness_and_readability:'实用与易读',title_body_alignment:'标题与正文一致',evidence_integrity:'证据完整',experience_authenticity:'经历真实',originality_risk:'原创风险',privacy_and_policy:'隐私与规则'};
-let provider=null,polling=false;
+let provider=null,polling=false,materialDocsCache=[],confirmedLiveRuns=new Set();
 let csrf='',run=null,selected='audience',busy=false,auto=false,editing=false,viewVersion=null,detailStage=null,toastTimer,chosenHypothesis=null;
 async function api(path,method='GET',body){
  const r=await fetch(path,{method,headers:method==='POST'?{'Content-Type':'application/json','X-CSRF-Token':csrf}:{},body:body===undefined?undefined:JSON.stringify(body)});
@@ -16,6 +16,26 @@ function clearError(){$('error').hidden=true;}
 function toast(text){$('toast').textContent=text;$('toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').hidden=true,3500);}
 function json(value){return '<pre class="json">'+esc(JSON.stringify(value,null,2))+'</pre>';}
 function dirtyGuard(){return !editing||window.confirm('有尚未保存的编辑，确定放弃吗？');}
+function renderMaterialUploads(){
+ const host=$('materialUploads');if(!host)return;
+ const docs=materialDocsCache.filter(d=>d.account_id===currentAccount()?.id),picker=$('materialDocumentSelect');
+ const selected=new Set([...picker.selectedOptions].map(o=>o.value));
+ picker.innerHTML=docs.map(d=>`<option value="${esc(d.id)}" ${selected.has(d.id)?'selected':''}>${esc(d.title)} · v${d.version} · ${d.text_chars} 字 · ${d.location_type==='paragraph'?'段落':'页'} ${d.locations}</option>`).join('');
+ host.innerHTML=docs.length?'<p class="helper">文件正文已解析并保存在当前账号资料库；选中的最多 3 份会在创作时检索，不会把整份文件塞进模型。</p>':'<p class="helper">当前账号资料库暂无可选文件。</p>';
+}
+async function refreshMaterialDocuments(){
+ if(!websiteSession?.auth_required||!currentAccount())return;
+ try{const docs=await api('/api/knowledge?account_id='+encodeURIComponent(currentAccount().id));materialDocsCache=materialDocsCache.filter(d=>d.account_id!==currentAccount().id).concat(docs.map(d=>({id:d.id,account_id:currentAccount().id,title:d.title,version:d.version,filename:d.filename||d.title,locations:d.metadata?.page_count||0,location_type:d.metadata?.location_type||'page',text_chars:d.metadata?.extracted_chars||0})));renderMaterialUploads();}
+ catch(e){error(e);}
+}
+function confirmLiveBudget(){
+ if(!run||run.mode!=='live'||!provider)return true;
+ if(confirmedLiveRuns.has(run.run_id))return true;
+ const calls=provider.run_attempts_max??16,tokens=provider.run_tokens_max??40000,runUsd=provider.run_budget_usd??0.10,dayUsd=provider.day_budget_usd??0.50;
+ const accepted=window.confirm(`即将调用真实模型，可能产生费用。\n\n本任务硬上限：最多 ${calls} 次调用、${tokens.toLocaleString()} Token、$${Number(runUsd).toFixed(2)}；今日累计上限 $${Number(dayUsd).toFixed(2)}。\n资料最多带入 3 段原文（每段最多 400 字）；达到任一上限会由服务器停止，不自动重试。\n\n现在开始吗？`);
+ if(accepted)confirmedLiveRuns.add(run.run_id);
+ return accepted;
+}
 async function history(){
  const rows=(await api('/api/runs')).filter(r=>r.workflow_type!=='windtunnel'&&(typeof matchesAccount!=='function'||matchesAccount(r)));
  $('history').innerHTML=rows.length?rows.map(r=>`<button data-run="${esc(r.run_id)}" class="${run?.run_id===r.run_id?'selected':''}">${esc(r.context.topic||'旧任务')}<small>${esc(states[r.run_status])} · ${r.drafts.length} 个版本</small></button>`).join(''):'<p class="helper">还没有创作记录</p>';
@@ -132,6 +152,7 @@ function renderCalls(){
 }
 async function act(action,payload={}){
  if(action==='next'&&websiteSession?.auth_required)return backgroundCommand('start');
+ if(action==='next'&&run?.mode==='live'&&!confirmLiveBudget())return false;
  if(busy||!run)return false;busy=true;clearError();if(action==='next'&&run.mode==='live')run.in_flight=true;render();
  try{run=await api(`/api/runs/${run.run_id}/actions`,'POST',{action,version:run.status_version,key:crypto.randomUUID(),payload});clearError();viewVersion=null;selected=currentAgent();detailStage=null;if(action==='edit'){ops=await api('/api/operations');syncAccounts();}await history();return true;}
  catch(e){auto=false;error(e);try{run=await api('/api/runs/'+run.run_id);}catch(_){}return false;}
@@ -139,6 +160,7 @@ async function act(action,payload={}){
 }
 async function backgroundCommand(action){
  if(busy||!run)return false;
+ if(action==='start'&&run.mode==='live'&&!confirmLiveBudget())return false;
  busy=true;clearError();render();
  try{run=await api(`/api/runs/${run.run_id}/background`,'POST',{action,version:run.status_version,key:crypto.randomUUID()});await history();return true;}
  catch(e){error(e);try{run=await api('/api/runs/'+run.run_id);}catch(_){}return false;}
@@ -146,6 +168,7 @@ async function backgroundCommand(action){
 }
 async function autoRun(){
  if(websiteSession?.auth_required)return backgroundCommand(run.in_flight?'pause':'start');
+ if(run?.mode==='live'&&!confirmLiveBudget())return;
  if(auto){auto=false;render();return;}auto=true;render();
  while(auto&&run?.allowed_actions.includes('next')){
   if(!await act('next'))break;
@@ -156,7 +179,7 @@ async function autoRun(){
  auto=false;render();
 }
 $('briefForm').addEventListener('submit',async e=>{e.preventDefault();if(busy)return;busy=true;clearError();e.submitter.disabled=true;
- try{run=await api('/api/runs','POST',{...(websiteSession?.auth_required?{knowledge:{enabled:$('useKnowledge').checked}}:{}),mode:$('mode').value,topic:$('topic').value,audience:$('audience').value,tone:$('tone').value,material:$('material').value,scenario:$('scenario').value,allow_hypothesis:$('hypothesis').checked,operations:{platform:$('targetPlatform').value,account_id:currentAccount()?.id,account:$('accountName').value,trend_id:chosenTrend?.id||null,hypothesis_id:chosenHypothesis?.id||null}});chosenHypothesis=null;selected='audience';detailStage=null;viewVersion=null;editing=false;$('editor').hidden=true;render();await history();}
+ try{const accountId=currentAccount()?.id,documentIds=[...$('materialDocumentSelect').selectedOptions].map(o=>o.value);if(documentIds.length>3)throw new Error('本次最多选择 3 份资料');run=await api('/api/runs','POST',{...(websiteSession?.auth_required?{knowledge:{enabled:$('useKnowledge').checked,document_ids:$('useKnowledge').checked?documentIds:[]}}:{}),mode:$('mode').value,topic:$('topic').value,audience:$('audience').value,tone:$('tone').value,material:$('material').value,scenario:$('scenario').value,allow_hypothesis:$('hypothesis').checked,operations:{platform:$('targetPlatform').value,account_id:accountId,account:$('accountName').value,trend_id:chosenTrend?.id||null,hypothesis_id:chosenHypothesis?.id||null}});chosenHypothesis=null;selected='audience';detailStage=null;viewVersion=null;editing=false;$('editor').hidden=true;render();await history();}
  catch(err){error(err);}finally{busy=false;e.submitter.disabled=false;if(run&&!$('workbench').hidden)render();}});
 $('history').addEventListener('click',async e=>{const b=e.target.closest('[data-run]');if(!b||busy||!dirtyGuard())return;auto=false;editing=false;$('editor').hidden=true;clearError();showPage('studio');try{run=await api('/api/runs/'+b.dataset.run);viewVersion=null;detailStage=null;selected=currentAgent();render();await history();}catch(err){error(err);}});
 $('newRun').onclick=()=>{if(busy||!dirtyGuard())return;showPage('studio');auto=false;editing=false;$('editor').hidden=true;$('workbench').hidden=true;$('welcome').hidden=false;renderMode($('mode').value);fillAccountBrief();clearError();};
@@ -182,6 +205,24 @@ $('supplyForm').onsubmit=async e=>{e.preventDefault();if(await act('supplement',
 $('versionSelect').onchange=e=>{viewVersion=Number(e.target.value);renderDraft();};
 window.addEventListener('beforeunload',e=>{if(editing){e.preventDefault();e.returnValue='';}});
 document.addEventListener('DOMContentLoaded',async()=>{try{const session=await api('/api/session');csrf=session.csrf;if(session.auth_required&&!session.user){showLogin(session);return;}showWebsiteUser(session);provider=session.provider;$('configMessage').textContent=provider.message+' · 同一步最多3次（含首次）；接口错误立即停；整单最多16次 / 40000 Token';$('liveOption').disabled=!provider.ready;$('liveOption').textContent=provider.ready?'真实 AI · DeepSeek（消耗接口额度）':'真实 AI · DeepSeek（先填写 .env）';$('connectionStatus').textContent='DeepSeek：'+(provider.ready?'已配置':'未配置');$('mode').value='simulation';$('scenario').disabled=$('mode').value==='live';renderMode($('mode').value);const rows=await history();if(rows.length){run=rows[0];selected=currentAgent();render();await history();}await initOperations();}catch(e){error(e);}});
+
+const materialFiles=$('materialFiles');
+const materialDocumentSelect=$('materialDocumentSelect');
+if(materialDocumentSelect)materialDocumentSelect.addEventListener('change',()=>{if(materialDocumentSelect.selectedOptions.length>3){[...materialDocumentSelect.options].forEach(o=>{if(!o.selected)return;const before=[...materialDocumentSelect.options].slice(0,o.index).filter(x=>x.selected).length;if(before>=3)o.selected=false;});error(new Error('本次最多选择 3 份资料'));}});
+if(materialFiles)materialFiles.addEventListener('change',async()=>{
+ const files=[...materialFiles.files];materialFiles.value='';
+ if(!websiteSession?.auth_required){error(new Error('请登录后上传账号资料'));return;}
+ for(const file of files){
+  if(file.size>3000000){error(new Error(`${file.name} 超过 3 MB`));continue;}
+  if(!/\.(pdf|docx)$/i.test(file.name)){error(new Error('目前仅支持 PDF 和 DOCX Word 文件'));continue;}
+  try{
+   const encoded=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=()=>reject(new Error('文件读取失败'));reader.readAsDataURL(file);});
+   const doc=await api('/api/knowledge','POST',{account_id:currentAccount()?.id,title:file.name.replace(/\.(pdf|docx)$/i,''),filename:file.name,file_base64:encoded});
+   await refreshMaterialDocuments();const option=[...materialDocumentSelect.options].find(o=>o.value===doc.id);if(option){const chosen=[...materialDocumentSelect.selectedOptions];if(chosen.length<3)option.selected=true;else error(new Error('文件已保存；本次最多选 3 份，请先取消一项再选择它。'));}
+   $('useKnowledge').checked=true;renderMaterialUploads();toast(`${file.name} 已解析并保存到当前账号资料库；上传未调用 AI。`);
+  }catch(err){error(err);}
+ }
+});
 
 $('mode').onchange=()=>{renderMode($('mode').value);$('scenario').disabled=$('mode').value==='live';};
 setInterval(async()=>{

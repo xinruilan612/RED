@@ -46,5 +46,6 @@ function showWebsiteUser(session){
  document.getElementById('websiteUser').hidden=false;
  document.getElementById('libraryNav').hidden=false;document.getElementById('knowledgeOption').hidden=false;
  document.getElementById('websiteUsername').textContent=session.user.username;
+ document.getElementById('materialFileBox').hidden=false;
  document.getElementById('logout').onclick=async()=>{if(!dirtyGuard())return;try{await api('/api/auth/logout','POST',{});location.reload();}catch(err){error(err);}};
 }

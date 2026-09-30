@@ -13,6 +13,7 @@ function syncAccounts(){
  localStorage.setItem('creator-account',activeAccountId);
  $('activeAccount').innerHTML=ops.accounts.map(a=>`<option value="${esc(a.id)}" ${a.id===activeAccountId?'selected':''}>${esc(a.name)} · ${platformNames[a.platform]}</option>`).join('');
  $('accountGoal').textContent=currentAccount()?.profile.goal||'先完善账号定位与本周目标';fillAccountBrief();
+ if(typeof refreshMaterialDocuments==='function')refreshMaterialDocuments();
 }
 function fillAccountBrief(){const a=currentAccount();if(!a)return;$('targetPlatform').value=a.platform;$('accountName').value=a.name;if($('welcome').hidden)return;$('audience').value=a.profile.audience||'请填写本次目标读者';$('tone').value=a.profile.tone||'真实、具体、清楚';}
 $('activeAccount').onchange=async e=>{

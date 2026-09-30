@@ -129,7 +129,10 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
     @app.post('/api/knowledge')
     def save_document(data: dict,user=Depends(logged)):
         auth.throttle('upload:'+user['owner'],40,3600)
-        try: return service.knowledge.save(user['owner'],data)
+        try:
+            result=service.knowledge.save(user['owner'],data)
+            result.pop('chunks',None);result.pop('versions',None)
+            return result
         except DomainError: raise
         except ValueError as e: raise DomainError('INVALID_INPUT',str(e)) from None
 
