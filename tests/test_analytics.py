@@ -112,3 +112,29 @@ class AnalyticsTests(unittest.TestCase):
         plan=self.plan()
         self.assertEqual(sum(t['memory_ref'] is not None for t in plan['tasks']),1)
         self.assertEqual(len({t['title'] for t in plan['tasks']}),3)
+
+    def test_weekly_plan_uses_goal_pillars_frequency_and_resource_constraints(self):
+        state=self.sample();account=state['accounts'][-1]
+        profile={**account['profile'],'goal':'帮创作者涨粉','pillars':'拍摄技巧教程、作品展示',
+                 'resources':'每周少于 2 小时、主要用手机拍摄','weekly_frequency':2}
+        state=self.command('save_account',dict(id=account['id'],name=account['name'],platform=account['platform'],profile=profile))
+        plan=self.plan()
+        self.assertEqual(plan['goal'],'帮创作者涨粉')
+        self.assertEqual(plan['profile_snapshot']['weekly_frequency'],2)
+        self.assertEqual(len(plan['tasks']),2)
+        self.assertIn('拍摄技巧教程',plan['tasks'][0]['title'])
+        self.assertIn('轻量制作',plan['tasks'][0]['title'])
+        self.assertIn('手机可完成',plan['tasks'][0]['title'])
+        self.assertIn('帮创作者涨粉',plan['tasks'][0]['reason'])
+        self.assertIn('每周少于 2 小时',plan['tasks'][0]['reason'])
+        self.assertIn('主要用手机拍摄',plan['tasks'][0]['reason'])
+
+    def test_account_profile_change_marks_existing_calendar_for_rebuild(self):
+        state=self.sample();account=state['accounts'][-1];plan=self.plan()
+        self.command('plan_status',dict(id=plan['id'],status='accepted'))
+        profile={**account['profile'],'goal':'帮创作者涨粉'}
+        updated=self.command('save_account',dict(id=account['id'],name=account['name'],platform=account['platform'],profile=profile))
+        self.assertEqual(updated['plans'][0]['status'],'needs_review')
+        with self.assertRaises(DomainError):
+            self.command('plan_task',dict(plan_id=plan['id'],task_id=plan['tasks'][0]['id'],
+                title=plan['tasks'][0]['title'],date=plan['tasks'][0]['date'],status='planned',publication_id=None))

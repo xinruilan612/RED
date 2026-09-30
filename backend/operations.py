@@ -204,6 +204,7 @@ class Operations:
             return
         if action == 'save_account':
             save_account(state, data)
+            refresh_plans(state)
             return
         if action == 'import_post':
             self.import_post(state, data)

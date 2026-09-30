@@ -127,6 +127,10 @@ def invalidate(state, publication_id, window):
 
 def refresh_plans(state):
     valid = {m['id'] for m in state['memories'] if m['status'] == 'accepted'}
+    accounts = {a['id']: a for a in state.get('accounts', [])}
     for plan in state['plans']:
-        if plan['status'] not in ('revoked', 'needs_review') and not set(plan['memory_refs']) <= valid:
+        account = accounts.get(plan['account_id'])
+        profile_changed = account is None or plan.get('profile_revision') != account['revision']
+        memory_changed = not set(plan['memory_refs']) <= valid
+        if plan['status'] not in ('revoked', 'needs_review') and (profile_changed or memory_changed):
             plan['status'] = 'needs_review'

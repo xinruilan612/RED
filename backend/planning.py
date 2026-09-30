@@ -8,6 +8,38 @@ from backend.contracts import require
 from backend.demo import validate_text
 
 
+def _items(value):
+    return [part.strip() for part in value.replace('，', ',').replace('、', ',').replace('\n', ',').split(',') if part.strip()]
+
+
+def _goal_action(goal, pillar, resources):
+    value = goal.lower()
+    if any(word in value for word in ('涨粉', '关注', '粉丝')):
+        action = '用拍摄前后对比讲清一个新手能复用的方法'
+    elif any(word in value for word in ('卖货', '销售', '订单', '转化')):
+        action = '展示真实使用场景、适合人群和需要说明的限制'
+    elif any(word in value for word in ('获客', '线索', '报名', '注册', '推广')):
+        action = '解决一个具体问题，并说明读者可以采取的下一步'
+    elif any(word in value for word in ('互动', '收藏', '评论', '参与')):
+        action = '整理成读者能收藏照做的步骤清单'
+    elif any(word in value for word in ('个人品牌', '人设', '信任')):
+        action = '分享一次拍摄幕后过程和自己的选择理由'
+    elif any(word in value for word in ('验证', '测试', '实验')):
+        action = '围绕一个明确假设制作内容，并一次只测试一个表达点'
+    else:
+        action = '讲清一个具体场景、实用方法和读者可采取的行动'
+    resource_prefix = ''
+    if any('少于 2 小时' in item or '少于2小时' in item for item in resources):
+        resource_prefix = '轻量制作，'
+    elif any('2–4 小时' in item or '2-4 小时' in item for item in resources):
+        resource_prefix = '控制制作量，'
+    if any('已有可用照片或视频素材' in item for item in resources):
+        resource_prefix += '优先用已拍素材，'
+    if any('主要用手机拍摄' in item for item in resources):
+        resource_prefix += '手机可完成，'
+    return f'围绕「{pillar}」{resource_prefix}{action}'
+
+
 def make_plan(state, data, created_at):
     require(set(data) == {'account_id','week_start','source_type'}, 'INVALID_INPUT', '计划字段无效')
     account = find_account(state, data['account_id'])
@@ -22,18 +54,32 @@ def make_plan(state, data, created_at):
                     for p in state['plans']), 'DUPLICATE', '本周已有有效计划；撤销后可重新生成')
     memories = [m for m in state['memories'] if m.get('account_id') == account['id']
                 and m['source_type'] == data['source_type'] and m['status'] == 'accepted'][:3]
-    pillars = [p.strip() for p in account['profile']['pillars'].replace('，', ',').replace('\n', ',').split(',') if p.strip()] or ['常青内容']
+    profile = account['profile']
+    pillars = _items(profile['pillars']) or ['常青内容']
+    goal = profile['goal'] or '先验证内容是否对目标受众有用'
+    resources = _items(profile['resources'])
     tasks = []
     count = account['profile']['weekly_frequency']
     for i in range(count):
         memory = memories[i] if i < len(memories) else None
+        pillar = pillars[i % len(pillars)]
+        title = _goal_action(goal, pillar, resources)
+        if memory:
+            title += f'；检验复盘建议：{memory["text"]}'
+        reason = f'根据运营目标「{goal}」与内容栏目「{pillar}」安排；'
+        reason += f'制作时考虑：{"、".join(resources)}。' if resources else '尚未填写时间 / 素材条件，可按实际情况调整。'
+        reason += '计划是待确认的建议，不代表效果保证。'
+        if memory:
+            reason += '同时参考已接受的复盘建议，仍需再次验证。'
+        else:
+            reason += '暂无历史效果依据。'
         tasks.append(dict(id=str(uuid4()), date=(start+timedelta(days=(i*7)//count)).isoformat(),
-            title=memory['text'] if memory else '围绕「'+pillars[i % len(pillars)]+'」准备一篇内容',
-            reason='来自已接受的复盘建议；仍需实验验证' if memory else '来自账号栏目与更新频率；暂无历史效果依据',
+            title=title, reason=reason,
             memory_ref=memory['id'] if memory else None, status='planned', publication_id=None))
     state['plans'].insert(0, dict(id=str(uuid4()), account_id=account['id'], week_start=start.isoformat(),
         source_type=data['source_type'], status='draft', created_at=created_at,
-        goal=account['profile']['goal'] or '先完成首轮内容记录与复盘', profile_revision=account['revision'],
+        goal=goal, profile_revision=account['revision'],
+        profile_snapshot={k: profile[k] for k in ('positioning','pillars','goal','resources','weekly_frequency')},
         memory_refs=[m['id'] for m in memories], tasks=tasks,
         limitation='计划是可撤销的建议；不会自动创作、批准或发布。'))
 
