@@ -50,3 +50,59 @@ class ConciseCreationTests(unittest.TestCase):
         self.assertIn('"issue_id": "prior", "result": "unresolved"',messages[0]['content'])
         self.assertIn('必须needs_human',messages[0]['content'])
         self.assertEqual(run.prior_review,before)
+
+    def test_reader_copy_stages_separate_internal_notes_without_changing_schema(self):
+        run=self.fixture()
+        for stage in ('outline','hook','title','body','revise'):
+            with self.subTest(stage=stage):
+                messages,_=messages_for(run,stage)
+                instruction=messages[0]['content']
+                self.assertIn('面向目标读者创作',instruction)
+                self.assertIn('网页发布时间为空',instruction)
+                self.assertIn('review.human_questions',instruction)
+                self.assertIn('不能凭空替博主承诺后续更新',instruction)
+                self.assertIn('读者有用的适用条件、真实来源引用和必要的不确定性应保留',instruction)
+                self.assertNotIn('发布时间为空时说明时效未知',instruction)
+        for stage in ('body','revise'):
+            self.assertEqual(set(schema(stage)),{'selected_title','body','cta','tags'})
+
+    def test_research_requires_core_step_evidence_and_review_routes_missing_sources(self):
+        research,_=messages_for(self.fixture(),'research')
+        self.assertIn('材料只列产品名或背景、没有步骤依据，必须core_gap=true',research[0]['content'])
+        self.assertIn('模型常识与“多数流程”不能冒充材料依据',research[0]['content'])
+        review,_=messages_for(self.fixture(),'review')
+        self.assertIn('不是删掉免责声明就视为事实问题已解决',review[0]['content'])
+        self.assertIn('缺口请求写human_questions',review[0]['content'])
+        self.assertIn('按usefulness_and_readability及标题与正文承诺的一致性审查',review[0]['content'])
+
+    def test_reader_motivation_flows_from_strategy_through_title_to_body(self):
+        run=self.fixture()
+        instructions={stage:messages_for(run,stage)[0][0]['content']
+                      for stage in ('strategy','hook','title','body','review')}
+        self.assertIn('promise给材料足以支持、正文能够兑现的看点或收益',instructions['strategy'])
+        self.assertIn('首句抓具体场景、读者痛点或有依据的反差',instructions['hook'])
+        self.assertIn('不写自我介绍、“这期只讲”或研究过程',instructions['hook'])
+        self.assertIn('五个候选在角度与句式上有实质区别',instructions['title'])
+        self.assertIn('selected的承诺必须由材料和计划正文兑现',instructions['title'])
+        self.assertIn('禁止夸张数字、制造恐惧、疗效保证、虚构亲历或爆款承诺',instructions['title'])
+        self.assertIn('正文必须兑现标题承诺',instructions['body'])
+        self.assertIn('核对正文首句承接与正文实际兑现标题承诺',instructions['review'])
+        _,title_data=messages_for(run,'title')
+        _,body_data=messages_for(run,'body')
+        self.assertEqual(title_data['upstream']['strategy'],body_data['upstream']['strategy'])
+        self.assertEqual(title_data['upstream']['hook'],body_data['upstream']['hook'])
+        self.assertEqual(body_data['upstream']['title']['selected'],'候选一')
+
+    def test_hook_and_title_receive_bounded_reader_motivation_without_future_title(self):
+        run=self.fixture()
+        audience=run.branches['audience']['data']
+        audience['pain_points']=['问题'+str(i) for i in range(5)]
+        audience['content_opportunities']=['机会'+str(i) for i in range(5)]
+        before=copy.deepcopy(audience)
+        for stage in ('hook','title'):
+            _,data=messages_for(run,stage)
+            projected=data['branches']['audience']['data']
+            self.assertEqual(projected['pain_points'],audience['pain_points'][:3])
+            self.assertEqual(projected['content_opportunities'],audience['content_opportunities'][:3])
+            self.assertNotIn('title',data['upstream'])
+        self.assertEqual(audience,before)

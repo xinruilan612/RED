@@ -55,6 +55,27 @@ class DurableTests(unittest.TestCase):
         self.assertEqual(self.job()['status'],'blocked')
         self.assertEqual(self.run_value().current_stage,'reviewer')
 
+    def test_creator_notes_stop_for_human_without_rewriting_or_extra_model_calls(self):
+        base=self.model.complete
+        def notes(messages):
+            value,tokens=base(messages)
+            if self.model.calls[-1]=='body':
+                value['body']='素材里没有更细的权威顺序依据，我先不下定论。后续找到可标注来源，再补一版拆解。'
+            return value,tokens
+        self.model.complete=notes
+        self.start();Worker(self.service).once()
+        run=self.run_value()
+        self.assertEqual(run.run_status,'WAITING_USER')
+        self.assertEqual(run.wait_reason,'missing_material')
+        self.assertEqual(run.review['decision'],'needs_human')
+        self.assertEqual(len(self.model.calls),8)
+        self.assertIn('素材里没有',run.drafts[-1]['content']['body'])
+        self.assertTrue(any(i['issue_id'].startswith('copy-boundary-') for i in run.review['issues']))
+        with self.store.connect() as db:
+            raw=db.execute("SELECT response_json FROM live_calls WHERE run_id=? AND stage='review'",(run.run_id,)).fetchone()[0]
+        self.assertEqual(json.loads(raw)['decision'],'approved')
+        self.assertIn('adopt_manual',self.service.view(run)['allowed_actions'])
+
     def test_invalid_review_can_be_recovered_free_then_edited_reaudited_and_confirmed(self):
         self.invalid_citation_review()
         before=self.service.view(self.run_value())
