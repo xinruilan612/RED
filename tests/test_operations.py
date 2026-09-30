@@ -182,6 +182,24 @@ class OperationsTests(unittest.TestCase):
             self.assertEqual(archived['status'],'MANUAL_REPORTED')
             self.assertEqual(len([p for p in first['publications'] if p['run_id']==run.run_id]),1)
 
+    def test_archive_accepts_xhs_cn_share_text_and_normalizes_duplicate_link(self):
+        run=self.confirmed('live')
+        link='https://xhslink.cn/o/8ZZwcVOCe77?xsec_token=a%2Bb&source=share'
+        payload=self.archive_payload(run,url='洗脸后先涂什么？ ['+link+'] Copy and open rednote to view the note')
+        pub=self.command('archive_published',payload)['publications'][0]
+        self.assertEqual(pub['url'],link)
+        self.assertEqual(pub['status'],'MANUAL_REPORTED')
+        self.assertEqual(self.command('archive_published',{**payload,'url':link})['publications'],[pub])
+
+    def test_share_link_extraction_keeps_platform_and_single_link_guards(self):
+        from backend.operations import url
+        self.assertEqual(url('分享：https://xhslink.cn/o/post。复制打开','xiaohongshu'),'https://xhslink.cn/o/post')
+        self.assertEqual(url('抖音 https://v.douyin.com/post/ 复制打开','douyin'),'https://v.douyin.com/post/')
+        for value in ('https://xhslink.cn.evil.example/o/a','https://xhslink.cn@evil.example/o/a',
+                      'https://evil.example@xhslink.cn/o/a','https://v.douyin.com/a',
+                      'https://xhslink.cn/a https://xhslink.cn/b','javascript:alert(1)'):
+            with self.subTest(value=value),self.assertRaises(DomainError):url(value,'xiaohongshu')
+
     def test_archive_manually_adopted_draft_keeps_unresolved_review_on_source_only(self):
         context=validate_brief(dict(topic='衣橱',audience='学生',tone='真实',material='本人记录',scenario='revision'))
         context.update(mode='live',operations=self.ops.context(self.owner,{},'live'))

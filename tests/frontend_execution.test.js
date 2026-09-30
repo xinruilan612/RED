@@ -181,3 +181,30 @@ test('fresh background render removes resolved run error without hiding unrelate
  assert.equal(s.element('error').hidden,false);
  assert.equal(s.element('error').textContent,'当前执行失败');
 });
+
+test('archive accepts full share text and sends only the extracted link',async()=>{
+ const s=setup();vm.runInContext(fs.readFileSync('frontend/operations.js','utf8'),s.sandbox);
+ s.eval("currentAccount=()=>({id:'a1',platform:'xiaohongshu'});accountRows=()=>[];renderPublications();archiveCalls=[];operate=async(action,payload)=>{archiveCalls.push({action,payload});return true;}");
+ assert.match(s.element('operationsContent').innerHTML,/id="archiveUrl" type="text"/);
+ s.element('archiveTitle').value='洗脸后先涂什么';s.element('archiveBody').value='实际正文';s.element('archivePublishedAt').value='2026-09-30T18:02';
+ s.element('archiveUrl').value='洗脸后先涂什么？新手早间：先保湿再防晒 [https://xhslink.cn/o/8ZZwcVOCe77](https://xhslink.cn/o/8ZZwcVOCe77) Copy and open rednote to view the note';
+ await s.eval('savePublishedArchive({preventDefault(){}})');
+ assert.equal(s.eval('archiveCalls.length'),0);
+ assert.match(s.element('error').textContent,/多个链接/);
+ s.element('archiveUrl').value='洗脸后先涂什么？新手早间：先保湿再防晒 https://xhslink.cn/o/8ZZwcVOCe77 Copy and open rednote to view the note';
+ await s.eval('savePublishedArchive({preventDefault(){}})');
+ assert.equal(s.eval('archiveCalls.length'),1);
+ assert.equal(s.eval('archiveCalls[0].payload.url'),'https://xhslink.cn/o/8ZZwcVOCe77');
+ assert.equal(s.element('archiveUrl').value,'https://xhslink.cn/o/8ZZwcVOCe77');
+});
+
+test('share extraction preserves encoded query and trims prose boundaries',()=>{
+ const s=setup();vm.runInContext(fs.readFileSync('frontend/operations.js','utf8'),s.sandbox);
+ const url='https://www.xiaohongshu.com/explore/a?xsec_token=Ab%2BC%3D&xsec_source=pc_share';
+ for(const pasted of [url,`链接：${url}。复制打开`, `[笔记](${url})`, `  ${url}\n复制打开`]){
+  s.sandbox.pasted=pasted;assert.equal(s.eval('extractPublishedUrl(pasted)'),url);
+ }
+ for(const pasted of ['没有链接','javascript:alert(1)','https://xhslink.cn/o/one https://xhslink.cn/o/two']){
+  s.sandbox.pasted=pasted;assert.throws(()=>s.eval('extractPublishedUrl(pasted)'),/作品链接|多个链接/);
+ }
+});

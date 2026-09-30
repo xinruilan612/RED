@@ -1,6 +1,7 @@
 """Local operations demo: owned, versioned records; no external publishing."""
 import copy
 import json
+import re
 from datetime import datetime, timezone, timedelta
 from urllib.parse import urlsplit
 from uuid import uuid4
@@ -31,7 +32,11 @@ def timestamp(value):
 
 
 def url(value, platform=None):
-    value = validate_text(value, '来源链接', 1000)
+    value = validate_text(value, '来源链接', 4000 if platform else 1000)
+    if platform:
+        links = re.findall(r'''https?://[^\s<>"'\[\]（）【】“”‘’，。；！？]+''', value, flags=re.I)
+        require(len(links)==1, 'INVALID_INPUT', '请粘贴一条作品链接或只含一个链接的分享文案')
+        value = links[0].rstrip(')')
     try:
         parsed = urlsplit(value)
         valid = parsed.scheme in ('http', 'https') and parsed.hostname and not parsed.username and not parsed.password
@@ -40,7 +45,7 @@ def url(value, platform=None):
         valid = False; host = ''
     require(valid, 'INVALID_INPUT', '请填写有效的 http/https 链接')
     if platform:
-        domains = {'xiaohongshu': ('xiaohongshu.com', 'xhslink.com'), 'douyin': ('douyin.com', 'iesdouyin.com')}[platform]
+        domains = {'xiaohongshu': ('xiaohongshu.com', 'xhslink.com', 'xhslink.cn'), 'douyin': ('douyin.com', 'iesdouyin.com')}[platform]
         require(any(host == d or host.endswith('.' + d) for d in domains), 'INVALID_INPUT', '作品链接与目标平台不一致')
     return value
 
