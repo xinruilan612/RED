@@ -16,9 +16,9 @@ def _goal_action(goal, pillar, resources):
     value = goal.lower()
     if any(word in value for word in ('涨粉', '关注', '粉丝')):
         action = '用拍摄前后对比讲清一个新手能复用的方法'
-    elif any(word in value for word in ('卖货', '销售', '订单', '转化')):
+    elif any(word in value for word in ('卖货', '销售', '订单', '转化', '成交', '商品浏览', '查看商品')):
         action = '展示真实使用场景、适合人群和需要说明的限制'
-    elif any(word in value for word in ('获客', '线索', '报名', '注册', '推广')):
+    elif any(word in value for word in ('获客', '线索', '报名', '注册', '推广', '咨询', '预约', '到店', '约拍', '进店', '引导试用')):
         action = '解决一个具体问题，并说明读者可以采取的下一步'
     elif any(word in value for word in ('互动', '收藏', '评论', '参与')):
         action = '整理成读者能收藏照做的步骤清单'

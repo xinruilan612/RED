@@ -42,6 +42,20 @@ class AccountTests(unittest.TestCase):
         with self.assertRaises(DomainError): self.ops.context('other', {'account_id': account['id']}, 'live')
         with self.assertRaises(DomainError): self.command('save_account', {**self.profile(account['id']), 'platform':'douyin'})
 
+    def test_platforms_have_separate_account_ids_and_keep_existing_history(self):
+        xhs = self.command('save_account', self.profile())['accounts'][-1]
+        post = dict(account_id=xhs['id'], title='摄影作品', body='小红书历史',
+                    url='https://www.xiaohongshu.com/explore/photo', published_at=now(),
+                    format='image_text', pillar='摄影作品展示', traffic='organic')
+        self.command('import_post', post)
+        douyin_profile = self.profile(name=xhs['name'])
+        douyin_profile['platform'] = 'douyin'
+        douyin = self.command('save_account', douyin_profile)['accounts'][-1]
+        self.assertNotEqual(xhs['id'], douyin['id'])
+        self.assertEqual((xhs['platform'], douyin['platform']), ('xiaohongshu', 'douyin'))
+        state = Operations(Store(self.store.path)).read(self.owner)
+        self.assertEqual(state['publications'][0]['account_id'], xhs['id'])
+
     def test_legacy_migration_is_stable_and_non_destructive(self):
         run, pub = self.publication()
         state = self.ops.read(self.owner)
