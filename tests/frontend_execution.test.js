@@ -15,6 +15,53 @@ function setup(){
  api=async(path,method,body)=>{calls.push(body);return run;};`,sandbox);
  return {sandbox,element,eval:code=>vm.runInContext(code,sandbox)};
 }
+
+test('cancel asks in a nonblocking panel and only dispatches after explicit confirmation',async()=>{
+ const s=setup();s.element('cancelConfirmation').hidden=true;
+ await s.element('cancel').onclick();assert.equal(s.element('cancelConfirmation').hidden,false);
+ assert.equal(s.eval('calls.length'),0);
+ s.element('keepTask').onclick();assert.equal(s.element('cancelConfirmation').hidden,true);
+ await s.element('cancel').onclick();await s.element('confirmCancel').onclick();
+ assert.equal(s.eval('calls[0].action'),'cancel');assert.equal(s.eval('confirmations'),0);
+});
+
+test('cancel confirmation cannot cancel a different task after navigation',async()=>{
+ const s=setup();await s.element('cancel').onclick();s.eval("run.run_id='other-task'");await s.element('confirmCancel').onclick();
+ assert.equal(s.eval('calls.length'),0);assert.match(s.element('error').textContent,/任务已变化/);
+});
+
+test('pause refreshes moving Worker version and never restarts a completed task',async()=>{
+ const s=setup();s.eval("run.in_flight=true;run.status_version=7;pausePosts=0;api=async(_p,method,body)=>{if(method==='POST'){pausePosts++;if(pausePosts===1){run.status_version=8;const e=new Error('任务已更新');e.code='VERSION_CONFLICT';throw e;}calls.push(body);}return run;}");
+ await s.eval("backgroundCommand('pause')");assert.equal(s.eval('calls[0].action'),'pause');assert.equal(s.eval('calls[0].version'),8);assert.equal(s.eval('pausePosts'),2);
+ s.eval('run.in_flight=false');await s.eval("backgroundCommand('pause')");assert.equal(s.eval('pausePosts'),2);
+});
+
+test('late material response retains its original account identity',async()=>{
+ const s=setup();s.eval("active='a1';currentAccount=()=>({id:active});api=()=>new Promise(resolve=>{resolveMaterials=resolve});renders=0;renderMaterialUploads=()=>renders++;");
+ const request=s.eval('refreshMaterialDocuments()');s.eval("active='a2';resolveMaterials([{id:'doc1',title:'A1资料',version:1,metadata:{}}])");await request;
+ assert.equal(s.eval('materialDocsCache[0].account_id'),'a1');assert.equal(s.eval('renders'),0);
+});
+
+test('simulation draft enters a separately approved simulated publication instead of real archive',async()=>{
+ const s=setup();vm.runInContext(fs.readFileSync('frontend/operations.js','utf8'),s.sandbox);
+ s.eval("run.mode='simulation';run.accepted_ref='d1';ops={publications:[]};archiveCalls=[];showPage=p=>page=p;operate=async(action,payload)=>{archiveCalls.push({action,payload});return true;};openPublishedArchive=()=>{throw new Error('must not open real archive')}");
+ await s.element('sendToPublish').onclick();assert.equal(s.eval('archiveCalls[0].action'),'prepare');assert.equal(s.eval('page'),'publish');
+ s.eval("ops.publications=[{run_id:'run-1',draft_ref:'d1'}]");await s.element('sendToPublish').onclick();assert.equal(s.eval('archiveCalls.length'),1);
+});
+
+test('simulation publication list exposes exact approval and simulation actions',()=>{
+ const s=setup();vm.runInContext(fs.readFileSync('frontend/operations.js','utf8'),s.sandbox);
+ s.eval("accountRows=()=>[{id:'p1',mode:'simulation',status:'AWAITING_APPROVAL',account:'模拟账号',content:{selected_title:'模拟稿'}}];renderSimulatedPublications()");
+ assert.match(s.element('operationsContent').innerHTML,/data-approve="p1"/);assert.match(s.element('operationsContent').innerHTML,/不进入真实历史/);
+});
+
+test('free weekly plan uses existing rules command and AI mode rejects missing configuration',async()=>{
+ const s=setup();s.sandbox.localStorage={getItem:()=>''};vm.runInContext(fs.readFileSync('frontend/operations.js','utf8'),s.sandbox);vm.runInContext(fs.readFileSync('frontend/account.js','utf8'),s.sandbox);
+ s.eval("activeAccountId='a1';planCalls=[];operate=async(action,payload)=>{planCalls.push({action,payload});return true;}");
+ s.element('planMode').value='rules';s.element('planSource').value='simulation';s.element('planWeek').value='2026-10-05';await s.eval('submitWeeklyPlan({preventDefault(){}})');
+ assert.equal(s.eval('planCalls[0].action'),'create_plan');assert.equal(s.eval('planCalls[0].payload.source_type'),'simulation');assert.equal(s.eval('calls.length'),0);
+ s.element('planMode').value='agent';await s.eval('submitWeeklyPlan({preventDefault(){}})');assert.equal(s.eval('planCalls.length'),1);assert.match(s.element('error').textContent,/API Key/);
+});
 test('next executes one background step and free research does not request model budget',async()=>{
  const s=setup();await s.eval("act('next')");assert.equal(s.eval('calls[0].action'),'step');assert.equal(s.eval('confirmations'),0);
  s.eval("run.context.web_research.status='complete'");await s.eval("act('next')");assert.equal(s.eval('confirmations'),1);

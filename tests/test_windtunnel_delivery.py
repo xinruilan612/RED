@@ -105,7 +105,20 @@ class WindtunnelPackageTests(unittest.TestCase):
         self.write("backend/new_delivery.py", "explicit safe addition")
         self.write(".env.example", "DEEPSEEK_API_KEY=\n")
         self.git("add", ".env.example")
-        self.root.joinpath("backend/link.py").symlink_to(self.root / "requirements.txt")
+        link = self.root / "backend/link.py"
+        try:
+            link.symlink_to(self.root / "requirements.txt")
+        except OSError as error:
+            if getattr(error, 'winerror', None) != 1314:
+                raise
+            # Windows without Developer Mode cannot create a real symlink.
+            # Exercise the same exclusion branch; Linux still uses a real link.
+            from unittest.mock import patch
+            self.write('backend/link.py', 'symlink fixture')
+            original = Path.is_symlink
+            guard = patch.object(Path, 'is_symlink', lambda path: path == link or original(path))
+            guard.start()
+            self.addCleanup(guard.stop)
         self.git("add", "backend/link.py")
         result = build(self.root / "bundle.zip", root=self.root, extra=["backend/new_delivery.py"])
         with zipfile.ZipFile(result["archive"]) as archive:

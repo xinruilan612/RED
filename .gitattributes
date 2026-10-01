@@ -1,0 +1,2 @@
+# Historical byte fingerprints must survive Windows checkout unchanged.
+docs/submission/evidence/baseline-source/** -text

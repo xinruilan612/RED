@@ -7,9 +7,10 @@ const states={QUEUED:'准备开始',RUNNING:'可以继续执行',WAITING_USER:'�
 const checks={brief_fit:'符合需求',audience_fit:'受众相关',usefulness_and_readability:'实用与易读',title_body_alignment:'标题与正文一致',evidence_integrity:'证据完整',experience_authenticity:'经历真实',originality_risk:'原创风险',privacy_and_policy:'隐私与规则'};
 let provider=null,polling=false,materialDocsCache=[],confirmedLiveRuns=new Set();
 let csrf='',run=null,selected='audience',busy=false,auto=false,editing=false,viewVersion=null,detailStage=null,toastTimer,chosenHypothesis=null;
+let cancellationRun=null;
 async function api(path,method='GET',body){
  const r=await fetch(path,{method,headers:method==='POST'?{'Content-Type':'application/json','X-CSRF-Token':csrf}:{},body:body===undefined?undefined:JSON.stringify(body)});
- const data=await r.json(); if(!r.ok)throw new Error(data.error?.message||'请求失败');return data;
+ const data=await r.json(); if(!r.ok){const failure=new Error(data.error?.message||'请求失败');failure.code=data.error?.code;throw failure;}return data;
 }
 let errorSource=null;
 function error(e,source='request'){$('error').textContent=e.message||String(e);$('error').hidden=false;errorSource=source;}
@@ -35,7 +36,8 @@ function renderMaterialUploads(){
 }
 async function refreshMaterialDocuments(){
  if(!websiteSession?.auth_required||!currentAccount())return;
- try{const docs=await api('/api/knowledge?account_id='+encodeURIComponent(currentAccount().id));materialDocsCache=materialDocsCache.filter(d=>d.account_id!==currentAccount().id).concat(docs.map(d=>({id:d.id,account_id:currentAccount().id,title:d.title,version:d.version,filename:d.filename||d.title,locations:d.metadata?.page_count||0,location_type:d.metadata?.location_type||'page',text_chars:d.metadata?.extracted_chars||0})));renderMaterialUploads();}
+ const account=currentAccount().id;
+ try{const docs=await api('/api/knowledge?account_id='+encodeURIComponent(account));materialDocsCache=materialDocsCache.filter(d=>d.account_id!==account).concat(docs.map(d=>({id:d.id,account_id:account,title:d.title,version:d.version,filename:d.filename||d.title,locations:d.metadata?.page_count||0,location_type:d.metadata?.location_type||'page',text_chars:d.metadata?.extracted_chars||0})));if(currentAccount()?.id===account)renderMaterialUploads();}
  catch(e){error(e);}
 }
 function confirmLiveBudget(){
@@ -157,6 +159,7 @@ function renderHuman(){
  $('editButton').hidden=!allowed.includes('edit');$('accept').hidden=!allowed.includes('accept');$('export').hidden=!allowed.includes('export');
  $('export').href=`/api/runs/${run.run_id}/export`;
  $('sendToPublish').hidden=run.run_status!=='SUCCEEDED';
+ $('sendToPublish').textContent=run.mode==='simulation'?'进入模拟发布演练 →':'记录已发布 →';
  let title='需要你的决定',message='';
  if(run.run_status==='SUCCEEDED'){title=run.acceptance?.mode==='manual_override'?'这个版本，已由你人工采用':'这个版本，已由你确认';message=run.acceptance?.mode==='manual_override'?'你已知晓审核问题并采用此版本。审核意见仍保留，这不表示 AI 审核通过；可以下载，发布需另行批准。':'可以下载已确认稿件。审核不能保证事实正确，发布前仍需你检查。';}
  else if(run.wait_reason==='missing_material'){title='资料还不够，请补充';message='请提供缺失的真实素材。保存后，两个分析角色会使用新快照重新执行。';}
@@ -203,9 +206,18 @@ async function backgroundCommand(action,extra={}){
  const searchOnly=action==='step'&&run.current_stage==='brief'&&run.context.web_research?.enabled&&run.context.web_research.status!=='complete';
  if(['start','step'].includes(action)&&!searchOnly&&run.mode==='live'&&!confirmLiveBudget())return false;
  let commandError=null;busy=true;clearError();render();
- try{run=await api(`/api/runs/${run.run_id}/background`,'POST',{action,version:run.status_version,key:crypto.randomUUID(),...extra});clearError();selected=currentAgent();detailStage=null;await history();return true;}
+ try{run=action==='pause'?await pauseBackground(run.run_id):await api(`/api/runs/${run.run_id}/background`,'POST',{action,version:run.status_version,key:crypto.randomUUID(),...extra});clearError();selected=currentAgent();detailStage=null;await history();return true;}
  catch(e){commandError=e;error(e);try{run=await api('/api/runs/'+run.run_id);}catch(_){}return false;}
  finally{busy=false;render();if(commandError)error(commandError);}
+}
+async function pauseBackground(runId){
+ // Refresh a moving Worker version only for stopping work, never for paid starts.
+ for(let attempt=0;attempt<2;attempt++){
+  const latest=await api('/api/runs/'+runId);
+  if(!latest.in_flight)return latest;
+  try{return await api(`/api/runs/${runId}/background`,'POST',{action:'pause',version:latest.status_version,key:crypto.randomUUID()});}
+  catch(e){if(e.code!=='VERSION_CONFLICT'||attempt===1)throw e;}
+ }
 }
 async function autoRun(){
  if(websiteSession?.auth_required)return backgroundCommand(run.in_flight?'pause':'start');
@@ -223,13 +235,18 @@ $('briefForm').addEventListener('submit',async e=>{e.preventDefault();if(busy)re
  try{const accountId=currentAccount()?.id,documentIds=[...$('materialDocumentSelect').selectedOptions].map(o=>o.value);if(documentIds.length>3)throw new Error('本次最多选择 3 份资料');run=await api('/api/runs','POST',{...(websiteSession?.auth_required?{knowledge:{enabled:$('useKnowledge').checked,document_ids:$('useKnowledge').checked?documentIds:[]}}:{}),...($('useWebResearch').checked?{web_research:{enabled:true,queries:[$('webQuery1').value,$('webQuery2').value].map(q=>q.trim()).filter(Boolean)}}:{}),mode:$('mode').value,topic:$('topic').value,audience:$('audience').value,tone:$('tone').value,material:$('material').value,scenario:$('scenario').value,allow_hypothesis:$('hypothesis').checked,operations:{platform:$('targetPlatform').value,account_id:accountId,account:$('accountName').value,trend_id:chosenTrend?.id||null,hypothesis_id:chosenHypothesis?.id||null}});chosenHypothesis=null;selected='audience';detailStage=null;viewVersion=null;editing=false;$('editor').hidden=true;render();await history();}
  catch(err){error(err);}finally{busy=false;e.submitter.disabled=false;if(run&&!$('workbench').hidden)render();}});
 $('history').addEventListener('click',async e=>{const b=e.target.closest('[data-run]');if(!b||busy||!dirtyGuard())return;auto=false;editing=false;$('editor').hidden=true;clearError();showPage('studio');try{run=await api('/api/runs/'+b.dataset.run);viewVersion=null;detailStage=null;selected=currentAgent();render();await history();}catch(err){error(err);}});
-$('newRun').onclick=()=>{if(busy||!dirtyGuard())return;showPage('studio');auto=false;editing=false;$('editor').hidden=true;$('workbench').hidden=true;$('welcome').hidden=false;renderMode($('mode').value);fillAccountBrief();clearError();};
+$('newRun').onclick=async()=>{if(busy||!dirtyGuard())return;showPage('studio');auto=false;editing=false;$('editor').hidden=true;$('workbench').hidden=true;$('welcome').hidden=false;renderMode($('mode').value);fillAccountBrief();clearError();await refreshMaterialDocuments();};
 $('flow').onclick=e=>{const chip=e.target.closest('[data-stage]');const b=e.target.closest('[data-agent]');if(chip){selected='content';detailStage=chip.dataset.stage;render();}else if(b){selected=b.dataset.agent;detailStage=null;render();}};
 $('recover').onclick=()=>act('recover');
 $('repairReview').onclick=async()=>{if(await act('repair_review')){clearError();selected='human';render();$('humanPanel').scrollIntoView({behavior:'smooth',block:'center'});toast('已有审核意见已整理。请按提示补充资料或修改稿件；本次没有调用 AI。');}};
 $('next').onclick=()=>act('next');$('auto').onclick=autoRun;
 $('cancel').onclick=async()=>{
- if(!window.confirm('取消当前任务？已有版本会保留。已发送给模型的请求可能仍产生费用。'))return;
+ cancellationRun=run.run_id;$('cancelConfirmation').hidden=false;$('cancelConfirmation').scrollIntoView({behavior:'smooth',block:'center'});
+};
+$('keepTask').onclick=()=>{$('cancelConfirmation').hidden=true;};
+$('confirmCancel').onclick=async()=>{
+ $('cancelConfirmation').hidden=true;
+ if(run?.run_id!==cancellationRun){error(new Error('当前任务已变化，请重新选择要取消的任务。'));return;}
  auto=false;editing=false;$('editor').hidden=true;
  if(!busy){await act('cancel');return;}
  try{

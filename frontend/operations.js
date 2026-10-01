@@ -64,6 +64,12 @@ function renderPublications(){
  $('closeArchiveForm').onclick=()=>{$('publishedArchiveForm').hidden=true;};
  $('archiveRun').onchange=()=>fillArchiveDraft();
  $('publishedArchiveForm').onsubmit=savePublishedArchive;
+ renderSimulatedPublications();
+}
+function renderSimulatedPublications(){
+ const pubs=accountRows('publications').filter(p=>p.mode==='simulation');
+ if(!pubs.length)return;
+ $('operationsContent').insertAdjacentHTML('beforeend',`<section class="panel"><h2>模拟发布演练</h2><p>不向平台发送内容；演练指标和经验仅用于模拟，不进入真实历史。</p>${pubs.map(p=>`<article class="publication-card"><h3>${esc(p.content.selected_title)}</h3><p>${badge(pubStates[p.status],'neutral')} · ${esc(p.account)}</p>${p.status==='AWAITING_APPROVAL'?`<button data-approve="${p.id}">批准此模拟版本与账号</button>`:p.status==='APPROVED'?`<button data-simulate="${p.id}">执行模拟发布（不发到平台）</button>`:p.status==='SIMULATED'?`<button data-to-metrics="${p.id}">录入演练数据与复盘 →</button>`:''}</article>`).join('')}</section>`);
 }
 async function openPublishedArchive(runId=null){
  try{
@@ -105,7 +111,7 @@ function renderMemory(){
 document.querySelector('.workspace-nav').onclick=e=>{const b=e.target.closest('[data-page]');if(b&&!busy&&dirtyGuard()){auto=false;showPage(b.dataset.page);}};
 $('clearTrend').onclick=()=>{chosenTrend=null;$('selectedTrend').hidden=true;$('clearTrend').hidden=true;};
 $('targetPlatform').onchange=()=>{if(chosenTrend&&chosenTrend.platform!==$('targetPlatform').value)$('clearTrend').click();};
-$('sendToPublish').onclick=async()=>{try{if(!ops)ops=await api('/api/operations');showPage('publish');await openPublishedArchive(run.run_id);}catch(e){error(e);}};
+$('sendToPublish').onclick=async()=>{try{if(!ops)ops=await api('/api/operations');if(run.mode==='simulation'){if(!ops.publications.some(p=>p.run_id===run.run_id&&p.draft_ref===run.accepted_ref)){if(!await operate('prepare',{run_id:run.run_id,draft_ref:run.accepted_ref}))return;}showPage('publish');return;}showPage('publish');await openPublishedArchive(run.run_id);}catch(e){error(e);}};
 $('operationsContent').onclick=async e=>{
  const b=e.target.closest('button');if(!b||opsBusy)return;
  if(b.dataset.filter){platformFilter=b.dataset.filter;renderTrends();}
