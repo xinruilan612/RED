@@ -37,6 +37,15 @@ class ProductionTests(unittest.TestCase):
     def brief(self):
         return dict(topic='整理衣橱',audience='大学生',tone='真实清楚',material='一件白衬衫可搭配已有衣物',scenario='standard',allow_hypothesis=True)
 
+    def test_static_assets_have_explicit_browser_types(self):
+        for asset in ('app.js','auth.js','account_profile.js','style.css','trials.css'):
+            with self.subTest(asset=asset):
+                response=self.client.get('/'+asset)
+                self.assertEqual(response.status_code,200)
+                expected='text/css' if asset.endswith('.css') else 'text/javascript'
+                self.assertEqual(response.headers['content-type'].split(';')[0],expected)
+                self.assertEqual(response.headers['x-content-type-options'],'nosniff')
+
     def test_login_logout_fresh_device_and_no_password_leak(self):
         self.assertEqual(self.client.get('/api/operations').status_code,401)
         before=self.client.cookies.get('youji_session')
