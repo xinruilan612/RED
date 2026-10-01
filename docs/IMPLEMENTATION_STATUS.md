@@ -236,3 +236,13 @@ MODEL_ROUTES_JSON 可按阶段配置 DeepSeek model 与每 Token 费用上限 ra
 Chrome 实际保存用户已填写的护肤作品，发布时间保持 2026-09-30 18:02；页面显示“已发布 · 人工记录”及“录入数据与复盘”入口，作品链接仅保留短链，实际标题、正文、话题与来源稿件均保留。
 
 验证：350 项 Python 全量测试通过、零跳过，包含真实 PostgreSQL；统一最终链接提取边界后，30 项运营专项测试通过。29 项前端测试、全部前端脚本语法、角色卡同步及空白检查通过；数据库只读复核规范化短链仅有一条记录。本轮未调用模型，也未向社媒平台发布。
+
+## Windows 本机适配（2026-10-01）
+
+增加 `start-windows.cmd` 与跨平台 `scripts/local_dev.py`：首次创建本机虚拟环境、安装锁定依赖、仅在缺失时复制 `.env`；检查依赖与 PostgreSQL；同时启动 API/Worker，退出或子进程失败时清理两个进程。数据库检查不输出密码、连接串或 Key。原有 macOS/Linux 启动方式保留，实际 `.env` 和业务数据未修改。
+
+配置读取支持 UTF-8 BOM，机器契约显式按 UTF-8 读取；PDF 的 Unix resource 限制改为平台可用时启用，Windows 保留父进程超时、大小、页数与文本长度保护。PDF/Word 子进程 JSON 可在非 UTF-8 控制台传输中文。Windows 完整步骤集中在 [Windows 安装与启动](WINDOWS.md)。
+
+Windows Python 3.12 x64 对应的全部锁定依赖及传递依赖已成功下载 wheel；这是依赖可获取性验证，不等于已在 Windows 安装运行。本机 doctor、备用端口实际 API 启动及 Ctrl+C 清理通过。实际验证机器为 macOS，真实 Windows 的首次安装与端到端验收仍待完成。
+
+验证：全量 Python 364 项通过，设置 `TEST_DATABASE_URL` 包含真实 PostgreSQL 集成测试，0 跳过；最后补充契约编码检查后启动器专项 9 项通过；前端 29 项通过。全部前端语法、角色卡同步一致性及 `git diff --check` 通过。未触发真实模型调用或真实平台发布。

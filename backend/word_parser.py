@@ -49,7 +49,8 @@ def main():
         result = {'paragraphs': extract(sys.stdin.buffer.read(3_000_001))}
     except Exception:
         result = {'error': '无法读取 DOCX；请确认是未加密的 .docx 文档且包含正文文字'}
-    sys.stdout.write(json.dumps(result, ensure_ascii=False))
+    # Parent decodes JSON bytes as UTF-8, independently of Windows' code page.
+    sys.stdout.write(json.dumps(result, ensure_ascii=True))
 
 
 if __name__ == '__main__':

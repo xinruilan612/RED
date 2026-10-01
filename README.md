@@ -1,5 +1,7 @@
 # 有迹 · 热点驱动的博主运营助手
 
+**Windows 队友从这里开始：**[Windows 安装与启动](docs/WINDOWS.md)。首次运行 `start-windows.cmd setup`，配置数据库后双击 `start-windows.cmd` 同时启动网站和 Worker。macOS/Linux 可用 `python3 scripts/local_dev.py setup` / `start`；原启动方式继续可用。
+
 产品方向已确认：**有迹是个人创作者的内容试飞台**，以评论区需求与搜索意图形成可证伪假设，再经风洞预演、小流量赛马、实盘归因进入账号私有经验账本。支持卖货、涨粉与工具/活动获客；首段实现状态与待办见 [内容试飞台产品方案](docs/design/GROWTH_CAMPAIGN_PRODUCT.md)，整体仍未完成。
 
 **内容试飞台首段已接入：**“假设与试飞”支持记录评论需求/搜索意图，创建卖货、涨粉或获客假设，并把假设绑定到创作稿、风洞检查、两版本 A/B 赛马、人工发布回填及目标指标。假设须经过三阶段、人工裁决后才能进入同账号的私有经验；指标修正会使相关结论失效。详细边界与本轮状态见 [内容试飞台产品方案](docs/design/GROWTH_CAMPAIGN_PRODUCT.md) 和 [开发进度](docs/IMPLEMENTATION_STATUS.md)。
