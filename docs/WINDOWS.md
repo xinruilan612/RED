@@ -36,6 +36,8 @@ DEEPSEEK_API_KEY=
 
 ## 常见情况
 
+- 页面能打开但按钮无反应、浏览器报告 JavaScript MIME 类型错误：更新到包含静态响应类型修复的版本后，先在旧启动窗口按 Ctrl+C 停止服务，再运行 `./start-windows.cmd`，最后刷新网页。只重载浏览器不会加载新的 Python 后端代码。正式 API 已固定 JS 为 `text/javascript`、CSS 为 `text/css`、HTML 为 `text/html`，不依赖 Windows 文件关联，无需改注册表或关闭浏览器安全检查。
+
 - 提示找不到 `py`：修复 Python 3.12 安装并启用 Python Launcher，重新打开终端。
 - `PostgreSQL connection failed`：检查服务是否启动、5432 端口、数据库名和 `.env` 密码；检查器不会打印连接串或密码。
 - 端口被占用：关闭旧服务，或将 `.env` 中 `PUBLIC_ORIGIN` 改为另一本机端口，例如 `http://127.0.0.1:8766`，并使用相同地址访问。

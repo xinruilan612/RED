@@ -210,13 +210,15 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
         return Response(service.export(user['owner'],run_id),media_type='text/markdown',headers={'Content-Disposition':'attachment; filename="youji-draft.md"'})
 
     @app.get('/')
-    def index(): return FileResponse(FRONTEND/'index.html')
+    def index(): return FileResponse(FRONTEND/'index.html', media_type='text/html')
 
     @app.get('/{asset}')
     def asset(asset: str):
         require(asset in ('style.css','app.js','operations.js','account.js','account_profile.js','auth.js','knowledge.js','windtunnel.js','windtunnel.css','trials.js','trials.css'),'RESOURCE_NOT_FOUND','页面不存在')
         require((FRONTEND/asset).is_file(),'RESOURCE_NOT_FOUND','页面不存在')
-        return FileResponse(FRONTEND/asset)
+        # Do not inherit OS/Windows registry MIME associations: nosniff browsers
+        # refuse JavaScript served as text/plain even when the file is valid.
+        return FileResponse(FRONTEND/asset, media_type='text/javascript' if asset.endswith('.js') else 'text/css')
 
     return app
 

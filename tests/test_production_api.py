@@ -37,6 +37,25 @@ class ProductionTests(unittest.TestCase):
     def brief(self):
         return dict(topic='整理衣橱',audience='大学生',tone='真实清楚',material='一件白衬衫可搭配已有衣物',scenario='standard',allow_hypothesis=True)
 
+    def test_browser_assets_ignore_system_mime_associations(self):
+        import re
+        from unittest.mock import patch
+        for inferred in ('text/plain', 'application/octet-stream', None):
+            with self.subTest(inferred=inferred), patch('starlette.responses.guess_type', return_value=(inferred, None)):
+                page = self.client.get('/')
+                self.assertEqual(page.status_code, 200)
+                self.assertEqual(page.headers['content-type'], 'text/html; charset=utf-8')
+                assets = re.findall(r'(?:src|href)="(/[^"?]+\.(?:js|css))"', page.text)
+                self.assertGreaterEqual(len(assets), 11)
+                for path in assets:
+                    response = self.client.get(path)
+                    self.assertEqual(response.status_code, 200, path)
+                    expected = 'text/javascript' if path.endswith('.js') else 'text/css'
+                    self.assertEqual(response.headers['content-type'], expected+'; charset=utf-8', path)
+                    self.assertEqual(response.headers['x-content-type-options'], 'nosniff')
+                    self.assertEqual(response.headers['cache-control'], 'no-store')
+                self.assertEqual(self.client.get('/secret.js').status_code, 404)
+
     def test_login_logout_fresh_device_and_no_password_leak(self):
         self.assertEqual(self.client.get('/api/operations').status_code,401)
         before=self.client.cookies.get('youji_session')
