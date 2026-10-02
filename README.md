@@ -1,5 +1,7 @@
 # 有迹 · 热点驱动的博主运营助手
 
+**2026-10-02 更新：**[更改了什么、逐文件差异与验收边界](docs/validation/CHANGES_20261002.md)。本次上传到新分支 `王顺然-20261002`，保留旧“王顺然”和 main；真实人工采用不等于AI审核通过。
+
 **Windows 队友从这里开始：**[Windows 安装与启动](docs/WINDOWS.md)。首次运行 `start-windows.cmd setup`，配置数据库后双击 `start-windows.cmd` 同时启动网站和 Worker。macOS/Linux 可用 `python3 scripts/local_dev.py setup` / `start`；原启动方式继续可用。
 
 产品方向已确认：**有迹是个人创作者的内容试飞台**，以评论区需求与搜索意图形成可证伪假设，再经风洞预演、小流量赛马、实盘归因进入账号私有经验账本。支持卖货、涨粉与工具/活动获客；首段实现状态与待办见 [内容试飞台产品方案](docs/design/GROWTH_CAMPAIGN_PRODUCT.md)，整体仍未完成。

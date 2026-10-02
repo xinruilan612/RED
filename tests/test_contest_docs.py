@@ -46,6 +46,18 @@ class ContestDocumentationTests(unittest.TestCase):
     def test_agent_entry_points_to_requirements(self):
         self.assertIn('docs/CONTEST_REQUIREMENTS.md', (ROOT / 'AGENTS.md').read_text())
 
+    def test_latest_changes_explain_files_and_distinguish_manual_acceptance(self):
+        path = ROOT / 'docs/validation/CHANGES_20261002.md'
+        document = path.read_text(encoding='utf-8')
+        self.assertIn('docs/validation/CHANGES_20261002.md', (ROOT / 'README.md').read_text(encoding='utf-8'))
+        for value in ('王顺然-20261002', '人工采用未通过AI审核', '98项PG专用条件跳过', '旧分支独有13个提交'):
+            self.assertIn(value, document)
+        for target in re.findall(r'\]\(([^)]+)\)', document):
+            if '://' not in target and not target.startswith('#'):
+                self.assertTrue((path.parent / target.split('#')[0]).is_file(), target)
+        for target in ('backend/live.py', 'backend/runtime.py', 'backend/review_recovery.py', 'frontend/app.js'):
+            self.assertIn(target, document)
+
 
 if __name__ == '__main__':
     unittest.main()
