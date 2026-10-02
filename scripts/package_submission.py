@@ -10,8 +10,8 @@ NAME = '47191919-AI+软件创新-有迹-文档交付包'
 
 def build():
     evidence = ROOT / 'docs/submission/evidence'
-    checks = json.loads((evidence / 'pdf-checks.json').read_text())
-    manifest = json.loads((evidence / 'source-manifest.json').read_text())
+    checks = json.loads((evidence / 'pdf-checks.json').read_text(encoding='utf-8'))
+    manifest = json.loads((evidence / 'source-manifest.json').read_text(encoding='utf-8'))
     files = {}
     for filename, data in checks.items():
         path = ROOT / 'output/pdf' / filename

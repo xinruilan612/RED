@@ -1,2 +1,8 @@
 # Historical byte fingerprints must survive Windows checkout unchanged.
 docs/submission/evidence/baseline-source/** -text
+
+# POSIX launchers must not acquire CRLF when checked out on Windows.
+*.sh text eol=lf
+*.command text eol=lf
+# Native command prompts use CRLF, without changing historical snapshots.
+*.cmd text eol=crlf

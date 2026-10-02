@@ -146,7 +146,7 @@ def build(output, root=ROOT, extra=()):
         temp.unlink(missing_ok=True)
     digest = hashlib.sha256(output.read_bytes()).hexdigest()
     output.with_suffix(output.suffix + ".manifest.json").write_bytes(manifest_bytes)
-    output.with_suffix(output.suffix + ".sha256").write_text(digest + "  " + output.name + "\n")
+    output.with_suffix(output.suffix + ".sha256").write_text(digest + "  " + output.name + "\n", encoding='utf-8')
     return {"archive": str(output), "sha256": digest, "source_files": len(files), "bytes": output.stat().st_size}
 
 
