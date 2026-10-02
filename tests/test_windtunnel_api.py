@@ -60,7 +60,7 @@ class WindtunnelApiTests(unittest.TestCase):
         self.assertIn('attachment',download.headers['content-disposition'])
         self.assertIn('模拟流程',download.text)
         target=Path(self.tmp.name)/'download.md';target.write_bytes(download.content)
-        self.assertIn('本地工具导出教程',target.read_text())
+        self.assertIn('本地工具导出教程',target.read_text(encoding='utf-8'))
         finished=self.action(run,'finish',{})
         reused=self.create(checklist={'id':saved.json()['id'],'version':saved.json()['version']})
         self.assertEqual(reused['wait_reason'],'wt_confirm_conditions')

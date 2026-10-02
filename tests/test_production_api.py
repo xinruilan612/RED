@@ -38,7 +38,7 @@ class ProductionTests(unittest.TestCase):
         return dict(topic='整理衣橱',audience='大学生',tone='真实清楚',material='一件白衬衫可搭配已有衣物',scenario='standard',allow_hypothesis=True)
 
     def test_static_assets_have_explicit_browser_types(self):
-        for asset in ('app.js','auth.js','account_profile.js','style.css','trials.css'):
+        for asset in ('app.js','auth.js','account_profile.js','style.css','trials.css','guidance.js'):
             with self.subTest(asset=asset):
                 response=self.client.get('/'+asset)
                 self.assertEqual(response.status_code,200)

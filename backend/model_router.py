@@ -21,6 +21,56 @@ class Route:
     rate: float = RATE
 
 
+def stage_attempt_count(db, budget_id, agent, stage):
+    """All reserved calls in the shared lineage count, regardless of outcome."""
+    if agent=='content' and stage in ('body','revise'):
+        return db.execute(f"SELECT COUNT(*) FROM live_calls WHERE run_id IN ({FAMILY}) AND agent='content' AND stage IN ('body','revise')",(budget_id,)).fetchone()[0]
+    return db.execute(f'SELECT COUNT(*) FROM live_calls WHERE run_id IN ({FAMILY}) AND agent=? AND stage=?',(budget_id,agent,stage)).fetchone()[0]
+
+
+def cached_response(db, run, stage, input_hash):
+    old=db.execute('SELECT c.id,c.response_json,c.actual,c.state FROM live_calls c JOIN model_audit a ON a.call_id=c.id WHERE c.run_id=? AND a.input_hash=? AND c.stage=?',(run.run_id,input_hash,stage)).fetchone()
+    if old:
+        require(old[1] is not None and old[2] is not None,'USAGE_UNKNOWN','上次调用结果或用量未知；已停止，未重复收费调用')
+        if old[3]=='invalid':
+            from backend.citation_ids import repair
+            from backend.live import material_records, normalize
+            raw=json.loads(old[1])
+            _,repairs=repair(stage,raw,material_records(run.context))
+            require(repairs,'MODEL_OUTPUT_INVALID','上次输出未通过校验，已停止重复调用；请查看被拒绝的模型响应')
+            normalize(run,stage,raw)
+    return old
+
+
+def review_execution(db, run):
+    """Read-only preflight; remaining slots do not reset after edits/recovery."""
+    if run.workflow_type!='creation' or run.context.get('mode')!='live':
+        return None
+    lineage=db.execute('SELECT budget_id FROM live_lineage WHERE run_id=?',(run.run_id,)).fetchone()
+    used=stage_attempt_count(db,lineage[0], 'reviewer','review') if lineage else 0
+    limit=CONTRACT['runtime_extension']['stage_attempts_max']
+    pending_review=run.current_stage=='reviewer' and run.review is None
+    needs_review=bool(run.drafts) and (pending_review or
+        (run.current_stage=='content' and run.review and run.review.get('decision')=='revision_required')) and run.run_status in ('QUEUED','RUNNING','WAITING_USER')
+    replayable=False
+    if used>=limit and needs_review and pending_review:
+        policy=run.context.get('model_policy',{})
+        try:
+            require(policy.get('version')==digest(policy.get('routes')),'CONFIG_INVALID','模型路由快照无效')
+            route=Route(**policy['routes']['review'])
+            from backend.live import messages_for
+            messages,_=messages_for(run,'review')
+            input_hash=digest({'messages':messages,'snapshot':run.snapshot_id,'route':asdict(route)})
+            replayable=bool(cached_response(db,run,'review',input_hash))
+        except (DomainError,KeyError,TypeError,ValueError):
+            # No transport or guessed replay: Calls.invoke remains authoritative.
+            replayable=False
+    blocked=bool(needs_review and used>=limit and not replayable)
+    return {'stage':'review','used':used,'limit':limit,'remaining':max(0,limit-used),
+            'exhausted':used>=limit,'replayable':replayable,'blocked':blocked,
+            'message':f'本任务审核已计入 {used}/{limit} 次调用（含恢复前任务），复审次数已用完。可继续手动修改或知晓问题后人工采用；不会增加额度或重复收费。' if blocked else ''}
+
+
 class ModelRouter:
     def __init__(self, config, client=None, routes=None, adapters=None):
         self.config = config
@@ -73,26 +123,16 @@ class Calls:
             db.execute('BEGIN IMMEDIATE')
             guard(db)
             if reuse:
-                old = db.execute('SELECT c.id,c.response_json,c.actual,c.state FROM live_calls c JOIN model_audit a ON a.call_id=c.id WHERE c.run_id=? AND a.input_hash=? AND c.stage=?',(run.run_id,input_hash,stage)).fetchone()
+                old=cached_response(db,run,stage,input_hash)
                 if old:
-                    require(old[1] is not None and old[2] is not None,'USAGE_UNKNOWN','上次调用结果或用量未知；已停止，未重复收费调用')
-                    if old[3] == 'invalid':
-                        from backend.citation_ids import repair
-                        from backend.live import material_records, normalize
-                        raw=json.loads(old[1])
-                        _,repairs=repair(stage,raw,material_records(run.context))
-                        require(repairs,'MODEL_OUTPUT_INVALID','上次输出未通过校验，已停止重复调用；请查看被拒绝的模型响应')
-                        # Revalidate the complete response before allowing free
-                        # replay. Same input hash/snapshot; raw audit is unchanged.
-                        normalize(run,stage,raw)
                     return json.loads(old[1]),old[2],old[0]
             db.execute('INSERT INTO live_lineage VALUES(?,?) ON CONFLICT(run_id) DO NOTHING',(run.run_id,run.run_id))
             root=db.execute('SELECT budget_id FROM live_lineage WHERE run_id=?',(run.run_id,)).fetchone()[0]
-            if agent=='content' and stage in ('body','revise'):
-                stage_count=db.execute(f"SELECT COUNT(*) FROM live_calls WHERE run_id IN ({FAMILY}) AND agent='content' AND stage IN ('body','revise')",(root,)).fetchone()[0]
-            else:
-                stage_count=db.execute(f'SELECT COUNT(*) FROM live_calls WHERE run_id IN ({FAMILY}) AND agent=? AND stage=?',(root,agent,stage)).fetchone()[0]
+            stage_count=stage_attempt_count(db,root,agent,stage)
             require(stage_count<CONTRACT['runtime_extension']['stage_attempts_max'],'STAGE_ATTEMPT_LIMIT','同一步已达到3次调用上限（含首次）')
+            if agent=='content' and stage=='revise':
+                require(stage_attempt_count(db,root,'reviewer','review')<CONTRACT['runtime_extension']['stage_attempts_max'],
+                        'STAGE_ATTEMPT_LIMIT','复审次数已用完，不能再调用 AI 改稿；请手动修改或知晓问题后人工采用')
             count,used=db.execute(f'SELECT COUNT(*),COALESCE(SUM(COALESCE(actual,reserved)),0) FROM live_calls WHERE run_id IN ({FAMILY})',(root,)).fetchone()
             cost_sql = 'SELECT COALESCE(SUM(COALESCE(c.actual,c.reserved)*COALESCE(a.rate,?)),0) FROM live_calls c LEFT JOIN model_audit a ON a.call_id=c.id '
             cost=db.execute(cost_sql+f'WHERE c.run_id IN ({FAMILY})',(RATE,root)).fetchone()[0]

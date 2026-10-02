@@ -7,7 +7,8 @@ const trialMetrics={orders:'订单',new_followers:'新增关注',qualified_leads
 const trialDenominators={sales:'追踪链接点击',audience_growth:'有效曝光',lead_acquisition:'追踪链接点击'};
 const trialMetricByObjective={sales:['orders'],audience_growth:['new_followers'],lead_acquisition:['qualified_leads','signups']};
 const trialLevels=[['windtunnel','风洞预演'],['small_race','小流量赛马'],['live_attribution','实盘归因']];
-const trialDate=()=>dateInput();
+// Keep existing trial inputs on minute precision; metric observations use seconds.
+const trialDate=()=>dateInput().slice(0,16);
 function trialRunBelongs(r){const op=r.context?.operations||{};return (r.windtunnel?.account_id||op.account_id||op.accountId)===activeAccountId;}
 function trialStageState(h,level){const v=h.validations?.[level];if(!v)return '待验证';if(v.evidence_class==='simulation')return '模拟预演 · 不计实证';if(v.evidence_class==='observational')return '观察性记录';if(level==='live_attribution')return '真实发布数据 · 用户回填';return '已记录';}
 function trialLift(v){return v?.variant_lift_pct===null||v?.variant_lift_pct===undefined?'B/A 相对提升无法计算':`B 相对 A ${v.variant_lift_pct>=0?'+':''}${v.variant_lift_pct}%${v.meets_minimum_lift?' · 达到预设门槛':' · 未达到预设门槛'}`;}
@@ -73,7 +74,7 @@ function trialBind(){
    if(b.dataset.trialCreate){
     const h=accountRows('hypotheses').find(x=>x.id===b.dataset.trialCreate);
     if(!h)return;
-    chosenHypothesis=h;chosenTrend=null;showPage('studio');$('newRun').click();
+    if(!startCreation({hypothesis:h}))return;
     $('topic').value=h.statement.slice(0,100);$('audience').value=h.audience;
     $('tone').value=currentAccount()?.profile.tone||'真实、清楚、可核验';
     $('mode').value='simulation';$('mode').onchange();

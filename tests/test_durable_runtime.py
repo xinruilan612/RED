@@ -137,13 +137,19 @@ class DurableTests(unittest.TestCase):
 
     def test_review_attempt_limit_keeps_draft_for_human_without_error_or_approval(self):
         self.start();Worker(self.service).once()
-        for i in range(3):
+        for i in range(2):
             content=dict(self.run_value().drafts[-1]['content']);content['body']='用户改稿'+str(i)
             self.action('edit',content)
             self.start();Worker(self.service).once()
+        content=dict(self.run_value().drafts[-1]['content']);content['body']='用户改稿2'
+        self.action('edit',content)
+        version=self.run_value().status_version
+        with self.assertRaises(DomainError) as error:self.start()
+        self.assertEqual(error.exception.code,'STAGE_ATTEMPT_LIMIT')
         run=self.run_value()
-        self.assertEqual(run.run_status,'WAITING_USER')
-        self.assertEqual(run.wait_reason,'revision_limit')
+        self.assertEqual(run.status_version,version)
+        self.assertEqual(run.run_status,'RUNNING')
+        self.assertTrue(self.service.view(run)['review_execution']['blocked'])
         self.assertIsNone(run.review)
         self.assertIsNone(run.accepted_ref)
         self.assertEqual(len(self.model.calls),10)
@@ -155,6 +161,7 @@ class DurableTests(unittest.TestCase):
         base=self.model.complete
         def revision(messages):
             value,tokens=base(messages)
+            if self.model.calls[-1]=='revise':value['body']='完整正文 · 改稿'+str(self.model.calls.count('revise'))
             if self.model.calls[-1]=='review':
                 value.update(decision='revision_required',next_action='revise',issues=[{
                     'issue_id':'still-open','severity':'major','state':'open','location':'body',
@@ -168,18 +175,75 @@ class DurableTests(unittest.TestCase):
         self.assertEqual(len(run.drafts),3)
         self.assertIsNone(run.accepted_ref)
         before_calls=len(self.model.calls)
-        self.assertLessEqual(before_calls,12)
+        self.assertEqual(before_calls,12)
         self.assertEqual(len(run.reviews),3)
-        self.assertLessEqual(self.model.calls.count('review'),3)
+        self.assertEqual(self.model.calls.count('review'),3)
         self.assertEqual(self.job()['status'],'waiting')
         self.assertIn('edit',view['allowed_actions']);self.assertNotIn('accept',view['allowed_actions'])
         changed=dict(run.drafts[-1]['content']);changed['body']='人工核对后保留的新稿。'
         self.action('edit',changed)
         self.assertEqual(len(self.model.calls),before_calls)
-        self.start();Worker(self.service).once()
-        self.assertLessEqual(len(self.model.calls),before_calls+1)
+        with self.assertRaises(DomainError) as error:self.start()
+        self.assertEqual(error.exception.code,'STAGE_ATTEMPT_LIMIT')
+        self.assertEqual(len(self.model.calls),before_calls)
         self.assertLessEqual(self.model.calls.count('review'),3)
-        self.assertEqual(self.run_value().wait_reason,'revision_limit')
+        current=self.service.view(self.run_value())
+        self.assertTrue(current['review_execution']['blocked'])
+        self.assertNotIn('next',current['allowed_actions'])
+        self.assertIn('adopt_manual',current['allowed_actions'])
+
+    def test_exhausted_reviews_block_paid_revision_before_a_fourth_review_would_be_needed(self):
+        base=self.model.complete
+        def later_revision(messages):
+            value,tokens=base(messages)
+            if self.model.calls[-1]=='review' and self.model.calls.count('review')>1:
+                value.update(decision='revision_required',next_action='revise',issues=[{
+                    'issue_id':'still-open','severity':'major','state':'open','location':'body',
+                    'excerpt':'完整正文','reason':'尚未解决的问题','suggestion':'核对来源后修改'}])
+                for item in value['previous_issue_results']:item['result']='unresolved'
+            return value,tokens
+        self.model.complete=later_revision
+        self.start();Worker(self.service).once()
+        self.assertEqual(self.run_value().wait_reason,'final_confirmation')
+        content=dict(self.run_value().drafts[-1]['content']);content['body']='完整正文 · 人工修改'
+        self.action('edit',content)
+        for _ in range(3):self.step();Worker(self.service).once()
+        run=self.run_value();view=self.service.view(run)
+        self.assertEqual(self.model.calls.count('review'),3)
+        self.assertEqual((run.run_status,run.current_stage,run.iteration),('RUNNING','content',2))
+        self.assertEqual(view['review_execution']['used'],3)
+        self.assertTrue(view['review_execution']['blocked']);self.assertFalse(view['review_execution']['replayable'])
+        self.assertNotIn('next',view['allowed_actions']);self.assertIn('adopt_manual',view['allowed_actions'])
+        before_calls=len(self.model.calls);before_version=run.status_version
+        for execute in (self.start,self.step):
+            with self.assertRaises(DomainError) as error:execute()
+            self.assertEqual(error.exception.code,'STAGE_ATTEMPT_LIMIT')
+        self.assertEqual(len(self.model.calls),before_calls)
+        self.assertEqual(self.run_value().status_version,before_version)
+
+    def test_automatic_job_does_not_charge_a_revision_after_third_review(self):
+        base=self.model.complete
+        def later_revision(messages):
+            value,tokens=base(messages)
+            if self.model.calls[-1]=='review' and self.model.calls.count('review')>1:
+                value.update(decision='revision_required',next_action='revise',issues=[{
+                    'issue_id':'still-open','severity':'major','state':'open','location':'body',
+                    'excerpt':'完整正文','reason':'尚未解决的问题','suggestion':'核对来源后修改'}])
+                for item in value['previous_issue_results']:item['result']='unresolved'
+            return value,tokens
+        self.model.complete=later_revision
+        self.start();Worker(self.service).once()
+        content=dict(self.run_value().drafts[-1]['content']);content['body']='完整正文 · 人工修改'
+        self.action('edit',content);self.start();Worker(self.service).once()
+        run=self.run_value()
+        self.assertEqual((run.run_status,run.wait_reason),('WAITING_USER','revision_limit'))
+        self.assertEqual(self.model.calls.count('review'),3)
+        self.assertEqual(self.model.calls.count('revise'),1)
+        self.assertEqual(len(self.model.calls),11)
+        self.assertIsNone(run.accepted_ref)
+        view=self.service.view(run)
+        self.assertIn('edit',view['allowed_actions']);self.assertIn('adopt_manual',view['allowed_actions'])
+        self.assertNotIn('next',view['allowed_actions'])
 
     def test_inconsistent_revision_with_questions_recovers_only_to_human_not_approval(self):
         base=self.model.complete
