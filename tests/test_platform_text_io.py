@@ -29,6 +29,7 @@ class PlatformTextIOTests(unittest.TestCase):
                     self.assertEqual(encoding.value, 'utf-8')
 
     def fixture(self, root):
+        root = root.resolve()
         (root / 'scripts').mkdir()
         (root / 'docs' / 'agents').mkdir(parents=True)
         (root / 'docs' / 'design').mkdir()
@@ -58,25 +59,28 @@ class PlatformTextIOTests(unittest.TestCase):
 
     def test_preview_reads_utf8_cards_under_gbk_defaults_without_writing(self):
         with tempfile.TemporaryDirectory() as directory:
-            script, overview = self.fixture(Path(directory))
+            # macOS aliases /var to /private/var; match the script's __file__.resolve().
+            root = Path(directory).resolve()
+            script, overview = self.fixture(root)
             before = overview.read_bytes()
             read_patch, write_patch = self.legacy_text_locale()
             with read_patch, write_patch:
                 namespace = runpy.run_path(str(script))
                 output = namespace['outputs']()
             self.assertIn('中文角色 audience 📚', output[overview])
-            self.assertIn('读取来源', output[Path(directory) / 'docs' / 'design' / 'AGENT_REGISTRY.md'])
+            self.assertIn('读取来源', output[root / 'docs' / 'design' / 'AGENT_REGISTRY.md'])
             self.assertEqual(overview.read_bytes(), before)
-            self.assertFalse((Path(directory) / 'docs' / 'design' / 'AGENT_REGISTRY.md').exists())
+            self.assertFalse((root / 'docs' / 'design' / 'AGENT_REGISTRY.md').exists())
 
     def test_main_writes_utf8_to_copied_cards_under_gbk_defaults(self):
         with tempfile.TemporaryDirectory() as directory:
-            script, overview = self.fixture(Path(directory))
+            root = Path(directory).resolve()
+            script, overview = self.fixture(root)
             read_patch, write_patch = self.legacy_text_locale()
             with read_patch, write_patch:
                 runpy.run_path(str(script), run_name='__main__')
             merged = overview.read_text(encoding='utf-8')
-            registry = (Path(directory) / 'docs' / 'design' / 'AGENT_REGISTRY.md').read_text(encoding='utf-8')
+            registry = (root / 'docs' / 'design' / 'AGENT_REGISTRY.md').read_text(encoding='utf-8')
             self.assertIn('# 四角色规范 📚', merged)
             self.assertIn('中文角色 reviewer 📚', merged)
             self.assertNotIn('旧合并内容', merged)

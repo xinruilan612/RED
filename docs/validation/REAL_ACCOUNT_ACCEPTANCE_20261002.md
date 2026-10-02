@@ -37,21 +37,23 @@
 
 另外修复了人工采用完成后仍显示“不能确认稿件”的过时面板；终态隐藏阻断提示，人工未通过 AI 审核的事实与旧意见继续保留。真实重新加载后结果与下载入口正确，没有页面错误/警告。
 
-最后的旧版 HTTP 拒绝路径修复完成后，对冻结代码重新独立执行全部门禁：
+最后的 Windows CI 私有目录权限与 macOS 测试目录别名修正完成后，对冻结代码重新独立执行全部门禁（本次补丁基线为首次上传的 `643d165e7636c7eaaeeefbc0d1e767cb55e04321`）：
 
 | 门禁 | 本轮最终结果 |
 | --- | --- |
-| Windows 原生 Python 3.12.6 / SQLite | 468 项：358 通过、110 项真实 PostgreSQL 条件跳过；零失败，87.675 秒 |
-| WSL Linux Python 3.14.4 / 专用 PostgreSQL 18.6 | 468/468 通过，零跳过、零失败，98.240 秒 |
+| Windows 原生 Python 3.12.6 / SQLite | 478 项：368 通过、110 项真实 PostgreSQL 条件跳过；零失败，85.468 秒 |
+| WSL Linux Python 3.14.4 / 专用 PostgreSQL 18.6 | 478/478 通过，零跳过、零失败，93.307 秒 |
 | 五套 Node 行为测试 | 94/94 通过，零跳过 |
 | 九份前端 JS 语法、依赖一致性、Git 空白 | 全部退出码 0 |
 | Windows 非 UTF-8（cp936）默认环境的文本编码契约 | 3/3 通过 |
 | 启动器、CI 临时数据库隔离与字体契约 | 包含在上述全量门禁；Unix shell 语法检查退出码 0 |
-| 新建独立临时场景的 Host/Origin/CSRF 拒绝复测 | 20 个场景、60 次拒绝全部 403，无连接中止；不重试同一个失败请求 |
+| Host/Origin/CSRF 拒绝复测 | 上轮相同 legacy Handler 字节的 20 个场景、60 次拒绝全部 403；本次全量继续覆盖 9 项相关回归，不冒称本次另跑了 20 个场景 |
 
-测试前后 232 个现有源码/文档文件逐字节无变化。111 个产品、测试、配置与启动器文件的聚合 SHA-256 为 `7ddd9c4ae1303c06bab8eac19d4807483407e874ebd069fad48450bec821e4e4`；它不是 ZIP 或 Git commit 的 hash。之后只更新说明文档，并重新扫描与打包。此前 433/80、459/93、459/94 项及定向结果均不替代本表。
+测试前后 232 个现有源码/文档文件逐字节无变化。111 个产品、测试、配置与启动器文件的聚合 SHA-256 为 `43e2731d0b2a7e17d309e446d4185769cf85c09af77e0e4d72dcb8d0f4291cdf`；它不是 ZIP 或 Git commit 的 hash。之后只更新说明文档，并重新扫描与打包。此前 433/80、459/93、459/94、468/94 项及定向结果均不替代本表。
 
 初版封存包 v1 干净复验通过；仅补说明后的 v2 包全量首次出现 `WinError 10053`（459 项中 1 error），随即在 20 个新场景中独立重现 1 次，未将重复成功当作消除失败。检查确认旧 Handler 拒绝发生在读取请求体之前；按 [RFC 9112 关闭连接的风险说明](https://www.rfc-editor.org/rfc/rfc9112.html#section-9.6) 与 Python 关闭流程作有界清理，不能因没有抓包便断言该错误的唯一原因。修复只接受单个 ASCII 数字 Content-Length、值不超过原 40,000 字节上限且无任何 Transfer-Encoding，每次读取不超过 8,192 字节、单一总截止时间 0.25 秒；未知或超大 framing 不无限读取。新增 7 项合同和 2 项真实 HTTP 回归，覆盖分包小正文、残缺正文、慢滴总限时、无业务/会话变更及不重复读取。v2 失败与中间结果原样保留，最终交付另封存 v3，不覆写旧包。该修复仅改旧本机适配器，不追加真实模型调用。
+
+v3 随首次提交成功上传，并完成干净解压 468 项、Node 94 项复验。首次 [四平台实际 CI](https://github.com/xinruilan612/RED/actions/runs/36982718349) 显示 Ubuntu 成功，Windows 在临时 PostgreSQL 初始化前目录权限失败（尚未开始 Python 门禁）；两台 macOS 在 468 项中均只有同一临时目录别名测试 KeyError、零跳过。没有将三项失败标成通过或取消任务。后续修正只在 GitHub-hosted Windows、已验证的新私有目录为当前用户 SID 追加继承权限，不使用 Everyone、父目录、递归 ACL 或 PostgreSQL 降权绕过；失败仍阻止 initdb。原因机制有 [CPython 私有目录实现](https://raw.githubusercontent.com/python/cpython/v3.12.10/Modules/posixmodule.c) 与 [PostgreSQL 降权实现](https://raw.githubusercontent.com/postgres/postgres/REL_17_11/src/common/restricted_token.c) 支撑，但原失败没有直接采集 ACL owner，仍明确为推断。macOS 只把测试 fixture 和 expected key 都 canonicalize，与脚本的 `__file__.resolve()` 一致，未移除 GBK/UTF-8 内容断言。新增 10 项 CI 隔离/权限合同；本机合同替身不是实际 Windows 权限操作，真实效果须以后续具体提交的 CI 为准。最终再封存 v4，不覆盖 v3。
 
 自动测试使用隔离的数据库及模型替身，不产生收费调用，不冒充真实模型或平台验证。当前原生 HTML/CSS/JS + Python 栈没有 npm 类型检查或生产构建门禁，不声称执行了不存在的命令。新版源码包另有逐文件清单、大小与 SHA-256；干净解压复验的实际结果以外层交付记录为准，不将仓库目录测试冒称解压包测试。打包工具不带入运行库、缓存或凭据。归档元数据及原始日志保存在下述外层证据目录，不把旧封存包覆盖为新版。
 

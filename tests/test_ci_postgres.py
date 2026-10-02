@@ -3,7 +3,9 @@ import io
 import json
 import os
 from pathlib import Path
+import subprocess
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock, patch
 
@@ -142,7 +144,7 @@ class CIIsolationTests(unittest.TestCase):
         cluster = self.cluster()
         self.started_cluster(cluster)
         identity = f'{cluster.data.resolve()}\n127.0.0.1\n{cluster.port}\n'
-        with patch.object(ci, 'command', return_value=Mock(stdout=identity)) as run:
+        with patch.object(cluster, 'grant_windows_cluster_access'), patch.object(ci, 'command', return_value=Mock(stdout=identity)) as run:
             url = cluster.start()
         calls = [call.args[0] for call in run.call_args_list]
         self.assertEqual([args[0] for args in calls], ['initdb', 'pg_ctl', 'psql', 'createdb'])
@@ -156,7 +158,7 @@ class CIIsolationTests(unittest.TestCase):
     def test_wrong_server_identity_never_creates_database(self):
         cluster = self.cluster()
         self.started_cluster(cluster)
-        with patch.object(ci, 'command', return_value=Mock(stdout=f'{self.root}\n127.0.0.1\n{cluster.port}\n')) as run:
+        with patch.object(cluster, 'grant_windows_cluster_access'), patch.object(ci, 'command', return_value=Mock(stdout=f'{self.root}\n127.0.0.1\n{cluster.port}\n')) as run:
             with self.assertRaisesRegex(RuntimeError, 'unverified server'):
                 cluster.start()
         self.assertNotIn('createdb', [call.args[0][0] for call in run.call_args_list])
@@ -165,10 +167,131 @@ class CIIsolationTests(unittest.TestCase):
         cluster = self.cluster()
         self.started_cluster(cluster)
         (cluster.data / 'postmaster.pid').write_text(f'99999\n{self.root}\n0\n{cluster.port}\n', encoding='utf-8')
-        with patch.object(ci, 'command', return_value=Mock(stdout='')) as run:
+        with patch.object(cluster, 'grant_windows_cluster_access'), patch.object(ci, 'command', return_value=Mock(stdout='')) as run:
             with self.assertRaisesRegex(RuntimeError, 'identity'):
                 cluster.start()
         self.assertEqual([call.args[0][0] for call in run.call_args_list], ['initdb', 'pg_ctl'])
+
+    def test_windows_acl_grants_only_current_user_on_owned_new_directory(self):
+        cluster = self.cluster()
+        cluster.environ = ci.test_environment(self.env)
+        sid = 'S-1-5-21-100-200-300-1001'
+        with patch.object(ci, 'ROOT', self.root), patch.object(ci, 'os', SimpleNamespace(name='nt')), patch.object(ci, 'command', side_effect=[Mock(stdout=f'"runner\\user","{sid}"\r\n'), Mock(stdout='')]) as run:
+            cluster.grant_windows_cluster_access()
+        self.assertEqual([call.args[0] for call in run.call_args_list], [
+            ['whoami', '/user', '/fo', 'csv', '/nh'],
+            ['icacls', cluster.path, '/grant', f'*{sid}:(OI)(CI)F'],
+        ])
+        self.assertEqual(cluster.path.parent, self.runner_temp.resolve())
+        self.assertFalse(cluster.data.exists())
+        for call in run.call_args_list:
+            self.assertEqual(call.kwargs, {'environ': cluster.environ, 'capture': True})
+
+    def test_windows_acl_commands_use_checked_argument_arrays_not_a_shell(self):
+        cluster = self.cluster()
+        cluster.environ = self.env
+        sid = 'S-1-5-21-100-200-300-1001'
+        with patch.object(ci, 'ROOT', self.root), patch.object(ci, 'os', SimpleNamespace(name='nt')), patch.object(ci.subprocess, 'run', side_effect=[Mock(stdout=f'"runner\\user","{sid}"'), Mock(stdout='')]) as run:
+            cluster.grant_windows_cluster_access()
+        self.assertEqual([call.args[0] for call in run.call_args_list], [
+            ['whoami', '/user', '/fo', 'csv', '/nh'],
+            ['icacls', str(cluster.path), '/grant', f'*{sid}:(OI)(CI)F'],
+        ])
+        for call in run.call_args_list:
+            self.assertNotIn('shell', call.kwargs)
+            self.assertTrue(call.kwargs['check'])
+            self.assertEqual(call.kwargs['cwd'], self.root)
+            self.assertEqual(call.kwargs['env'], self.env)
+            self.assertEqual(call.kwargs['timeout'], 60)
+
+    def test_non_windows_never_runs_acl_or_identity_commands(self):
+        cluster = self.cluster()
+        with patch.object(ci, 'os', SimpleNamespace(name='posix')), patch.object(ci, 'ci_context', side_effect=AssertionError('Windows guard forbidden')), patch.object(ci, 'command', side_effect=AssertionError('process forbidden')):
+            cluster.grant_windows_cluster_access()
+
+    def test_windows_acl_refuses_non_ci_or_unvalidated_base_before_commands(self):
+        for changed in ({'GITHUB_ACTIONS': 'false'}, {'RUNNER_ENVIRONMENT': 'self-hosted'},
+                        {'RUNNER_TEMP': str(self.base)}, {'GITHUB_WORKSPACE': str(self.runner_temp)}):
+            cluster = self.cluster()
+            cluster.environ = {**self.env, **changed}
+            with self.subTest(changed=changed), patch.object(ci, 'ROOT', self.root), patch.object(ci, 'os', SimpleNamespace(name='nt')), patch.object(ci, 'command', side_effect=AssertionError('process forbidden')), self.assertRaises(RuntimeError):
+                cluster.grant_windows_cluster_access()
+
+    def test_windows_acl_refuses_changed_marker_or_existing_data_before_commands(self):
+        for changed in ('marker', 'data', 'path'):
+            cluster = self.cluster()
+            cluster.environ = self.env
+            if changed == 'marker':
+                (cluster.path / '.red-ci-owned').write_text('changed', encoding='utf-8')
+            elif changed == 'data':
+                cluster.data.mkdir()
+            else:
+                cluster.path = self.root
+            with self.subTest(changed=changed), patch.object(ci, 'ROOT', self.root), patch.object(ci, 'os', SimpleNamespace(name='nt')), patch.object(ci, 'command', side_effect=AssertionError('process forbidden')), self.assertRaises(RuntimeError):
+                cluster.grant_windows_cluster_access()
+
+    def test_windows_acl_rejects_ambiguous_malformed_or_broad_identity(self):
+        valid = '"runner\\user","S-1-5-21-100-200-300-1001"'
+        invalid = ('', '"runner\\user","S-1-1-0"', '"runner\\user","S-1-5-32-544"',
+                   valid + '\n' + valid, '"User Name","SID"\n' + valid,
+                   '"","S-1-5-21-100-200-300-1001"',
+                   '"runner\\user","S-1-5-21-100-200-300-1001 /T"',
+                   '"runner\\user","S-1-5-21-4294967296-200-300-1001"',
+                   '"runner\\user","S-1-5-21-100-200-300-1001",extra',
+                   '"runner\\user","unterminated')
+        for identity in invalid:
+            cluster = self.cluster()
+            cluster.environ = self.env
+            with self.subTest(identity=identity), patch.object(ci, 'ROOT', self.root), patch.object(ci, 'os', SimpleNamespace(name='nt')), patch.object(ci, 'command', return_value=Mock(stdout=identity)) as run:
+                with self.assertRaisesRegex(RuntimeError, 'Windows user SID'):
+                    cluster.grant_windows_cluster_access()
+            self.assertEqual([call.args[0][0] for call in run.call_args_list], ['whoami'])
+
+    def test_windows_acl_rechecks_marker_after_identity_before_grant(self):
+        cluster = self.cluster()
+        cluster.environ = self.env
+        def identity(*args, **kwargs):
+            (cluster.path / '.red-ci-owned').write_text('changed', encoding='utf-8')
+            return Mock(stdout='"runner\\user","S-1-5-21-100-200-300-1001"')
+        with patch.object(ci, 'ROOT', self.root), patch.object(ci, 'os', SimpleNamespace(name='nt')), patch.object(ci, 'command', side_effect=identity) as run, self.assertRaisesRegex(RuntimeError, 'marker'):
+            cluster.grant_windows_cluster_access()
+        self.assertEqual([call.args[0][0] for call in run.call_args_list], ['whoami'])
+
+    def test_changed_marker_after_acl_still_blocks_initdb(self):
+        cluster = self.cluster()
+        cluster.environ = self.env
+        def checked_command(args, **kwargs):
+            if args[0] == 'whoami':
+                return Mock(stdout='"runner\\user","S-1-5-21-100-200-300-1001"')
+            if args[0] == 'icacls':
+                (cluster.path / '.red-ci-owned').write_text('changed', encoding='utf-8')
+                return Mock(stdout='')
+            raise AssertionError('must not initialize a changed cluster')
+        with patch.object(ci, 'ROOT', self.root), patch.object(ci, 'os', SimpleNamespace(name='nt')), patch.object(ci, 'command', side_effect=checked_command) as run, self.assertRaisesRegex(RuntimeError, 'marker'):
+            cluster.start()
+        self.assertEqual([call.args[0][0] for call in run.call_args_list], ['whoami', 'icacls'])
+        self.assertFalse(cluster.attempted_start)
+
+    def test_windows_acl_command_failure_prevents_initdb(self):
+        for failure in ('whoami', 'icacls'):
+            cluster = self.cluster()
+            cluster.environ = self.env
+            error = subprocess.CalledProcessError(1, [failure])
+            results = [error] if failure == 'whoami' else [Mock(stdout='"runner\\user","S-1-5-21-100-200-300-1001"'), error]
+            with self.subTest(failure=failure), patch.object(ci, 'ROOT', self.root), patch.object(ci, 'os', SimpleNamespace(name='nt')), patch.object(ci, 'command', side_effect=results) as run, self.assertRaises(subprocess.CalledProcessError):
+                cluster.start()
+            self.assertNotIn('initdb', [call.args[0][0] for call in run.call_args_list])
+            self.assertFalse(cluster.attempted_start)
+
+    def test_start_grants_windows_access_before_initdb(self):
+        cluster = self.cluster()
+        order = []
+        def initdb(*args, **kwargs):
+            order.append(args[0])
+            raise RuntimeError('fixture initdb stop')
+        with patch.object(cluster, 'grant_windows_cluster_access', side_effect=lambda: order.append('acl')), patch.object(cluster, 'pg', side_effect=initdb), self.assertRaisesRegex(RuntimeError, 'fixture initdb stop'):
+            cluster.start()
+        self.assertEqual(order, ['acl', 'initdb'])
 
     def test_binary_version_mismatch_has_no_service_fallback(self):
         folder = self.base / 'binaries'

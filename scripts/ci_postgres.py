@@ -5,6 +5,7 @@ No dotenv loading, system services, existing databases, or model credentials.
 """
 import argparse
 from contextlib import contextmanager
+import csv
 import json
 import os
 from pathlib import Path
@@ -129,7 +130,38 @@ class TemporaryPostgres:
         if len(pid) < 4 or not pid[0].isdigit() or int(pid[0]) <= 0 or Path(pid[1]).resolve() != self.data.resolve() or pid[3] != str(self.port):
             raise RuntimeError('Started cluster identity does not match its private data directory/port.')
 
+    def grant_windows_cluster_access(self):
+        if os.name != 'nt':
+            return
+        if ci_context(self.environ, ROOT) != self.base:
+            raise RuntimeError('Windows cluster ACL requires the validated CI temporary directory.')
+        self.validate_owned()
+        if self.data.exists():
+            raise RuntimeError('Windows cluster ACL is allowed only before initializing new data.')
+        # Python 3.12's private mkdir ACL can rely on Administrators/owner rights;
+        # initdb disables the Administrators SID. Grant the current user directly,
+        # not Everyone or a parent directory, and let the new data directory inherit.
+        identity = command(['whoami', '/user', '/fo', 'csv', '/nh'],
+                           environ=self.environ, capture=True).stdout
+        try:
+            rows = list(csv.reader(identity.splitlines(), strict=True))
+        except csv.Error as error:
+            raise RuntimeError('Cannot verify the current Windows user SID.') from error
+        if len(rows) != 1 or len(rows[0]) != 2 or not rows[0][0].strip():
+            raise RuntimeError('Cannot verify the current Windows user SID.')
+        sid = rows[0][1]
+        # Hosted Windows runners use a local/domain user SID, never a broad group.
+        if not re.fullmatch(r'S-1-5-21-(?:[0-9]{1,10}-){3}[0-9]{1,10}', sid) or any(int(part) > 4294967295 for part in sid.split('-')[4:]):
+            raise RuntimeError('Cannot verify the current Windows user SID.')
+        self.validate_owned()
+        if self.data.exists():
+            raise RuntimeError('Windows cluster ACL is allowed only before initializing new data.')
+        command(['icacls', self.path, '/grant', f'*{sid}:(OI)(CI)F'],
+                environ=self.environ, capture=True)
+        self.validate_owned()
+
     def start(self):
+        self.grant_windows_cluster_access()
         self.pg('initdb', '-D', self.data, '--username=red_ci', '--encoding=UTF8',
                 '--no-locale', '--auth-local=trust', '--auth-host=trust')
         # A file in our brand-new cluster avoids platform-dependent -o quoting.
