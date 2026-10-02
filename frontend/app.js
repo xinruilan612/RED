@@ -8,6 +8,7 @@ const checks={brief_fit:'符合需求',audience_fit:'受众相关',usefulness_an
 let provider=null,polling=false,materialDocsCache=[],confirmedLiveRuns=new Set();
 let csrf='',run=null,selected='audience',busy=false,auto=false,editing=false,viewVersion=null,detailStage=null,toastTimer,chosenHypothesis=null;
 let cancellationRun=null;
+let pendingLiveBudget=null;
 async function api(path,method='GET',body){
  const r=await fetch(path,{method,headers:method==='POST'?{'Content-Type':'application/json','X-CSRF-Token':csrf}:{},body:body===undefined?undefined:JSON.stringify(body)});
  const data=await r.json(); if(!r.ok){const failure=new Error(data.error?.message||'请求失败');failure.code=data.error?.code;throw failure;}return data;
@@ -40,16 +41,24 @@ async function refreshMaterialDocuments(){
  try{const docs=await api('/api/knowledge?account_id='+encodeURIComponent(account));materialDocsCache=materialDocsCache.filter(d=>d.account_id!==account).concat(docs.map(d=>({id:d.id,account_id:account,title:d.title,version:d.version,filename:d.filename||d.title,locations:d.metadata?.page_count||0,location_type:d.metadata?.location_type||'page',text_chars:d.metadata?.extracted_chars||0})));if(currentAccount()?.id===account)renderMaterialUploads();}
  catch(e){error(e);}
 }
-function confirmLiveBudget(){
+function confirmLiveBudget(resume){
  if(!run||run.mode!=='live'||!provider)return true;
  if(confirmedLiveRuns.has(run.run_id))return true;
  const calls=provider.run_attempts_max??16,tokens=provider.run_tokens_max??80000,runUsd=provider.run_budget_usd??0.10,dayUsd=provider.day_budget_usd??0.50;
  const experiment=run.testing_budget;
  const experimentNotice=experiment?`本轮参考预算：¥${Number(experiment.target_cny).toFixed(2)}，希望约写 ${experiment.target_runs} 轮；已计入约¥${Number(experiment.spent_cny).toFixed(4)}，已进行 ${experiment.run_count} 轮（包含未完成任务）。\n接近或超过参考预算会提示，不因金额或轮数超出而停止。${experiment.warning||''}\n\n`:'';
- const accepted=window.confirm(`即将调用真实模型，可能产生费用。\n\n${experimentNotice}\n\n本任务硬上限：最多 ${calls} 次调用、${tokens.toLocaleString()} Token、$${Number(runUsd).toFixed(2)}；今日累计上限 $${Number(dayUsd).toFixed(2)}。\n上传资料最多 3 段，联网资料最多再加 3 段（每段最多 400 字）；达到任一上限会由服务器停止，不自动重试。\n\n现在开始吗？`);
- if(accepted)confirmedLiveRuns.add(run.run_id);
- return accepted;
+ pendingLiveBudget={runId:run.run_id,snapshotId:run.snapshot_id,resume};
+ $('liveBudgetMessage').textContent=`即将调用真实模型，可能产生费用。\n\n${experimentNotice}\n本任务硬上限：最多 ${calls} 次调用、${tokens.toLocaleString()} Token、$${Number(runUsd).toFixed(2)}；今日累计上限 $${Number(dayUsd).toFixed(2)}。\n上传资料最多 3 段，联网资料最多再加 3 段（每段最多 400 字）；达到任一上限会由服务器停止，不自动重试。`;
+ $('liveBudgetConfirmation').hidden=false;$('liveBudgetConfirmation').scrollIntoView({behavior:'smooth',block:'center'});
+ return false;
 }
+$('declineLiveBudget').onclick=()=>{pendingLiveBudget=null;$('liveBudgetConfirmation').hidden=true;};
+$('approveLiveBudget').onclick=async()=>{
+ const pending=pendingLiveBudget;pendingLiveBudget=null;$('liveBudgetConfirmation').hidden=true;
+ if(!pending)return;
+ if(busy||run?.run_id!==pending.runId||run.snapshot_id!==pending.snapshotId){error(new Error('任务或素材已变化，请重新确认费用。'));return;}
+ confirmedLiveRuns.add(pending.runId);await pending.resume();
+};
 async function history(){
  const rows=(await api('/api/runs')).filter(r=>r.workflow_type!=='windtunnel'&&(typeof matchesAccount!=='function'||matchesAccount(r)));
  $('history').innerHTML=rows.length?rows.map(r=>`<button data-run="${esc(r.run_id)}" class="${run?.run_id===r.run_id?'selected':''}">${esc(r.context.topic||'旧任务')}<small>${esc(states[r.run_status])} · ${r.drafts.length} 个版本</small></button>`).join(''):'<p class="helper">还没有创作记录</p>';
@@ -195,7 +204,7 @@ function renderCalls(){
 }
 async function act(action,payload={}){
  if(action==='next'&&websiteSession?.auth_required)return backgroundCommand('step');
- if(action==='next'&&run?.mode==='live'&&!confirmLiveBudget())return false;
+ if(action==='next'&&run?.mode==='live'&&!confirmLiveBudget(()=>act(action,payload)))return false;
  if(busy||!run)return false;busy=true;clearError();if(action==='next'&&run.mode==='live')run.in_flight=true;render();
  try{run=await api(`/api/runs/${run.run_id}/actions`,'POST',{action,version:run.status_version,key:crypto.randomUUID(),payload});clearError();viewVersion=null;selected=currentAgent();detailStage=null;if(action==='edit'){ops=await api('/api/operations');syncAccounts();}await history();return true;}
  catch(e){auto=false;error(e);try{run=await api('/api/runs/'+run.run_id);}catch(_){}return false;}
@@ -204,7 +213,7 @@ async function act(action,payload={}){
 async function backgroundCommand(action,extra={}){
  if(busy||!run)return false;
  const searchOnly=action==='step'&&run.current_stage==='brief'&&run.context.web_research?.enabled&&run.context.web_research.status!=='complete';
- if(['start','step'].includes(action)&&!searchOnly&&run.mode==='live'&&!confirmLiveBudget())return false;
+ if(['start','step'].includes(action)&&!searchOnly&&run.mode==='live'&&!confirmLiveBudget(()=>backgroundCommand(action,extra)))return false;
  let commandError=null;busy=true;clearError();render();
  try{run=action==='pause'?await pauseBackground(run.run_id):await api(`/api/runs/${run.run_id}/background`,'POST',{action,version:run.status_version,key:crypto.randomUUID(),...extra});clearError();selected=currentAgent();detailStage=null;await history();return true;}
  catch(e){commandError=e;error(e);try{run=await api('/api/runs/'+run.run_id);}catch(_){}return false;}
@@ -221,7 +230,7 @@ async function pauseBackground(runId){
 }
 async function autoRun(){
  if(websiteSession?.auth_required)return backgroundCommand(run.in_flight?'pause':'start');
- if(run?.mode==='live'&&!confirmLiveBudget())return;
+ if(run?.mode==='live'&&!confirmLiveBudget(()=>autoRun()))return;
  if(auto){auto=false;render();return;}auto=true;render();
  while(auto&&run?.allowed_actions.includes('next')){
   if(!await act('next'))break;

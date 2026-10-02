@@ -11,7 +11,7 @@ function setup(){
  vm.runInContext(`run={run_id:'run-1',mode:'live',current_stage:'brief',status_version:1,run_status:'RUNNING',context:{topic:'护肤',tone:'清楚',audience:'新手',web_research:{enabled:true,status:'pending',queries:['护肤']}},usage:{},drafts:[],node_runs:[],artifacts:[],events:[],snapshot_id:'snapshot',allowed_actions:['next','cancel'],background:{status:'paused'},in_flight:false};
  actualRenderDetails=renderDetails; actualRenderHuman=renderHuman; renderDetails=renderHuman=renderDraft=renderTimeline=renderCalls=()=>{};
  history=async()=>[]; currentAgent=()=> 'research'; calls=[]; confirmations=0;
- confirmLiveBudget=()=>{confirmations++;return true;};
+ actualConfirmLiveBudget=confirmLiveBudget;confirmLiveBudget=()=>{confirmations++;return true;};
  api=async(path,method,body)=>{calls.push(body);return run;};`,sandbox);
  return {sandbox,element,eval:code=>vm.runInContext(code,sandbox)};
 }
@@ -23,6 +23,23 @@ test('cancel asks in a nonblocking panel and only dispatches after explicit conf
  s.element('keepTask').onclick();assert.equal(s.element('cancelConfirmation').hidden,true);
  await s.element('cancel').onclick();await s.element('confirmCancel').onclick();
  assert.equal(s.eval('calls[0].action'),'cancel');assert.equal(s.eval('confirmations'),0);
+});
+
+test('live budget panel blocks calls until approval and dispatches only once',async()=>{
+ const s=setup();s.eval("confirmLiveBudget=actualConfirmLiveBudget;provider={run_attempts_max:16,run_tokens_max:80000,run_budget_usd:0.1,day_budget_usd:0.5};window.confirm=()=>{throw new Error('native dialog forbidden')};");
+ await s.eval("backgroundCommand('start')");assert.equal(s.eval('calls.length'),0);assert.equal(s.element('liveBudgetConfirmation').hidden,false);
+ assert.match(s.element('liveBudgetMessage').textContent,/80,000/);
+ s.element('declineLiveBudget').onclick();assert.equal(s.eval('calls.length'),0);
+ await s.element('approveLiveBudget').onclick();assert.equal(s.eval('calls.length'),0);
+ await s.eval("backgroundCommand('start')");await s.element('approveLiveBudget').onclick();await s.element('approveLiveBudget').onclick();
+ assert.equal(s.eval('calls.length'),1);assert.equal(s.eval('calls[0].action'),'start');
+});
+
+test('live budget approval rejects changed task or material snapshot',async()=>{
+ for(const change of ["run.run_id='other'","run.snapshot_id='new-material'"]){
+  const s=setup();s.eval('confirmLiveBudget=actualConfirmLiveBudget;provider={}');await s.eval("backgroundCommand('start')");s.eval(change);
+  await s.element('approveLiveBudget').onclick();assert.equal(s.eval('calls.length'),0);assert.equal(s.eval('confirmedLiveRuns.size'),0);assert.match(s.element('error').textContent,/已变化/);
+ }
 });
 
 test('cancel confirmation cannot cancel a different task after navigation',async()=>{
