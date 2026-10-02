@@ -548,7 +548,7 @@ class DurableTests(unittest.TestCase):
 
     def test_public_material_snapshot_and_audit_survive_live_fixture_graph(self):
         self.action('cancel',{})
-        fixture=json.loads((Path(__file__).parent/'public_materials.json').read_text())['sources'][0]
+        fixture=json.loads((Path(__file__).parent/'public_materials.json').read_text(encoding='utf-8'))['sources'][0]
         account=self.service.operations.read(self.owner)['accounts'][0]['id']
         self.service.knowledge.save(self.owner,dict(account_id=account,title=fixture['title'],text=fixture['text']),source_type='editorial_summary',source_url=fixture['url'],metadata=fixture)
         data=dict(topic='胶囊衣橱',audience='虚构读者',tone='清楚',material='',mode='live',allow_hypothesis=True,
@@ -650,29 +650,40 @@ class DurableTests(unittest.TestCase):
                 marker=Path(self.tmp.name)/point
                 env={**os.environ,'PYTHONPATH':str(root)+os.pathsep+str(root/'tests'),
                      'FIXTURE_DATABASE_URL':self.store.path,'FIXTURE_POINT':point,
+                     'FIXTURE_RUN_ID':self.run_id,'FIXTURE_OWNER':self.owner,
                      'FIXTURE_STAGE':'strategy','FIXTURE_MARKER':str(marker),
-                     'PYTHONDONTWRITEBYTECODE':'1'}
+                     'PYTHONDONTWRITEBYTECODE':'1','PYTHONUTF8':'1','PYTHONIOENCODING':'utf-8'}
                 with tempfile.TemporaryFile() as output:
                     process=subprocess.Popen([sys.executable,str(root/'tests/runtime_process_fixture.py')],env=env,stdout=output,stderr=output)
                     try:
                         deadline=time.monotonic()+20
                         while not marker.exists() and process.poll() is None and time.monotonic()<deadline:time.sleep(.05)
                         if not marker.exists():
-                            output.seek(0);self.fail('worker did not reach crash point: '+output.read().decode())
+                            output.seek(0);self.fail('worker did not reach crash point: '+output.read().decode('utf-8'))
+                        with self.store.connect() as db:
+                            killed=db.execute('SELECT id,token,generation FROM runtime_jobs WHERE run_id=?',(self.run_id,)).fetchone()
+                        self.assertIsNotNone(killed[1])
                         process.kill();process.wait(timeout=5)
+                        self.assertNotEqual(process.returncode,0)
                     finally:
                         if process.poll() is None:process.kill();process.wait()
-                # A real killed process cannot renew the persisted lease.
-                time.sleep(1.1)
+                # A real killed process cannot renew its lease. Before expiry,
+                # another worker must not claim it; then simulate elapsed time
+                # only for that exact killed job, without changing its fencing token.
+                self.assertIsNone(self.service.jobs.claim())
                 with self.store.connect() as db:
                     self.assertEqual(db.execute('SELECT COUNT(*) FROM live_calls WHERE run_id=?',(self.run_id,)).fetchone()[0],3)
+                    changed=db.execute("UPDATE runtime_jobs SET lease_until=? WHERE id=? AND run_id=? AND token=? AND generation=? AND status='running'",
+                                       (time.time()-1,killed[0],self.run_id,killed[1],killed[2])).rowcount
+                    self.assertEqual(changed,1)
                 clean={**env,'FIXTURE_POINT':'none'}
                 result=subprocess.run([sys.executable,str(root/'tests/runtime_process_fixture.py')],env=clean,capture_output=True,timeout=30)
-                self.assertEqual(result.returncode,0,result.stderr.decode())
+                self.assertEqual(result.returncode,0,result.stderr.decode('utf-8'))
                 self.assertEqual(self.run_value().wait_reason,'final_confirmation',self.job())
                 with self.store.connect() as db:
                     self.assertEqual(db.execute('SELECT COUNT(*) FROM live_calls WHERE run_id=?',(self.run_id,)).fetchone()[0],8)
                     self.assertEqual(db.execute('SELECT COUNT(*) FROM runtime_nodes WHERE run_id=?',(self.run_id,)).fetchone()[0],8)
+                    self.assertEqual(db.execute('SELECT generation FROM runtime_jobs WHERE id=?',(killed[0],)).fetchone()[0],killed[2]+1)
 
 
 @unittest.skipUnless(os.environ.get('TEST_DATABASE_URL'),'requires actual PostgreSQL')

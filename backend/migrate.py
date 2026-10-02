@@ -4,6 +4,7 @@ Never deletes a source or overwrites a divergent target. Repeated imports of the
 same snapshot verify every row. Secrets/cookies are not printed in reports.
 """
 import argparse
+from contextlib import closing
 import hashlib
 import json
 import sqlite3
@@ -27,7 +28,9 @@ def copy_database(source, target):
             CREATE TABLE IF NOT EXISTS recovery_keys(owner TEXT PRIMARY KEY,key_hash TEXT UNIQUE NOT NULL);
             CREATE TABLE IF NOT EXISTS import_batches(source_hash TEXT PRIMARY KEY,report TEXT NOT NULL);''')
     counts={}; records=[]
-    with sqlite3.connect('file:'+str(Path(source).resolve())+'?mode=ro',uri=True) as src:
+    # sqlite3's transaction context commits/rolls back but does not close the
+    # handle; closing owns it on every path, including read/target failures.
+    with closing(sqlite3.connect('file:'+str(Path(source).resolve())+'?mode=ro',uri=True)) as src, src:
         src.execute('BEGIN')
         available={r[0] for r in src.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         for table in TABLES:

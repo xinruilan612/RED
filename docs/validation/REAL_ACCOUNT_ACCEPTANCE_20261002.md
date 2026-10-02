@@ -37,7 +37,9 @@
 
 另外修复了人工采用完成后仍显示“不能确认稿件”的过时面板；终态隐藏阻断提示，人工未通过 AI 审核的事实与旧意见继续保留。真实重新加载后结果与下载入口正确，没有页面错误/警告。
 
-最后的 Windows CI 私有目录权限与 macOS 测试目录别名修正完成后，对冻结代码重新独立执行全部门禁（本次补丁基线为首次上传的 `643d165e7636c7eaaeeefbc0d1e767cb55e04321`）：
+### 上一版 v4 门禁（历史）
+
+Windows CI 私有目录权限与 macOS 测试目录别名修正后，对当时冻结代码重新独立执行以下门禁（补丁基线为首次上传的 `643d165e7636c7eaaeeefbc0d1e767cb55e04321`）。这些结果不是下方 v5 修正的测试结果：
 
 | 门禁 | 本轮最终结果 |
 | --- | --- |
@@ -56,6 +58,25 @@
 v3 随首次提交成功上传，并完成干净解压 468 项、Node 94 项复验。首次 [四平台实际 CI](https://github.com/xinruilan612/RED/actions/runs/36982718349) 显示 Ubuntu 成功，Windows 在临时 PostgreSQL 初始化前目录权限失败（尚未开始 Python 门禁）；两台 macOS 在 468 项中均只有同一临时目录别名测试 KeyError、零跳过。没有将三项失败标成通过或取消任务。后续修正只在 GitHub-hosted Windows、已验证的新私有目录为当前用户 SID 追加继承权限，不使用 Everyone、父目录、递归 ACL 或 PostgreSQL 降权绕过；失败仍阻止 initdb。原因机制有 [CPython 私有目录实现](https://raw.githubusercontent.com/python/cpython/v3.12.10/Modules/posixmodule.c) 与 [PostgreSQL 降权实现](https://raw.githubusercontent.com/postgres/postgres/REL_17_11/src/common/restricted_token.c) 支撑，但原失败没有直接采集 ACL owner，仍明确为推断。macOS 只把测试 fixture 和 expected key 都 canonicalize，与脚本的 `__file__.resolve()` 一致，未移除 GBK/UTF-8 内容断言。新增 10 项 CI 隔离/权限合同；本机合同替身不是实际 Windows 权限操作，真实效果须以后续具体提交的 CI 为准。最终再封存 v4，不覆盖 v3。
 
 自动测试使用隔离的数据库及模型替身，不产生收费调用，不冒充真实模型或平台验证。当前原生 HTML/CSS/JS + Python 栈没有 npm 类型检查或生产构建门禁，不声称执行了不存在的命令。新版源码包另有逐文件清单、大小与 SHA-256；干净解压复验的实际结果以外层交付记录为准，不将仓库目录测试冒称解压包测试。打包工具不带入运行库、缓存或凭据。归档元数据及原始日志保存在下述外层证据目录，不把旧封存包覆盖为新版。
+
+### 最新 v5：原生 Windows 完整测试暴露的问题与修正
+
+第二轮实际 [CI 36984878378](https://github.com/xinruilan612/RED/actions/runs/36984878378)，精确提交 `731ba83c06bb66b9dd2d588b7d24a52343e1cdea`：macOS ARM64、Intel 和 Ubuntu 各 478/478、零跳过，Node 94/94；Windows 独立 PostgreSQL 成功启动，但 478 项、760.314 秒、零跳过出现 2 个恢复子测试失败与 1 个迁移测试清理错误。Node 等后续门禁未执行，不记为通过。该次完整失败证据保留，不以三平台通过代替 Windows。
+
+- `backend/migrate.py` 的只读 SQLite 源 reader 原先只有事务上下文、没有显式关闭连接，造成 Windows 文件仍被占用。按 [Python 3.12 官方说明](https://docs.python.org/3.12/library/sqlite3.html#how-to-use-the-connection-context-manager) 增加 `closing`，保留原事务、只读快照和目标冲突拒绝。新增 5 项真实 SQLite 连接强引用回归，成功、同源重放、BEGIN/读取异常、目标变化拒绝都验证显式关闭；源字节不变、失败不导入、目标不被覆盖。不靠垃圾回收或忽略清理错误。
+- 进程恢复夹具原来把生产 30 秒租约改成 1 秒，慢速 Windows SQLite 路径发生租约失效；同轮 PostgreSQL 的继承恢复用例通过。仅测试夹具恢复原生产默认租约，产品 Worker、Jobs、fencing、调用和费用规则没有更改。仍真实终止子进程并等待非零退出，确认未过期任务不能被抢占，然后仅对精确匹配的已终止任务行模拟租约时间经过；不声称自然等待了 30 秒。恢复后 generation 加 1、调用数 3→8、节点数 8 的断言保留；启动 20 秒、恢复 30 秒的测试期限不放宽。新增 4 项夹具合同，空领取或阻断明确报错，不假成功。
+- 将该测试的公开 JSON 读取和子进程诊断显式设为 UTF-8；普通 Windows GBK 环境定向 66 项中 33 通过、33 PG 条件跳过，零失败。首次 GBK 读取失败原样记录，没有当作通过。
+
+对上述冻结补丁重新独立执行，基线为 `731ba83c06bb66b9dd2d588b7d24a52343e1cdea` 加本次 5 个源码/测试文件修改：
+
+| 最新门禁 | 实际结果 |
+| --- | --- |
+| Windows 原生 Python 3.12.6 / SQLite | 487 项：377 通过、110 PG 条件跳过；零失败/错误，106.719 秒 |
+| WSL Python 3.14.4 / 专用 PostgreSQL 18.6 | 487/487，零跳过/失败/错误，91.799 秒 |
+| Node 行为 / 九份 JS / cp936 文本契约 | 94/94；九份语法退出 0；3/3，零失败 |
+| 依赖、Git 空白、Windows 原生 CMD/Python help、Unix shell | 全部退出 0；不启动真实模型或迁移业务库 |
+
+234 个文件测试前后字节不变，113 个产品/测试/配置/启动器聚合 SHA-256 `7799f10207a92376b243668455894029b04a9853c5158faacc3ab65082c2ecad`。后续只补说明、扫描、新封存 v5 并干净解压复验；v4 包与旧 478 门禁均保留历史，不归给新补丁。原生四平台最终结果须看 [本分支实际 Actions](https://github.com/xinruilan612/RED/actions?query=branch%3A%E7%8E%8B%E9%A1%BA%E7%84%B6-20261002) 的精确新提交。不能以本地 WSL 或夹具合同代替新 Windows 原生 PostgreSQL 实测。
 
 原始脱敏证据保留于外层工作区 `outputs/real-account-acceptance-20261002/`，不把运行库或浏览器认证信息上传。
 
