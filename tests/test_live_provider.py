@@ -34,6 +34,24 @@ class FixtureModel:
 
 
 class LiveTests(unittest.TestCase):
+    def test_sync_revision_limit_preserves_editable_draft_without_approval(self):
+        base=self.model.complete
+        def revision(messages):
+            value,tokens=base(messages)
+            if self.model.calls[-1]=='review':
+                value.update(decision='revision_required',next_action='revise',issues=[{
+                    'issue_id':'open','severity':'major','state':'open','location':'body',
+                    'excerpt':'完整正文','reason':'尚未解决','suggestion':'核对后修改'}])
+                for item in value['previous_issue_results']:item['result']='unresolved'
+            return value,tokens
+        self.model.complete=revision
+        for _ in range(11):self.step()
+        self.assertEqual(self.run.run_status,'WAITING_USER')
+        self.assertEqual(self.run.wait_reason,'revision_limit')
+        self.assertEqual(len(self.run.drafts),3)
+        self.assertEqual(len(self.model.calls),12)
+        self.assertIsNone(self.run.accepted_ref)
+
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.store=Store(Path(self.temp.name)/'test.sqlite')
         self.config=Config('test-secret-do-not-leak');self.model=FixtureModel()
@@ -82,7 +100,7 @@ class LiveTests(unittest.TestCase):
         self.step();self.assertEqual(self.run.wait_reason,'final_confirmation')
         self.assertEqual(self.run.review['previous_issue_results'],[{'issue_id':'i1','result':'resolved'}])
 
-    def test_three_rejected_outputs_fail_without_fourth_generation(self):
+    def test_three_rejected_reviews_stop_for_editing_without_fourth_generation(self):
         base=self.model.complete
         def reject(messages):
             value,tokens=base(messages)
@@ -94,7 +112,8 @@ class LiveTests(unittest.TestCase):
             return value,tokens
         self.model.complete=reject
         for _ in range(11):self.step()
-        self.assertEqual(self.run.run_status,'FAILED')
+        self.assertEqual(self.run.run_status,'WAITING_USER')
+        self.assertEqual(self.run.wait_reason,'revision_limit')
         self.assertEqual(self.model.calls.count('body')+self.model.calls.count('revise'),3)
         self.assertEqual(self.model.calls.count('review'),3)
         self.assertEqual(len(self.run.drafts),3)

@@ -151,6 +151,67 @@ class DurableTests(unittest.TestCase):
         self.assertFalse(self.job().get('error'))
         self.assertEqual(run.drafts[-1]['content']['body'],'用户改稿2')
 
+    def test_valid_revision_limit_preserves_manual_edit_and_model_call_caps(self):
+        base=self.model.complete
+        def revision(messages):
+            value,tokens=base(messages)
+            if self.model.calls[-1]=='review':
+                value.update(decision='revision_required',next_action='revise',issues=[{
+                    'issue_id':'still-open','severity':'major','state':'open','location':'body',
+                    'excerpt':'完整正文','reason':'尚未解决的真实问题','suggestion':'请核对材料并修改'}])
+                for item in value['previous_issue_results']:item['result']='unresolved'
+            return value,tokens
+        self.model.complete=revision;self.start();Worker(self.service).once()
+        run=self.run_value();view=self.service.view(run)
+        self.assertEqual(run.run_status,'WAITING_USER')
+        self.assertEqual(run.wait_reason,'revision_limit')
+        self.assertEqual(len(run.drafts),3)
+        self.assertIsNone(run.accepted_ref)
+        before_calls=len(self.model.calls)
+        self.assertLessEqual(before_calls,12)
+        self.assertEqual(len(run.reviews),3)
+        self.assertLessEqual(self.model.calls.count('review'),3)
+        self.assertEqual(self.job()['status'],'waiting')
+        self.assertIn('edit',view['allowed_actions']);self.assertNotIn('accept',view['allowed_actions'])
+        changed=dict(run.drafts[-1]['content']);changed['body']='人工核对后保留的新稿。'
+        self.action('edit',changed)
+        self.assertEqual(len(self.model.calls),before_calls)
+        self.start();Worker(self.service).once()
+        self.assertLessEqual(len(self.model.calls),before_calls+1)
+        self.assertLessEqual(self.model.calls.count('review'),3)
+        self.assertEqual(self.run_value().wait_reason,'revision_limit')
+
+    def test_inconsistent_revision_with_questions_recovers_only_to_human_not_approval(self):
+        base=self.model.complete
+        def inconsistent(messages):
+            value,tokens=base(messages)
+            if self.model.calls[-1]=='review':
+                value.update(decision='revision_required',next_action='revise',issues=[],human_questions=['请确认仅作为未实测的样例使用。'])
+            return value,tokens
+        self.model.complete=inconsistent;self.start();Worker(self.service).once()
+        before=self.service.view(self.run_value())
+        self.assertEqual(self.job()['status'],'blocked')
+        self.assertTrue(before['review_recovery']['available'])
+        recovered=self.action('repair_review',{})
+        self.assertEqual(recovered['review']['decision'],'needs_human')
+        self.assertEqual(recovered['wait_reason'],'missing_material')
+        self.assertNotIn('accept',recovered['allowed_actions'])
+        self.assertEqual(recovered['usage'],before['usage'])
+        self.assertEqual(recovered['calls'],before['calls'])
+        self.assertEqual(recovered['review']['human_questions'],['请确认仅作为未实测的样例使用。'])
+        self.assertEqual(len(self.model.calls),8)
+
+    def test_empty_revision_without_human_questions_stays_blocked(self):
+        base=self.model.complete
+        def empty(messages):
+            value,tokens=base(messages)
+            if self.model.calls[-1]=='review':value.update(decision='revision_required',next_action='revise',issues=[],human_questions=[])
+            return value,tokens
+        self.model.complete=empty;self.start();Worker(self.service).once()
+        self.assertFalse(self.service.view(self.run_value())['review_recovery']['available'])
+        with self.assertRaises(DomainError):self.action('repair_review',{})
+        self.assertEqual(len(self.model.calls),8)
+
     def test_invalid_review_can_be_recovered_free_then_edited_reaudited_and_confirmed(self):
         self.invalid_citation_review()
         before=self.service.view(self.run_value())
@@ -193,6 +254,83 @@ class DurableTests(unittest.TestCase):
             db.execute('UPDATE live_calls SET response_json=? WHERE id=?',(json.dumps(value),call_id))
         self.assertFalse(self.service.view(self.run_value())['review_recovery']['available'])
         with self.assertRaises(DomainError):self.service.action(self.owner,self.run_id,command)
+        self.assertEqual(len(self.model.calls),8)
+
+    def invalid_draft_excerpt_review(self):
+        base=self.model.complete
+        def invalid(messages):
+            value,tokens=base(messages)
+            if self.model.calls[-1]=='review' and self.model.calls.count('review')==1:
+                value['claim_map']=[{'excerpt':'这是一份公开资料的测试摘要。','source_id':'user-material','quote':'这是一份公开资料的测试摘要。'},
+                    {'excerpt':'完整正文','source_id':'user-material','quote':'公开资料'}]
+            return value,tokens
+        self.model.complete=invalid
+        self.start();Worker(self.service).once()
+        self.assertEqual(self.job()['status'],'blocked')
+        return self.service.view(self.run_value())
+
+    def test_unlocated_review_quote_recovers_without_guessing_approval_or_billing(self):
+        before=self.invalid_draft_excerpt_review()
+        self.assertTrue(before['review_recovery']['available'])
+        with self.store.connect() as db:
+            row=db.execute("SELECT id,response_json,actual,state FROM live_calls WHERE run_id=? AND stage='review'",(self.run_id,)).fetchone()
+        repaired=self.action('repair_review',{})
+        self.assertEqual(repaired['usage'],before['usage'])
+        self.assertEqual(repaired['calls'],before['calls'])
+        self.assertEqual(repaired['drafts'],before['drafts'])
+        self.assertEqual(repaired['review']['decision'],'revision_required')
+        self.assertNotIn('accept',repaired['allowed_actions'])
+        self.assertEqual(repaired['review']['claim_map'],[{'excerpt':'完整正文','source_id':'user-material','quote':'公开资料'}])
+        issue=repaired['review']['issues'][-1]
+        self.assertEqual(issue['excerpt'],before['drafts'][-1]['content']['body'])
+        self.assertEqual(next(c for c in repaired['review']['checks'] if c['name']=='evidence_integrity')['result'],'fail')
+        self.assertEqual(repaired['node_runs'][-1]['input']['excluded_claim_map'][0]['excerpt'],'这是一份公开资料的测试摘要。')
+        with self.store.connect() as db:
+            self.assertEqual(db.execute('SELECT id,response_json,actual,state FROM live_calls WHERE id=?',(row[0],)).fetchone(),row)
+        self.start();Worker(self.service).once()
+        ready=self.service.view(self.run_value())
+        self.assertEqual(ready['review']['decision'],'approved')
+        self.assertEqual(self.model.calls[-2:],['revise','review'])
+        self.assertEqual(len(self.model.calls),10)
+        accepted=self.action('accept',dict(draft_ref=ready['drafts'][-1]['ref'],review_ref=ready['review']['ref']))
+        self.assertEqual(accepted['run_status'],'SUCCEEDED')
+
+    def test_unlocated_review_recovery_rejects_unknown_usage_old_draft_and_snapshot(self):
+        self.invalid_draft_excerpt_review()
+        with self.store.connect() as db:
+            row=db.execute("SELECT id,actual FROM live_calls WHERE run_id=? AND stage='review'",(self.run_id,)).fetchone()
+            db.execute('UPDATE live_calls SET actual=NULL WHERE id=?',(row[0],))
+        self.assertFalse(self.service.view(self.run_value())['review_recovery']['available'])
+        with self.store.connect() as db:
+            db.execute('UPDATE live_calls SET actual=? WHERE id=?',(row[1],row[0]))
+            db.execute("UPDATE model_audit SET snapshot_id='stale' WHERE call_id=?",(row[0],))
+        self.assertFalse(self.service.view(self.run_value())['review_recovery']['available'])
+        with self.store.connect() as db:
+            db.execute('UPDATE model_audit SET snapshot_id=?,started=0 WHERE call_id=?',(self.run_value().snapshot_id,row[0]))
+        self.assertFalse(self.service.view(self.run_value())['review_recovery']['available'])
+        self.assertEqual(len(self.model.calls),8)
+
+    def test_unlocated_review_recovery_is_owner_version_guarded_and_idempotent(self):
+        self.invalid_draft_excerpt_review()
+        command=dict(action='repair_review',payload={},version=self.run_value().status_version,key=str(uuid4()))
+        with self.assertRaises(DomainError):self.service.action('other-owner',self.run_id,command)
+        with self.assertRaises(DomainError):self.service.action(self.owner,self.run_id,{**command,'version':0})
+        with self.store.connect() as db:db.execute("UPDATE runtime_jobs SET status='running' WHERE run_id=?",(self.run_id,))
+        with self.assertRaises(DomainError):self.service.action(self.owner,self.run_id,command)
+        with self.store.connect() as db:db.execute("UPDATE runtime_jobs SET status='blocked' WHERE run_id=?",(self.run_id,))
+        repaired=self.service.action(self.owner,self.run_id,command)
+        replay=self.service.action(self.owner,self.run_id,command)
+        self.assertEqual(replay['status_version'],repaired['status_version'])
+        self.assertEqual(len(self.model.calls),8)
+
+    def test_unlocated_review_recovery_cannot_hide_other_schema_failures(self):
+        self.invalid_draft_excerpt_review()
+        with self.store.connect() as db:
+            call_id,raw=db.execute("SELECT id,response_json FROM live_calls WHERE run_id=? AND stage='review'",(self.run_id,)).fetchone()
+            value=json.loads(raw);value['checks']=[]
+            db.execute('UPDATE live_calls SET response_json=? WHERE id=?',(json.dumps(value),call_id))
+        self.assertFalse(self.service.view(self.run_value())['review_recovery']['available'])
+        with self.assertRaises(DomainError):self.action('repair_review',{})
         self.assertEqual(len(self.model.calls),8)
 
     def historical_extra_review(self):

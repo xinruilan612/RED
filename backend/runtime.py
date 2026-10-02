@@ -175,7 +175,7 @@ class Runtime:
             if stage in ('audience','research'):current.branch(stage,current.snapshot_id,'succeeded',output)
             elif stage=='review':
                 gates=live.review_gates(current,output) if log['mode']=='live' else {k:True for k in CONTRACT['review_policy']['required_gates']}
-                current.reviewed(output,gates,fail_on_limit=log['mode']=='live')
+                current.reviewed(output,gates)
             else:
                 if stage!='revise':
                     current.artifacts.append({'stage':stage,'value':output,'snapshot_id':current.snapshot_id})

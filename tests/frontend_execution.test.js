@@ -106,6 +106,22 @@ test('rejected review shows a free recovery action and hides pointless repeat ex
  assert.equal(s.element('next').hidden,true);assert.equal(s.element('auto').hidden,true);
  assert.match(s.element('reviewRecoveryIssues').innerHTML,/修正标题/);
 });
+
+test('manual-adoption availability does not hide free rejected-review recovery',()=>{
+ const s=setup();s.eval("run.current_stage='reviewer';run.drafts=[{}];run.allowed_actions=['next','cancel','edit','adopt_manual','repair_review'];run.calls=[];renderRecovery()");
+ assert.equal(s.element('reviewRecovery').hidden,false);
+ assert.equal(s.element('repairReview').hidden,false);
+ assert.equal(s.element('next').hidden,true);
+ assert.equal(s.element('auto').hidden,true);
+ s.eval("run.allowed_actions=['edit','adopt_manual'];renderRecovery()");
+ assert.equal(s.element('repairReview').hidden,true);
+});
+
+test('question-only review recovery is labelled human handling instead of rewriting',()=>{
+ const s=setup();s.eval("run.current_stage='reviewer';run.drafts=[{}];run.allowed_actions=['repair_review'];run.review_recovery={next_action:'request_human'};run.calls=[];renderRecovery()");
+ assert.match(s.element('repairReview').textContent,/进入人工处理/);
+ assert.doesNotMatch(s.element('repairReview').textContent,/进入改稿/);
+});
 test('free recovery dispatches repair action rather than approval or model execution',async()=>{
  const s=setup();await s.element('repairReview').onclick();
  assert.equal(s.eval('calls[0].action'),'repair_review');assert.equal(s.eval('confirmations'),0);

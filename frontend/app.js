@@ -144,9 +144,10 @@ function renderDetails(){
 }
 function renderRecovery(){
  const canRepair=run.allowed_actions.includes('repair_review');
- const blocked=run.current_stage==='reviewer'&&run.drafts.length&&!run.review&&!run.allowed_actions.includes('accept')&&!run.allowed_actions.includes('adopt_manual');
+ const blocked=canRepair||(run.current_stage==='reviewer'&&run.drafts.length&&!run.review&&!run.allowed_actions.includes('accept')&&!run.allowed_actions.includes('adopt_manual'));
  $('reviewRecovery').hidden=!blocked;
  $('repairReview').hidden=!canRepair;
+ $('repairReview').textContent=run.review_recovery?.next_action==='request_human'?'查看审核问题并进入人工处理（不调用 AI）':'查看审核问题并进入改稿（不调用 AI）';
  if(!blocked)return;
  $('reviewRecoveryTitle').textContent=canRepair?'稿件已保存，先处理审核问题':'稿件已保存，审核尚未完成';
  $('reviewRecoveryMessage').textContent=canRepair?(run.review_recovery?.reason||'审核结果未通过格式校验。可以免费整理已收到的意见，保留稿件和问题，进入人工处理，不再次调用模型。'):run.in_flight?'正在审核，完成后这里会显示下一步。你可以先阅读下方稿件。':'当前不能确认稿件。请查看上方具体错误与运行记录；不要反复启动同一个失败步骤。';
