@@ -2,7 +2,9 @@
 
 **2026-10-02 更新：**[更改了什么、逐文件差异与验收边界](docs/validation/CHANGES_20261002.md)。本次上传到新分支 `王顺然-20261002`，保留旧“王顺然”和 main；真实人工采用不等于AI审核通过。
 
-**Windows 队友从这里开始：**[Windows 安装与启动](docs/WINDOWS.md)。首次运行 `start-windows.cmd setup`，配置数据库后双击 `start-windows.cmd` 同时启动网站和 Worker。macOS/Linux 可用 `python3 scripts/local_dev.py setup` / `start`；原启动方式继续可用。
+**后续界面/跨平台改进与真实账号验收：**[最新修改与验收记录](docs/validation/REAL_ACCOUNT_ACCEPTANCE_20261002.md)。历史测试数量不能代替该轮最终结果。
+
+**Windows 与苹果电脑使用同一份项目：**Windows 从 [Windows 安装与启动](docs/WINDOWS.md) 开始；macOS/Linux 从 [跨平台安装与启动](docs/CROSS_PLATFORM.md) 开始。Windows 使用 `start-windows.cmd`，苹果使用 `start-macos.command`，Linux 使用 `bash start-unix.sh`；均同时管理网站与 Worker，不复制其他系统的虚拟环境或数据库。
 
 产品方向已确认：**有迹是个人创作者的内容试飞台**，以评论区需求与搜索意图形成可证伪假设，再经风洞预演、小流量赛马、实盘归因进入账号私有经验账本。支持卖货、涨粉与工具/活动获客；首段实现状态与待办见 [内容试飞台产品方案](docs/design/GROWTH_CAMPAIGN_PRODUCT.md)，整体仍未完成。
 
@@ -27,7 +29,7 @@
 
 ## 建议先体验
 
-打开 http://127.0.0.1:8765/#overview → 注册并保存一次性网站恢复码 → 点击“体验穿搭演示账号” → 数据复盘 → 分析最新作品 → 经验记忆中接受建议 → 本周运营生成并采用周计划。演示数据始终隔离，不代表真实增长。
+打开 http://127.0.0.1:8765/#overview → 注册并保存一次性网站恢复码 → 填写自己的账号档案 → 新建创作并补充主题与素材 → 连续运行 → 检查/修改/复审 → 确认下载。资料、周计划和实验不是强制前置条件。想看固定示例时，在“更多工具与示例”里选择“体验示例”；示例数据隔离，不代表真实增长。
 
 顶部切换当前账号；账号与历史页面可维护定位、导入真实旧作品、调整栏目/流量类型、查看改稿差异。新版使用网站用户名和密码登录，账号数据保存在服务端 PostgreSQL；服务尚未公网部署。首次注册时可选择绑定当前浏览器的旧 Demo 空间。旧 Demo 恢复码只适用于旧服务，不是网站恢复码。
 
@@ -98,7 +100,7 @@ runtime/venv/bin/python -m backend.worker
 ## 开发验证
 
 ```bash
-TEST_DATABASE_URL=postgresql:///youji_operations PYTHONDONTWRITEBYTECODE=1 runtime/venv/bin/python -m unittest discover -s tests -v
+TEST_DATABASE_URL=postgresql:///youji_test PYTHONDONTWRITEBYTECODE=1 runtime/venv/bin/python -m unittest discover -s tests -v
 node --check frontend/app.js
 node --check frontend/operations.js
 node --check frontend/account.js
@@ -109,7 +111,7 @@ node --check frontend/trials.js
 git diff --check
 ```
 
-集成测试在临时本机端口启动 HTTP 服务，需要允许监听回环端口，不请求外网。当前测试不调用收费模型。
+`youji_test` 必须是单独创建、可丢弃的测试数据库；测试可能清理表，禁止使用应用库或真实业务库。集成测试在临时本机端口启动 HTTP 服务，需要允许监听回环端口，不请求外网。当前测试不调用收费模型。
 
 ## 旧 Demo 的兼容入口与存档
 
