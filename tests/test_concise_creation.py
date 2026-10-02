@@ -3,9 +3,30 @@ import copy
 import json
 import unittest
 from types import SimpleNamespace
-from backend.live import messages_for, schema
+from backend.live import messages_for, normalize, schema
+from backend.contracts import DomainError
 
 class ConciseCreationTests(unittest.TestCase):
+    def test_title_prompt_requires_exactly_five_pairs_and_only_title_fields(self):
+        run=self.fixture();before=copy.deepcopy(run.__dict__)
+        messages,_=messages_for(run,'title')
+        self.assertIn('只输出candidates、selected、note、reasons四个字段',messages[0]['content'])
+        self.assertIn('各恰好5项（不是6项）',messages[0]['content'])
+        self.assertIn('按索引一一对应',messages[0]['content'])
+        self.assertEqual(set(schema('title')),{'candidates','selected','note','reasons'})
+        self.assertEqual(run.__dict__,before)
+        other,_=messages_for(run,'hook')
+        self.assertNotIn('各恰好5项（不是6项）',other[0]['content'])
+
+    def test_title_six_pairs_remain_rejected_without_truncation(self):
+        run=self.fixture();value=schema('title')
+        value['candidates'].append('候选六');value['reasons'].append('候选六理由')
+        before=copy.deepcopy(value)
+        with self.assertRaises(DomainError):normalize(run,'title',value)
+        self.assertEqual(value,before)
+        valid=schema('title')
+        self.assertEqual(normalize(run,'title',valid),valid)
+
     def fixture(self):
         source='原始事实材料，不能丢失。'*30
         return SimpleNamespace(context={'topic':'测试','audience':'新手','tone':'朴实','allow_hypothesis':True,'material':source,'operations':{'profile':{'banned':'不能保证效果'}}},
