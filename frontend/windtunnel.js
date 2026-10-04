@@ -110,8 +110,10 @@ function wtSource(s){return `<article class="wt-source"><span class="pill neutra
 
 function wtCardsView(){
  const cards=wtCards();
- return `<section class="panel"><div class="wt-heading"><div><span class="wt-kicker">02 / 把问题固定下来</span><h2>确认这篇教程需要回答什么</h2><p>候选条件由你调整和确认；没有真实来源的条件会标为作者设定。</p></div><span class="pill neutral">${cards.length} 条条件</span></div>${wtExecution()}${cards.length?`<form id="wtConditions">${cards.map((c,i)=>wtCard(c,i)).join('')}${wtAllowed('edit_conditions')?'<button class="quiet" type="button" data-wt="add-condition">＋ 添加作者设定的条件</button>':''}<div class="wt-action-bar">${wtAllowed('edit_conditions')?'<button class="secondary" type="submit" name="intent" value="edit">保存条件修改</button>':''}${wtAllowed('confirm_conditions')?'<button class="primary" type="submit" name="intent" value="confirm">确认这些条件，固定检查范围 →</button>':''}${wtSet().confirmed?'<p class="helper">条件已确认。同条件复查将复用这一版本；改变条件需要建立新批次。</p>':''}</div></form>`:wtEmpty('先生成候选问题','保存稿件后，启动一次后台检查。没有反馈时，候选条件会明确标为作者设定。')}${wtReuseView()}</section>`;
+ return `<section class="panel"><div class="wt-heading"><div><span class="wt-kicker">02 / 把问题固定下来</span><h2>确认这篇教程需要回答什么</h2><p>候选条件由你调整和确认；没有真实来源的条件会标为作者设定。</p></div><span class="pill neutral">${cards.length} 条条件</span></div>${wtExecution()}${cards.length?`<form id="wtConditions">${cards.map((c,i)=>wtCard(c,i)).join('')}${wtAllowed('edit_conditions')?'<button class="quiet" type="button" data-wt="add-condition">＋ 添加作者设定的条件</button>':''}<div class="wt-action-bar">${wtAllowed('edit_conditions')?'<button class="secondary" type="submit" name="intent" value="edit">保存条件修改</button>':''}${wtAllowed('confirm_conditions')?'<button class="primary" type="submit" name="intent" value="confirm">确认这些条件，固定检查范围 →</button>':''}${wtSet().confirmed?'<p class="helper">条件已确认。同条件复查将复用这一版本；改变条件需要建立新批次。</p>':''}</div></form>`:wtAllowed('set_initial_conditions')?wtInitialConditionsForm():wtEmpty('先生成候选问题','保存稿件后，启动一次后台检查。没有反馈时，候选条件会明确标为作者设定。')}${wtReuseView()}</section>`;
 }
+function wtInitialConditionsForm(){return `<form id="wtInitialConditions" class="wt-question"><h3>也可以自己写一个检查问题</h3><p>不必重建稿件，也不需要再次调用 AI 来生成问题卡。这里记录的是你设定的问题，之后仍由你确认。</p><label for="wtInitialQuestion">希望读者看完后能回答什么？</label><textarea id="wtInitialQuestion" rows="2" maxlength="500" required placeholder="例如：读完后，新手能说清早间洗脸后先做什么吗？"></textarea><label for="wtInitialScene">这篇写给谁，在什么情况下使用？</label><input id="wtInitialScene" maxlength="500" value="${esc(wtData().scene||'')}" placeholder="例如：第一次了解早间护肤顺序的新手"><button class="primary">保存我的问题（不调用 AI）</button><p class="helper">来源：作者设定。保存后可继续添加问题，再确认检查范围。</p></form>`;}
+
 function wtCard(c,i){
  const locked=wt.run.in_flight||(!wtAllowed('edit_conditions')&&!wtAllowed('confirm_conditions'));
  const sources=(wtData().sources||[]).filter(s=>(c.source_ids||[]).includes(s.id));
@@ -178,6 +180,7 @@ function wtBind(){
  root.addEventListener('click',wtClick);
  if($('wtCreateForm'))$('wtCreateForm').onsubmit=wtCreate;
  if($('wtConditions'))$('wtConditions').onsubmit=wtSaveConditions;
+ if($('wtInitialConditions'))$('wtInitialConditions').onsubmit=async e=>{e.preventDefault();const question=$('wtInitialQuestion').value.trim(),scene=$('wtInitialScene').value.trim();if(await wtMutation('set_initial_conditions',{conditions:[{question,scene,source_ids:[],origin:'author'}]})){wt.message='已保存你的问题，没有调用 AI。确认问题后即可继续检查正文。';wtPaint();}};
  if($('wtPatchForm'))$('wtPatchForm').onsubmit=async e=>{e.preventDefault();const ids=[...e.target.querySelectorAll('[name="condition_id"]:checked')].map(x=>x.value);if(!ids.length){wt.failure='请至少选择一个未通过的问题。';wtPaint();return;}if(await wtMutation('propose_patch',{condition_ids:ids}))await wtMutation('start',{},true);};
  if($('wtEditDraft'))$('wtEditDraft').onsubmit=async e=>{e.preventDefault();await wtMutation('edit_draft',{title:wtDraft().title,text:$('wtEditText').value,base_hash:wtDraft().hash});};
  if($('wtSaveChecklist'))$('wtSaveChecklist').onsubmit=wtSaveChecklist;

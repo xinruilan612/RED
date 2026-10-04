@@ -164,3 +164,9 @@ test('ordinary new creation chooses configured real API and never silently start
  const s=setup();s.eval("provider={ready:true};activeAccountId='a';ops={accounts:[]};busy=false;editing=false;run=null;paidCalls=0;api=async()=>{paidCalls++;return []};refreshMaterialDocuments=()=>{};fillAccountBrief=()=>{};startCreation()");
  assert.equal(s.element('mode').value,'live');assert.doesNotMatch(fs.readFileSync('frontend/index.html','utf8'),/默认免费模拟/);assert.equal(s.eval('paidCalls'),0);assert.match(s.element('modeNotice').textContent,/DeepSeek/);
 });
+
+test('empty reader conditions offer an explicit free author question without fake feedback',()=>{
+ const s=setup();s.eval("wt.run={workflow_type:'windtunnel',mode:'live',run_status:'RUNNING',current_stage:'wt_conditions',in_flight:false,allowed_actions:['set_initial_conditions'],background:{status:'blocked',error:'检查条件需要1至12项'},windtunnel:{scene:'护肤新手',condition_sets:[],sources:[]}};wt.busy=false");
+ const html=s.eval('wtCardsView()');assert.match(html,/id="wtInitialQuestion"/);assert.match(html,/保存我的问题（不调用 AI）/);assert.match(html,/来源：作者设定/);
+ s.eval('wt.run.in_flight=true');assert.doesNotMatch(s.eval('wtCardsView()'),/id="wtInitialQuestion"/);
+});

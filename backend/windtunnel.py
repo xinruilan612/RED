@@ -76,6 +76,15 @@ def check_conditions(items, sources, code='INVALID_INPUT'):
     return result
 
 
+def initial_conditions_available(db,run):
+    state=checked(run)
+    if run.run_status in ('SUCCEEDED','FAILED','CANCELLED','EXPIRED') or run.current_stage!='wt_conditions' or state['condition_sets']:return False
+    job=db.execute('SELECT status FROM runtime_jobs WHERE run_id=?',(run.run_id,)).fetchone()
+    if job and job[0] in ('queued','running','pausing'):return False
+    # Unknown paid usage remains blocked; manual recovery never clears billing records.
+    return not db.execute("SELECT 1 FROM live_calls WHERE run_id=? AND (state='calling' OR actual IS NULL)",(run.run_id,)).fetchone()
+
+
 def condition_set(items, version, sources, provenance=None):
     values = check_conditions(items, sources)
     return dict(id=uid(), version=version, conditions=values, hash=digest(values),
@@ -101,10 +110,10 @@ def messages_for(run, stage):
     state = checked(run)
     if stage == 'wt_conditions':
         visible = stage_sources(run, stage)
-        data = dict(scene=state['scene'], feedback=[s for s in visible if s.get('provenance') in ('historical_feedback','pilot_feedback')],
+        data = dict(title=draft(run)['title'], scene=state['scene'], feedback=[s for s in visible if s.get('provenance') in ('historical_feedback','pilot_feedback')],
                     author_questions=[s['text'] for s in visible if s.get('provenance') not in ('historical_feedback','pilot_feedback')])
         shape = {'conditions': [{'question': '作者需要读者能回答的问题', 'scene': '适用场景', 'source_ids': [], 'origin': 'author'}]}
-        rule = '将反馈转换为最多12条待作者确认的问题。feedback数组才是真实反馈，source_ids只能引用该数组的ID。author_questions是作者设定，即使有原始来源也必须origin=author且source_ids=[]。feedback为空时，全部条件必须origin=author且source_ids=[]。优先将作者问题转换为问题卡，不能声称真人意见。不要预填问题答案。'
+        rule = '生成1至12条待作者确认的问题，conditions不得为空。没有反馈或作者问题时，依据title和scene提出读者需要回答的具体作者问题；不虚构读者意见，不预填答案。feedback数组才是真实反馈，source_ids只能引用该数组的ID。author_questions是作者设定，即使有原始来源也必须origin=author且source_ids=[]。feedback为空时，全部条件必须origin=author且source_ids=[]。优先将作者问题转换为问题卡，不能声称真人意见。不要预填问题答案。'
     else:
         cs = conditions(run)
         require(cs['confirmed'], 'INVALID_TRANSITION', '请先确认检查条件')
@@ -367,13 +376,19 @@ class Windtunnel:
             require(run.status_version == data['version'], 'VERSION_CONFLICT', '预演已变化，请刷新')
             action, p = data['action'], data['payload']
             require(run.run_status not in ('SUCCEEDED', 'CANCELLED', 'FAILED', 'EXPIRED'), 'INVALID_TRANSITION', '任务已结束')
-            require(action == 'cancel' or run.run_status == 'WAITING_USER', 'INVALID_TRANSITION', '请先等待本轮检查完成')
+            require(action in ('cancel','set_initial_conditions') or run.run_status == 'WAITING_USER', 'INVALID_TRANSITION', '请先等待本轮检查完成')
             job = db.execute('SELECT status FROM runtime_jobs WHERE run_id=?', (run_id,)).fetchone()
             require(action == 'cancel' or not job or job[0] not in ('queued', 'running', 'pausing'), 'JOB_ACTIVE', '请先等待后台任务停稳')
             if action == 'cancel':
                 require(not p, 'INVALID_INPUT', '取消无需参数')
                 run.run_status, run.wait_reason = 'CANCELLED', None
                 run.event('run.cancelled')
+            elif action == 'set_initial_conditions':
+                require(initial_conditions_available(db,run),'INVALID_TRANSITION','请先等待任务停稳；已有问题卡或费用未核对时不能覆盖')
+                require(set(p)=={'conditions'} and isinstance(p['conditions'],list) and all(isinstance(c,dict) and c.get('origin')=='author' and c.get('source_ids')==[] for c in p['conditions']),'INVALID_INPUT','手填问题只能标为作者设定，不能冒充读者反馈')
+                cs=condition_set(p['conditions'],1,state['sources'],{'method':'manual_author','model_calls':0})
+                state['condition_sets'].append(cs);state['current_set_id']=cs['id']
+                run.snapshot_id=uid();waiting(run,'wt_confirm_conditions')
             elif action == 'confirm_conditions':
                 require(set(p) == {'condition_set_id', 'condition_hash'}, 'INVALID_INPUT', '请确认准确条件版本')
                 cs = conditions(run)
@@ -497,6 +512,8 @@ class Windtunnel:
                         allowed.append('apply_patch')
         elif state['reports']:
             allowed.append('export')
+        with self.store.connect() as db:
+            if initial_conditions_available(db,run):allowed.append('set_initial_conditions')
         result.update(mode=run.context['mode'], allowed_actions=allowed)
         return result
 
