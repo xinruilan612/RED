@@ -92,6 +92,53 @@ class MediaExportsTests(unittest.TestCase):
         self.assertTrue(folders)
         self.assertTrue(all(not Path(folder).exists() for folder in folders))
 
+    def test_complete_bundle_real_files_and_sanitized_execution(self):
+        run = fixture()
+        run.acceptance.update(mode='manual_override', owner='private-owner', api_key='SecretNeverExport', acknowledged_issues=[{'text': 'SecretNeverExport'}])
+        run.context['evidence'] = [{'source_id': 'public-source', 'url': 'https://example.org/help?token=SecretNeverExport#private'}]
+        execution = {'usage': {'model_calls': 13, 'tokens': 24714, 'unknown_calls': 0},
+            'owner': 'private-owner', 'api_key': 'SecretNeverExport',
+            'review_execution': {'used': 3, 'limit': 3, 'remaining': 0, 'exhausted': True},
+            'calls': [{'id': 'call-1', 'agent': 'reviewer', 'stage': 'review', 'status': 'completed', 'tokens': 10,
+                       'diagnostic_response': 'SecretNeverExport', 'prompt': 'SecretNeverExport', 'owner': 'private-owner'}]}
+        data, _, name = export_run(run, 'complete', execution)
+        self.assertIn('complete', name)
+        with zipfile.ZipFile(BytesIO(data)) as archive:
+            for filename in ('images/01.png', 'video/video.mp4', 'storyboard/subtitles.srt', 'storyboard/storyboard.md', 'caption.txt', '使用说明.txt', 'execution-evidence.json', 'manifest.json'):
+                self.assertIn(filename, archive.namelist())
+            self.assertIsNone(archive.testzip())
+            manifest = json.loads(archive.read('manifest.json'))
+            for row in manifest['files']:
+                self.assertEqual(row['sha256'], hashlib.sha256(archive.read(row['name'])).hexdigest())
+            evidence = json.loads(archive.read('execution-evidence.json'))
+            self.assertEqual(evidence['usage']['model_calls'], 13)
+            self.assertEqual(evidence['draft_ref'], run.accepted_ref)
+            self.assertFalse(evidence['final_ai_review_passed'])
+            self.assertEqual(evidence['review_calls']['remaining'], 0)
+            self.assertEqual(evidence['sources'][0]['url'], 'https://example.org/help')
+            for name in ('execution-evidence.json', 'manifest.json', '使用说明.txt'):
+                self.assertNotIn('SecretNeverExport', archive.read(name).decode())
+                self.assertNotIn('private-owner', archive.read(name).decode())
+            self.assertIn('不与无声翻页视频逐页同步', archive.read('使用说明.txt').decode())
+
+    def test_complete_bundle_reports_missing_video_without_faking_file(self):
+        from backend.contracts import DomainError
+        with patch('backend.media_exports._video', side_effect=DomainError('MEDIA_UNAVAILABLE', '视频编码器不可用')):
+            data, _, _ = export_run(fixture(), 'complete')
+        with zipfile.ZipFile(BytesIO(data)) as archive:
+            self.assertNotIn('video/video.mp4', archive.namelist())
+            self.assertIn('video/未生成说明.txt', archive.namelist())
+            manifest = json.loads(archive.read('manifest.json'))
+            self.assertEqual(manifest['media_status']['video']['status'], 'unavailable')
+            self.assertIn('视频编码器不可用', archive.read('使用说明.txt').decode())
+
+    def test_complete_bundle_does_not_claim_live_calls_without_ledger(self):
+        data, _, _ = export_run(fixture(), 'complete')
+        with zipfile.ZipFile(BytesIO(data)) as archive:
+            evidence = json.loads(archive.read('execution-evidence.json'))
+            self.assertIsNone(evidence['usage']['model_calls'])
+            self.assertEqual(evidence['calls'], [])
+
     def test_limits_unbounded_pages_and_invalid_kind(self):
         with self.assertRaises(DomainError): export_run(fixture('长' * 30000))
         with self.assertRaises(DomainError): export_run(fixture(), '../../unsafe')

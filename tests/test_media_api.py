@@ -90,7 +90,7 @@ class MediaPostgresApiTests(unittest.TestCase):
         self.post('/api/auth/logout', {})
         self.csrf = self.client.get('/api/session').json()['csrf']
         self.register('other_media_creator')
-        for suffix in ['/media/capabilities', '/media-export?kind=images', '/media-export?kind=video']:
+        for suffix in ['/media/capabilities', '/media-export?kind=images', '/media-export?kind=video', '/media-export?kind=complete']:
             response = self.client.get('/api/runs/' + run['run_id'] + suffix)
             self.assertEqual(response.status_code, 404, response.text)
             self.assertNotIn(run['drafts'][-1]['content']['body'], response.text)
@@ -98,7 +98,7 @@ class MediaPostgresApiTests(unittest.TestCase):
     def test_unconfirmed_draft_and_unknown_kind_rejected(self):
         self.register()
         run = self.create()
-        for kind in ('images', 'video', 'storyboard'):
+        for kind in ('images', 'video', 'storyboard', 'complete'):
             response = self.client.get('/api/runs/' + run['run_id'] + '/media-export?kind=' + kind)
             self.assertEqual(response.status_code, 409, response.text)
             self.assertEqual(response.json()['error']['code'], 'INVALID_TRANSITION')
@@ -115,7 +115,7 @@ class MediaPostgresApiTests(unittest.TestCase):
         self.assertEqual(caps.status_code, 200, caps.text)
         self.assertTrue(caps.json()['images_available'])
         self.assertTrue(caps.json()['video_available'])
-        for kind in ('images', 'video', 'storyboard'):
+        for kind in ('images', 'video', 'storyboard', 'complete'):
             with self.subTest(kind=kind):
                 response = self.client.get(base + '/media-export?kind=' + kind)
                 self.assertEqual(response.status_code, 200, response.text[:200])
@@ -142,8 +142,17 @@ class MediaPostgresApiTests(unittest.TestCase):
                             self.assertAlmostEqual(meta['duration'], manifest['video']['duration_seconds'], delta=.1)
                             self.assertEqual(len(next(reader)), 720 * 960 * 3)
                             reader.close()
-                    else:
+                    elif kind == 'storyboard':
                         self.assertIn(' --> ', archive.read('subtitles.srt').decode())
+                    else:
+                        self.assertIn('images/01.png', archive.namelist())
+                        self.assertIn('video/video.mp4', archive.namelist())
+                        self.assertIn('使用说明.txt', archive.namelist())
+                        evidence = json.loads(archive.read('execution-evidence.json'))
+                        self.assertEqual(evidence['draft_ref'], run['accepted_ref'])
+                        self.assertEqual(evidence['usage']['model_calls'], 0)
+                        self.assertNotIn('owner', evidence)
+                        self.assertNotIn('api_key', evidence)
         # Downloading is read-only: the accepted draft/version and paid ledger do not change.
         after = self.client.get(base).json()
         self.assertEqual(after['status_version'], run['status_version'])

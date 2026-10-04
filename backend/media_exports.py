@@ -42,7 +42,7 @@ def capabilities():
             video = result.returncode == 0
         except (ImportError, OSError, RuntimeError, subprocess.TimeoutExpired):
             pass
-    return {'images_available': images, 'storyboard_available': True, 'video_available': video,
+    return {'images_available': images, 'storyboard_available': True, 'complete_available': True, 'video_available': video,
             'images_message': '下载封面和正文图片，无需模型费用。' if images else '图文导出需要 Pillow 和中文字体，请先配置运行环境。',
             'video_message': '生成无声图文翻页视频，可在剪辑软件中添加自己的配音。' if video else '视频成片暂不可用；可以先下载分镜与字幕。'}
 
@@ -146,10 +146,10 @@ def _storyboard(snapshot):
     return [('subtitles.srt', '\n'.join(srt).encode()), ('storyboard.md', '\n'.join(board).encode())]
 
 
-def _video(snapshot):
+def _video(snapshot, pages=None):
     require(capabilities()['video_available'], 'MEDIA_UNAVAILABLE', '视频编码器或中文字体不可用，请先下载图文包')
     import imageio_ffmpeg
-    pages = render_images(snapshot)
+    pages = pages if pages is not None else render_images(snapshot)
     require(len(pages) <= 15, 'INVALID_INPUT', '视频最多 15 页（120 秒），请缩短稿件或下载图文包')
     with tempfile.TemporaryDirectory(prefix='youji-media-') as folder:
         base = Path(folder)
@@ -172,12 +172,119 @@ def _video(snapshot):
         return [('video.mp4', output.read_bytes()), ('README.txt', '这是无声图文翻页视频，每页8秒；长文可暂停阅读。请在剪辑软件中添加自己的配音或调整翻页速度。不是AI口播或真人素材剪辑。'.encode())]
 
 
-def export_run(run, kind='images'):
-    require(kind in ('images', 'storyboard', 'video'), 'INVALID_INPUT', '请选择图文包、分镜字幕或无声图文视频')
+
+def _safe_source(source):
+    from urllib.parse import urlsplit, urlunsplit
+    result = {key: source.get(key) for key in ('source_id', 'document_id', 'version', 'page') if source.get(key) is not None}
+    for key in ('url', 'source_url'):
+        value = source.get(key)
+        if not isinstance(value, str): continue
+        try:
+            parsed = urlsplit(value)
+            if parsed.scheme in ('https', 'http') and parsed.hostname:
+                # No URL credential, query token or private fragment in exported evidence.
+                host = parsed.hostname
+                if ':' in host: host = '[' + host + ']'
+                result[key] = urlunsplit((parsed.scheme, host, parsed.path, '', ''))
+        except ValueError:
+            pass
+    return result
+
+
+def execution_evidence(run, snapshot, execution=None):
+    """Explicit allowlist: no raw prompts, diagnostics, owners or runtime secrets."""
+    execution = execution or {}
+    numeric = lambda value: value if isinstance(value, (int, float)) and not isinstance(value, bool) else None
+    usage = execution.get('usage', {})
+    summaries = {key: numeric(usage.get(key)) for key in ('model_calls', 'tokens', 'unknown_calls', 'cost_upper_estimate_usd')}
+    if snapshot['mode'] != 'live':
+        summaries.update(model_calls=0, tokens=0, unknown_calls=0, cost_upper_estimate_usd=0)
+    calls = []
+    for call in execution.get('calls', []):
+        if not isinstance(call, dict): continue
+        item = {key: call.get(key) for key in ('id', 'agent', 'stage', 'status', 'provider', 'model', 'route_version', 'prompt_version', 'input_hash', 'snapshot_id') if isinstance(call.get(key), str)}
+        item.update({key: numeric(call.get(key)) for key in ('tokens', 'input_tokens', 'output_tokens', 'duration_ms')})
+        item['audit_legacy'] = call.get('audit_legacy') is True
+        item['inherited'] = call.get('inherited') is True
+        calls.append(item)
+    review_execution = execution.get('review_execution') or {}
+    accepted = snapshot['acceptance']
+    review = run.review or {}
+    final_review_passed = (accepted.get('mode') == 'reviewed' and review.get('decision') == 'approved' and
+        review.get('draft_ref') == snapshot['draft_ref'] and review.get('content_hash') == snapshot['content_hash'] and
+        review.get('snapshot_id') == snapshot['snapshot_id'] and accepted.get('review_ref') == review.get('ref'))
+    return {'schema_version': 1, 'run_id': run.run_id, 'snapshot_id': snapshot['snapshot_id'],
+        'draft_ref': snapshot['draft_ref'], 'draft_version': next(i + 1 for i, d in enumerate(run.drafts) if d['ref'] == snapshot['draft_ref']),
+        'content_hash': snapshot['content_hash'], 'mode': snapshot['mode'],
+        'acceptance_mode': accepted.get('mode'), 'final_ai_review_passed': bool(final_review_passed),
+        'usage': summaries, 'calls': calls,
+        'review_calls': {key: numeric(review_execution.get(key)) for key in ('used', 'limit', 'remaining')},
+        'review_calls_exhausted': review_execution.get('exhausted') is True,
+        'sources': snapshot['source_refs'],
+        'notice': '执行记录来自保存的任务与调用台账；模拟流程不算真实 AI 调用。人工采用不等于 AI 最终复审通过。导出不表示已经发布，未证明传播、成交或涨粉效果。'}
+
+
+def _complete_files(run, snapshot, execution):
+    from backend.contracts import DomainError
+    # Do not forward arbitrary future acceptance/audit fields to the shareable package.
+    snapshot['acceptance'] = {key: value for key, value in snapshot['acceptance'].items() if key in
+        ('mode', 'draft_ref', 'content_hash', 'snapshot_id', 'review_ref', 'acknowledged_review_ref', 'acknowledged_at')}
+    snapshot['source_refs'] = [_safe_source(source) for source in snapshot['source_refs']]
+    files, media_status = [], {}
+    pages = None
+    try:
+        pages = render_images(snapshot)
+        files.extend(('images/' + name, data) for name, data in pages)
+        media_status['images'] = {'status': 'generated', 'page_count': len(pages)}
+    except DomainError as error:
+        if error.code != 'MEDIA_UNAVAILABLE': raise
+        media_status['images'] = {'status': 'unavailable', 'reason': str(error)}
+        files.append(('images/未生成说明.txt', str(error).encode()))
+    try:
+        video = _video(snapshot, pages=pages)
+        files.extend(('video/' + name, data) for name, data in video)
+        media_status['video'] = {'status': 'generated', **snapshot['video']}
+    except DomainError as error:
+        if error.code not in ('MEDIA_UNAVAILABLE', 'INVALID_INPUT'): raise
+        media_status['video'] = {'status': 'unavailable', 'reason': str(error)}
+        files.append(('video/未生成说明.txt', str(error).encode()))
+    files.extend(('storyboard/' + name, data) for name, data in _storyboard(snapshot))
+    media_status['storyboard'] = {'status': 'generated', 'subtitle_timing': 'editable_suggestion_not_audio_alignment'}
+    snapshot['media_status'] = media_status
+    evidence = execution_evidence(run, snapshot, execution)
+    files.append(('execution-evidence.json', json.dumps(evidence, ensure_ascii=False, indent=2).encode()))
+    acceptance_label = '人工采用；没有有效最终 AI 复审通过' if evidence['acceptance_mode'] == 'manual_override' else ('已通过准确版本审核并人工确认' if evidence['final_ai_review_passed'] else '已人工确认；最终审核是否通过请核对执行证据')
+    media_lines = '\n'.join(('图文' if key == 'images' else '视频') + '：' + ('已生成' if media_status[key]['status'] == 'generated' else '未生成，' + media_status[key]['reason']) for key in ('images', 'video'))
+    instructions = f'''完整发布前成品包 · 使用说明
+
+你确认的稿件：第 {evidence['draft_version']} 版
+确认方式：{acceptance_label}
+制作模式：{'真实 AI 创作记录' if snapshot['mode'] == 'live' else '模拟创作流程，不是真实 AI 创作'}
+
+1. 先解压 ZIP，查看 images 文件夹中的封面和正文图片，检查事实与文字。
+2. caption.txt 是标题、正文、互动引导与标签，可复制到平台发布框。
+3. video/video.mp4 是无声图文翻页视频，每页 8 秒，不含真人口播或自动生成插画。长文需暂停阅读，或在剪辑软件中调整速度和添加自己的配音。
+4. storyboard/subtitles.srt 与 storyboard.md 是可编辑剪辑素材，时长是建议值，不是根据配音对齐，也不与无声翻页视频逐页同步；录音后请手动调整字幕。
+5. 如果媒体未生成，查看对应文件夹的“未生成说明.txt”，解决依赖或稿件长度问题后重试。此包不会伪造缺失文件。
+6. execution-evidence.json 可核对稿件版本、人工采用方式、真实调用统计和复审次数；缺少台账字段保持未知，不补造。
+7. manifest.json 记录每份文件的 SHA256，可用于核验下载后是否被改变。
+8. 人工检查完成后，由你登录平台发布。再回到网页“记录已发布”，填写实际链接和发布时间。
+
+本次媒体状态：
+{media_lines}
+
+导出不等于社媒发布成功；没有保证增长、成交或爆款。人工采用不表示最终 AI 复审通过。包内没有用户身份、密码、API 密钥、Cookie 或原始模型请求。
+'''
+    files.append(('使用说明.txt', instructions.encode()))
+    return files
+
+
+def export_run(run, kind='images', execution=None):
+    require(kind in ('images', 'storyboard', 'video', 'complete'), 'INVALID_INPUT', '请选择图文包、分镜字幕或无声图文视频')
     snapshot = confirmed_snapshot(run)
     require(sum(len(str(snapshot['content'].get(k, ''))) for k in ('selected_title', 'body', 'cta')) <= 30500,
             'INVALID_INPUT', '稿件太长，请缩短后再制作成品')
-    files = render_images(snapshot) if kind == 'images' else (_video(snapshot) if kind == 'video' else _storyboard(snapshot))
+    files = _complete_files(run, snapshot, execution) if kind == 'complete' else (render_images(snapshot) if kind == 'images' else (_video(snapshot) if kind == 'video' else _storyboard(snapshot)))
     c = snapshot['content']
     caption = c['selected_title'] + '\n\n' + c['body'] + '\n\n' + c.get('cta', '') + '\n\n' + ' '.join('#' + t for t in c.get('tags', []))
     files.append(('caption.txt', caption.encode()))

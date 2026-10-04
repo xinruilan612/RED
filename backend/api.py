@@ -227,7 +227,8 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
     def media_export(run_id: str,kind: str='images',user=Depends(logged)):
         auth.throttle('media-export:'+user['owner'],20,3600)
         from backend.media_exports import export_run
-        body,media_type,filename=export_run(store.get(run_id,user['owner']),kind)
+        run=store.get(run_id,user['owner'])
+        body,media_type,filename=export_run(run,kind,execution=service.view(run) if kind=='complete' else None)
         return Response(body,media_type=media_type,headers={'Content-Disposition': 'attachment; filename='+filename})
 
     @app.get('/{asset}')
