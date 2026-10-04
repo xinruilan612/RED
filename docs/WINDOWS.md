@@ -36,8 +36,6 @@ DEEPSEEK_API_KEY=
 
 ## 常见情况
 
-- 页面能打开但按钮无反应、浏览器报告 JavaScript MIME 类型错误：更新到包含静态响应类型修复的版本后，先在旧启动窗口按 Ctrl+C 停止服务，再运行 `./start-windows.cmd`，最后刷新网页。只重载浏览器不会加载新的 Python 后端代码。正式 API 已固定 JS 为 `text/javascript`、CSS 为 `text/css`、HTML 为 `text/html`，不依赖 Windows 文件关联，无需改注册表或关闭浏览器安全检查。
-
 - 提示找不到 `py`：修复 Python 3.12 安装并启用 Python Launcher，重新打开终端。
 - `PostgreSQL connection failed`：检查服务是否启动、5432 端口、数据库名和 `.env` 密码；检查器不会打印连接串或密码。
 - 端口被占用：关闭旧服务，或将 `.env` 中 `PUBLIC_ORIGIN` 改为另一本机端口，例如 `http://127.0.0.1:8766`，并使用相同地址访问。
@@ -46,10 +44,10 @@ DEEPSEEK_API_KEY=
 
 ## 开发验证与适配边界
 
-开发测试另需安装 Node.js；只启动网站无需 Node.js。PowerShell 验证示例（用自己的测试数据库连接）：
+开发测试另需安装 Node.js；只启动网站无需 Node.js。测试可能清理表，必须另建专用、可丢弃的测试数据库，例如 `youji_test`，不能使用上面的应用库 `youji_operations` 或任何真实业务数据库。PowerShell 验证示例（用自己的专用测试数据库连接）：
 
 ```powershell
-$env:TEST_DATABASE_URL = 'postgresql://postgres:CHANGE_ME@127.0.0.1:5432/youji_operations'
+$env:TEST_DATABASE_URL = 'postgresql://postgres:CHANGE_ME@127.0.0.1:5432/youji_test'
 $env:PYTHONUTF8 = '1'
 ./runtime/venv/Scripts/python.exe -m unittest discover -s tests -v
 node --test tests/frontend_account_profile.test.js tests/frontend_execution.test.js
@@ -57,4 +55,4 @@ node --test tests/frontend_account_profile.test.js tests/frontend_execution.test
 
 PDF/Word 解析子进程用 ASCII 安全的 JSON 传输中文，配置读取支持 UTF-8 BOM。Windows 缺少 Unix `resource` 模块，因此 PDF 不启用 Unix CPU/内存硬限制，仍保留父进程超时、文件大小、页数及文本长度限制。参考 [Python 虚拟环境文档](https://docs.python.org/3/library/venv.html) 和 [resource 平台范围](https://docs.python.org/3/library/resource.html)。
 
-当前验证环境为 macOS，包含 Windows 路径、缺少 resource、非 UTF-8 控制台等回归用例；尚未在真实 Windows 电脑完成安装和端到端验收，不能把这些替身检查当作 Windows 实机通过。
+2026-10-02 本轮已在 Windows 本机重新验收网页免费模拟闭环及完整 SQLite 回归；专用 PostgreSQL 全量在 WSL Linux 原生依赖环境通过。Windows 原生 PostgreSQL安装与全量数据库验证、macOS Intel / Apple Silicon 验证另由跨平台 CI 分开记录，尚不能用 WSL 或路径替身结果代替。共同入口与边界见 [跨平台使用](CROSS_PLATFORM.md)。

@@ -21,6 +21,11 @@ test('switching direction removes stale suggested values but preserves custom va
   assert.deepEqual(result, ['我自己的栏目']);
 });
 
+test('category switching accepts checkbox arrays as well as persisted strings', () => {
+  assert.deepEqual(profile.splitList([' 穿搭展示 ', '']), ['穿搭展示']);
+  assert.deepEqual(profile.valuesFor('pillars', ['修图前后对比', '我自己的栏目'], '摄影 / 摄影服务', 'xiaohongshu', '服饰 / 穿搭', 'xiaohongshu'), ['我自己的栏目']);
+});
+
 test('positioning round-trips a selected category and custom detail', () => {
   const value = profile.positionValue('摄影 / 摄影服务', '人像约拍');
   assert.deepEqual(profile.positioningParts(value), { category: '摄影 / 摄影服务', detail: '人像约拍' });

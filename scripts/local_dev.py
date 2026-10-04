@@ -15,16 +15,23 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def python_path(root=ROOT, windows=None):
     windows = os.name == 'nt' if windows is None else windows
-    return root / 'runtime' / 'venv' / ('Scripts/python.exe' if windows else 'bin/python')
+    suffix = 'Scripts/python.exe' if windows else 'bin/python'
+    candidates = [root / 'runtime' / 'venv' / suffix, root / '.venv' / suffix]
+    return next((path for path in candidates if path.is_file()), candidates[0])
+
+
+def child_environment():
+    return {**os.environ, 'PYTHONUTF8': '1', 'PYTHONIOENCODING': 'utf-8'}
 
 
 def setup(root=ROOT):
     if sys.version_info < (3, 12):
         raise RuntimeError('Python 3.12 or newer is required.')
+    (root / 'runtime').mkdir(parents=True, exist_ok=True)
     interpreter = python_path(root)
     if not interpreter.exists():
         venv.EnvBuilder(with_pip=True).create(root / 'runtime' / 'venv')
-    subprocess.run([str(interpreter), '-m', 'pip', 'install', '-r', str(root / 'requirements.txt')], check=True, cwd=root)
+    subprocess.run([str(interpreter), '-m', 'pip', 'install', '-r', str(root / 'requirements.txt')], check=True, cwd=root, env=child_environment())
     target = root / '.env'
     if not target.exists():
         shutil.copyfile(root / '.env.example', target)
@@ -88,10 +95,11 @@ def serve(env):
             probe.bind((host, port))
         except OSError:
             raise RuntimeError('Port is already in use. Stop the previous server or change PUBLIC_ORIGIN.') from None
+    (ROOT / 'runtime').mkdir(parents=True, exist_ok=True)
     children = []
     try:
         for args in (['backend.api', '--host', host, '--port', str(port)], ['backend.worker']):
-            children.append(subprocess.Popen([sys.executable, '-m', *args], cwd=ROOT, env={**os.environ, 'PYTHONUTF8':'1'}))
+            children.append(subprocess.Popen([sys.executable, '-m', *args], cwd=ROOT, env=child_environment()))
         print(f'Website: {origin}/  (wait for API startup). Keep this window open; Ctrl+C stops both processes.', flush=True)
         while True:
             if any(child.poll() is not None for child in children):
@@ -111,14 +119,16 @@ def main():
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
     try:
+        if sys.version_info < (3, 12):
+            raise RuntimeError('Python 3.12 or newer is required. Use a compatible project virtual environment or install Python 3.12+.')
         if args.command == 'setup':
             setup()
             return 0
         interpreter = python_path()
         if not interpreter.exists():
             raise RuntimeError('Virtual environment missing. Run setup first.')
-        if Path(sys.prefix).resolve() != (ROOT / 'runtime' / 'venv').resolve():
-            return subprocess.call([str(interpreter), str(Path(__file__).resolve()), args.command], cwd=ROOT)
+        if Path(sys.prefix).resolve() != interpreter.parent.parent.resolve():
+            return subprocess.call([str(interpreter), str(Path(__file__).resolve()), args.command], cwd=ROOT, env=child_environment())
         env = doctor()
         if args.command == 'start':
             serve(env)

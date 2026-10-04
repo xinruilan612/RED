@@ -47,6 +47,10 @@ class Service:
         from backend.review_recovery import public as recovery_public
         result['review_recovery']=recovery_public(self.store,run)
         if result['review_recovery']['available']:result['allowed_actions'].append('repair_review')
+        from backend.model_router import review_execution
+        with self.store.connect() as db:result['review_execution']=review_execution(db,run)
+        if result['review_execution'] and result['review_execution']['blocked']:
+            result['allowed_actions']=[a for a in result['allowed_actions'] if a!='next']
         if result['in_flight']:result['allowed_actions']=[a for a in result['allowed_actions'] if a=='cancel']
         return result
 
@@ -111,6 +115,9 @@ class Service:
             return self.view(self.executor.recover(run_id,owner,data['version']))
         if action=='next' and run.context.get('mode')=='live':
             require(not run.context.get('web_research',{}).get('enabled'),'INVALID_TRANSITION','联网调查任务请使用后台启动按钮执行')
+            from backend.model_router import review_execution
+            with self.store.connect() as db:preflight=review_execution(db,run)
+            require(not (preflight and preflight['blocked']),'STAGE_ATTEMPT_LIMIT',preflight['message'] if preflight else '复审次数已用完')
             return self.view(self.executor.step(run_id,owner,data['version'],data['key']))
         command = {'next':'demo_step','supplement':'demo_supplement'}.get(action,action)
         if action=='edit': payload={'content':validate_edit(payload)}

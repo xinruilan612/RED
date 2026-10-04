@@ -94,7 +94,7 @@
   const category=categoryOf(positioning),site=platform==='douyin'?'douyin':'xiaohongshu';
   return {category,pillars:basePillars[category][site],goals:goals[category],banned:[...commonBanned,...nicheBanned[category]],resources:{time:resourceGroups.time,equipment:resourceGroups.equipment[category],materials:resourceGroups.materials[category]}};
  }
- function splitList(value){return (value||'').split(/[，、,\n]/).map(v=>v.trim()).filter(Boolean);}
+ function splitList(value){return (Array.isArray(value)?value:(value||'').split(/[，、,\n]/)).map(v=>v.trim()).filter(Boolean);}
  function positionValue(category,detail){return category==='__custom__'?detail.trim():`${category}${detail.trim()?`｜${detail.trim()}`:''}`;}
  function positioningParts(value){
   if(!value)return {category:'',detail:''};

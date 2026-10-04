@@ -1,12 +1,55 @@
 'use strict';
 
-pageInfo.windtunnel=['CONTENT WIND TUNNEL / 内容风洞','发布前，把关键问题讲清楚。','把读者的问题变成检查条件，修改后用同一套条件复查。'];
+pageInfo.windtunnel=['READER CHECK / 读者理解检查','发布前，把关键问题讲清楚。','这是可选的深入检查：带入稿件版本，确认读者问题，再检查并复查。'];
 
 const wt={account:'',runs:[],creationRuns:[],checklists:[],run:null,tab:'input',newDraft:true,loading:0,busy:false,polling:false,message:'',failure:'',batch:'',form:null};
 const wtOutcome={pass:['讲清楚了','pass'],unclear:['未讲清楚','fail'],unsupported:['材料不支持','conflict'],insufficient:['证据不足','insufficient']};
 const wtOriginLabels={author:'作者设定',feedback:'有来源的问题',historical_feedback:'历史读者反馈',pilot_feedback:'本次预试读反馈',user_hypothesis:'作者设定',manual:'作者设定',demo:'虚构演示',simulation:'虚构演示'};
 
-function wtFreshForm(){return {title:'',text:'',scene:'第一次使用这项工具、希望独立完成操作的读者',material:'',materialTitle:'操作说明与事实材料',feedback:'',feedbackOrigin:'作者手动提供',origin:'user_hypothesis',permission:false,inputMode:'paste',importRun:'',importRef:'',checklist:''};}
+function wtFreshForm(){return {title:'',text:'',scene:'第一次使用这项工具、希望独立完成操作的读者',material:'',materialTitle:'操作说明与事实材料',feedback:'',feedbackOrigin:'作者手动提供',origin:'user_hypothesis',permission:false,inputMode:'paste',importRun:'',importRef:'',importMaterials:[],bridge:null,checklist:''};}
+let wtReaderRequest=0;
+function wtReaderSignature(source,draftRef){
+ const draft=source?.drafts?.find(d=>d.ref===draftRef);
+ return draft?JSON.stringify({id:source.run_id,account:source.context?.operations?.account_id,snapshot:source.snapshot_id,version:source.status_version,refs:source.drafts.map(d=>d.ref),draft}):null;
+}
+function wtReaderMaterials(source){
+ const context=source.context||{},materials=[];
+ const append=(text,title,origin)=>{
+  if(typeof text!=='string'||!text.trim())return;
+  const characters=Array.from(text);
+  for(let offset=0;offset<characters.length;offset+=6000){
+   const completeOrigin=String(origin)+(characters.length>6000?` · 原文字符 ${offset}–${Math.min(offset+6000,characters.length)}`:'');
+   if(Array.from(completeOrigin).length>500)throw new Error('材料链接或定位信息超过本次检查的来源字段容量，无法完整带入。请在读者理解检查中手动选择材料；未截断来源或创建任务。');
+   materials.push({text:characters.slice(offset,offset+6000).join(''),title:String(title||'创作资料快照').slice(0,500),origin:completeOrigin});
+  }
+ };
+ append(context.material,'创作时手工材料','作者提供 · 创作输入快照，未独立核实');
+ for(const evidence of context.evidence||[]){
+  const locator=[evidence.document_id?`资料 ${evidence.document_id}`:'',evidence.version!=null?`v${evidence.version}`:'',evidence.page!=null?`页 ${evidence.page}`:'',evidence.offset!=null?`位置 ${evidence.offset}`:'',evidence.source_id,evidence.url||evidence.source_url].filter(Boolean).join(' · ');
+  append(evidence.text,evidence.title||'创作检索片段',`创作检索快照 · 原文未独立核实${locator?' · '+locator:''}`);
+ }
+ if(materials.length>20||materials.reduce((sum,item)=>sum+Array.from(item.text).length,0)>24000)throw new Error('创作材料超过本次检查的容量，请在读者理解检查中手动选择材料；没有自动截断或创建任务。');
+ return materials;
+}
+async function openDraftReaderCheck(sourceRun,draftRef){
+ const account=activeAccountId,page=currentPage,request=++wtReaderRequest;
+ const signature=wtReaderSignature(sourceRun,draftRef);
+ if(!account||sourceRun?.context?.operations?.account_id!==account||!['creation',undefined].includes(sourceRun?.workflow_type)||!signature){error(new Error('请选择当前账号可访问的准确稿件版本。'));return false;}
+ if(wt.busy||!dirtyGuard())return false;
+ const viewed=typeof run!=='undefined'&&run?.run_id===sourceRun.run_id;
+ const selectedVersion=typeof viewVersion!=='undefined'?viewVersion:null;
+ try{
+  const latest=await api('/api/runs/'+encodeURIComponent(sourceRun.run_id));
+  if(request!==wtReaderRequest||account!==activeAccountId||page!==currentPage)return false;
+  if(!['creation',undefined].includes(latest?.workflow_type)||wtReaderSignature(sourceRun,draftRef)!==signature||wtReaderSignature(latest,draftRef)!==signature||(viewed&&(run?.run_id!==sourceRun.run_id||wtReaderSignature(run,draftRef)!==signature))||(viewed&&typeof viewVersion!=='undefined'&&viewVersion!==selectedVersion)){error(new Error('稿件或所选版本已变化，请回到创作页重新选择后检查。'));return false;}
+  const draft=latest.drafts.find(d=>d.ref===draftRef),content=draft.content;
+  const form={...wtFreshForm(),inputMode:'import',importRun:latest.run_id,importRef:draftRef,title:content.selected_title,text:[content.body,content.cta,(content.tags||[]).join(' ')].filter(Boolean).join('\n\n'),scene:(latest.context.audience||currentAccount()?.profile?.audience||'这篇内容的目标读者').slice(0,500),importMaterials:wtReaderMaterials(latest),bridge:{runId:latest.run_id,ref:draftRef,signature}};
+  wt.loading++;wt.account=account;wt.run=null;wt.runs=[];wt.creationRuns=[latest];wt.newDraft=true;wt.tab='input';wt.batch='';wt.form=form;wt.failure='';
+  wt.message=`已带入版本 ${latest.drafts.indexOf(draft)+1} 和创作资料快照。先确认适用读者与问题，再主动保存；不会自动启动检查。`;
+  window.activeTrialHypothesisId=null;
+  showPage('windtunnel');return true;
+ }catch(err){if(request===wtReaderRequest&&account===activeAccountId&&page===currentPage)error(err);return false;}
+}
 function wtAllowed(action){return (!wt.run?.in_flight||['cancel','export'].includes(action))&&(wt.run?.allowed_actions||[]).includes(action);}
 function wtData(){return wt.run?.windtunnel||{};}
 function wtDraft(){return (wtData().drafts||[]).at(-1)||{};}
@@ -32,6 +75,7 @@ async function renderWindtunnel(){
   wt.runs=result[0].filter(r=>r.workflow_type==='windtunnel'&&wtBelongs(r,account));
   wt.creationRuns=result[0].filter(r=>r.workflow_type!=='windtunnel'&&wtBelongs(r,account)&&(r.drafts||[]).length);
   wt.checklists=Array.isArray(result[1])?result[1]:result[1].checklists||[];
+  if(wt.form?.bridge){const bridge=wt.form.bridge,source=wt.creationRuns.find(r=>r.run_id===bridge.runId);if(wtReaderSignature(source,bridge.ref)!==bridge.signature){wt.form=wtFreshForm();wt.message='';wt.failure='源稿件已变化，没有导入旧选择。请回到创作页重新选择版本。';}}
   if(wt.run)wt.run=wt.runs.find(r=>r.run_id===wt.run.run_id)||null;
   wtPaint();
  }catch(err){if(request!==wt.loading||account!==activeAccountId||currentPage!=='windtunnel')return;wt.failure=err.message;wtPaint();}
@@ -41,9 +85,12 @@ function wtPaint(){
  if(currentPage!=='windtunnel'||wt.account!==activeAccountId)return;
  wt.form=wt.form||wtFreshForm();
  const selected=wt.run&&!wt.newDraft;
- $('operationsContent').innerHTML=`<div class="wt-workspace">${wtNotice()}<div class="wt-topbar"><div><h2>内容检查工作台</h2><p class="helper">${esc(currentAccount()?.name||'当前账号')} · 工具使用教程 · 从一篇稿件开始</p></div><button class="primary" data-wt="new" ${wt.busy?'disabled':''}>＋ 新建检查</button></div>${wt.failure?`<div class="wt-error" role="alert"><strong>这一步没有完成</strong><p>${esc(wt.failure)}</p><button class="quiet wt-muted-button" data-wt="refresh">重新读取记录</button></div>`:''}${wt.message?`<p class="wt-inline-message" role="status">${esc(wt.message)}</p>`:''}<div class="wt-layout"><aside class="wt-sidebar"><h3>我的检查 <span class="wt-count">${wt.runs.length} 次</span></h3><div class="wt-projects">${wt.runs.map(r=>`<button class="wt-project" data-wt="open" data-id="${esc(r.run_id)}" aria-current="${selected&&wt.run.run_id===r.run_id}"><strong>${esc(wtTitle(r))}</strong><small>${esc(states[r.run_status]||r.run_status)} · ${(r.windtunnel?.drafts||[]).length} 个稿件版本</small></button>`).join('')||'<p class="wt-empty-note">每篇稿件单独保留问题、来源和修改记录，刷新后可以继续。</p>'}</div></aside><div class="wt-main">${selected?wtWorkspace():wtCreateForm()}</div></div></div>`;
+ $('operationsContent').innerHTML=`<div class="wt-workspace">${wtNotice()}<div class="wt-topbar"><div><h2>读者理解检查</h2><p class="helper">${esc(currentAccount()?.name||'当前账号')} · 可选检查，不是创作和导出的必经步骤</p></div><button class="primary" data-wt="new" ${wt.busy?'disabled':''}>＋ 新建检查</button></div>${wt.failure?`<div class="wt-error" role="alert"><strong>这一步没有完成</strong><p>${esc(wt.failure)}</p><button class="quiet wt-muted-button" data-wt="refresh">重新读取记录</button></div>`:''}${wt.message?`<p class="wt-inline-message" role="status">${esc(wt.message)}</p>`:''}<div class="wt-layout"><aside class="wt-sidebar"><h3>我的检查 <span class="wt-count">${wt.runs.length} 次</span></h3><div class="wt-projects">${wt.runs.map(r=>`<button class="wt-project" data-wt="open" data-id="${esc(r.run_id)}" aria-current="${selected&&wt.run.run_id===r.run_id}"><strong>${esc(wtTitle(r))}</strong><small>${esc(states[r.run_status]||r.run_status)} · ${(r.windtunnel?.drafts||[]).length} 个稿件版本</small></button>`).join('')||'<p class="wt-empty-note">每篇稿件单独保留问题、来源和修改记录，刷新后可以继续。</p>'}</div></aside><div class="wt-main">${selected?wtWorkspace():wtCreateForm()}</div></div></div>`;
+ if(!selected&&wt.form.importMaterials?.length)$('wtCreateForm')?.insertAdjacentHTML('afterbegin',wtImportMaterialsPreview());
  wtBind();
 }
+
+function wtImportMaterialsPreview(){return `<details class="wt-reuse"><summary>已带入 ${wt.form.importMaterials.length} 段创作资料快照 · 查看出处</summary><p class="helper">这是创作时保存的材料，不代表已经核实。下方可以另外补充材料；切换导入稿件或版本会清除这些快照。</p>${wt.form.importMaterials.map(s=>`<article class="wt-source"><h3>${esc(s.title)}</h3><p class="helper">${esc(s.origin)}</p><pre>${esc(s.text)}</pre></article>`).join('')}</details>`;}
 
 function wtCreateForm(){
  const f=wt.form,sourceRun=wt.creationRuns.find(r=>r.run_id===f.importRun),drafts=sourceRun?.drafts||[];
@@ -126,7 +173,7 @@ async function wtRefreshRun(){
 function wtBind(){
  const root=document.querySelector('.wt-workspace');if(!root)return;
  root.addEventListener('input',e=>{if(e.target.dataset.wtField){const key=e.target.dataset.wtField;wt.form[key]=e.target.type==='checkbox'?e.target.checked:e.target.value;}});
- root.addEventListener('change',e=>{if(e.target.dataset.wtField){const key=e.target.dataset.wtField;wt.form[key]=e.target.type==='checkbox'?e.target.checked:e.target.value;if(key==='importRun'){wt.form.importRef='';wtPaint();}}});
+ root.addEventListener('change',e=>{if(e.target.dataset.wtField){const key=e.target.dataset.wtField;wt.form[key]=e.target.type==='checkbox'?e.target.checked:e.target.value;if(key==='importRun'||key==='importRef'){if(key==='importRun')wt.form.importRef='';wt.form.importMaterials=[];wt.form.bridge=null;wt.message='';wtPaint();}}});
  root.addEventListener('click',wtClick);
  if($('wtCreateForm'))$('wtCreateForm').onsubmit=wtCreate;
  if($('wtConditions'))$('wtConditions').onsubmit=wtSaveConditions;
@@ -144,7 +191,7 @@ async function wtClick(e){
  if(action==='refresh')await renderWindtunnel();
  if(action==='open'){wt.run=wt.runs.find(r=>r.run_id===b.dataset.id);wt.newDraft=false;wt.tab=wtReports().length?'report':wtCards().length?'cards':'input';wt.batch='';wt.message='';wt.failure='';wtPaint();}
  if(action==='tab'){wt.tab=b.dataset.tab;wtPaint();}
- if(action==='input-mode'){wt.form.inputMode=b.dataset.value;wtPaint();}
+ if(action==='input-mode'){wt.form.inputMode=b.dataset.value;if(b.dataset.value==='paste'){wt.form.bridge=null;wt.message='已改为手工输入。带入的资料快照仍保留出处；请确认它们适用于当前正文。';}wtPaint();}
  if(action==='example'){wt.form={...wtFreshForm(),title:'虚构示例：第一次导出任务表',text:'打开任务表，在菜单中选择导出，将文件保存到电脑。之后可以使用表格工具查看。',material:'以下仅为虚构演示材料：这个示例工具的导出菜单位于右上角“更多”内，导出格式选择 CSV，编码选择 UTF-8。',feedback:'找不到导出入口怎么办？应该选什么文件格式和编码？',origin:'demo',scene:'第一次使用虚构示例工具、需要导出中文任务表的读者'};wtPaint();}
  if(action==='start'){if(await wtMutation('start',{},true)){wt.tab=wtCards().length?'report':'cards';wtPaint();}}
  if(action==='cancel')await wtMutation('cancel');
@@ -161,7 +208,9 @@ async function wtClick(e){
 async function wtCreate(e){
  e.preventDefault();if(wt.busy)return;
  const f=wt.form,account=wt.account;
- const body={workflow_type:'windtunnel',account_id:account,title:f.title,scene:f.scene,mode:'simulation',hypothesis_id:window.activeTrialHypothesisId||null,materials:f.material.trim()?[{text:f.material,title:f.materialTitle}]:[],feedback:f.feedback.trim()?[{text:f.feedback,origin:wtOriginLabels[f.origin]+' · '+f.feedbackOrigin,provenance:f.origin==='user_hypothesis'?'author':f.origin,permission:f.permission}]:[]};
+ if(!account||account!==activeAccountId)return;
+ if(!f.permission){wt.failure='请先确认稿件、材料与反馈的使用权。';wtPaint();return;}
+ const body={workflow_type:'windtunnel',account_id:account,title:f.title,scene:f.scene,mode:'simulation',hypothesis_id:window.activeTrialHypothesisId||null,materials:[...(f.importMaterials||[]),...(f.material.trim()?[{text:f.material,title:f.materialTitle}]:[])],feedback:f.feedback.trim()?[{text:f.feedback,origin:wtOriginLabels[f.origin]+' · '+f.feedbackOrigin,provenance:f.origin==='user_hypothesis'?'author':f.origin,permission:f.permission}]:[]};
  if(f.inputMode==='import'){delete body.title;body.import={run_id:f.importRun,draft_ref:f.importRef};}else body.text=f.text;
  if(f.checklist){const [id,version]=f.checklist.split(':');body.checklist={id,version:Number(version)};}
  wt.busy=true;e.submitter.disabled=true;wt.failure='';

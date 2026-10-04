@@ -246,11 +246,3 @@ Chrome 实际保存用户已填写的护肤作品，发布时间保持 2026-09-3
 Windows Python 3.12 x64 对应的全部锁定依赖及传递依赖已成功下载 wheel；这是依赖可获取性验证，不等于已在 Windows 安装运行。本机 doctor、备用端口实际 API 启动及 Ctrl+C 清理通过。实际验证机器为 macOS，真实 Windows 的首次安装与端到端验收仍待完成。
 
 验证：全量 Python 364 项通过，设置 `TEST_DATABASE_URL` 包含真实 PostgreSQL 集成测试，0 跳过；最后补充契约编码检查后启动器专项 9 项通过；前端 29 项通过。全部前端语法、角色卡同步一致性及 `git diff --check` 通过。未触发真实模型调用或真实平台发布。
-
-## Windows 静态资源响应类型修复（2026-10-01）
-
-上一轮启动适配遗漏正式 API 的文件类型推断：`FileResponse` 默认使用系统 MIME 映射；系统将 `.js` 映射为 `text/plain` 时，配合正常的 `nosniff` 安全头会使浏览器拒绝执行，导致按钮没有事件处理。已复现该响应组合，并将 HTML、全部白名单 JS/CSS 显式指定为 `text/html`、`text/javascript`、`text/css`，不修改系统注册表、不弱化浏览器安全保护。
-
-新增回归污染 MIME 推断为 `text/plain`、`application/octet-stream` 和缺失值，逐一验证首页全部 8 份脚本及 3 份样式、首页类型、禁止缓存、安全头和资源白名单。临时独立 SQLite 网站在故意污染 MIME 的情况下，经本机 Chrome 实际点击验证：登录/注册表单切换成功，登录按钮发出请求并显示预期的不存在账号反馈。此为本机模拟 Windows 映射环境，不冒称队友 Windows 已远程验收。更新后需停止旧后端并重启，再刷新页面；单独重载网页不更新 Python 服务。
-
-验证：367 项 Python 测试全部通过（真实 PostgreSQL 集成测试已启用，0 跳过），29 项前端测试通过；全部前端语法、角色卡同步和 `git diff --check` 通过。未调用收费模型，未改动真实业务记录。

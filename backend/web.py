@@ -3,6 +3,7 @@ import argparse
 import hashlib
 import json
 import secrets
+import time
 from dataclasses import asdict
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -50,6 +51,35 @@ class DemoServer(ThreadingHTTPServer):
 class Handler(BaseHTTPRequestHandler):
     server_version='XHS-Demo/0.1'
 
+    def discard_rejected_body(self):
+        """Bounded transport cleanup only; never parse or execute rejected input."""
+        self.close_connection = True
+        lengths = self.headers.get_all('Content-Length', [])
+        if len(lengths) != 1 or 'Transfer-Encoding' in self.headers:
+            return
+        text = lengths[0].strip()
+        if not (0 < len(text) <= 5 and text.isascii() and text.isdigit()):
+            return
+        remaining = int(text)
+        if not 0 < remaining <= 40000:
+            return
+        previous_timeout = self.connection.gettimeout()
+        deadline = time.monotonic() + .25
+        try:
+            while remaining:
+                timeout = deadline - time.monotonic()
+                if timeout <= 0:
+                    break
+                self.connection.settimeout(timeout)
+                chunk = self.rfile.read1(min(remaining, 8192))
+                if not chunk:
+                    break
+                remaining -= len(chunk)
+        except OSError:
+            pass
+        finally:
+            self.connection.settimeout(previous_timeout)
+
     def send(self, status, value, content_type='application/json; charset=utf-8', cookie=None, filename=None):
         body=json.dumps(value,ensure_ascii=False).encode() if not isinstance(value,bytes) else value
         self.send_response(status)
@@ -87,13 +117,14 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self): self.dispatch(True)
 
     def dispatch(self, write):
+        body_consumed = False
         try:
             origin=self.host(); path=urlsplit(self.path).path
             if not write and path in ('/windtunnel.js','/windtunnel.css'):
                 self.send(200,(FRONTEND/path[1:]).read_bytes(),'text/javascript; charset=utf-8' if path.endswith('.js') else 'text/css; charset=utf-8');return
-            if not write and path in ('/','/app.js','/style.css','/operations.js','/account.js','/account_profile.js','/auth.js','/knowledge.js','/trials.js','/trials.css'):
-                name={'/':'index.html','/app.js':'app.js','/style.css':'style.css','/operations.js':'operations.js','/account.js':'account.js','/account_profile.js':'account_profile.js','/auth.js':'auth.js','/knowledge.js':'knowledge.js','/trials.js':'trials.js','/trials.css':'trials.css'}[path]
-                mime={'/':'text/html; charset=utf-8','/app.js':'text/javascript; charset=utf-8','/style.css':'text/css; charset=utf-8','/operations.js':'text/javascript; charset=utf-8','/account.js':'text/javascript; charset=utf-8','/account_profile.js':'text/javascript; charset=utf-8','/auth.js':'text/javascript; charset=utf-8','/knowledge.js':'text/javascript; charset=utf-8','/trials.js':'text/javascript; charset=utf-8','/trials.css':'text/css; charset=utf-8'}[path]
+            if not write and path in ('/','/app.js','/style.css','/operations.js','/account.js','/account_profile.js','/auth.js','/knowledge.js','/trials.js','/trials.css','/guidance.js'):
+                name={'/':'index.html','/app.js':'app.js','/style.css':'style.css','/operations.js':'operations.js','/account.js':'account.js','/account_profile.js':'account_profile.js','/auth.js':'auth.js','/knowledge.js':'knowledge.js','/trials.js':'trials.js','/trials.css':'trials.css','/guidance.js':'guidance.js'}[path]
+                mime={'/':'text/html; charset=utf-8','/app.js':'text/javascript; charset=utf-8','/style.css':'text/css; charset=utf-8','/operations.js':'text/javascript; charset=utf-8','/account.js':'text/javascript; charset=utf-8','/account_profile.js':'text/javascript; charset=utf-8','/auth.js':'text/javascript; charset=utf-8','/knowledge.js':'text/javascript; charset=utf-8','/trials.js':'text/javascript; charset=utf-8','/trials.css':'text/css; charset=utf-8','/guidance.js':'text/javascript; charset=utf-8'}[path]
                 self.send(200,(FRONTEND/name).read_bytes(),mime); return
             if not write and path=='/api/session':
                 _,csrf,cookie=self.session(True)
@@ -106,7 +137,10 @@ class Handler(BaseHTTPRequestHandler):
                 try: size=int(self.headers.get('Content-Length','0'))
                 except ValueError: size=-1
                 require(0<size<=40000,'INVALID_INPUT','请求大小超限')
-                try: data=json.loads(self.rfile.read(size))
+                try:
+                    body = self.rfile.read(size)
+                    body_consumed = True
+                    data = json.loads(body)
                 except (ValueError,UnicodeDecodeError): raise DomainError('INVALID_INPUT','JSON 无效')
                 require(isinstance(data,dict),'INVALID_INPUT','请求须为对象')
             if write and path == '/api/session/recovery':
@@ -187,6 +221,8 @@ class Handler(BaseHTTPRequestHandler):
             self.send(200,view(run,self.server.executor))
         except DomainError as error:
             status={'RESOURCE_NOT_FOUND':404,'AUTH_REQUIRED':401,'FORBIDDEN':403,'INVALID_INPUT':400}.get(error.code,409)
+            if write and not body_consumed:
+                self.discard_rejected_body()
             self.send(status,{'error':{'code':error.code,'message':str(error)}})
         except Exception:
             # No raw provider, filesystem or document details leave the server.

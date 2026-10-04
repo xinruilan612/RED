@@ -3,9 +3,44 @@ import copy
 import json
 import unittest
 from types import SimpleNamespace
-from backend.live import messages_for, schema
+from backend.live import messages_for, normalize, schema
+from backend.contracts import DomainError
 
 class ConciseCreationTests(unittest.TestCase):
+    def test_citation_prompt_distinguishes_current_copy_from_source_and_old_maps(self):
+        run=self.fixture()
+        run.prior_review['claim_map']=[{'excerpt':'旧稿片段','quote':'旧来源'}]
+        before=copy.deepcopy(run.__dict__)
+        messages,data=messages_for(run,'review')
+        self.assertIn('不能把素材quote直接填成稿件excerpt',messages[0]['content'])
+        self.assertIn('claim_map由你在本次审核结果中建立',messages[0]['content'])
+        self.assertNotIn('claim_map',data['previous_review'])
+        self.assertEqual(data['draft'],run.drafts[-1]['content'])
+        self.assertEqual(run.__dict__,before)
+        self.assertIn('不超过30字',messages_for(run,'title')[0][0]['content'])
+        self.assertIn('body只写正文，不重复cta',messages_for(run,'revise')[0][0]['content'])
+        self.assertIn('claim_map属于审核角色，不属于文案',messages_for(run,'revise')[0][0]['content'])
+
+    def test_title_prompt_requires_exactly_five_pairs_and_only_title_fields(self):
+        run=self.fixture();before=copy.deepcopy(run.__dict__)
+        messages,_=messages_for(run,'title')
+        self.assertIn('只输出candidates、selected、note、reasons四个字段',messages[0]['content'])
+        self.assertIn('各恰好5项（不是6项）',messages[0]['content'])
+        self.assertIn('按索引一一对应',messages[0]['content'])
+        self.assertEqual(set(schema('title')),{'candidates','selected','note','reasons'})
+        self.assertEqual(run.__dict__,before)
+        other,_=messages_for(run,'hook')
+        self.assertNotIn('各恰好5项（不是6项）',other[0]['content'])
+
+    def test_title_six_pairs_remain_rejected_without_truncation(self):
+        run=self.fixture();value=schema('title')
+        value['candidates'].append('候选六');value['reasons'].append('候选六理由')
+        before=copy.deepcopy(value)
+        with self.assertRaises(DomainError):normalize(run,'title',value)
+        self.assertEqual(value,before)
+        valid=schema('title')
+        self.assertEqual(normalize(run,'title',valid),valid)
+
     def fixture(self):
         source='原始事实材料，不能丢失。'*30
         return SimpleNamespace(context={'topic':'测试','audience':'新手','tone':'朴实','allow_hypothesis':True,'material':source,'operations':{'profile':{'banned':'不能保证效果'}}},

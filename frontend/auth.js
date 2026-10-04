@@ -5,6 +5,8 @@ function showLogin(session){
  document.body.classList.add('signed-out');
  const panel=document.getElementById('loginPanel');panel.hidden=false;
  document.getElementById('authInviteWrap').hidden=!session.invite_required;
+ // Legacy records are opt-in; a new user starts with their own clean workspace.
+ document.getElementById('claimLegacy').checked=false;
  document.getElementById('authForm').onsubmit=async e=>{
   e.preventDefault();const button=e.submitter;button.disabled=true;
   const mode=document.getElementById('authMode').value;
@@ -17,7 +19,7 @@ function showLogin(session){
    if(result.recovery_code){
     document.getElementById('authForm').hidden=true;document.getElementById('recoverySaved').hidden=false;
     document.getElementById('newRecovery').textContent=result.recovery_code;
-    document.getElementById('enterWorkspace').onclick=()=>location.reload();
+    document.getElementById('enterWorkspace').onclick=()=>{location.hash='overview';location.reload();};
    }else location.reload();
   }catch(err){document.getElementById('authError').textContent=err.message;}
   finally{button.disabled=false;}

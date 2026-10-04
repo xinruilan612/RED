@@ -51,6 +51,9 @@ class Jobs:
                 require(not row or row[0] not in ACTIVE,'JOB_ACTIVE','任务已在后台执行')
                 from backend.review_recovery import public as recovery_public
                 require(not recovery_public(self.store,run)['available'],'INVALID_TRANSITION','审核引用需要处理，请先点击免费查看审核问题并进入改稿')
+                from backend.model_router import review_execution
+                preflight=review_execution(db,run)
+                require(not (preflight and preflight['blocked']),'STAGE_ATTEMPT_LIMIT',preflight['message'] if preflight else '复审次数已用完')
                 if data['action'] in ('step','retry_research'):
                     require(run.workflow_type=='creation','INVALID_INPUT','逐步执行仅用于创作任务')
                 if data['action']=='retry_research':

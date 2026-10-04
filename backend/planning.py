@@ -12,6 +12,19 @@ def _items(value):
     return [part.strip() for part in value.replace('，', ',').replace('、', ',').replace('\n', ',').split(',') if part.strip()]
 
 
+def _resource_note(resources):
+    notes = []
+    if any('少于 2 小时' in item or '少于2小时' in item for item in resources):
+        notes.append('轻量制作')
+    elif any('2–4 小时' in item or '2-4 小时' in item for item in resources):
+        notes.append('控制制作量')
+    if any('已有可用照片或视频素材' in item for item in resources):
+        notes.append('优先用已拍素材')
+    if any('主要用手机拍摄' in item for item in resources):
+        notes.append('手机可完成')
+    return '，'.join(notes)
+
+
 def _goal_action(goal, pillar, resources):
     value = goal.lower()
     if any(word in value for word in ('涨粉', '关注', '粉丝')):
@@ -28,16 +41,49 @@ def _goal_action(goal, pillar, resources):
         action = '围绕一个明确假设制作内容，并一次只测试一个表达点'
     else:
         action = '讲清一个具体场景、实用方法和读者可采取的行动'
-    resource_prefix = ''
-    if any('少于 2 小时' in item or '少于2小时' in item for item in resources):
-        resource_prefix = '轻量制作，'
-    elif any('2–4 小时' in item or '2-4 小时' in item for item in resources):
-        resource_prefix = '控制制作量，'
-    if any('已有可用照片或视频素材' in item for item in resources):
-        resource_prefix += '优先用已拍素材，'
-    if any('主要用手机拍摄' in item for item in resources):
-        resource_prefix += '手机可完成，'
+    note = _resource_note(resources)
+    resource_prefix = note + '，' if note else ''
     return f'围绕「{pillar}」{resource_prefix}{action}'
+
+
+RULE_TASKS = (
+    ('先做哪一步？', '入门步骤', '步骤说明',
+     '选一个自己能验证的操作，准备所需材料，记录起点、第一步和完成状态；没有材料时先补资料。',
+     '检查读者是否能找到第一步及所需条件；暂不把阅读量当作学会的证据。'),
+    ('卡住时先检查什么？', '问题排查', '排查说明',
+     '选一个可复现的卡点，记录现象、检查方法和处理后的状态；不把猜测写成确定原因。',
+     '检查每个卡点是否对应可执行的检查项，并记录尚不能解释的问题。'),
+    ('两种做法怎么选？', '选择与限制', '比较说明',
+     '只比较自己有资料支撑的两种做法，列出使用条件、成本和限制；缺少另一种依据时先补资料。',
+     '检查读者能否按自身条件作选择；无依据的优劣结论不纳入稿件。'),
+    ('动手前后核对清单', '操作检查', '核对清单',
+     '把已有操作资料整理为动手前、进行中和完成后的检查项，给每项配一个能观察的状态。',
+     '检查清单是否能逐项勾选，并能指出没有完成的步骤，而不只是概括性建议。'),
+    ('把过程讲清楚', '过程演示', '过程说明',
+     '用自己可提供的截图、照片或文字记录串起一个完整过程；先核对关键步骤，不虚构亲历案例。',
+     '检查过程材料是否覆盖起点到完成状态，缺失环节继续标注待补。'),
+    ('一个需要验证的疑问', '条件与疑问', '问答说明',
+     '列出一个目标读者可能会有的疑问，明确这是待验证的假设；有出处才写答案，否则保留待核实。',
+     '记录疑问依据与答案来源；未采集反馈时不把假设写成真实用户需求。'),
+    ('补上一处容易遗漏的说明', '补充与边界', '补充说明',
+     '检查本周已有草稿或资料的一处缺口，补上前提、限制或下一步；尚无草稿时先整理待补材料。',
+     '记录补充前后的差异，并确认新增说明有资料支撑；没有表现数据时不判断改稿有效。'),
+)
+
+
+def _rule_task(profile, pillar, slot, resources):
+    title, angle, format_name, action, success_signal = RULE_TASKS[slot]
+    audience = profile['audience'].strip()
+    if audience:
+        action = f'面向「{audience}」，围绕「{pillar}」：{action}'
+    else:
+        action = f'先明确目标读者，围绕「{pillar}」：{action}'
+    note = _resource_note(resources)
+    return dict(title=(note + '，' if note else '') + f'「{pillar}」：{title}',
+                pillar=pillar, format=format_name, angle=angle, action=action,
+                success_signal=success_signal,
+                basis_refs=['profile:pillars', 'profile:audience', 'profile:positioning',
+                            'profile:goal', 'profile:resources'])
 
 
 def make_plan(state, data, created_at):
@@ -63,10 +109,14 @@ def make_plan(state, data, created_at):
     for i in range(count):
         memory = memories[i] if i < len(memories) else None
         pillar = pillars[i % len(pillars)]
-        title = _goal_action(goal, pillar, resources)
+        task = _rule_task(profile, pillar, i, resources)
         if memory:
-            title += f'；检验复盘建议：{memory["text"]}'
+            task['title'] += f'；检验复盘建议：{memory["text"]}'
+            task['basis_refs'].append('memory:' + memory['id'])
         reason = f'根据运营目标「{goal}」与内容栏目「{pillar}」安排；'
+        reason += _goal_action(goal, pillar, resources) + '。'
+        if profile['positioning']:
+            reason += f'账号定位：{profile["positioning"]}。'
         reason += f'制作时考虑：{"、".join(resources)}。' if resources else '尚未填写时间 / 素材条件，可按实际情况调整。'
         reason += '计划是待确认的建议，不代表效果保证。'
         if memory:
@@ -74,12 +124,20 @@ def make_plan(state, data, created_at):
         else:
             reason += '暂无历史效果依据。'
         tasks.append(dict(id=str(uuid4()), date=(start+timedelta(days=(i*7)//count)).isoformat(),
-            title=title, reason=reason,
+            **task, reason=reason,
             memory_ref=memory['id'] if memory else None, status='planned', publication_id=None))
+    data_gaps = [f'尚未填写{label}，请在执行前补充。' for field, label in
+                 (('positioning', '账号定位'), ('audience', '目标读者'), ('pillars', '内容栏目'),
+                  ('resources', '时间 / 素材条件')) if not profile[field].strip()]
+    if not memories:
+        data_gaps.append('暂无已确认的复盘建议；这些任务是档案驱动的内容思路，不是已验证的效果结论。')
     state['plans'].insert(0, dict(id=str(uuid4()), account_id=account['id'], week_start=start.isoformat(),
         source_type=data['source_type'], status='draft', created_at=created_at,
         goal=goal, profile_revision=account['revision'],
-        profile_snapshot={k: profile[k] for k in ('positioning','pillars','goal','resources','weekly_frequency')},
+        profile_snapshot={k: profile[k] for k in ('positioning','audience','pillars','goal','resources','weekly_frequency')},
+        execution=dict(stage='operations_plan', mode='rules', algorithm='profile_rules_v2', model_calls=0),
+        weekly_summary='按账号档案安排不同切入点。先挑一条能提供材料的任务，核对行动与限制后再创作。',
+        data_gaps=data_gaps,
         memory_refs=[m['id'] for m in memories], tasks=tasks,
         limitation='计划是可撤销的建议；不会自动创作、批准或发布。'))
 
