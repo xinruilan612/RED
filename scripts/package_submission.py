@@ -23,9 +23,12 @@ def build():
         if path.is_file():
             files['evidence/' + path.name] = path
     for relative, sha in manifest.items():
-        path = ROOT / relative
+        # The manifest describes the 2026-09-21 baseline, not today's code.
+        path = evidence / 'baseline-source' / (relative + '.snapshot')
         assert hashlib.sha256(path.read_bytes()).hexdigest() == sha
-        files['核验依据/' + relative] = path
+        files['历史核验依据/' + relative + '.snapshot'] = path
+    acceptance = ROOT / 'docs/REAL_WORKFLOW_ACCEPTANCE_20261004.md'
+    files['最新验收摘要/' + acceptance.name] = acceptance
     for path in (ROOT / 'scripts/build_submission_docs.py', ROOT / 'scripts/package_submission.py'):
         files['构建脚本/' + path.name] = path
     readme = '''有迹文档交付包
@@ -36,7 +39,9 @@ def build():
 可编辑正文为UTF-8 Markdown；evidence保存实际测试日志与文件校验信息。
 核验依据仅收录文档引用的代码和记录，不是完整可安装源码包，不含私有配置或运行数据库。
 
-产品基线：ca8b327；本次产品复验169项通过，新增文档检查后全量174项通过，均无跳过。
+正文更新至2026-10-04；功能基线441359e。历史核验依据为ca8b327，169/174项日志均属2026-09-21。
+最新已完成验收摘要见可编辑正文及docs/REAL_WORKFLOW_ACCEPTANCE_20261004.md，不能把历史日志当最新代码结果。
+本轮M185公开案例和约5位读者试读结果须实际收集，不能将空白表或AI模拟当真人反馈。
 本机验证不等同于公网部署或真实模型质量评测。视频、答辩幻灯片、演示交付入口尚需实际完成。
 官方网盘模板未成功获取，提交前核对模板封面与固定版式。作品上传截止需以报名系统和赛区通知核实。
 本包未上传报名系统或外部网盘，不代表提交成功。

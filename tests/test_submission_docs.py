@@ -44,6 +44,25 @@ class SubmissionDocumentsTests(unittest.TestCase):
         self.assertIn('human_accepted=false', report)
         self.assertIn('没有重新录制', report)
 
+    def test_current_positioning_and_case_do_not_claim_commercial_outcomes(self):
+        proposal = (DOCS / '01_技术方案.md').read_text()
+        self.assertIn('小品牌博主', proposal)
+        self.assertIn('441359e', proposal)
+        for score in ('创新性20分', '技术实现20分', '功能完整性20分', '方案完整性20分', '应用价值15分'):
+            self.assertIn(score, proposal)
+        script = (DOCS / '05_功能演示录制脚本.md').read_text()
+        for boundary in ('M185', '不是商业客户', '待试读', '普通AI', '5位', '不会', '当前视频未录制'):
+            self.assertIn(boundary, script)
+        self.assertNotIn('通过169项工程测试', script)
+        report = (DOCS / '04_测试报告.md').read_text()
+        self.assertIn('540项', report)
+        self.assertIn('101项', report)
+        self.assertIn('尚待实际执行', report)
+        self.assertIn('9月21日', report)
+        manual = (DOCS / '02_软件说明书.md').read_text()
+        self.assertNotIn('当前不提供视频生成或图片包自动导出', manual)
+        self.assertIn('无声图文MP4', manual)
+
     def test_identity_privacy_and_source_paths(self):
         paths = sorted(DOCS.glob('[0-9][0-9]_*.md'))
         self.assertEqual(len(paths), 6)
