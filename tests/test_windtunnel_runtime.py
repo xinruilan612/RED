@@ -26,7 +26,11 @@ class Fixture:
         run = next(r for r in self.store.list_runs(self.owner) if r.workflow_type=='windtunnel' and r.run_status=='RUNNING')
         self.calls.append((run.current_stage, messages))
         if self.failure: raise self.failure
-        return wt.simulate(run,run.current_stage), 100
+        output=wt.simulate(run,run.current_stage)
+        if run.current_stage=='wt_patch':
+            source=next(s for s in run.windtunnel['sources'] if s['kind']=='material')
+            output['patches'][0].update(replacement='\n\n'+source['text'],citations=[{'source_id':source['id'],'quote':source['text']}])
+        return output, 100
 
 
 class WindtunnelRuntimeTests(unittest.TestCase):

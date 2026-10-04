@@ -117,7 +117,7 @@ def messages_for(run,stage):
           '缺材料则decision=needs_human,next_action=request_human，human_questions给具体问题。通过则approved/await_user_confirmation。'
           'previous_issue_results必须严格覆盖required_previous_issue_ids且每项恰好一次，不得加入更早轮次的编号；只检查previous_review.issues，不追溯旧复核结果。每项给出result(resolved/unresolved/regressed)，无旧问题则[]；不得因为已改稿就推定resolved。'
           '若核心承诺仍缺必需来源或事实，且改写无法补齐，必须needs_human并具体请求缺失资料，不要反复要求AI凭空补充。不得把无依据的步骤加“待确认”或补源承诺后判作可发布；缺口请求写human_questions，来源元数据和核验限制写limitations，不要求将内部说明写入正文。'
-          'claim_map列出引用事实，每条excerpt为稿件原文、source_id、quote只能逐字摘取对应materials[].text正文；verification、published_at、title等来源元数据不是正文，相关不确定性写入limitations，不得放进claim_map。没有事实引用则[]，不能编造引用。'
+          'claim_map列出引用事实，每条excerpt为稿件原文、source_id、quote只能逐字摘取对应materials[].text正文；verification、published_at、title等来源元数据不是正文，相关不确定性写入limitations，不得放进claim_map。quote必须是材料中一段连续原文，禁止拼接不连续的句子或省略中间文字。一个稿件句子包含多项事实时，拆成多条claim_map，各自引用连续材料；不能把不相邻事实合并成一个quote。没有事实引用则[]，不能编造引用。'
           'limitations和human_questions均为文字数组。')}
     if stage in ('outline','hook','title','body','revise'):
         rules[stage]+=(' 面向目标读者创作：提纲规划读者能获得的内容，开头、候选标题、selected_title/body/cta/tags只写可供读者阅读的文案；title.note/reasons仍为内部选择理由。'

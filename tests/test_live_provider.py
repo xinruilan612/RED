@@ -34,6 +34,14 @@ class FixtureModel:
 
 
 class LiveTests(unittest.TestCase):
+    def test_review_prompt_demands_contiguous_source_quotes(self):
+        from backend.live import messages_for
+        for _ in range(6): self.step()
+        prompt=messages_for(self.run,'review')[0][0]['content']
+        self.assertIn('一段连续原文',prompt)
+        self.assertIn('禁止拼接不连续',prompt)
+        self.assertIn('拆成多条claim_map',prompt)
+
     def test_sync_revision_limit_preserves_editable_draft_without_approval(self):
         base=self.model.complete
         def revision(messages):

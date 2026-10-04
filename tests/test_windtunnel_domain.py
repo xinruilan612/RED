@@ -203,7 +203,10 @@ class WindtunnelDomainTests(unittest.TestCase):
         run = self.report()
         original = copy.deepcopy(draft(run))
         run = self.action(run, 'propose_patch', condition_ids=[conditions(run)['conditions'][0]['id']])
-        run = self.step(run)
+        output = simulate(run, 'wt_patch')
+        source = next(s for s in run.windtunnel['sources'] if s['kind']=='material')
+        output['patches'][0].update(replacement='\n\n'+source['text'],citations=[{'source_id':source['id'],'quote':source['text']}])
+        run = self.step(run, output)
         patch = run.windtunnel['patches'][-1]
         self.assertEqual(original, draft(run))
         item = patch['items'][0]
@@ -218,6 +221,16 @@ class WindtunnelDomainTests(unittest.TestCase):
             self.wind.export(changed)
         with self.assertRaises(DomainError):
             self.action(changed, 'apply_patch', patch_id=patch['id'], item_ids=[item['id']], base_hash=original['hash'])
+
+    def test_author_supply_reminder_cannot_be_written_into_publishable_draft(self):
+        run = self.report()
+        original = copy.deepcopy(draft(run))
+        run = self.action(run, 'propose_patch', condition_ids=[conditions(run)['conditions'][0]['id']])
+        run = self.step(run)
+        patch = run.windtunnel['patches'][-1]
+        with self.assertRaisesRegex(DomainError,'不能写入发布正文'):
+            self.action(run,'apply_patch',patch_id=patch['id'],item_ids=[patch['items'][0]['id']],base_hash=original['hash'])
+        self.assertEqual(draft(self.store.get(run.run_id,self.owner)),original)
 
     def test_patch_refuses_overlaps_and_unsupported_new_facts(self):
         run = self.report()

@@ -453,6 +453,7 @@ class Windtunnel:
                 require(all(isinstance(i, str) for i in p['item_ids']) and len(p['item_ids']) == len(set(p['item_ids'])), 'INVALID_INPUT', '修改项无效')
                 items = [x for x in patch['items'] if x['id'] in p['item_ids']]
                 require(len(items) == len(p['item_ids']) and not any(x['accepted'] for x in items), 'INVALID_INPUT', '修改项不可采用')
+                require(all(x.get('citations') for x in items),'INVALID_INPUT','这只是给作者的补料建议，不能写入发布正文；请补充材料或自行编辑稿件')
                 text = draft(run)['text']
                 for item in sorted(items, key=lambda x: x['start'], reverse=True):
                     require(text[item['start']:item['end']] == item['original'], 'VERSION_CONFLICT', '原文位置已变化')
