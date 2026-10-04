@@ -8,6 +8,7 @@ const checks={brief_fit:'符合需求',audience_fit:'受众相关',usefulness_an
 let provider=null,polling=false,materialDocsCache=[],confirmedLiveRuns=new Set(),materialRefreshes=new Map();
 let csrf='',run=null,selected='audience',busy=false,auto=false,editing=false,viewVersion=null,detailStage=null,toastTimer,chosenHypothesis=null;
 let cancellationRun=null;
+let creationSequence=0;
 let pendingLiveBudget=null;
 async function api(path,method='GET',body){
  const r=await fetch(path,{method,headers:method==='POST'?{'Content-Type':'application/json','X-CSRF-Token':csrf}:{},body:body===undefined?undefined:JSON.stringify(body)});
@@ -287,6 +288,7 @@ $('briefForm').addEventListener('submit',async e=>{e.preventDefault();if(busy)re
 $('history').addEventListener('click',async e=>{const b=e.target.closest('[data-run]');if(!b||busy||!dirtyGuard())return;auto=false;editing=false;$('editor').hidden=true;clearError();showPage('studio');try{run=await api('/api/runs/'+b.dataset.run);viewVersion=null;detailStage=null;selected=currentAgent();render();await history();}catch(err){error(err);}});
 function startCreation({trend=null,hypothesis=null}={}){
  if(busy||!dirtyGuard())return false;
+ creationSequence++;
  showPage('studio');auto=false;editing=false;run=null;viewVersion=null;chosenTrend=trend;chosenHypothesis=hypothesis;window.activeTrialHypothesisId=null;
  $('selectedTrend').hidden=!trend;$('clearTrend').hidden=!trend;
  $('editor').hidden=true;$('workbench').hidden=true;$('welcome').hidden=false;$('topic').value='';$('material').value='';

@@ -98,6 +98,23 @@ test('new creation clears stale draft and associations while explicit topic or h
  await s.eval("startCreation({hypothesis:{id:'new-hypothesis'}})");assert.equal(s.eval('chosenHypothesis.id'),'new-hypothesis');assert.equal(s.eval('chosenTrend'),null);
 });
 
+test('new creation advances library transfer sequence only after navigation is accepted',()=>{
+ const s=setup();
+ assert.equal(s.eval('creationSequence'),0);
+ assert.equal(s.eval('startCreation()'),true);
+ assert.equal(s.eval('creationSequence'),1);
+ s.eval("editing=true;window.confirm=()=>false;run={run_id:'kept'}");
+ assert.equal(s.eval('startCreation()'),false);
+ assert.equal(s.eval('creationSequence'),1);
+ assert.equal(s.eval('run.run_id'),'kept');
+ s.eval('editing=false;busy=true');
+ assert.equal(s.eval('startCreation()'),false);
+ assert.equal(s.eval('creationSequence'),1);
+ s.eval('busy=false');
+ assert.equal(s.eval('startCreation()'),true);
+ assert.equal(s.eval('creationSequence'),2);
+});
+
 test('topic entry asks once and cancelling does not alter the existing brief',()=>{
  for(const consent of [true,false]){
   const s=setup();s.eval(`activeAccountId='a';ops={accounts:[{id:'a',platform:'xiaohongshu',name:'测试',profile:{}}],trends:[{id:'t',platform:'xiaohongshu',title:'新选题',category:'学习',angle:'步骤'}]};editing=true;confirmations=0;window.confirm=()=>{confirmations++;return ${consent}};`);
