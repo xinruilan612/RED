@@ -5,3 +5,5 @@
 @media(prefers-reduced-motion:reduce){.wt-workspace *{scroll-behavior:auto!important;transition:none!important}}
 
 .wt-answer{padding:14px 16px;background:#f3f7ed;border-radius:8px;margin:12px 0}.wt-answer p{margin:7px 0 0;line-height:1.8}.wt-check-parts{display:grid;grid-template-columns:1fr 1fr;gap:16px}.wt-check-parts section{padding:14px;border:1px solid var(--line);border-radius:8px}.wt-check-parts h4{margin:0;color:var(--muted);font-size:12px}.wt-check-label{font-weight:600}.wt-next-advice{padding:16px;border-left:3px solid #477462;background:#f5f8f1;margin:16px 0}.wt-next-advice h3{margin:0;font-size:15px}.wt-batches>summary{cursor:pointer;font-weight:600}.wt-batches[open]>.wt-heading{margin-top:18px}@media(max-width:800px){.wt-check-parts{grid-template-columns:1fr}}
+
+.wt-author-advice{padding:16px;background:#fff9ec;border-radius:8px;margin:12px 0}.wt-author-advice h4{margin:0;font-size:14px}.wt-author-advice p{line-height:1.8}
