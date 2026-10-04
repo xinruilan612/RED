@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 import tempfile
+import subprocess
 import unittest
 from scripts.brand_blindtest import DIMENSIONS, generate, page, summarize
 
@@ -91,6 +92,37 @@ class BrandBlindtestTests(unittest.TestCase):
             production = {s: {'elapsed_seconds': float('nan')} for s in ('ordinary_ai', 'system')}
             with self.assertRaises(ValueError):
                 self.build(d, production=production)
+
+    def test_questionnaire_submission_downloads_anonymous_answers_locally(self):
+        document = page('P01', {'A': '稿件甲', 'B': '稿件乙'}, CASE)
+        script = document.split('<script>')[1].split('</script>')[0]
+        harness = r"""
+const vm = require('node:vm');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+let captured, downloaded, prevented = false;
+const form = {answers: {A_interest:'4',B_interest:'2',preference:'A',preference_reason:'具体'}};
+const saved = {};
+const scope = {
+  document: {querySelector:()=>form, getElementById:()=>saved,
+    createElement:()=>({set download(x){downloaded=x;}, set href(x){}, click(){}})},
+  FormData: class {constructor(target){return new Map(Object.entries(target.answers));}},
+  Blob, Date, JSON, Object,
+  URL: {createObjectURL(blob){captured=blob;return 'blob:local';},revokeObjectURL(){}},
+  setTimeout: fn=>fn()
+};
+vm.runInNewContext(fs.readFileSync(0,'utf8'),scope);
+form.onsubmit({preventDefault(){prevented=true;},target:form});
+(async()=>{const data=JSON.parse(await captured.text());
+ assert.equal(prevented,true);assert.equal(downloaded,'P01-回答.json');
+ assert.equal(data.participant,'P01');assert.equal(data.answers.preference,'A');
+ assert.equal(data.answers.A_interest,'4');assert.equal(Object.keys(data.draft_hashes).length,2);
+ assert.equal('owner' in data,false);assert.equal('labels' in data,false);
+ assert.match(saved.textContent,/没有自动上传/);
+})().catch(e=>{console.error(e);process.exitCode=1;});
+"""
+        result = subprocess.run(['node', '-e', harness], input=script, text=True, capture_output=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_official_case_preserves_factual_boundaries(self):
         case = json.loads((Path(__file__).resolve().parents[1] / 'docs/evaluation/m185_case.json').read_text())
