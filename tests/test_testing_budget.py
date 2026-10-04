@@ -112,6 +112,55 @@ class TestingBudgetTests(unittest.TestCase):
         self.assertEqual(adapter.count,2)
         self.assertEqual(public(self.store,'owner')['spent_cny'],.000064)
 
+    def test_paid_auxiliary_scopes_require_exact_boolean_confirmation(self):
+        initialize(self.store,'owner',.30)
+        self.hold()  # Preserve a pre-existing creation charge.
+        baseline=public(self.store,'owner')
+        for workflow in ('operations','windtunnel'):
+            self.run.workflow_type=workflow
+            for flag in (None,False,1,'true',{},[]):
+                with self.subTest(workflow=workflow,flag=flag):
+                    if flag is None:self.run.context.pop('paid_scope_confirmed',None)
+                    else:self.run.context['paid_scope_confirmed']=flag
+                    with self.assertRaises(DomainError) as error:self.hold()
+                    self.assertEqual(error.exception.code,'TEST_BUDGET_SCOPE')
+                    self.assertEqual(public(self.store,'owner'),baseline)
+                    with self.store.connect() as db:
+                        self.assertEqual(db.execute('SELECT COUNT(*) FROM testing_budget_reservations').fetchone()[0],1)
+        # Even a confirmation does not broaden authorization to unknown workflows.
+        self.run.workflow_type='unknown'
+        self.run.context['paid_scope_confirmed']=True
+        with self.assertRaises(DomainError) as error:self.hold()
+        self.assertEqual(error.exception.code,'TEST_BUDGET_SCOPE')
+        self.assertEqual(public(self.store,'owner'),baseline)
+
+    def test_confirmed_scopes_reuse_persistent_budget_without_clearing_creation_usage(self):
+        initialize(self.store,'owner',.30)
+        self.hold()
+        first=public(self.store,'owner')
+        for workflow in ('operations','windtunnel'):
+            self.run.workflow_type=workflow
+            self.run.context['paid_scope_confirmed']=True
+            self.hold()
+        combined=public(self.store,'owner')
+        self.assertEqual(combined['spent_cny'],round(first['spent_cny']*3,6))
+        self.assertEqual(combined['run_count'],1)  # The same lineage retains one root.
+        self.assertEqual(combined['target_cny'],.30)
+        self.assertEqual(public(Store(self.store.path),'owner'),combined)
+        self.assertEqual(initialize(self.store,'owner',.30),combined)
+        with self.assertRaises(DomainError):initialize(self.store,'owner',1)
+        self.assertEqual(public(self.store,'owner'),combined)
+
+    def test_creation_scope_keeps_original_behavior_without_paid_confirmation(self):
+        initialize(self.store,'owner',.30)
+        self.assertEqual(self.run.workflow_type,'creation')
+        self.hold()
+        self.run.context['paid_scope_confirmed']=False
+        self.hold()
+        status=public(self.store,'owner')
+        self.assertEqual(status['run_count'],1)
+        self.assertEqual(status['spent_cny'],.04904)
+
     def test_concurrent_reservations_are_both_accounted_without_target_block(self):
         import threading
         initialize(self.store,'owner',.03)
