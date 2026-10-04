@@ -1,0 +1,11 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+function setup(){const context=vm.createContext({pageInfo:{},dateInput:()=> '2026-10-04T14:00',esc:value=>String(value??'').replace(/[<>]/g,c=>c==='<'?'&lt;':'&gt;'),activeAccountId:'mine'});vm.runInContext(fs.readFileSync('frontend/trials.js','utf8'),context);return code=>vm.runInContext(code,context);}
+test('trial offers existing real drafts and excludes simulation or another account after list filtering',()=>{
+ const run=setup();run(`trialRuns=[{run_id:'existing',workflow_type:'creation',context:{mode:'live',operations:{account_id:'mine'}},drafts:[{ref:'v1',content:{selected_title:'<unsafe>'}}]},{run_id:'demo',workflow_type:'creation',context:{mode:'simulation',operations:{account_id:'mine'}},drafts:[{ref:'v1',content:{selected_title:'demo'}}]}].filter(trialRunBelongs)`);
+ const html=run("trialDraftOptions({id:'new-hypothesis'})");assert.match(html,/existing\|v1/);assert.doesNotMatch(html,/demo\|v1/);assert.match(html,/&lt;unsafe&gt;/);
+});
+test('reader form records real individual answers and does not ask users to invent aggregate numbers',()=>{
+ const run=setup();const html=run("trialReaderForm({id:'h',desired_action:'收藏教程'})");assert.match(html,/data-reader-rows/);assert.match(html,/reader_question/);assert.match(html,/下载 A\/B/);assert.match(html,/不要替读者回答/);assert.doesNotMatch(html,/name="(?:denominator|outcomes)_/);
+ const row=run("trialReaderRow(1,'B')");assert.match(row,/data-reader-understood required/);assert.match(row,/data-reader-answer/);assert.match(row,/value="B" selected/);
+});

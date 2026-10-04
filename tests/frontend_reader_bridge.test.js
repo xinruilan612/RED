@@ -99,13 +99,13 @@ test('late list refresh rejects changed source snapshots and account switches',a
  await load;assert.equal(other.eval('wt.form.title'),'账号 2 的内容');
 });
 
-test('explicit form save preserves exact imported references and material provenance in simulation',async()=>{
+test('explicit form save preserves exact imported references and material provenance in real AI mode',async()=>{
  const s=setup();assert.equal(await s.eval("openDraftReaderCheck(run,'v2')"),true);
  s.eval("wt.form.permission=true;created={run_id:'reader-1',workflow_type:'windtunnel',windtunnel:{drafts:[]},context:{account_id:activeAccountId},allowed_actions:[]};api=async(path,method,body)=>{calls.push({path,method,body});return created;}");
  await s.eval('wtCreate({preventDefault(){},submitter:{disabled:false}})');
  const post=s.value("calls.find(c=>c.method==='POST')");
  assert.equal(post.path,'/api/runs');assert.deepEqual(post.body.import,{run_id:'creation-1',draft_ref:'v2'});
- assert.equal(post.body.mode,'simulation');assert.equal(post.body.title,undefined);assert.equal(post.body.text,undefined);
+ assert.equal(post.body.mode,'live');assert.equal(post.body.title,undefined);assert.equal(post.body.text,undefined);
  assert.equal(post.body.materials.length,2);assert.equal(post.body.materials[1].text,'选择 CSV 与 UTF-8。');assert.match(post.body.materials[1].origin,/doc-1/);
  assert.deepEqual(post.body.feedback,[]);assert.equal(post.body.hypothesis_id,null);assert.equal(s.eval("calls.filter(c=>c.method==='POST').length"),1);
 });
@@ -160,4 +160,11 @@ test('switching to pasted text keeps old material snapshots labelled for applica
  const preview=s.eval('wtImportMaterialsPreview()');
  assert.match(preview,/创作时保存的材料，不代表已经核实/);assert.match(preview,/doc-1.*v2.*页 3.*位置 40.*kb-source/);
  assert.equal(s.eval("calls.filter(c=>c.method==='POST').length"),0);
+});
+
+test('real AI is the default while the explicit fictional example stays free simulation',async()=>{
+ const s=setup();assert.equal(s.eval('wtFreshForm().mode'),'live');
+ s.eval('wt.form=wtFreshForm()');assert.match(s.eval('wtNotice()'),/真实 AI.*计费/);
+ await s.eval("wtClick({target:{closest(){return {dataset:{wt:'example'}};}}})");
+ assert.equal(s.eval('wt.form.mode'),'simulation');assert.match(s.eval('wtNotice()'),/开发模拟/);
 });

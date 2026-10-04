@@ -155,6 +155,68 @@ class ContentTrialTests(unittest.TestCase):
         h=next(h for h in self.ops.read(self.owner)['hypotheses'] if h['id']==self.hyp['id'])
         self.assertEqual(h['ledger_status'],'superseded')
 
+    def reader_payload(self, with_wind=True):
+        wind = self.make_run('wind-reader', workflow='windtunnel', hypothesis_id=self.hyp['id'])
+        if with_wind:
+            self.command('record_trial', dict(hypothesis_id=self.hyp['id'], level='windtunnel', payload={'run_id':wind.run_id,'notes':''}))
+        # Existing real creations need no hypothetical-creation restart.
+        a, b = self.make_run('shared-ref'), self.make_run('shared-ref')
+        b.drafts[0]['content_hash']='hash-actual-variant'
+        b.drafts[0]['content']['body']='先点菜单，再选导出和编码'
+        self.persist_run(b)
+        feedback = [dict(reader_id='reader-1',label='A',understood=False,would_act=False,answer='入口在哪里？'),
+                    dict(reader_id='reader-2',label='B',understood=True,would_act=True,answer='先打开菜单再导出')]
+        return dict(allocation='observational',unit='readers',window='24h',observed_at=now(),notes='each reader sees one version',
+            arms=[dict(label='A',run_id=a.run_id,draft_ref='shared-ref',denominator=1,outcomes=0),
+                  dict(label='B',run_id=b.run_id,draft_ref='shared-ref',denominator=1,outcomes=1)],
+            reader_question='第一步做什么？',reader_feedback=feedback)
+
+    def test_reader_feedback_is_persisted_and_computed_without_model_or_fake_growth(self):
+        payload=self.reader_payload(with_wind=False)
+        state=self.command('record_trial',dict(hypothesis_id=self.hyp['id'],level='small_race',payload=payload))
+        race=state['hypotheses'][0]['validations']['small_race']
+        self.assertNotIn('windtunnel',state['hypotheses'][0]['validations'])
+        self.assertEqual(race['proxy_metric'],'stated_intent')
+        self.assertEqual(race['evidence_class'],'user_recorded_reader_feedback')
+        self.assertEqual(race['comprehension']['A'],{'readers':1,'understood':0})
+        self.assertEqual(race['comprehension']['B'],{'readers':1,'understood':1})
+        self.assertEqual(race['reader_feedback'],payload['reader_feedback'])
+        self.assertEqual(race['causal_claim'],'not_established')
+        self.assertIsNone(race['variant_lift_pct'])
+        self.assertNotEqual(race['arms'][0]['run_id'],race['arms'][1]['run_id'])
+
+    def test_reader_feedback_rejects_duplicate_readers_and_fabricated_totals(self):
+        payload=self.reader_payload()
+        import copy
+        for change in ('duplicate','totals','random','missing_answer','identical','simulation'):
+            invalid=copy.deepcopy(payload)
+            if change=='duplicate': invalid['reader_feedback'][1]['reader_id']='reader-1'
+            if change=='totals': invalid['arms'][0]['outcomes']=1
+            if change=='random': invalid['allocation']='randomized'
+            if change=='missing_answer': invalid['reader_feedback'][0]['answer']=''
+            if change=='identical':
+                run=self.store.get(invalid['arms'][1]['run_id'],self.owner)
+                run.drafts[0]['content_hash']='hash-shared-ref';self.persist_run(run)
+            if change=='simulation':
+                run=self.store.get(invalid['arms'][0]['run_id'],self.owner)
+                run.context['mode']='simulation';self.persist_run(run)
+            with self.assertRaises(DomainError,msg=change):
+                self.command('record_trial',dict(hypothesis_id=self.hyp['id'],level='small_race',payload=invalid))
+
+    def test_live_attribution_rejects_changed_hash_of_exact_race_version(self):
+        runs=self.record_wind_and_race()
+        with self.store.connect() as db:
+            state=json.loads(db.execute('SELECT payload FROM operations WHERE owner=?',(self.owner,)).fetchone()[0])
+            items=[]
+            for i,run in enumerate(runs):
+                pid='pub-hash-'+str(i);mid='metric-hash-'+str(i);items.append(dict(publication_id=pid,metric_id=mid))
+                state['publications'].append(dict(id=pid,run_id=run.run_id,draft_ref=run.drafts[0]['ref'],content_hash='changed',account_id=self.account,account='试验账号',platform=self.hyp['platform'],status='MANUAL_REPORTED',mode='live',provenance='manual',url='https://example.org/'+str(i)))
+                state['metrics'].append(dict(id=mid,publication_id=pid,account_id=self.account,source_type='manual',window='24h',observed_at=now(),values={'signups':1,'link_clicks':10}))
+            db.execute('UPDATE operations SET payload=? WHERE owner=?',(json.dumps(state),self.owner))
+        with self.assertRaises(DomainError) as error:
+            self.command('record_trial',dict(hypothesis_id=self.hyp['id'],level='live_attribution',payload=dict(items=items,evidence_method='manual_entry',source_note='actual records',observed_at=now())))
+        self.assertEqual(error.exception.code,'VERSION_CONFLICT')
+
 
 if __name__ == '__main__':
     unittest.main()
