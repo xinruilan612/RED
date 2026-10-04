@@ -119,11 +119,11 @@ def build(font_path=None):
     register_cjk_font(font_path, ''.join(text for _, text in sources))
     OUTPUT.mkdir(parents=True, exist_ok=True)
     styles = {
-        'body': ParagraphStyle('body', fontName='CN', fontSize=10.5, leading=17, spaceAfter=8, wordWrap='CJK'),
+        'body': ParagraphStyle('body', fontName='CN', fontSize=10.5, leading=16, spaceAfter=7, wordWrap='CJK'),
         'h1': ParagraphStyle('h1', fontName='CN', fontSize=20, leading=28, spaceAfter=18, keepWithNext=True),
         'h2': ParagraphStyle('h2', fontName='CN', fontSize=15, leading=22, spaceAfter=12, keepWithNext=True),
         'h3': ParagraphStyle('h3', fontName='CN', fontSize=12, leading=19, spaceBefore=9, spaceAfter=6, keepWithNext=True),
-        'cell': ParagraphStyle('cell', fontName='CN', fontSize=9, leading=14, wordWrap='CJK'),
+        'cell': ParagraphStyle('cell', fontName='CN', fontSize=9, leading=13, wordWrap='CJK'),
         'code': ParagraphStyle('code', fontName='CN', fontSize=8.5, leading=13, wordWrap='CJK', spaceAfter=5),
     }
 
@@ -162,7 +162,7 @@ def build(font_path=None):
                     ('GRID', (0, 0), (-1, -1), 0.4, colors.HexColor('#D9D9D9')),
                     ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
                     ('LEFTPADDING', (0, 0), (-1, -1), 8), ('RIGHTPADDING', (0, 0), (-1, -1), 8),
-                    ('TOPPADDING', (0, 0), (-1, -1), 7), ('BOTTOMPADDING', (0, 0), (-1, -1), 7),
+                    ('TOPPADDING', (0, 0), (-1, -1), 6), ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
                 ]))
                 story.extend([table, Spacer(1, 12)])
                 continue

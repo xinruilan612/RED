@@ -1,56 +1,56 @@
 {
   "47191919-AI+软件创新-有迹-功能演示录制脚本.pdf": {
     "pages": 2,
-    "bytes": 211768,
-    "sha256": "01a5315313bcaaade87d8961af95c32ec5900c6639655efadc485a064cd89bfc",
+    "bytes": 219399,
+    "sha256": "1497dd6c175fd3066557725f199660649c86e4a511cd520f57648a5f9553cff7",
     "source": "docs/submission/05_功能演示录制脚本.md",
-    "source_sha256": "79ef429837e20eb52b7a8a4fbd3401356e0e27a0eadef5ec7cc1a5f6b2b86574",
+    "source_sha256": "40d831f9b4558f175eb3a45c086ac6cccd31fe93f4356f9889bd493161a080f4",
     "text_checks": "passed",
-    "visual_review": "All 23 pages rendered with Poppler and inspected on 2026-10-04; no clipping or near-empty orphan page"
+    "visual_review": "All pages rendered and inspected with Poppler on 2026-10-04; no clipping or near-empty orphan page"
   },
   "47191919-AI+软件创新-有迹-技术方案.pdf": {
     "pages": 7,
-    "bytes": 320827,
-    "sha256": "279360b02a34119fd5c192a63ad59e862a4b2054c9929cf2ec19b62daa93323b",
+    "bytes": 327743,
+    "sha256": "24eb8272e4823780c456be9294db2d7327cded72001f0a59c8261395d3d50cce",
     "source": "docs/submission/01_技术方案.md",
-    "source_sha256": "66057362fe131ab70e873c6961668662359cbbc4df1d80797fbeef547ca24e08",
+    "source_sha256": "ca7ebfb00b7856b5bba92e117bfaf5fea962f9348aef841e4c8d500e4395c64f",
     "text_checks": "passed",
-    "visual_review": "All 23 pages rendered with Poppler and inspected on 2026-10-04; no clipping or near-empty orphan page"
-  },
-  "47191919-AI+软件创新-有迹-核心算法说明.pdf": {
-    "pages": 4,
-    "bytes": 247458,
-    "sha256": "15f83e7bc30e17993855f7b5d3d045a6a1119933439a2fa7fc11b9305f725e0f",
-    "source": "docs/submission/03_核心算法说明.md",
-    "source_sha256": "9ba4ff90ada833549ecbd07806bb722785d47cda6bfd4ad70ad1e90edf292cf5",
-    "text_checks": "passed",
-    "visual_review": "All 23 pages rendered with Poppler and inspected on 2026-10-04; no clipping or near-empty orphan page"
-  },
-  "47191919-AI+软件创新-有迹-测试报告.pdf": {
-    "pages": 4,
-    "bytes": 250055,
-    "sha256": "b707b962ff7ff7186f9791391f81a29274fdc85a349b9661797da24302227aa4",
-    "source": "docs/submission/04_测试报告.md",
-    "source_sha256": "726c70e48cd47d44568cc392c6967431983e0363933b13f475c915ad1d9e912e",
-    "text_checks": "passed",
-    "visual_review": "All 23 pages rendered with Poppler and inspected on 2026-10-04; no clipping or near-empty orphan page"
-  },
-  "47191919-AI+软件创新-有迹-软件说明书.pdf": {
-    "pages": 4,
-    "bytes": 259674,
-    "sha256": "0ad82e17098ec32b0d757cff1ee8ec992038208624f8be2cbc24a66ed9c6a915",
-    "source": "docs/submission/02_软件说明书.md",
-    "source_sha256": "e2573fe36a61e2aa52fa72d442d326fbf48eceaf45209162b82660aac80485d4",
-    "text_checks": "passed",
-    "visual_review": "All 23 pages rendered with Poppler and inspected on 2026-10-04; no clipping or near-empty orphan page"
+    "visual_review": "All pages rendered and inspected with Poppler on 2026-10-04; no clipping or near-empty orphan page"
   },
   "47191919-AI+软件创新-有迹-提交清单与待填项.pdf": {
     "pages": 2,
-    "bytes": 194059,
-    "sha256": "78f0b5aaa3916b571a71271a476ee2ef7b5402e8e64f576e9bae0ab847c595d4",
+    "bytes": 196805,
+    "sha256": "91264f50f127996ebbf636d049b76d0278c8a9d23229b7d1fe2df000df74e082",
     "source": "docs/submission/00_提交清单与待填项.md",
-    "source_sha256": "11317a1e2ad5dea6225ba2666945ab4ef415ff2c95f940f5b90981c3fb5fe6f5",
+    "source_sha256": "0516b6c9005bd7ac8c89f094b35bce006dbf1191f24ce43ad3ad826cf86bade1",
     "text_checks": "passed",
-    "visual_review": "All 23 pages rendered with Poppler and inspected on 2026-10-04; no clipping or near-empty orphan page"
+    "visual_review": "All pages rendered and inspected with Poppler on 2026-10-04; no clipping or near-empty orphan page"
+  },
+  "47191919-AI+软件创新-有迹-核心算法说明.pdf": {
+    "pages": 4,
+    "bytes": 250741,
+    "sha256": "be5a4b1aac930a0757ff90cd2250d28019b08ecbe41077ea549ab92c56abbb38",
+    "source": "docs/submission/03_核心算法说明.md",
+    "source_sha256": "002d1606cd4f6aa57a8eb4efdf7276bcdfa7bedcf910a50a12e2ca35a1f1957b",
+    "text_checks": "passed",
+    "visual_review": "All pages rendered and inspected with Poppler on 2026-10-04; no clipping or near-empty orphan page"
+  },
+  "47191919-AI+软件创新-有迹-测试报告.pdf": {
+    "pages": 4,
+    "bytes": 267550,
+    "sha256": "4bc69d806b6f87150b072e0e78aedd8c971bd7c3e82e264966f15db770ff843d",
+    "source": "docs/submission/04_测试报告.md",
+    "source_sha256": "d5967dadfbaf6002bb5ec7e0d8e635c11f729f390a10ba2923e97484b82fa8e6",
+    "text_checks": "passed",
+    "visual_review": "All pages rendered and inspected with Poppler on 2026-10-04; no clipping or near-empty orphan page"
+  },
+  "47191919-AI+软件创新-有迹-软件说明书.pdf": {
+    "pages": 4,
+    "bytes": 264538,
+    "sha256": "1c46ce12dabf7366325acf2ca177169533473b4d3126fbc67ce0bfaa5818462c",
+    "source": "docs/submission/02_软件说明书.md",
+    "source_sha256": "528d8ecc921288f1599f9dfd94b2812661b020145f4d9234699ded41c913824c",
+    "text_checks": "passed",
+    "visual_review": "All pages rendered and inspected with Poppler on 2026-10-04; no clipping or near-empty orphan page"
   }
 }

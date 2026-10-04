@@ -63,6 +63,22 @@ class SubmissionDocumentsTests(unittest.TestCase):
         self.assertNotIn('当前不提供视频生成或图片包自动导出', manual)
         self.assertIn('无声图文MP4', manual)
 
+    def test_real_case_preserves_manual_adoption_and_comparison_limits(self):
+        record = json.loads((DOCS / 'evidence/current-case.json').read_text())
+        self.assertEqual(record['acceptance_mode'], 'manual_override')
+        self.assertFalse(record['final_ai_review_passed'])
+        self.assertEqual((record['system_calls'], record['system_tokens']), (13, 24714))
+        self.assertEqual((record['ordinary_ai_calls'], record['ordinary_ai_tokens']), (1, 811))
+        self.assertEqual((record['reader_forms_prepared'], record['reader_responses_received']), (5, 0))
+        self.assertFalse(record['comparison_boundary']['strict_controlled_comparison'])
+        self.assertFalse(record['comparison_boundary']['ordinary_allow_hypothesis'])
+        self.assertTrue(record['comparison_boundary']['system_allow_hypothesis_final'])
+        report = (DOCS / '04_测试报告.md').read_text()
+        for limitation in ('未通过有效最终AI复审', '不能称完全同输入', '风格与措辞', '反馈0/5', '连续录屏'):
+            self.assertIn(limitation, report)
+        log = (DOCS / 'evidence/current-tests.log').read_bytes()
+        self.assertEqual(hashlib.sha256(log).hexdigest(), record['tests']['log_sha256'])
+
     def test_identity_privacy_and_source_paths(self):
         paths = sorted(DOCS.glob('[0-9][0-9]_*.md'))
         self.assertEqual(len(paths), 6)
