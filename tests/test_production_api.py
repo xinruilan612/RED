@@ -46,6 +46,11 @@ class ProductionTests(unittest.TestCase):
                 self.assertEqual(response.headers['content-type'].split(';')[0],expected)
                 self.assertEqual(response.headers['x-content-type-options'],'nosniff')
 
+    def test_site_keeps_recording_out_of_product_and_disallows_framing(self):
+        self.assertIn("frame-ancestors 'none'", self.client.get('/').headers['content-security-policy'])
+        for path in ('/walkthrough-recorder', '/walkthrough-recorder.js', '/walkthrough-recorder.css'):
+            self.assertEqual(self.client.get(path).status_code, 404)
+
     def test_login_logout_fresh_device_and_no_password_leak(self):
         self.assertEqual(self.client.get('/api/operations').status_code,401)
         before=self.client.cookies.get('youji_session')
