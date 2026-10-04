@@ -1,0 +1,34 @@
+'use strict';
+// Mount into the confirmed draft screen; all downloads use authenticated endpoints.
+async function mountMediaExports(run, container) {
+ container.replaceChildren();
+ if(run.workflow_type!=='creation'||run.run_status!=='SUCCEEDED'||!run.accepted_ref)return;
+ const section=document.createElement('section');section.className='media-exports panel';
+ const title=document.createElement('h3');title.textContent='把这份稿件做成图片或视频';
+ const summary=document.createElement('p');summary.textContent='使用你已确认的准确版本，本机排版，不额外调用模型。';
+ const status=document.createElement('p');status.className='media-export-status';status.textContent='正在检查导出工具…';status.setAttribute('aria-live','polite');
+ const buttons=document.createElement('div');buttons.className='media-export-buttons';
+ section.append(title,summary,buttons,status);container.append(section);
+ try {
+  const response=await fetch(`/api/runs/${encodeURIComponent(run.run_id)}/media/capabilities`,{credentials:'same-origin'});
+  if(!response.ok)throw new Error('导出工具暂不可用，请刷新后重试');
+  const caps=await response.json();
+  const choices=[['images','下载图文包',caps.images_available],['video','下载无声图文视频',caps.video_available],['storyboard','下载分镜与字幕',caps.storyboard_available]];
+  for(const [kind,label,available] of choices){
+   const button=document.createElement('button');button.textContent=label;button.disabled=!available;
+   button.addEventListener('click',async()=>{
+    buttons.querySelectorAll('button').forEach(b=>b.disabled=true);
+    status.textContent=kind==='video'?'正在生成视频，请稍等，通常需要十几秒…':'正在制作成品…';
+    try{
+     const result=await fetch(`/api/runs/${encodeURIComponent(run.run_id)}/media-export?kind=${kind}`,{credentials:'same-origin'});
+     if(!result.ok){let message='制作失败，请重试';try{const data=await result.json();message=data.error?.message||data.detail?.message||data.message||message;}catch{}throw new Error(message);}
+     const blob=await result.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');
+     a.href=url;a.download=`youji-${kind}-${run.run_id.slice(0,8)}.zip`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
+     status.textContent='已下载。解压后可预览成品，caption.txt 是配套发布文案。';
+    }catch(error){status.textContent=error.message;}
+    finally{buttons.querySelectorAll('button').forEach((b,i)=>b.disabled=!choices[i][2]);}
+   });buttons.append(button);
+  }
+  status.textContent=caps.video_message+' 图文包包含封面、完整正文图片和发布文案；不含自动生成插画。';
+ }catch(error){status.textContent=error.message;}
+}
