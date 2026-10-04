@@ -13,7 +13,7 @@
 <div id="studioView" hidden><div class="studio-mode"><span class="pill simulation" id="modeBadge">模拟运行</span><span class="muted">写清需求 → 检查稿件 → 你确认并导出</span></div>
 <div class="notice" id="modeNotice"><strong>这是可操作的流程演示。</strong> 四个角色使用固定规则和模板，没有调用真实 AI；审核通过也不代表事实已核验。</div>
 <section id="welcome" class="start-grid">
-<form id="briefForm" class="panel brief-panel"><div class="section-heading"><span class="step-number">01</span><div><h2>告诉我们，这次想写什么</h2><p>先写一个具体主题，再补充能支撑它的素材；没有素材也可先体验免费流程。</p></div></div>
+<form id="briefForm" class="panel brief-panel"><div class="section-heading"><span class="step-number">01</span><div><h2>告诉我们，这次想写什么</h2><p>先写一个具体主题，再补充自己的经历或资料；示例体验可手动选择免费模拟。</p></div></div>
 <div class="two-col"><div><label for="targetPlatform">目标平台</label><select id="targetPlatform" disabled><option value="xiaohongshu">小红书 · 图文笔记</option><option value="douyin">抖音 · 口播脚本 / 分镜</option></select></div><div><label for="accountName">运营账号名称</label><input id="accountName" readonly value="我的账号" maxlength="80" required></div></div><div id="selectedTrend" class="context-note" hidden></div><button id="clearTrend" class="quiet" type="button" hidden>移除选题关联</button>
 <label for="mode">运行方式</label><select id="mode"><option value="simulation">模拟流程（免费，不调用模型）</option><option id="liveOption" value="live">真实 AI · DeepSeek（先填写 .env）</option></select><p id="configMessage" class="helper"></p>
 <label for="topic">创作主题 <span>必填</span></label><input id="topic" name="topic" maxlength="100" required placeholder="例如：我用三步整理课程文件，方便下次查找">
@@ -23,7 +23,7 @@
 <details class="creation-options"><summary>可选调查与流程设置</summary><label for="scenario">模拟测试场景（真实 AI 不使用）</label><select id="scenario"><option value="standard">正常创作 → 审核 → 人工确认</option><option value="revision">审核发现问题 → 改稿 → 复审</option><option value="missing">资料不足 → 补充 → 重新分析</option></select>
 <label class="checkbox"><input id="hypothesis" type="checkbox" checked> 没有历史数据时，允许明确标注为假设的受众建议</label>
 <label class="checkbox"><input id="useWebResearch" type="checkbox"> 启动时联网调查受众线索、同类内容与事实依据</label><div id="webResearchFields" hidden><label for="webQuery1">公开搜索词 1</label><input id="webQuery1" maxlength="120" placeholder="如：新手护肤 清洁 防晒"><label for="webQuery2">公开搜索词 2（可选）</label><input id="webQuery2" maxlength="120" placeholder="如：小红书 新手护肤 常见问题"><p class="helper">仅发送你填写的搜索词，不发送上传文件。最多提交 2 组搜索词、尝试读取 6 个网页，最多采用 3 份正文，不增加模型调用。公开搜索不等于平台热榜；没有读到相关正文时会停在付费模型调用之前。</p></div>
-</details><button type="submit" class="primary">保存需求，开始创作 <span>→</span></button><p class="helper">默认免费模拟；真实 AI 会向 DeepSeek 发送需求和选中的素材并产生费用，执行前需再次确认。不会自动发布。</p></form>
+</details><button type="submit" class="primary">保存需求，开始创作 <span>→</span></button><p class="helper">请查看上方运行方式。真实 AI 会向 DeepSeek 发送需求和选中的素材并产生费用，执行前需再次确认；免费模拟仅供体验。不会自动发布。</p></form>
 <div class="intro panel"><span class="eyebrow">第一次使用</span><h2>先完成一份稿件。</h2><ol><li><b>写一个具体主题</b><span>“怎么做、给谁看”，比一个宽泛领域更容易得到可用稿件。</span></li><li><b>补充自己的素材</b><span>经历、步骤、资料原文均可。常用资料可存到资料库。</span></li><li><b>开始后看结果</b><span>想逐步了解过程，点“执行下一步”；想等初稿和审核，点“连续运行”。</span></li><li><b>你检查并确认</b><span>改稿会保留新版本；复审后确认，或明确知晓问题后人工采用，再下载。</span></li></ol><div class="intro-foot">读者理解检查和假设实验是可选进阶工具，不必先完成。</div></div>
 </section>
 <section id="workbench" hidden>

@@ -162,5 +162,5 @@ test('trial inputs keep minute precision after shared metric formatter gains sec
 
 test('ordinary new creation chooses configured real API and never silently starts a paid call',()=>{
  const s=setup();s.eval("provider={ready:true};activeAccountId='a';ops={accounts:[]};busy=false;editing=false;run=null;paidCalls=0;api=async()=>{paidCalls++;return []};refreshMaterialDocuments=()=>{};fillAccountBrief=()=>{};startCreation()");
- assert.equal(s.element('mode').value,'live');assert.equal(s.eval('paidCalls'),0);assert.match(s.element('modeNotice').textContent,/DeepSeek/);
+ assert.equal(s.element('mode').value,'live');assert.doesNotMatch(fs.readFileSync('frontend/index.html','utf8'),/默认免费模拟/);assert.equal(s.eval('paidCalls'),0);assert.match(s.element('modeNotice').textContent,/DeepSeek/);
 });
