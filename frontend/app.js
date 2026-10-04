@@ -198,7 +198,7 @@ function renderHuman(){
  $('sendToPublish').hidden=run.run_status!=='SUCCEEDED';
  $('sendToPublish').textContent=run.mode==='simulation'?'进入模拟发布演练 →':'记录已发布 →';
  let title='需要你的决定',message='';
- if(run.run_status==='SUCCEEDED'){title=run.acceptance?.mode==='manual_override'?'这个版本，已由你人工采用':'这个版本，已由你确认';message=run.acceptance?.mode==='manual_override'?'你已知晓审核问题并采用此版本。审核意见仍保留，这不表示 AI 审核通过；可以下载，发布需另行批准。':'可以下载已确认稿件。审核不能保证事实正确，发布前仍需你检查。';}
+ if(run.run_status==='SUCCEEDED'){title=run.acceptance?.mode==='manual_override'?'稿件已确认 · 人工采用，无需再次确认':'稿件已确认，无需再次确认';message='下一步：下载确认稿，或到下方导出图文和视频素材，再前往平台发布。'+(run.acceptance?.mode==='manual_override'?'本版本由人工采用，不表示 AI 审核通过。':'')+'这里还没有实际发布；发布后再记录作品链接。';}
  else if(run.wait_reason==='missing_material'){title='资料还不够，请补充';message='请提供缺失的真实素材。保存后，两个分析角色会使用新快照重新执行。';}
  else if(run.wait_reason==='hypothesis_permission'){title='没有历史数据，需要你选择';message='本次账号快照没有可用的历史指标。可以允许明确标注的假设模式；也可取消任务，导入历史指标后新建创作。';}
  else if(run.review_execution?.blocked){title='复审次数已用完，由你处理';message=run.review_execution.message;}
@@ -208,7 +208,8 @@ function renderHuman(){
  else if(allowed.includes('accept')){title='审核结束，最后由你决定';message='请检查正文与素材。你可以先修改，也可以确认当前版本；修改后必须重新审核。';}
  if(run.run_status==='WAITING_USER'&&['missing_material','hypothesis_permission'].includes(run.wait_reason)&&!allowed.includes('supplement')){title='已达到本轮补充上限';message=allowed.includes('adopt_manual')?'你仍可修改现有稿件，或知晓问题后人工采用。':'已有记录会保留。请取消本任务，带着完整资料新建创作。';}
  $('humanTitle').textContent=title;$('humanMessage').textContent=message;
- $('issues').innerHTML=(!review&&issueReview?'<p class="helper">以下为已有审核意见，仅供参考；当前版本尚未完成有效复审。</p>':'')+(issueReview?.human_questions||[]).map(q=>'<p class="issue">'+esc(q)+'</p>').join('')+(issueReview?.issues||[]).map(i=>`<div class="issue"><b>${esc(({selected_title:'标题',body:'正文',cta:'互动引导',tags:'标签'})[i.location]||i.location)} · ${esc(i.excerpt)}</b><p>${esc(i.reason)}</p><p>修改建议：${esc(i.suggestion)}</p></div>`).join('');
+ const issueHTML=(!review&&issueReview?'<p class="helper">以下为已有审核意见，仅供参考；当前版本尚未完成有效复审。</p>':'')+(issueReview?.human_questions||[]).map(q=>'<p class="issue">'+esc(q)+'</p>').join('')+(issueReview?.issues||[]).map(i=>`<div class="issue"><b>${esc(({selected_title:'标题',body:'正文',cta:'互动引导',tags:'标签'})[i.location]||i.location)} · ${esc(i.excerpt)}</b><p>${esc(i.reason)}</p><p>修改建议：${esc(i.suggestion)}</p></div>`).join('');
+ $('issues').innerHTML=run.run_status==='SUCCEEDED'&&issueHTML?'<details><summary>查看此前审核记录（仅供回看）</summary><p class="helper">稿件确认已完成。此前意见保留供回看，不代表还有待办，也不表示这些问题已经通过 AI 复审。</p>'+issueHTML+'</details>':issueHTML;
 }
 function draftHTML(d,index,changed=false){const c=d.content;return `<article class="draft-copy ${changed?'changed':''}"><span class="version-tag">版本 ${index+1} · ${d.actor==='user'?'你手动修改':run.mode==='live'?'AI 创作':'模拟创作'} · ${esc(d.ref.slice(0,8))}${run.accepted_ref===d.ref?' · 已确认':''}</span><h3>${esc(c.selected_title)}</h3><pre>${esc(c.body)}</pre><p>${esc(c.cta)}</p><div>${(c.tags||[]).map(t=>'<span class="tag">#'+esc(t)+'</span>').join('')}</div></article>`;}
 function renderDraft(){

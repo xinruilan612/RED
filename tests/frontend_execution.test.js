@@ -305,6 +305,26 @@ test('manual adopted result retains earlier issues and labels user choice',()=>{
  assert.match(s.element('humanMessage').textContent,/不表示 AI 审核通过/);
  assert.match(s.element('issues').innerHTML,/旧问题仍未复审/);
  assert.equal(s.element('adoptManual').hidden,true);
+ assert.equal(s.element('accept').hidden,true);
+ assert.equal(s.element('export').hidden,false);
+ assert.match(s.element('humanTitle').textContent,/稿件已确认.*无需再次确认/);
+ assert.match(s.element('humanMessage').textContent,/下一步：下载确认稿/);
+ assert.match(s.element('issues').innerHTML,/^<details><summary>/);
+ assert.doesNotMatch(s.element('issues').innerHTML,/<details[^>]*\bopen\b/);
+ assert.match(s.element('issues').innerHTML,/不代表还有待办/);
+});
+test('confirmed reviewed draft gives download next step without an empty history panel',()=>{
+ const s=setup();s.eval("run.run_status='SUCCEEDED';run.review={decision:'approved',issues:[]};run.allowed_actions=['export'];actualRenderHuman()");
+ assert.match(s.element('humanTitle').textContent,/稿件已确认，无需再次确认/);
+ assert.equal(s.element('issues').innerHTML,'');
+ assert.equal(s.element('export').hidden,false);
+ assert.match(s.element('humanMessage').textContent,/还没有实际发布/);
+});
+test('unconfirmed review issues remain visible as actionable feedback',()=>{
+ const s=setup();s.eval("run.run_status='WAITING_USER';run.review={decision:'revision_required',issues:[{reason:'仍须核对事实'}]};run.allowed_actions=['edit','adopt_manual'];actualRenderHuman()");
+ assert.match(s.element('issues').innerHTML,/仍须核对事实/);
+ assert.doesNotMatch(s.element('issues').innerHTML,/<details>/);
+ assert.equal(s.element('adoptManual').hidden,false);
 });
 
 test('published archive shows actual records and hides prepublication approval queue',()=>{
