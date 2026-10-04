@@ -92,7 +92,10 @@ def render_images(snapshot):
     measured = title_font.getlength(title)
     if measured > title_width:
         import math
-        title_width = min(title_width, math.ceil(measured / math.ceil(measured / title_width)) + 20)
+        target_lines = math.ceil(measured / title_width)
+        title_width = min(title_width, math.ceil(measured / target_lines) + 20)
+        while len(wrap_text(title, title_font, title_width)) > target_lines and title_width < WIDTH - 2 * MARGIN:
+            title_width = min(WIDTH - 2 * MARGIN, title_width + 35)
     title_lines = wrap_text(title, title_font, title_width)
     require(len(title_lines) <= 10, 'INVALID_INPUT', '标题太长，请先缩短标题')
     lines = wrap_text(body, body_font, WIDTH - 2 * MARGIN)
