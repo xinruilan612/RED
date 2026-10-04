@@ -75,9 +75,8 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
             response=await call_next(request)
         except DomainError as error:
             response=failure(error)
-        frame_ancestors = "'self'" if request.url.path == '/' else "'none'"
         response.headers.update({'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'same-origin',
-            'Content-Security-Policy':f"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors {frame_ancestors}; base-uri 'none'; form-action 'self'"})
+            'Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"})
         return response
 
     def logged(request: Request):
@@ -232,13 +231,9 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
         body,media_type,filename=export_run(run,kind,execution=service.view(run) if kind=='complete' else None)
         return Response(body,media_type=media_type,headers={'Content-Disposition': 'attachment; filename='+filename})
 
-    @app.get('/walkthrough-recorder')
-    def walkthrough_recorder():
-        return FileResponse(FRONTEND/'walkthrough-recorder.html',media_type='text/html')
-
     @app.get('/{asset}')
     def asset(asset: str):
-        require(asset in ('style.css','app.js','operations.js','account.js','account_profile.js','auth.js','knowledge.js','windtunnel.js','windtunnel.css','trials.js','trials.css','guidance.js','media_exports.js','media_exports.css','walkthrough-recorder.js','walkthrough-recorder.css'),'RESOURCE_NOT_FOUND','页面不存在')
+        require(asset in ('style.css','app.js','operations.js','account.js','account_profile.js','auth.js','knowledge.js','windtunnel.js','windtunnel.css','trials.js','trials.css','guidance.js','media_exports.js','media_exports.css'),'RESOURCE_NOT_FOUND','页面不存在')
         require((FRONTEND/asset).is_file(),'RESOURCE_NOT_FOUND','页面不存在')
         media_type = 'text/css' if asset.endswith('.css') else 'text/javascript'
         return FileResponse(FRONTEND/asset, media_type=media_type)

@@ -46,19 +46,6 @@ class ProductionTests(unittest.TestCase):
                 self.assertEqual(response.headers['content-type'].split(';')[0],expected)
                 self.assertEqual(response.headers['x-content-type-options'],'nosniff')
 
-    def test_recording_page_and_same_origin_frame_boundary(self):
-        page=self.client.get('/walkthrough-recorder')
-        self.assertEqual(page.status_code,200)
-        self.assertIn('text/html',page.headers['content-type'])
-        self.assertIn('src="/#library"',page.text)
-        self.assertIn("frame-ancestors 'none'",page.headers['content-security-policy'])
-        self.assertIn("frame-ancestors 'self'",self.client.get('/').headers['content-security-policy'])
-        self.assertIn("frame-ancestors 'none'",self.client.get('/api/session').headers['content-security-policy'])
-        for name,mime in [('walkthrough-recorder.js','text/javascript'),('walkthrough-recorder.css','text/css')]:
-            response=self.client.get('/'+name)
-            self.assertEqual(response.status_code,200)
-            self.assertEqual(response.headers['content-type'].split(';')[0],mime)
-
     def test_login_logout_fresh_device_and_no_password_leak(self):
         self.assertEqual(self.client.get('/api/operations').status_code,401)
         before=self.client.cookies.get('youji_session')
