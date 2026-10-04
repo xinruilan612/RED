@@ -16,6 +16,9 @@ def build():
     for filename, data in checks.items():
         path = ROOT / 'output/pdf' / filename
         assert hashlib.sha256(path.read_bytes()).hexdigest() == data['sha256']
+        if 'source' in data:
+            source = ROOT / data['source']
+            assert hashlib.sha256(source.read_bytes()).hexdigest() == data['source_sha256']
         files[filename] = path
     for path in (ROOT / 'docs/submission').glob('[0-9][0-9]_*.md'):
         files['可编辑正文/' + path.name] = path

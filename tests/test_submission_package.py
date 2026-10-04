@@ -59,6 +59,20 @@ class SubmissionPackageTests(unittest.TestCase):
                 self.assertIn(package.NAME + '/最新验收摘要/REAL_WORKFLOW_ACCEPTANCE_20261004.md', result.namelist())
                 self.assertIsNone(result.testzip())
 
+    def test_changed_manuscript_is_rejected_before_packaging(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.prepare(root)
+            checks_path = root / 'docs/submission/evidence/pdf-checks.json'
+            checks = json.loads(checks_path.read_text())
+            source = root / 'docs/submission/00_guide.md'
+            checks['0.pdf'].update(source='docs/submission/00_guide.md',
+                source_sha256=hashlib.sha256(source.read_bytes()).hexdigest())
+            checks_path.write_text(json.dumps(checks))
+            source.write_text('changed after PDF validation')
+            with patch.object(package, 'ROOT', root), self.assertRaises(AssertionError):
+                package.build()
+
     def test_changed_historical_source_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

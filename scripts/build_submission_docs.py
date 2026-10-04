@@ -120,9 +120,9 @@ def build(font_path=None):
     OUTPUT.mkdir(parents=True, exist_ok=True)
     styles = {
         'body': ParagraphStyle('body', fontName='CN', fontSize=10.5, leading=17, spaceAfter=8, wordWrap='CJK'),
-        'h1': ParagraphStyle('h1', fontName='CN', fontSize=20, leading=28, spaceAfter=18),
-        'h2': ParagraphStyle('h2', fontName='CN', fontSize=15, leading=22, spaceAfter=12),
-        'h3': ParagraphStyle('h3', fontName='CN', fontSize=12, leading=19, spaceBefore=9, spaceAfter=6),
+        'h1': ParagraphStyle('h1', fontName='CN', fontSize=20, leading=28, spaceAfter=18, keepWithNext=True),
+        'h2': ParagraphStyle('h2', fontName='CN', fontSize=15, leading=22, spaceAfter=12, keepWithNext=True),
+        'h3': ParagraphStyle('h3', fontName='CN', fontSize=12, leading=19, spaceBefore=9, spaceAfter=6, keepWithNext=True),
         'cell': ParagraphStyle('cell', fontName='CN', fontSize=9, leading=14, wordWrap='CJK'),
         'code': ParagraphStyle('code', fontName='CN', fontSize=8.5, leading=13, wordWrap='CJK', spaceAfter=5),
     }
