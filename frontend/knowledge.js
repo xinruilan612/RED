@@ -43,7 +43,7 @@ async function renderLibrary(){
 function mountSourceSearch(){
  if(!websiteSession?.auth_required)return;
  const account=activeAccountId;
- $('operationsContent').insertAdjacentHTML('afterbegin',`<section class="panel source-search"><div class="detail-heading"><div><span class="eyebrow">PUBLIC SOURCES</span><h2>搜索真实信息来源</h2></div>${badge('公开网页 · 非平台热榜','neutral')}</div><p class="muted">搜索词会发送给公开搜索服务；仅发送你填写的关键词。摘要是线索，读取正文并保存后才会进入账号资料库。</p><form id="sourceSearchForm" class="search-line"><select id="sourceProvider" aria-label="搜索来源"><option value="wikipedia">百科资料 · 背景知识</option><option value="bing">公开网页 · 实验搜索</option></select><input id="sourceQuery" maxlength="120" minlength="2" required aria-label="搜索公开网页" placeholder="例如：衬衫 / 棉 / 亚麻"><button class="primary">联网搜索</button></form><form id="sourceUrlForm" class="search-line"><input id="sourceUrl" type="url" required aria-label="读取网页链接" placeholder="或粘贴公开网页链接 https://…"><button class="secondary">读取正文并保存</button></form><div id="sourceSearchResult" class="source-results"></div></section>`);
+ $('operationsContent').insertAdjacentHTML('afterbegin',`<section class="panel source-search"><div class="detail-heading"><div><span class="eyebrow">PUBLIC SOURCES</span><h2>搜索真实信息来源</h2></div>${badge('公开网页 · 非平台热榜','neutral')}</div><p class="muted">搜索词会发送给公开搜索服务；仅发送你填写的关键词。摘要是线索，读取正文并保存后才会进入账号资料库。</p><form id="sourceSearchForm" class="search-line"><select id="sourceProvider" aria-label="搜索来源"><option value="bing">免费公开网页搜索</option><option value="wikipedia">百科资料 · 背景知识</option><option value="brave">Brave 网页搜索 · 需独立密钥</option></select><input id="sourceQuery" maxlength="120" minlength="2" required aria-label="搜索公开网页" placeholder="例如：衬衫 / 棉 / 亚麻"><button class="primary">联网搜索</button></form><form id="sourceUrlForm" class="search-line"><input id="sourceUrl" type="url" required aria-label="读取网页链接" placeholder="或粘贴公开网页链接 https://…"><button class="secondary">读取正文并保存</button></form><div id="sourceSearchResult" class="source-results"></div></section>`);
  const importUrl=async(url,button)=>{
   button.disabled=true;const text=button.textContent;button.textContent='正在读取…';
   try{const doc=await api('/api/sources/import','POST',{url,account_id:account});toast('已保存到 '+(ops.accounts.find(a=>a.id===account)?.name||'原账号')+' 的资料库：'+doc.title);button.textContent='已保存正文';}
@@ -51,13 +51,13 @@ function mountSourceSearch(){
  };
  $('sourceUrlForm').onsubmit=e=>{e.preventDefault();importUrl($('sourceUrl').value,e.submitter);};
  $('sourceSearchForm').onsubmit=async e=>{
-  e.preventDefault();const request=++sourceLoad;const button=e.submitter;button.disabled=true;$('sourceSearchResult').textContent='正在搜索公开来源…';
+  e.preventDefault();const request=++sourceLoad;const button=e.submitter;button.disabled=true;$('sourceSearchResult').textContent='正在搜索，最长约 20 秒；不会调用 AI…';
   try{
    const result=await api('/api/sources/search','POST',{query:$('sourceQuery').value,account_id:account,provider:$('sourceProvider').value});
    if(request!==sourceLoad||account!==activeAccountId||currentPage!=='trends')return;
-   $('sourceSearchResult').innerHTML=`<p class="helper">${esc(result.provider)} · ${esc(result.note)}</p>`+((result.results.map((r,i)=>`<article class="source-card"><div class="detail-heading"><h3>${esc(r.title)}</h3>${badge('摘要 · 正文未读取','amber')}</div><p>${esc(r.snippet)}</p><p class="helper">${esc(new URL(r.url).hostname)} · 检索时间 ${esc(new Date(r.fetched_at).toLocaleString())} · 发布时间未核实</p><div class="buttons"><a class="button quiet" href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">打开来源 ↗</a><button class="secondary" data-read-source="${i}">读取正文并保存</button></div></article>`).join('')||'<p class="helper">没有搜索结果，请换一组关键词。</p>'));
+   $('sourceSearchResult').innerHTML=`<p class="helper">${esc(result.provider)} · ${result.cache_hit?'复用最近 5 分钟结果 · ':''}${esc(result.note)}</p>`+((result.results.map((r,i)=>`<article class="source-card"><div class="detail-heading"><h3>${esc(r.title)}</h3>${badge('摘要 · 正文未读取','amber')}</div><p>${esc(r.snippet)}</p><p class="helper">${esc(new URL(r.url).hostname)} · 检索时间 ${esc(new Date(r.fetched_at).toLocaleString())} · 发布时间未核实</p><div class="buttons"><a class="button quiet" href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">打开来源 ↗</a><button class="secondary" data-read-source="${i}">读取正文并保存</button></div></article>`).join('')||'<p class="helper">没有找到相关结果。试试更短的关键词，或粘贴来源链接；也可以到资料库直接粘贴原文 / 上传文件，然后继续创作。</p>'));
    document.querySelectorAll('[data-read-source]').forEach(b=>b.onclick=()=>importUrl(result.results[Number(b.dataset.readSource)].url,b));
-  }catch(err){if(request===sourceLoad&&account===activeAccountId&&currentPage==='trends'){$('sourceSearchResult').textContent='来源暂不可用，没有生成替代结果。可以粘贴可访问的网页链接。';error(err);}}
+  }catch(err){if(request===sourceLoad&&account===activeAccountId&&currentPage==='trends'){$('sourceSearchResult').textContent='搜索暂不可用。已保存的资料仍可使用；你可以重试、粘贴网页链接，或到资料库粘贴原文 / 上传文件继续。';error(err);}}
   finally{button.disabled=false;}
  };
 }

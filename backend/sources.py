@@ -1,4 +1,11 @@
 """Bounded public-web retrieval with DNS pinning and explicit source provenance."""
+import copy
+import os
+import queue
+import threading
+from contextlib import contextmanager
+from contextvars import ContextVar, copy_context
+
 import http.client
 import ipaddress
 import json
@@ -12,6 +19,56 @@ from html import unescape
 from html.parser import HTMLParser
 from urllib.parse import quote, unquote, urlencode, urljoin, urlsplit, urlunsplit
 from backend.contracts import require, DomainError
+
+
+_DEADLINE = ContextVar('public_source_deadline', default=None)
+_CACHE = {}
+_CACHE_LOCK = threading.Lock()
+_NETWORK_SLOTS = threading.BoundedSemaphore(16)
+
+@contextmanager
+def time_budget(seconds):
+    existing = _DEADLINE.get()
+    token = _DEADLINE.set(min(existing, time.monotonic()+seconds) if existing else time.monotonic()+seconds)
+    try:
+        yield
+    finally:
+        _DEADLINE.reset(token)
+
+
+def remaining(cap=8):
+    deadline = _DEADLINE.get()
+    value = cap if deadline is None else min(cap, deadline-time.monotonic())
+    require(value > 0, 'SOURCE_UNAVAILABLE', '等待来源已超时；已取得的内容会保留，可重试或手工补充资料')
+    return value
+
+
+def bounded_dns(host, port):
+    # A stuck system resolver must not hold the user request indefinitely.
+    result = queue.Queue(maxsize=1)
+    def resolve():
+        try: result.put((True, socket.getaddrinfo(host, port, type=socket.SOCK_STREAM)))
+        except OSError: result.put((False, None))
+    threading.Thread(target=resolve, daemon=True).start()
+    try: ok, addresses = result.get(timeout=remaining())
+    except queue.Empty: raise DomainError('SOURCE_UNAVAILABLE', '来源地址解析超时，请重试或粘贴原文') from None
+    require(ok, 'SOURCE_UNAVAILABLE', '无法解析来源地址，请重试或粘贴原文')
+    return addresses
+
+
+def cached(key, ttl, create):
+    with _CACHE_LOCK:
+        entry = _CACHE.get(key)
+        if entry and time.monotonic()-entry[0] < ttl:
+            value = copy.deepcopy(entry[1]); value['cache_hit'] = True
+            return value
+    remaining()
+    value = create()
+    with _CACHE_LOCK:
+        # Cache only public source content, never account information or credentials.
+        if len(_CACHE) >= 128: _CACHE.pop(next(iter(_CACHE)))
+        _CACHE[key] = (time.monotonic(), copy.deepcopy(value))
+    return value
 
 
 def public_url(value):
@@ -28,7 +85,7 @@ def public_url(value):
 
 
 def resolve_public(host,port):
-    addresses=socket.getaddrinfo(host,port,type=socket.SOCK_STREAM)
+    addresses=bounded_dns(host,port)
     require(addresses,'SOURCE_UNAVAILABLE','无法解析来源地址')
     for result in addresses:
         ip=ipaddress.ip_address(result[4][0])
@@ -44,8 +101,8 @@ def fetch_public(url, maximum=1_500_000):
         connection=None
         try:
             ip=resolve_public(p.hostname,port)
-            connection=http.client.HTTPConnection(p.hostname,port,timeout=8)
-            sock=socket.create_connection((ip,port),timeout=8)
+            connection=http.client.HTTPConnection(p.hostname,port,timeout=remaining())
+            sock=socket.create_connection((ip,port),timeout=remaining())
             connection.sock=sock
             if p.scheme=='https':
                 context=ssl.create_default_context()
@@ -53,6 +110,7 @@ def fetch_public(url, maximum=1_500_000):
                 sock=context.wrap_socket(sock,server_hostname=p.hostname)
             connection.sock=sock
             connection.request('GET',urlunsplit(('','',p.path or '/',p.query,'')),headers={'Host':p.netloc,'User-Agent':'YoujiResearch/0.6 (+public-source-preview)','Accept':'text/html,application/rss+xml,application/xml,text/xml,text/plain','Accept-Encoding':'identity','Connection':'close'})
+            sock.settimeout(remaining())
             response=connection.getresponse()
             if response.status in (301,302,303,307,308):
                 location=response.getheader('Location');require(location,'SOURCE_UNAVAILABLE','来源跳转无效')
@@ -63,7 +121,8 @@ def fetch_public(url, maximum=1_500_000):
             require(any(t in mime for t in ('text/html','text/plain','xml','rss')),'SOURCE_UNAVAILABLE','首版只读取网页与文本，请使用资料上传导入 PDF')
             body=[];size=0;started=time.monotonic()
             while True:
-                block=response.read(8192)
+                sock.settimeout(remaining())
+                block=response.read1(8192)
                 if not block: break
                 body.append(block);size+=len(block)
                 require(size<=maximum and time.monotonic()-started<20,'SOURCE_UNAVAILABLE','来源正文过大或读取超时')
@@ -117,6 +176,13 @@ class Article(HTMLParser):
 
 
 def read_article(url, fetch=None):
+    if fetch is None:
+        with time_budget(15):
+            return cached(('article', public_url(url)), 1800, lambda: _read_article(url))
+    return _read_article(url, fetch)
+
+
+def _read_article(url, fetch=None):
     url=public_url(url);parsed=urlsplit(url)
     if fetch is None and parsed.scheme=='https' and parsed.netloc=='zh.wikipedia.org' and parsed.path.startswith('/wiki/'):
         response=fetch_search('https://zh.wikipedia.org/w/api.php?'+urlencode(dict(action='query',prop='extracts',explaintext='1',titles=unquote(parsed.path[6:]),format='json',redirects='1')))
@@ -136,7 +202,25 @@ def read_article(url, fetch=None):
     return {**result,'url':response['url'],'fetched_at':response['fetched_at'],'verification':'已读取公开正文，未独立核实事实；时间来自页面声明'}
 
 
-def fetch_search(url):
+def fetch_search(url, headers=None):
+    # urllib's timeout does not bound system DNS or every TLS/proxy phase.
+    # Bound the calling request even if the OS resolver stalls. Fixed-provider
+    # work can finish in a daemon; it never commits evidence after the timeout.
+    wait=remaining(10)
+    require(_NETWORK_SLOTS.acquire(blocking=False),'SOURCE_UNAVAILABLE','搜索服务正忙，请稍后重试或手工补充资料')
+    result=queue.Queue(maxsize=1); context=copy_context()
+    def request():
+        try: result.put((True,context.run(_fetch_search,url,headers)))
+        except Exception as error: result.put((False,error))
+        finally: _NETWORK_SLOTS.release()
+    threading.Thread(target=request,daemon=True).start()
+    try: ok,value=result.get(timeout=wait)
+    except queue.Empty: raise DomainError('SOURCE_UNAVAILABLE','搜索等待超时，请重试或使用已保存资料') from None
+    if not ok: raise value
+    return value
+
+
+def _fetch_search(url, headers=None):
     """Fixed search provider; no caller-controlled hosts or redirects.
 
     The standard HTTPS handler negotiates the provider connection. Arbitrary
@@ -145,13 +229,22 @@ def fetch_search(url):
     from urllib.request import Request, build_opener, HTTPRedirectHandler
     from urllib.error import URLError
     parsed=urlsplit(url)
-    require(parsed.scheme=='https' and (parsed.netloc,parsed.path) in (('www.bing.com','/search'),('cn.bing.com','/search'),('zh.wikipedia.org','/w/api.php')),'FORBIDDEN','搜索服务地址无效')
+    require(parsed.scheme=='https' and (parsed.netloc,parsed.path) in (('www.bing.com','/search'),('cn.bing.com','/search'),('zh.wikipedia.org','/w/api.php'),('api.search.brave.com','/res/v1/web/search')),'FORBIDDEN','搜索服务地址无效')
     class NoRedirect(HTTPRedirectHandler):
         def redirect_request(self,*args,**kwargs):
             raise DomainError('SOURCE_UNAVAILABLE','搜索服务要求跳转，已停止')
     try:
-        with build_opener(NoRedirect()).open(Request(url,headers={'Accept':'application/json,application/rss+xml,text/xml','User-Agent':'YoujiResearch/0.6 (public-source-preview)','Connection':'close'}),timeout=12) as response:
-            data=response.read(500_001)
+        with build_opener(NoRedirect()).open(Request(url,headers={'Accept':'application/json,application/rss+xml,text/xml','User-Agent':'YoujiResearch/0.6 (public-source-preview)','Connection':'close', **(headers or {})}),timeout=remaining(10)) as response:
+            chunks=[]; size=0
+            while size <= 500_000:
+                remaining(10)
+                # read1 returns available bytes; a trickling source cannot reset the total deadline.
+                transport=getattr(getattr(getattr(response,'fp',None),'raw',None),'_sock',None)
+                if transport is not None: transport.settimeout(remaining(10))
+                block=response.read1(min(8192,500_001-size))
+                if not block: break
+                chunks.append(block); size += len(block)
+            data=b''.join(chunks)
             require(len(data)<=500_000,'SOURCE_UNAVAILABLE','搜索结果超过大小限制')
             return {'text':data.decode('utf-8'),'fetched_at':datetime.now(timezone.utc).isoformat()}
     except DomainError:raise
@@ -172,7 +265,36 @@ def compact_query(query):
 
 def search_web(query, fetch=None, provider='bing'):
     require(isinstance(query,str) and 2<=len(query.strip())<=120,'INVALID_INPUT','搜索词需为 2 至 120 个字符')
-    require(provider in ('bing','wikipedia'),'INVALID_INPUT','搜索来源无效')
+    require(provider in ('bing','wikipedia','brave'),'INVALID_INPUT','搜索来源无效')
+    if fetch is None:
+        with time_budget(20):
+            return cached(('search', provider, query), 300, lambda: _search_web(query, provider=provider))
+    return _search_web(query, fetch=fetch, provider=provider)
+
+
+def _search_web(query, fetch=None, provider='bing'):
+    require(isinstance(query,str) and 2<=len(query.strip())<=120,'INVALID_INPUT','搜索词需为 2 至 120 个字符')
+    require(provider in ('bing','wikipedia','brave'),'INVALID_INPUT','搜索来源无效')
+    if provider=='brave':
+        key=os.environ.get('BRAVE_SEARCH_API_KEY','').strip()
+        require(key or fetch, 'SOURCE_UNAVAILABLE', 'Brave 搜索尚未配置密钥；请选择免费公开搜索，或粘贴链接 / 原文。DeepSeek 密钥不能用于网页搜索。')
+        url='https://api.search.brave.com/res/v1/web/search?'+urlencode(dict(q=compact_query(query),search_lang='zh-hans',count=8))
+        response=fetch(url) if fetch else fetch_search(url, headers={'X-Subscription-Token':key})
+        try:
+            rows=json.loads(response['text']).get('web',{}).get('results',[])
+            results=[]; seen=set()
+            for row in rows[:8]:
+                try: url=public_url(row['url'])
+                except DomainError: continue
+                if url in seen: continue
+                seen.add(url)
+                results.append({'title':unescape(re.sub('<[^>]+>','',row['title']))[:200], 'url':url,
+                    'snippet':unescape(re.sub('<[^>]+>','',row.get('description','')))[:600],
+                    'fetched_at':response['fetched_at'],'published_at':None,'body_read':False,'source_type':'search_result'})
+        except (ValueError,KeyError,TypeError):
+            raise DomainError('SOURCE_UNAVAILABLE','Brave 返回格式无效，请切换免费公开搜索或手工补充资料') from None
+        return {'query':query,'provider':'Brave Search API','searched_at':response['fetched_at'],'results':results,
+            'note':'Brave Search API 提供公开网页线索；不是平台热榜。该服务需单独密钥并可能产生搜索费用，不自动重试。读取正文后才进入资料库。'}
     if provider=='wikipedia':
         response=(fetch or fetch_search)('https://zh.wikipedia.org/w/api.php?'+urlencode(dict(action='query',list='search',srsearch=query.strip(),format='json',srlimit=8)))
         try:
@@ -185,7 +307,14 @@ def search_web(query, fetch=None, provider='bing'):
         return {'query':query,'provider':'维基百科公开 API · 背景知识','searched_at':response['fetched_at'],'results':results,
                 'note':'用于查找背景知识，不代表最新新闻或平台热度。摘要需读取正文后才能进入资料证据；百科内容仍需核实。'}
     effective_query=compact_query(query)
-    response=(fetch or fetch_search)('https://cn.bing.com/search?format=rss&q='+quote(effective_query))
+    attempts=[]
+    try:
+        response=(fetch or fetch_search)('https://cn.bing.com/search?format=rss&q='+quote(effective_query))
+    except DomainError as error:
+        if fetch is not None: raise
+        attempts.append({'provider':'Bing 中文 RSS','error':str(error)})
+        remaining()
+        response=fetch_search('https://www.bing.com/search?format=rss&q='+quote(effective_query))
     try: root=ET.fromstring(response['text'])
     except ET.ParseError: raise DomainError('SOURCE_UNAVAILABLE','搜索源返回格式变化，请稍后再试') from None
     from backend.knowledge import tokens
@@ -206,5 +335,5 @@ def search_web(query, fetch=None, provider='bing'):
                         'fetched_at':response['fetched_at'],'published_at':None,'body_read':False,'source_type':'search_result'})
         if len(results)==8:break
     return {'query':query,'provider':'Bing 中文公开 RSS 搜索（实验接入）','effective_query':effective_query,'searched_at':response['fetched_at'],'results':results,
-            'excluded_unrelated':excluded,
+            'excluded_unrelated':excluded,'attempts':attempts,
             'note':f'只返回搜索摘要，不代表实时热榜；已隐藏 {excluded} 条无关键词匹配的结果。需读取正文后才能进入资料证据。公开渠道可能限流或无相关结果。'}

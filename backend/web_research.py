@@ -18,14 +18,20 @@ def selection(value, mode):
 
 
 def collect(queries, before_request=lambda:None):
+    with sources.time_budget(35):
+        return _collect(queries, before_request)
+
+
+def _collect(queries, before_request=lambda:None):
     report={'status':'insufficient','queries':queries,'searches':[],'reads':[],'sources':[],
             'searched_at':datetime.now(timezone.utc).isoformat(),'model_calls':0,
-            'limits':{'searches':2,'reads':6,'excerpt_chars':400},
+            'limits':{'searches':2,'reads':6,'excerpt_chars':400,'total_seconds':35},
             'limitation':'公开搜索线索，不是平台热榜、评论全量数据或真实受众统计；读取正文不等于独立核实。'}
     candidates=[];seen=set()
     for query in queries[:2]:
         before_request()
         try:
+            sources.remaining()
             result=sources.search_web(query)
             rows=result['results'][:8]
             report['searches'].append({'query':query,'provider':result['provider'],'effective_query':result.get('effective_query',query),'results':rows,'error':None})
@@ -39,6 +45,7 @@ def collect(queries, before_request=lambda:None):
         if len(report['sources'])>=3: break
         before_request()
         try:
+            sources.remaining()
             article=sources.read_article(candidate['url'])
             body=article['text'];matched=wanted & set(tokens(body))
             require(matched and not any(p in body[:600] for p in ('请完成安全验证','访问过于频繁','请输入验证码')),
@@ -53,6 +60,8 @@ def collect(queries, before_request=lambda:None):
         except DomainError as error:
             report['reads'].append({'url':candidate['url'],'status':'failed','error':str(error)})
     if report['sources']: report['status']='complete'
+    report['partial']=bool(report['sources']) and any(s.get('error') for s in report['searches']+report['reads'])
+    report['next_step']='已取得的正文可用于创作；失败来源可稍后重试。' if report['sources'] else '未取得相关正文。请换简短关键词，或关闭联网调查后使用你粘贴 / 上传的资料继续创作。'
     return report
 
 
