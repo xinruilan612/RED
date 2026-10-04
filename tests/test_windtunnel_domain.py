@@ -293,5 +293,13 @@ class WindtunnelDomainTests(unittest.TestCase):
         self.assertIn('模拟流程；不代表模型或真实读者评测', self.wind.export(run))
 
 
+    def test_author_questions_are_separate_from_real_feedback_in_prompt(self):
+        run=self.create(feedback=[{'text':'洗脸后先涂什么？','provenance':'author','origin':'作者验收设定','permission':True}])
+        messages,data=messages_for(run,'wt_conditions')
+        self.assertEqual(data['feedback'],[])
+        self.assertEqual(data['author_questions'],['洗脸后先涂什么？'])
+        self.assertIn('source_ids=[]',messages[0]['content'])
+
+
 if __name__ == '__main__':
     unittest.main()

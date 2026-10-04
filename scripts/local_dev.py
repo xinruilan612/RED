@@ -91,6 +91,7 @@ def stop_children(children):
 def serve(env):
     host, port, origin = endpoint(env)
     with socket.socket() as probe:
+        probe.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
             probe.bind((host, port))
         except OSError:

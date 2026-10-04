@@ -145,10 +145,22 @@ test('metric default uses actual save-time seconds while edited history and unkn
 
 test('insufficient analyses explain why no memory exists instead of asking to repeat them',()=>{
  const s=setup();s.eval("activeAccountId='a';ops={memories:[],analyses:[{account_id:'a',status:'insufficient'}]};renderMemory()");
- assert.match(s.element('operationsContent').innerHTML,/已保存分析/);assert.match(s.element('operationsContent').innerHTML,/不要填造缺失数据/);assert.match(s.element('operationsContent').innerHTML,/data-go-page="metrics"/);
+ assert.match(s.element('operationsContent').innerHTML,/每篇复盘都有下一步建议/);assert.match(s.element('operationsContent').innerHTML,/积累可比较的作品/);assert.match(s.element('operationsContent').innerHTML,/data-go-page="metrics"/);
 });
 
 test('trial inputs keep minute precision after shared metric formatter gains seconds',()=>{
  const s=setup();
  assert.equal(s.eval('dateInput().length'),19);assert.equal(s.eval('trialDate().length'),16);
+});
+
+ test('first real recap is readable and actionable without empty comparison rows',()=>{
+ const s=setup();s.eval(`provider={ready:true};ops={publications:[{id:'p',content:{selected_title:'早间护肤'}}],metrics:[{id:'m',values:{views:19,saves:5,likes:2,comments:0}}]};report={id:'a',publication_id:'p',metric_id:'m',status:'insufficient',source_type:'manual',comparisons:{saves:{baseline:null}},flags:[],metric_refs:['m']}`);
+ const html=s.eval('analysisHTML(report)');
+ assert.match(html,/>19</);assert.match(html,/>5</);assert.match(html,/下一篇改什么/);assert.match(html,/免费，不调用 AI/);assert.match(html,/data-ai-review-open/);assert.doesNotMatch(html,/不足以比较|<pre>|历史中位数/);
+ s.eval("report.source_type='simulation'");assert.doesNotMatch(s.eval('analysisHTML(report)'),/data-ai-review-open/);assert.match(s.eval('analysisHTML(report)'),/示例数据计算/);
+ });
+
+test('ordinary new creation chooses configured real API and never silently starts a paid call',()=>{
+ const s=setup();s.eval("provider={ready:true};activeAccountId='a';ops={accounts:[]};busy=false;editing=false;run=null;paidCalls=0;api=async()=>{paidCalls++;return []};refreshMaterialDocuments=()=>{};fillAccountBrief=()=>{};startCreation()");
+ assert.equal(s.element('mode').value,'live');assert.equal(s.eval('paidCalls'),0);assert.match(s.element('modeNotice').textContent,/DeepSeek/);
 });

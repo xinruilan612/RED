@@ -176,6 +176,11 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
         auth.throttle('operations-plan:'+user['owner'],12,3600)
         return service.operations_planner.generate(user['owner'],data)
 
+    @app.post('/api/operations/ai-review')
+    def ai_review(data: dict,user=Depends(logged)):
+        auth.throttle('ai-review:'+user['owner'],12,3600)
+        return service.analytics_review.generate(user['owner'],data)
+
     @app.get('/api/operations/due')
     def due(user=Depends(logged)):
         from backend.planning import due_reviews
@@ -212,9 +217,22 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
     @app.get('/')
     def index(): return FileResponse(FRONTEND/'index.html')
 
+    @app.get('/api/runs/{run_id}/media/capabilities')
+    def media_capabilities(run_id: str,user=Depends(logged)):
+        store.get(run_id,user['owner'])
+        from backend.media_exports import capabilities
+        return capabilities()
+
+    @app.get('/api/runs/{run_id}/media-export')
+    def media_export(run_id: str,kind: str='images',user=Depends(logged)):
+        auth.throttle('media-export:'+user['owner'],20,3600)
+        from backend.media_exports import export_run
+        body,media_type,filename=export_run(store.get(run_id,user['owner']),kind)
+        return Response(body,media_type=media_type,headers={'Content-Disposition': 'attachment; filename='+filename})
+
     @app.get('/{asset}')
     def asset(asset: str):
-        require(asset in ('style.css','app.js','operations.js','account.js','account_profile.js','auth.js','knowledge.js','windtunnel.js','windtunnel.css','trials.js','trials.css','guidance.js'),'RESOURCE_NOT_FOUND','页面不存在')
+        require(asset in ('style.css','app.js','operations.js','account.js','account_profile.js','auth.js','knowledge.js','windtunnel.js','windtunnel.css','trials.js','trials.css','guidance.js','media_exports.js','media_exports.css'),'RESOURCE_NOT_FOUND','页面不存在')
         require((FRONTEND/asset).is_file(),'RESOURCE_NOT_FOUND','页面不存在')
         media_type = 'text/css' if asset.endswith('.css') else 'text/javascript'
         return FileResponse(FRONTEND/asset, media_type=media_type)

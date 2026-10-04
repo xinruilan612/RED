@@ -3,7 +3,7 @@ let ops=null,chosenTrend=null,opsBusy=false,currentPage='overview',platformFilte
 const platformNames={xiaohongshu:'小红书',douyin:'抖音'};
 const pubStates={AWAITING_APPROVAL:'待发布确认',APPROVED:'待执行',SIMULATED:'已演练 · 未真实发布',MANUAL_REPORTED:'已发布 · 人工记录'};
 const memoryStates={proposed:'待你决定',accepted:'已接受',rejected:'已拒绝',revoked:'已撤销',superseded:'指标已修正 · 经验失效'};
-const pageInfo={overview:['THIS WEEK / 00','把每周运营，连成长期积累。','目标、创作和复盘，都围绕当前账号展开。'],accounts:['ACCOUNT / PROFILE','认识你的账号，也记住每一次选择。','定位档案、历史作品与表达偏好，持续保存在同一个账号里。'],trends:['DISCOVER / 01','找到下一个值得写的选题。','从趋势线索出发，让每一次创作都有依据。'],studio:['CREATE / 02','把好选题，变成好内容。','受众洞察、素材研究、创作与审核，协作过程始终可见。'],publish:['ARCHIVE / 03','发布之后，把作品留在这里。','在小红书或抖音发布后，记录实际内容、作品链接和时间，持续积累自己的作品档案。'],metrics:['MEASURE / 04','看看内容带来了什么。','保留数据来源与观察窗口，缺失数据不记为零。'],memory:['LEARN / 05','让下一次创作，更有依据。','从历史表现提取实验建议，由你决定哪些经验值得保留。']};
+const pageInfo={overview:['THIS WEEK / 00','把每周运营，连成长期积累。','目标、创作和复盘，都围绕当前账号展开。'],accounts:['ACCOUNT / PROFILE','认识你的账号，也记住每一次选择。','定位档案、历史作品与表达偏好，持续保存在同一个账号里。'],trends:['DISCOVER / 01','找到下一个值得写的选题。','从趋势线索出发，让每一次创作都有依据。'],studio:['CREATE / 02','把好选题，变成好内容。','受众洞察、素材研究、创作与审核，协作过程始终可见。'],publish:['ARCHIVE / 03','发布之后，把作品留在这里。','在小红书或抖音发布后，记录实际内容、作品链接和时间，持续积累自己的作品档案。'],metrics:['MEASURE / 04','看看内容带来了什么。','记录你在平台看到的数字，得到下一篇的建议。'],memory:['LEARN / 05','让下一次创作，更有依据。','从历史表现提取实验建议，由你决定哪些经验值得保留。']};
 const dateText=value=>value?new Date(value).toLocaleString('zh-CN',{hour12:false}):'固定示例 · 无采集时间';
 const badge=(text,kind='')=>`<span class="pill ${kind}">${esc(text)}</span>`;
 const empty=(title,body)=>`<div class="empty-state"><span class="empty-symbol">↗</span><h2>${esc(title)}</h2><p>${esc(body)}</p></div>`;
@@ -57,7 +57,7 @@ function chooseTrend(id){
  $('audience').value=trend.category==='穿搭'?'关注日常穿搭与服饰搭配的读者':trend.category==='学习'?'希望改善学习习惯的大学生':'关注日常生活方式的读者';
  $('audience').value=currentAccount()?.profile.audience||$('audience').value;
  $('tone').value=currentAccount()?.profile.tone||'真实、具体、有场景感';$('material').value='';
- $('mode').value='simulation';$('mode').onchange();
+ $('mode').value=trend.source_type!=='example'&&provider?.ready?'live':'simulation';$('mode').onchange();
  $('selectedTrend').textContent=(trend.source_type==='example'?'示例选题 · 非实时热点':'用户导入来源 · 尚未联网核验')+'：'+trend.angle;
  $('selectedTrend').hidden=false;$('clearTrend').hidden=false;
 }
@@ -120,7 +120,7 @@ function renderMemory(){
 function memoryNextStep(){
  const reports=accountRows('analyses').filter(a=>a.status!=='superseded');
  if(!reports.length)return '还没有分析记录。先在“作品与复盘”保存一次指标，再点“分析这条记录”。';
- if(reports.every(a=>a.status==='insufficient'))return '已保存分析，但观察窗口或可比样本不足，因此没有生成经验。按复盘提示补足 24 小时、72 小时或 7 天观察；不要填造缺失数据。';
+ if(reports.every(a=>a.status==='insufficient'))return '每篇复盘都有下一步建议。先尝试并记录后续表现，积累可比较的作品后再保存长期经验。';
  return '已有复盘，但尚无满足证据条件的候选经验。查看复盘的限制与下一次建议；不会强行生成经验。';
 }
  document.querySelector('.workspace-nav').onclick=e=>{const b=e.target.closest('[data-page]');if(b&&!busy&&dirtyGuard()){auto=false;showPage(b.dataset.page);}};
@@ -129,12 +129,21 @@ $('targetPlatform').onchange=()=>{if(chosenTrend&&chosenTrend.platform!==$('targ
 $('sendToPublish').onclick=async()=>{try{if(!ops)ops=await api('/api/operations');if(run.mode==='simulation'){if(!ops.publications.some(p=>p.run_id===run.run_id&&p.draft_ref===run.accepted_ref)){if(!await operate('prepare',{run_id:run.run_id,draft_ref:run.accepted_ref}))return;}showPage('publish');if($('simulationArchive'))$('simulationArchive').open=true;return;}showPage('publish');await openPublishedArchive(run.run_id);}catch(e){error(e);}};
 $('operationsContent').onclick=async e=>{
  const b=e.target.closest('button');if(!b||opsBusy)return;
+ if(b.dataset.aiReviewOpen){$('ai-review-confirm-'+b.dataset.aiReviewOpen).hidden=false;return;}
+ if(b.dataset.aiReviewClose){$('ai-review-confirm-'+b.dataset.aiReviewClose).hidden=true;return;}
+ if(b.dataset.reviewCreate){const a=ops.analyses.find(x=>x.id===b.dataset.reviewCreate);const suggestion=a.ai_review||plainReview(a);if(startCreation()){$('topic').value=suggestion.next_topic;toast('已带入下一篇主题；请补充自己的素材。');}return;}
+ if(b.dataset.aiReview){
+  opsBusy=true;b.disabled=true;b.textContent='正在真实调用 AI，请稍候…';
+  try{const result=await api('/api/operations/ai-review','POST',{id:b.dataset.aiReview,version:ops.version,key:crypto.randomUUID(),acknowledge:true});ops=result.operations;renderMetrics();toast('真实 AI 复盘已保存，调用记录可查看。');}
+  catch(err){error(err);b.textContent='生成未完成，请查看提示';b.disabled=false;}
+  finally{opsBusy=false;}return;
+ }
  if(b.dataset.filter){platformFilter=b.dataset.filter;renderTrends();}
  if(b.dataset.choose)chooseTrend(b.dataset.choose);
  if(b.dataset.prepareRun)await operate('prepare',{run_id:b.dataset.prepareRun,draft_ref:b.dataset.ref});
  if(b.dataset.approve)await operate('approve',{id:b.dataset.approve});
  if(b.dataset.simulate)await operate('simulate',{id:b.dataset.simulate});
  if(b.dataset.toMetrics){showPage('metrics');renderMetrics(b.dataset.toMetrics);}
- if(b.dataset.learn&&await operate('analyze',{id:b.dataset.learn})){showPage('metrics');toast('分析已保存；有可比依据时会生成候选经验');}
+ if(b.dataset.learn&&await operate('analyze',{id:b.dataset.learn})){showPage('metrics');toast('复盘已保存；下方可以查看下一篇建议');}
  if(b.dataset.memory)await operate('memory',{id:b.dataset.memory,status:b.dataset.status});
 };

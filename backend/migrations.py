@@ -58,6 +58,11 @@ CREATE TABLE testing_budget_roots (
  PRIMARY KEY(owner,root));
 CREATE TABLE testing_budget_reservations (
  call_id TEXT PRIMARY KEY, reserved_micro INTEGER NOT NULL);
+'''), (6, '''
+CREATE TABLE analytics_review_attempts (
+ owner TEXT NOT NULL, analysis_id TEXT NOT NULL, run_id TEXT NOT NULL,
+ snapshot_hash TEXT NOT NULL, status TEXT NOT NULL, response TEXT, error TEXT,
+ created_at DOUBLE PRECISION NOT NULL, PRIMARY KEY(owner,analysis_id));
 '''))
 
 

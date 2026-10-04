@@ -9,7 +9,7 @@ from backend.workflow import digest
 
 CREATION_STAGES = ('audience','research','strategy','outline','hook','title','body','revise','review')
 WINDTUNNEL_STAGES = ('wt_conditions','wt_read','wt_verify','wt_patch')
-OPERATIONS_STAGES = ('operations_plan',)
+OPERATIONS_STAGES = ('operations_plan','analytics_review')
 STAGES = CREATION_STAGES + WINDTUNNEL_STAGES + OPERATIONS_STAGES
 FAMILY = 'SELECT run_id FROM live_lineage WHERE budget_id=?'
 

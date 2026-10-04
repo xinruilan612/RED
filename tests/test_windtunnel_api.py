@@ -1,5 +1,6 @@
 """HTTP authorization, replay and download contract for content windtunnel."""
 import tempfile
+from unittest.mock import patch
 import unittest
 from pathlib import Path
 from uuid import uuid4
@@ -13,6 +14,8 @@ from backend.operations import now
 
 class WindtunnelApiTests(unittest.TestCase):
     def setUp(self):
+        self.live_env=patch.dict('os.environ',{'WINDTUNNEL_ALLOW_LIVE':'false'})
+        self.live_env.start();self.addCleanup(self.live_env.stop)
         self.tmp=tempfile.TemporaryDirectory()
         self.store=Store(Path(self.tmp.name)/'http.sqlite')
         self.app=create_app(self.store,Config(),origin='http://testserver',invite='')

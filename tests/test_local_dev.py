@@ -14,6 +14,14 @@ from backend.api import settings
 
 
 class LocalDevTests(unittest.TestCase):
+    def test_start_probe_allows_restart_after_closed_tcp_connection(self):
+        from unittest.mock import MagicMock
+        probe=MagicMock();api=MagicMock();api.poll.return_value=None;worker=MagicMock();worker.poll.return_value=None
+        with patch.object(local_dev.socket,'socket') as sock, patch.object(local_dev.subprocess,'Popen',side_effect=[api,worker]), patch.object(local_dev.time,'sleep',side_effect=KeyboardInterrupt):
+            sock.return_value.__enter__.return_value=probe
+            local_dev.serve({'PUBLIC_ORIGIN':'http://127.0.0.1:8766'})
+        probe.setsockopt.assert_called_once_with(local_dev.socket.SOL_SOCKET,local_dev.socket.SO_REUSEADDR,1)
+
     def test_platform_paths(self):
         root = Path('/project')
         self.assertEqual(local_dev.python_path(root, True), root/'runtime/venv/Scripts/python.exe')

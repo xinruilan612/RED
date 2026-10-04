@@ -100,9 +100,11 @@ def messages_for(run, stage):
     require(stage in STAGES, 'INVALID_INPUT', '未知预演步骤')
     state = checked(run)
     if stage == 'wt_conditions':
-        data = dict(scene=state['scene'], feedback=stage_sources(run, stage))
+        visible = stage_sources(run, stage)
+        data = dict(scene=state['scene'], feedback=[s for s in visible if s.get('provenance') in ('historical_feedback','pilot_feedback')],
+                    author_questions=[s['text'] for s in visible if s.get('provenance') not in ('historical_feedback','pilot_feedback')])
         shape = {'conditions': [{'question': '作者需要读者能回答的问题', 'scene': '适用场景', 'source_ids': [], 'origin': 'author'}]}
-        rule = '将反馈转换为最多12条待作者确认的问题。来源只能使用给定反馈ID；无反馈标author，不能声称真实读者意见。不要预填问题答案。'
+        rule = '将反馈转换为最多12条待作者确认的问题。feedback数组才是真实反馈，source_ids只能引用该数组的ID。author_questions是作者设定，即使有原始来源也必须origin=author且source_ids=[]。feedback为空时，全部条件必须origin=author且source_ids=[]。优先将作者问题转换为问题卡，不能声称真人意见。不要预填问题答案。'
     else:
         cs = conditions(run)
         require(cs['confirmed'], 'INVALID_TRANSITION', '请先确认检查条件')
@@ -326,7 +328,7 @@ class Windtunnel:
         state = dict(schema_version=1, account_id=account, hypothesis_id=hypothesis_id, scene=scene, drafts=[d], sources=sources,
                      condition_sets=[], current_set_id=None, reports=[], patches=[], reading=[], batch_id=uid(), source_history=[])
         run = Run(owner_id=owner, snapshot_id=uid(), workflow_type='windtunnel', windtunnel=state,
-                  current_stage='wt_conditions', context=dict(mode=mode, topic=d['title'], audience=scene, account_id=account, hypothesis_id=hypothesis_id, graph_policy='windtunnel.v1'))
+                  current_stage='wt_conditions', context=dict(mode=mode, paid_scope_confirmed=mode=='live', topic=d['title'], audience=scene, account_id=account, hypothesis_id=hypothesis_id, graph_policy='windtunnel.v1'))
         if model_policy is not None:
             run.context['model_policy'] = copy.deepcopy(model_policy)
         if data.get('checklist'):

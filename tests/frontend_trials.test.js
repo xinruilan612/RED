@@ -9,3 +9,8 @@ test('reader form records real individual answers and does not ask users to inve
  const run=setup();const html=run("trialReaderForm({id:'h',desired_action:'收藏教程'})");assert.match(html,/data-reader-rows/);assert.match(html,/reader_question/);assert.match(html,/下载 A\/B/);assert.match(html,/不要替读者回答/);assert.doesNotMatch(html,/name="(?:denominator|outcomes)_/);
  const row=run("trialReaderRow(1,'B')");assert.match(row,/data-reader-understood required/);assert.match(row,/data-reader-answer/);assert.match(row,/value="B" selected/);
 });
+
+test('attribution labels use frozen arm identity when two runs share a ref',()=>{
+ const run=setup();run(`badge=t=>String(t);accountRows=()=>[];h={id:'h',status:'awaiting_review',objective:'audience_growth',metric:'new_followers',signal_refs:[],validations:{small_race:{arms:[{label:'A',run_id:'first',draft_ref:'same',denominator:2,outcomes:1},{label:'B',run_id:'second',draft_ref:'same',denominator:2,outcomes:2}]},live_attribution:{items:[{label:'B',run_id:'second',draft_ref:'same',rate:.5}]}}}`);
+ assert.match(run('trialHypothesisCard(h)'),/B 50\.00%/);
+});

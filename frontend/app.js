@@ -212,6 +212,7 @@ function renderHuman(){
 }
 function draftHTML(d,index,changed=false){const c=d.content;return `<article class="draft-copy ${changed?'changed':''}"><span class="version-tag">版本 ${index+1} · ${d.actor==='user'?'你手动修改':run.mode==='live'?'AI 创作':'模拟创作'} · ${esc(d.ref.slice(0,8))}${run.accepted_ref===d.ref?' · 已确认':''}</span><h3>${esc(c.selected_title)}</h3><pre>${esc(c.body)}</pre><p>${esc(c.cta)}</p><div>${(c.tags||[]).map(t=>'<span class="tag">#'+esc(t)+'</span>').join('')}</div></article>`;}
 function renderDraft(){
+ if(typeof mountMediaExports==='function'&&$('mediaExports'))mountMediaExports(run,$('mediaExports'));
  $('draftPanel').hidden=!run.drafts.length;if(!run.drafts.length)return;
  // null follows new Worker drafts; only a user-selected older version is pinned.
  if(viewVersion!==null&&(!Number.isInteger(viewVersion)||viewVersion<0||viewVersion>=run.drafts.length))viewVersion=null;
@@ -288,7 +289,7 @@ function startCreation({trend=null,hypothesis=null}={}){
  showPage('studio');auto=false;editing=false;run=null;viewVersion=null;chosenTrend=trend;chosenHypothesis=hypothesis;window.activeTrialHypothesisId=null;
  $('selectedTrend').hidden=!trend;$('clearTrend').hidden=!trend;
  $('editor').hidden=true;$('workbench').hidden=true;$('welcome').hidden=false;$('topic').value='';$('material').value='';
- renderMode($('mode').value);fillAccountBrief();clearError();refreshMaterialDocuments();return true;
+ $('mode').value=provider?.ready?'live':'simulation';$('mode').onchange();fillAccountBrief();clearError();refreshMaterialDocuments();return true;
 }
 $('newRun').onclick=()=>startCreation();
 $('flow').onclick=e=>{const chip=e.target.closest('[data-stage]');const b=e.target.closest('[data-agent]');if(chip){selected='content';detailStage=chip.dataset.stage;render();}else if(b){selected=b.dataset.agent;detailStage=null;render();}};
@@ -325,7 +326,7 @@ $('checkReaders').onclick=async()=>{
  if(draft&&typeof openDraftReaderCheck==='function')await openDraftReaderCheck(run,draft.ref);
 };
 window.addEventListener('beforeunload',e=>{if(editing){e.preventDefault();e.returnValue='';}});
-document.addEventListener('DOMContentLoaded',async()=>{try{const session=await api('/api/session');csrf=session.csrf;if(session.auth_required&&!session.user){showLogin(session);return;}showWebsiteUser(session);provider=session.provider;$('configMessage').textContent=provider.message+' · 同一步最多3次（含首次）；接口错误立即停；整单最多'+(provider.run_attempts_max??16)+'次 / '+(provider.run_tokens_max??80000).toLocaleString()+' Token';$('liveOption').disabled=!provider.ready;$('liveOption').textContent=provider.ready?'真实 AI · DeepSeek（消耗接口额度）':'真实 AI · DeepSeek（先填写 .env）';$('connectionStatus').textContent='DeepSeek：'+(provider.ready?'已配置':'未配置');$('mode').value='simulation';$('scenario').disabled=$('mode').value==='live';renderMode($('mode').value);const rows=await history();if(rows.length){run=rows[0];selected=currentAgent();render();await history();}await initOperations();}catch(e){error(e);}});
+document.addEventListener('DOMContentLoaded',async()=>{try{const session=await api('/api/session');csrf=session.csrf;if(session.auth_required&&!session.user){showLogin(session);return;}showWebsiteUser(session);provider=session.provider;$('configMessage').textContent=provider.message+' · 同一步最多3次（含首次）；接口错误立即停；整单最多'+(provider.run_attempts_max??16)+'次 / '+(provider.run_tokens_max??80000).toLocaleString()+' Token';$('liveOption').disabled=!provider.ready;$('liveOption').textContent=provider.ready?'真实 AI · DeepSeek（消耗接口额度）':'真实 AI · DeepSeek（先填写 .env）';$('connectionStatus').textContent='DeepSeek：'+(provider.ready?'已配置':'未配置');$('mode').value=provider.ready?'live':'simulation';$('scenario').disabled=$('mode').value==='live';renderMode($('mode').value);const rows=await history();if(rows.length){run=rows[0];selected=currentAgent();render();await history();}await initOperations();}catch(e){error(e);}});
 
 const materialFiles=$('materialFiles');
 $('useWebResearch').onchange=()=>{if($('useWebResearch').checked&&$('mode').value!=='live'){$('useWebResearch').checked=false;error(new Error('请先选择“真实 AI”运行方式；模拟模式不会联网。'));} $('webResearchFields').hidden=!$('useWebResearch').checked;if($('useWebResearch').checked){const topic=$('topic').value.trim().slice(0,90);if(!$('webQuery1').value)$('webQuery1').value=topic;if(!$('webQuery2').value)$('webQuery2').value=($('targetPlatform').value==='douyin'?'抖音 ':'小红书 ')+topic+' 讨论';}};

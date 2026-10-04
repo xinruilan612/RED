@@ -55,7 +55,8 @@ def reserve(db, run, root, route, messages, call_id):
     budget=db.execute('SELECT cap_micro,max_runs FROM testing_budgets WHERE owner=?',(run.owner_id,)).fetchone()
     if budget is None:return
     require(route.provider=='deepseek' and route.model=='deepseek-flash','TEST_BUDGET_MODEL','本轮实验预算仅核准 deepseek-flash，其他模型未调用')
-    require(run.workflow_type=='creation','TEST_BUDGET_SCOPE','本轮预算仅用于创作实验，其他收费流程未调用')
+    require(run.workflow_type=='creation' or (run.workflow_type in ('operations','windtunnel') and run.context.get('paid_scope_confirmed') is True),
+            'TEST_BUDGET_SCOPE','此付费功能尚未明确确认；实验费用记录保留')
     held=(sum(len(m['content'].encode()) for m in messages)+256)*2+PARAMETERS['output_tokens_max']*8
     db.execute('INSERT INTO testing_budget_roots VALUES(?,?) ON CONFLICT(owner,root) DO NOTHING',(run.owner_id,root))
     db.execute('INSERT INTO testing_budget_reservations VALUES(?,?)',(call_id,held))
