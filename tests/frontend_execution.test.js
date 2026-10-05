@@ -435,3 +435,32 @@ test('share extraction preserves encoded query and trims prose boundaries',()=>{
   s.sandbox.pasted=pasted;assert.throws(()=>s.eval('extractPublishedUrl(pasted)'),/作品链接|多个链接/);
  }
 });
+
+
+test('malformed known-usage failure explains resumable progress and labels only explicit retry',()=>{
+ const s=setup();s.eval("run.background={status:'blocked',error:'模型返回格式不正确，未自动重试'};run.calls=[{agent:'audience',stage:'analysis',status:'failed',tokens:42}];run.usage.unknown_calls=0;render()");
+ assert.match(s.element('workbenchGuide').textContent,/已完成的分析、资料和稿件都保留/);
+ assert.match(s.element('error').textContent,/新的模型请求仍受原来的额度限制/);
+ assert.equal(s.element('next').textContent,'重试未完成步骤 →');
+ assert.equal(s.element('next').hidden,false);assert.equal(s.eval('calls.length'),0);
+});
+
+test('unknown malformed usage blocks misleading retry controls even when legacy actions advertise recover',()=>{
+ const s=setup();s.eval("run.run_status='FAILED';run.allowed_actions=['recover','next'];run.background={status:'blocked',error:'模型返回格式不正确，未自动重试'};run.calls=[{agent:'audience',stage:'analysis',status:'failed',tokens:null}];run.usage.unknown_calls=1;render()");
+ for(const id of ['next','auto','recover'])assert.equal(s.element(id).hidden,true);
+ assert.match(s.element('workbenchGuide').textContent,/需要先核对这次调用的用量/);
+ assert.doesNotMatch(s.element('workbenchGuide').textContent,/可以点击/);
+ assert.equal(s.eval('calls.length'),0);
+});
+
+test('recoverable failed run points to recovery without suggesting an automatic paid request',()=>{
+ const s=setup();s.eval("run.run_status='FAILED';run.allowed_actions=['recover'];run.background={status:'blocked',error:'模型返回格式不正确'};run.calls=[{agent:'content',stage:'body',status:'invalid',tokens:99}];render()");
+ assert.match(s.element('workbenchGuide').textContent,/从失败步骤继续/);
+ assert.equal(s.element('recover').hidden,false);assert.equal(s.eval('calls.length'),0);
+});
+
+test('active paid call does not get presented as a failed unknown-usage request',()=>{
+ const s=setup();s.eval("run.in_flight=true;run.background={status:'running'};run.calls=[{status:'calling',tokens:null}];render()");
+ assert.match(s.element('workbenchGuide').textContent,/正在处理/);
+ assert.equal(s.element('auto').hidden,false);assert.equal(s.eval('modelFailureGuidance(run)'), '');
+});

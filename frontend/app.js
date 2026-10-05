@@ -109,12 +109,29 @@ function renderMode(mode){
  $('modeNotice').textContent=live?'四个角色调用 DeepSeek；每次输出与用量可查看。可结合账号资料与已读取来源；事实仍需核查，最终由你确认。':'这是免费模拟流程，使用固定模板和本地规则，没有调用真实 AI。';
  $('detailMode').textContent=live?'真实 AI 产物':'模拟产物';
 }
+function unresolvedUsage(task){
+ return Number(task.usage?.unknown_calls||0)>0||(task.calls||[]).some(c=>c.tokens===null);
+}
+function modelFailureGuidance(task){
+ if(task.in_flight||!['FAILED'].includes(task.run_status)&&task.background?.status!=='blocked')return '';
+ const last=(task.events||[]).filter(e=>e.type==='agent.failed').at(-1);
+ const message=task.background?.error||last?.payload?.message||'';
+ const failed=[...(task.calls||[])].reverse().find(c=>['invalid','failed'].includes(c.status));
+ if(!/格式|JSON|MODEL_OUTPUT_INVALID|模型返回|用量不确定|用量未知/.test(message)&&!failed)return '';
+ const stage=(failed?.stage==='analysis'?stages[failed?.agent]:stages[failed?.stage])||stages[failed?.agent]||'当前步骤';
+ const saved='已完成的分析、资料和稿件都保留，不用重新上传。';
+ if(unresolvedUsage(task))return `${stage}暂时停止：模型服务没有留下完整的结果或用量记录。${saved}为避免重复计费，当前不能直接重试，需要先核对这次调用的用量；不要另建任务反复提交。`;
+ if((task.allowed_actions||[]).includes('recover'))return `${stage}的模型结果未能通过检查。${saved}可以点击“从失败步骤继续”，保留已有进度和累计用量；新的模型请求仍受原来的额度限制。`;
+ if((task.allowed_actions||[]).includes('next'))return `${stage}的模型结果未能通过检查。${saved}可以点击“重试未完成步骤”，已成功的步骤会复用；新的模型请求仍受原来的额度限制。`;
+ return `${stage}的模型结果未能通过检查。${saved}请查看运行记录中的具体原因，当前没有可执行的重试步骤。`;
+}
 function nextStepGuidance(task){
  const allowed=task.allowed_actions||[];
  if(task.run_status==='SUCCEEDED')return '稿件已确认，可以下载。真实发布需你在平台完成后回到“作品与复盘”记录；模拟发布只用于演练。';
  if(editing&&task.review_execution?.exhausted)return '保存会创建新版本，不调用 AI。但本任务复审次数已用完，保存后只能继续手动修改，或知晓问题后人工采用；旧审核不会变成新版本通过。';
  if(editing)return '你正在修改稿件。保存会创建新版本，不调用 AI；之后可申请复审，或知晓问题后人工采用。';
  if(task.in_flight)return '正在处理，结果会自动保存并更新。可以先阅读已有稿件；无需重复点击或刷新。';
+ const failure=modelFailureGuidance(task);if(failure)return failure;
  if(task.review_execution?.blocked)return task.review_execution.message;
  if(allowed.includes('supplement'))return '请先补充下方缺失素材或选择假设权限，再继续分析；不能用虚构经历填补证据。';
  if(task.current_stage==='reviewer'&&task.drafts.length&&!task.review)return '新版本已保存，尚未完成复审。点击“复审当前版本”查看审核意见；真实 AI 复审会计入费用。';
@@ -135,19 +152,21 @@ function render(){
  document.querySelector('#editor .editor-note').textContent=run.review_execution?.exhausted?'保存会创建新版本，不覆盖旧稿，也不调用 AI。本任务复审次数已用完；保存后可继续手动修改，或知晓问题后人工采用，不能沿用旧审核。':'保存会创建新版本，不会覆盖旧稿，也不会自动调用 AI。保存后可点击“复审”，或知晓已有问题后人工采用；未保存修改不进入最终稿。';
  $('modelCalls').textContent=(run.usage?.model_calls||0)+' 次';
  $('modelCost').textContent=run.mode==='live'?'≤ $'+Number(run.usage.cost_upper_estimate_usd||0).toFixed(4)+' 估算':'¥0.00（模拟）';
- if(run.run_status==='FAILED'){const last=run.events.filter(e=>e.type==='agent.failed').at(-1);error(new Error(last?.payload.message||'执行失败，请查看运行记录'),'run');}
+ if(run.run_status==='FAILED'){const last=run.events.filter(e=>e.type==='agent.failed').at(-1);error(new Error(modelFailureGuidance(run)||last?.payload.message||'执行失败，请查看运行记录'),'run');}
  $('welcome').hidden=true;$('workbench').hidden=false;
  $('runTitle').textContent=run.context.topic;
  $('runSummary').textContent=`${run.context.operations?.platform==='douyin'?'抖音 · 口播脚本':'小红书 · 图文笔记'} · 写给 ${run.context.audience} · ${run.context.tone} · ${run.snapshot_id.slice(0,8)} 输入快照`;
  const background=run.background;
  const jobLabels={queued:background?.worker_online?'已排队，后台即将执行':'已排队，等待 Worker 启动',running:'正在执行 · 结果保存后自动更新',pausing:'正在暂停，等待当前节点保存',paused:'本步已停止 · 查看结果后继续',blocked:'后台等待处理',waiting:'等待你的审核'};
  $('statusLabel').textContent=jobLabels[background?.status]|| (run.in_flight?'AI 正在处理，请稍候':states[run.run_status]);
- if(background?.error)error(new Error(['insufficient','searching'].includes(run.context.web_research?.status)?'联网调查未完成。请在上方修改关键词，点击“重新搜索这一步”；无需新建任务。':background.error),'run');$('versionCount').textContent=run.drafts.length+' 个';
+ if(background?.error)error(new Error(['insufficient','searching'].includes(run.context.web_research?.status)?'联网调查未完成。请在上方修改关键词，点击“重新搜索这一步”；无需新建任务。':modelFailureGuidance(run)||background.error),'run');$('versionCount').textContent=run.drafts.length+' 个';
  const allowed=run.allowed_actions;
  $('recover').hidden=!allowed.includes('recover');$('next').hidden=!allowed.includes('next');$('auto').hidden=!allowed.includes('next');$('cancel').hidden=!allowed.includes('cancel');
  $('next').textContent=run.current_stage==='reviewer'?'执行复审 / 审核 →':run.review?.decision==='revision_required'?'按意见改稿 →':'执行下一步 →';
  $('auto').textContent=background?(run.in_flight?'暂停后台任务':'后台运行到人工处理'):(auto?'停止自动运行':'自动运行到人工处理');
  if(background){$('next').hidden=!allowed.includes('next')||run.in_flight;$('auto').hidden=!allowed.includes('next')&&!run.in_flight;$('auto').textContent=run.in_flight?'暂停执行':'连续运行到人工处理';$('next').textContent=run.current_stage==='reviewer'?'复审当前版本，看审核意见 →':run.current_stage==='brief'&&run.context.web_research?.enabled&&run.context.web_research.status!=='complete'?'执行一步：联网搜索 →':'执行下一步，看结果 →';}
+ if(!run.in_flight&&run.background?.status==='blocked'&&modelFailureGuidance(run)&&!unresolvedUsage(run))$('next').textContent='重试未完成步骤 →';
+ if(!run.in_flight&&unresolvedUsage(run)&&['FAILED','RUNNING','QUEUED'].includes(run.run_status)){$('next').hidden=true;$('auto').hidden=true;$('recover').hidden=true;}
  if(run.review_execution?.blocked&&!run.in_flight){$('next').hidden=true;$('auto').hidden=true;}
  if(['insufficient','searching'].includes(run.context.web_research?.status)&&!run.in_flight){$('next').hidden=true;$('auto').hidden=true;}
  const node=(key,num,sub)=>{
