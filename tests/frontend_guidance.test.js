@@ -173,7 +173,7 @@ test('trial inputs keep minute precision after shared metric formatter gains sec
  test('first real recap is readable and actionable without empty comparison rows',()=>{
  const s=setup();s.eval(`provider={ready:true};ops={publications:[{id:'p',content:{selected_title:'早间护肤'}}],metrics:[{id:'m',values:{views:19,saves:5,likes:2,comments:0}}]};report={id:'a',publication_id:'p',metric_id:'m',status:'insufficient',source_type:'manual',comparisons:{saves:{baseline:null}},flags:[],metric_refs:['m']}`);
  const html=s.eval('analysisHTML(report)');
- assert.match(html,/>19</);assert.match(html,/>5</);assert.match(html,/下一篇改什么/);assert.match(html,/免费，不调用 AI/);assert.match(html,/data-ai-review-open/);assert.doesNotMatch(html,/不足以比较|<pre>|历史中位数/);
+ assert.match(html,/>19</);assert.match(html,/>5</);assert.match(html,/下一篇只改一点/);assert.match(html,/免费，不调用 AI/);assert.match(html,/data-ai-review-open/);assert.doesNotMatch(html,/不足以比较|<pre>|历史中位数/);
  s.eval("report.source_type='simulation'");assert.doesNotMatch(s.eval('analysisHTML(report)'),/data-ai-review-open/);assert.match(s.eval('analysisHTML(report)'),/示例数据计算/);
  });
 

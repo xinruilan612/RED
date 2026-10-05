@@ -125,28 +125,46 @@ function planHTML(p){
 function bindPlanForms(){document.querySelectorAll('[data-task-form]').forEach(f=>f.onsubmit=async e=>{e.preventDefault();const v=f.elements;await operate('plan_task',{plan_id:f.dataset.planId,task_id:f.dataset.taskForm,title:v.title.value,date:v.date.value,status:v.status.value,publication_id:v.publication_id.value||null});});}
 function plainReview(a){
  const m=ops.metrics.find(x=>x.id===a.metric_id),p=ops.publications.find(x=>x.id===a.publication_id),v=m?.values||{},views=v.views;
+ const body=p?.content?.body||'',steps=/[①②③]|(?:^|\n)\s*\d+[.、．]|第一步|第二步/.test(body),question=/[？?]/.test(body),source=/https?:|参考|来源|依据/.test(body);
  const counts=[['阅读 / 播放',views],['收藏',v.saves],['点赞',v.likes],['评论',v.comments],['这篇带来的关注',v.new_followers]].filter(x=>x[1]!=null);
  const observed=[];
  if(views)for(const [k,label] of [['saves','收藏'],['likes','点赞'],['new_followers','关注']])if(v[k]!=null)observed.push(`每 100 次阅读，约有 ${(v[k]/views*100).toFixed(1)} 次${label}。`);
- if(v.comments===0)observed.push('还没有评论；下一篇可以在结尾问一个容易回答的具体问题。');
- const hasHistory=Object.values(a.comparisons).some(x=>x.baseline!=null);
- return {counts,observed,summary:views?(v.saves?'已经有读者收藏这篇内容。下一篇可以继续围绕这个问题，写得更具体。':'这篇已经获得阅读。先试一个具体改动，再看下一篇的反应。'):'已保存这次记录；补上阅读或播放数，就能看互动占比。',
- keep:v.saves?'保留能让读者收藏复用的步骤或清单；收藏不等于读者已经照做。':'保留同一受众和栏目，慢慢积累自己的作品记录。',
- change:'下一篇只试一个改动：把正文整理成更清楚的步骤或清单。',
- next_topic:`${p?.content.selected_title||'同一主题'}：补充一个具体例子`,check_next:'下一篇发布后约 24 小时再记录阅读、收藏和关注；拿不到的数值留空。',
- caution:a.window_quality==='late'?'这次比所选时间晚，数据仍有用；以后尽量在相近时长观察，比较才公平。':hasHistory?'已有自己的历史可比较；结果变化不一定由某个改动造成。':'这是第一批观察，暂时不能判断是否比平时好，但现在就能决定下一篇试什么。',hasHistory};
+ const hasHistory=Object.values(a.comparisons||{}).some(x=>x.baseline!=null);
+ const elapsed=(Date.parse(m?.observed_at)-Date.parse(p?.published_at))/3600000;
+ const timing=Number.isFinite(elapsed)?`这组数据记录于发布后 ${elapsed.toFixed(1)} 小时（所选窗口：${m.window}）。`:'实际观察时长尚不明确。';
+ const missing=[];
+ if(v.impressions==null)missing.push('没有曝光数据，暂时无法判断阅读量受曝光、封面还是其他因素影响。');
+ if(v.new_followers==null)missing.push('未记录这篇带来的关注，暂时看不出它是否帮助涨粉。');
+ if(!hasHistory)missing.push('还没有可比的历史作品，先把下一篇当作一次尝试。');
+ const keep=[steps?'保留原稿已有的编号步骤':'保留围绕一个具体问题的写法',source?'保留资料出处':'事实说明继续补充可核查出处',question?'保留现有结尾提问':''].filter(Boolean).join('；')+'。';
+ return {counts,observed,summary:views?(v.saves?'已经有人收藏这篇内容；这不能证明长期复用价值，也不能说明哪种写法带来了收藏。':'这篇已经获得阅读；仅凭这些数字，还不能判断读者为什么点击或离开。'):'已保存记录；阅读或播放数未知，暂不计算互动占比。',
+ keep,change:steps?'只试一个改动：用一个具体日常场景串起原有步骤；篇幅、封面风格和结尾形式尽量保持接近。':'只试一个改动：把现有正文整理成编号步骤；其他表达和封面风格尽量保持接近。',
+ next_topic:`${p?.content.selected_title||'同一主题'}：用一个日常场景讲清楚`,
+ check_next:`发布后 24 小时、72 小时分别记录阅读、收藏、评论和这篇带来的关注；未知留空。只与相近观察时长比较。${Number.isFinite(elapsed)&&Math.abs(elapsed-24)>6?`新篇 24 小时数据不能直接与这篇 ${elapsed.toFixed(1)} 小时的数据比较。`:''}`,
+ timing,missing,caution:a.window_quality==='late'?'本次观察晚于所选窗口，不参与该窗口的历史比较；真实数据仍然保留。':hasHistory?'变化只是观察结果，不能证明由某个改动造成。':'建议是待验证的尝试，不保证流量增长。',hasHistory};
+}
+function reviewAdvice(a){return a.ai_review?.review_version===2?a.ai_review:plainReview(a);}
+function nextReviewBrief(a){
+ const r=reviewAdvice(a),p=ops.publications.find(x=>x.id===a.publication_id),base=plainReview(a);
+ return {topic:r.next_topic.slice(0,100),material:[
+ '【上一篇复盘与下一篇实验要求，不是产品事实或医学证据】',
+ `来源作品：${p?.content.selected_title||''}`,`复盘记录：${a.id}`,base.timing,
+ `已有数据：${base.counts.map(([k,v])=>`${k} ${v}`).join('；')}`,
+ `保留什么：${r.keep}`,`只改一点：${r.change}`,`之后记录：${r.check_next}`,
+ `尚不能判断：${base.missing.join('；')}`, '请另行补充本篇可核查的事实资料；不把实验建议当成已证实效果。'
+ ].join('\n')};
 }
 function analysisHTML(a){
- const p=ops.publications.find(x=>x.id===a.publication_id),base=plainReview(a),ai=a.ai_review,r=ai||base,valid=a.status!=='superseded';
+ const p=ops.publications.find(x=>x.id===a.publication_id),base=plainReview(a),ai=a.ai_review,r=reviewAdvice(a),valid=a.status!=='superseded';
  const labels={saves:'收藏',likes:'点赞',comments:'评论',shares:'分享',new_followers:'作品带来的关注',completed_plays:'完整播放',interaction:'互动次数'};
- const method=a.source_type==='simulation'?'示例数据计算 · 不是真实效果':ai?`真实 AI 复盘 · ${ai.execution.model} · 已调用 ${ai.execution.model_calls} 次`:'真实数据计算 · 免费，不调用 AI';
- return `<article class="panel analysis-card" data-analysis-card="${esc(a.id)}"><div class="card-top"><div>${badge(ai?'AI 给你的建议':'这篇的表现与下一步')} ${badge(a.source_type==='simulation'?'示例数据':'你录入的真实记录','amber')}</div>${badge(valid?'已复盘':'数据已修正，请重新复盘','neutral')}</div><h2>${esc(p?.content.selected_title)}</h2><p class="helper">${esc(method)} · ${esc(dateText(ops.metrics.find(x=>x.id===a.metric_id)?.observed_at))}</p>
+ const method=a.source_type==='simulation'?'示例数据计算 · 不是真实效果':ai?`${ai.review_version===2?'真实 AI 复盘':'当前为免费规则建议 · 历史 AI 调用'} · ${ai.execution.model} · 已调用 ${ai.execution.model_calls} 次`:'真实数据计算 · 免费，不调用 AI';
+ return `<article class="panel analysis-card" data-analysis-card="${esc(a.id)}"><div class="card-top"><div>${badge(ai?.review_version===2?'AI 给你的建议':'这篇的表现与下一步 · 免费规则建议')} ${badge(a.source_type==='simulation'?'示例数据':'你录入的真实记录','amber')}</div>${badge(valid?'已复盘':'数据已修正，请重新复盘','neutral')}</div><h2>${esc(p?.content.selected_title)}</h2><p class="helper">${esc(method)} · ${esc(dateText(ops.metrics.find(x=>x.id===a.metric_id)?.observed_at))}</p>
  <div class="review-counts">${base.counts.map(([label,value])=>`<div><b>${value.toLocaleString()}</b><span>${esc(label)}</span></div>`).join('')}</div>
- <p class="review-summary">${esc(r.summary)}</p><div class="analysis-sections"><section><h3>值得保留</h3><p>${esc(r.keep)}</p></section><section><h3>下一篇改什么</h3><p>${esc(r.change)}</p></section><section><h3>怎么知道有没有用</h3><p>${esc(r.check_next)}</p></section></div>
- <p class="helper">${esc(base.caution)}</p>${ai?`<p class="helper">${esc(ai.limitation)}</p>`:''}
+ <p class="review-summary">${esc(r.summary)}</p><p>${esc(base.timing)}</p><section><h3>现在还不能判断什么</h3>${base.missing.map(t=>`<p class="helper">${esc(t)}</p>`).join('')||'<p class="helper">已记录主要指标；仍不能仅凭相关变化确定原因。</p>'}</section><div class="analysis-sections"><section><h3>值得保留</h3><p>${esc(r.keep)}</p></section><section><h3>下一篇只改一点</h3><p>${esc(r.change)}</p></section><section><h3>怎么知道有没有用</h3><p>${esc(r.check_next)}</p></section></div>
+ <p><strong>下一篇选题：</strong>${esc(r.next_topic)}</p><p class="helper">${esc(base.caution)}</p>${ai?`<p class="helper">${esc(ai.limitation)}</p>`:''}
  ${valid?`<div class="buttons"><button class="primary" data-review-create="${esc(a.id)}">按这个方向写下一篇 →</button>${!ai&&a.source_type==='manual'?`<button class="secondary" data-ai-review-open="${esc(a.id)}" ${provider?.ready?'':'disabled'}>让真实 AI 结合稿件给建议</button>`:''}</div><div id="ai-review-confirm-${esc(a.id)}" class="notice" hidden><p>将这篇作品正文、账号档案和已录入指标发送给 DeepSeek，调用一次并产生接口费用。同一份记录不会重复生成；失败不自动重试。${provider?.run_budget_usd!=null?`费用受任务上限 $${provider.run_budget_usd} 和当日上限约束。`:''}</p><div class="buttons"><button class="primary" data-ai-review="${esc(a.id)}">确认，生成真实 AI 建议</button><button class="quiet" data-ai-review-close="${esc(a.id)}">暂不生成</button></div></div>`:''}
  <details><summary>看具体数字与计算</summary>${base.observed.map(t=>`<p>${esc(t)}</p>`).join('')}${base.hasHistory?`<table class="metric-table"><thead><tr><th>每 100 次阅读 / 播放</th><th>这篇</th><th>以前可比作品</th></tr></thead><tbody>${Object.entries(a.comparisons).filter(([k,v])=>v.baseline!=null).map(([k,v])=>`<tr><td>${labels[k]}</td><td>${(v.current/10).toFixed(1)}</td><td>${(v.baseline/10).toFixed(1)}</td></tr>`).join('')}</tbody></table>`:'<p class="helper">以后有更多同类作品时，这里会出现与你自己历史表现的比较。</p>'}</details>
- <details><summary>数据来源与调用记录</summary><p>数据来自你的记录，未由平台自动核验。</p><p>${esc(a.flags.join('；'))}</p>${ai?`<p>模型：${esc(ai.execution.model)} · 实际用量 ${ai.execution.tokens} Token · 费用估算 $${ai.execution.cost_estimate_usd}（不是平台账单）</p><p>调用编号 ${esc(ai.execution.call_id)} · 输入快照 ${esc(ai.snapshot_hash.slice(0,12))}</p>`:`<p>免费计算；模型调用次数 0。${a.source_type==='simulation'?'使用示例指标，不是真实效果。':'没有使用模拟指标。'}</p>`}${a.metric_refs.map(id=>`<p class="helper">记录 ${esc(id.slice(0,8))}</p>`).join('')}</details></article>`;
+ ${ai&&ai.review_version!==2?`<details><summary>此前 AI 建议（原始记录）</summary><p class="helper">旧版建议保留供回看；上方按当前规则整理，未重新调用模型。</p>${[ai.summary,ai.keep,ai.change,ai.check_next].map(t=>`<p>${esc(t)}</p>`).join('')}</details>`:''}<details><summary>数据来源与调用记录</summary><p>数据来自你的记录，未由平台自动核验。</p><p>${esc(a.flags.join('；'))}</p>${ai?`<p>模型：${esc(ai.execution.model)} · 实际用量 ${ai.execution.tokens} Token · 费用估算 $${ai.execution.cost_estimate_usd}（不是平台账单）</p><p>调用编号 ${esc(ai.execution.call_id)} · 输入快照 ${esc(ai.snapshot_hash.slice(0,12))}</p>`:`<p>免费计算；模型调用次数 0。${a.source_type==='simulation'?'使用示例指标，不是真实效果。':'没有使用模拟指标。'}</p>`}${a.metric_refs.map(id=>`<p class="helper">记录 ${esc(id.slice(0,8))}</p>`).join('')}</details></article>`;
 }
 function renderMetrics(preselected){
  const pubs=accountRows('publications').filter(p=>p.published_at),metrics=latestMetrics(),reports=accountRows('analyses');

@@ -131,7 +131,7 @@ $('operationsContent').onclick=async e=>{
  const b=e.target.closest('button');if(!b||opsBusy)return;
  if(b.dataset.aiReviewOpen){$('ai-review-confirm-'+b.dataset.aiReviewOpen).hidden=false;return;}
  if(b.dataset.aiReviewClose){$('ai-review-confirm-'+b.dataset.aiReviewClose).hidden=true;return;}
- if(b.dataset.reviewCreate){const a=ops.analyses.find(x=>x.id===b.dataset.reviewCreate);const suggestion=a.ai_review||plainReview(a);if(startCreation()){$('topic').value=suggestion.next_topic;toast('已带入下一篇主题；请补充自己的素材。');}return;}
+ if(b.dataset.reviewCreate){const a=ops.analyses.find(x=>x.id===b.dataset.reviewCreate);if(!a||a.status==='superseded')return;const brief=nextReviewBrief(a);if(startCreation()){$('topic').value=brief.topic;$('material').value=brief.material;toast('已带入选题、保留项、一个改动和数据记录计划；请补充本篇事实资料。');}return;}
  if(b.dataset.aiReview){
   opsBusy=true;b.disabled=true;b.textContent='正在真实调用 AI，请稍候…';
   try{const result=await api('/api/operations/ai-review','POST',{id:b.dataset.aiReview,version:ops.version,key:crypto.randomUUID(),acknowledge:true});ops=result.operations;renderMetrics();toast('真实 AI 复盘已保存，调用记录可查看。');}

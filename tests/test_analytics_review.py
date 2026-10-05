@@ -11,9 +11,9 @@ from backend.analytics_review import plain_review
 from backend.operations import now
 
 class ReviewFixture:
-    def __init__(self):self.calls=0;self.callback=None
+    def __init__(self):self.calls=0;self.callback=None;self.messages=None
     def complete_result(self,messages):
-        self.calls+=1
+        self.calls+=1;self.messages=messages
         data=json.loads(messages[1]['content'])
         if self.callback:self.callback()
         return {'summary':'已有读者收藏这篇，先继续这个方向。','keep':'保留清楚的步骤。','change':'下一篇只增加一个具体例子，观察反馈。','next_topic':'洗脸之后如何安排护肤步骤','check_next':'记录下一篇同一时间的收藏与阅读。','basis_refs':data['available_basis_refs']},123,{'request_id':'review-fixture','input_tokens':80,'output_tokens':43}
@@ -61,3 +61,30 @@ class AnalyticsReviewTests(unittest.TestCase):
         service=Service(self.store,Config())
         with self.assertRaises(DomainError):service.analytics_review.generate(self.owner,self.request())
         self.assertTrue(plain_review(self.ops.read(self.owner),self.report)['change'])
+
+    def test_existing_steps_question_and_sources_are_preserved_not_requested_again(self):
+        state=self.ops.read(self.owner)
+        state['publications'][0]['content']['body']='1. 先判断使用场景。\n2. 再按步骤操作。\n你在哪一步遇到问题？\n参考资料：https://example.com/guide'
+        plain=plain_review(state,self.report)
+        self.assertEqual(plain['content_checks'],dict(has_steps=True,has_question=True,has_source=True))
+        self.assertIn('已有的步骤',plain['keep']);self.assertIn('结尾提问',plain['keep']);self.assertIn('资料出处',plain['keep'])
+        self.assertIn('具体使用场景',plain['change']);self.assertNotIn('改成更清楚的步骤',plain['change'])
+        self.assertIn('已有提问',plain['observations'][-1]);self.assertIn('不能据此判断收藏原因',plain['summary'])
+        self.assertIn('19 次阅读',plain['summary']);self.assertIn('未记录曝光',plain['missing_evidence'][0])
+        self.assertEqual(plain['next_plan']['change'],plain['change'])
+
+    def test_late_record_uses_actual_elapsed_and_missing_followers_not_zero(self):
+        state=self.ops.read(self.owner);report=dict(self.report,elapsed_hours=92.93,window_quality='late')
+        state['metrics'][-1]['window']='72h'
+        plain=plain_review(state,report)
+        self.assertIn('92.93',plain['observation_period']);self.assertIn('72h',plain['observation_period'])
+        self.assertIn('92.93',plain['check_next']);self.assertIn('24 小时、72 小时',plain['check_next'])
+        self.assertFalse(any(c['label']=='因这篇作品关注你' for c in plain['counts']))
+        self.assertTrue(any('关注' in text for text in plain['missing_evidence']))
+
+    def test_ai_prompt_receives_text_checks_and_new_review_version(self):
+        result=self.service.analytics_review.generate(self.owner,self.request())
+        prompt=self.client.messages[0]['content'];snapshot=json.loads(self.client.messages[1]['content'])['snapshot']
+        self.assertIn('原稿已有的步骤或提问',prompt);self.assertIn('实际观察时长',prompt)
+        self.assertIn('content_checks',snapshot['calculations']);self.assertEqual(snapshot['post']['content'],self.post['content'])
+        self.assertEqual(result['review']['review_version'],2)
