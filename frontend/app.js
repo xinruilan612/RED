@@ -85,11 +85,11 @@ $('history').addEventListener('contextmenu',e=>{const b=e.target.closest('[data-
 $('history').addEventListener('keydown',e=>{if(e.key!=='ContextMenu'&&!(e.shiftKey&&e.key==='F10'))return;const b=e.target.closest('[data-run]');if(!b)return;e.preventDefault();const r=b.getBoundingClientRect();openHistoryMenu(b,r.left,r.bottom);});
 $('historyTrash').onclick=async()=>{if(busy||!dirtyGuard())return;closeHistoryMenu();historyDeleted=!historyDeleted;try{await history();}catch(e){error(e);}};
 $('historyDelete').onclick=async()=>{
- const target=historyMenuRun;if(!target||busy||!dirtyGuard())return;closeHistoryMenu();
+ const target=historyMenuRun;if(!target)return;closeHistoryMenu();clearError();
  try{
   await api('/api/runs/'+encodeURIComponent(target.id)+'/visibility','POST',{deleted:!target.deleted});
   if(!target.deleted&&run?.run_id===target.id){auto=false;editing=false;run=null;viewVersion=null;$('editor').hidden=true;$('workbench').hidden=true;$('welcome').hidden=false;}
-  await history();toast(target.deleted?'创作已恢复，可在最近的创作中打开。':'创作已删除，可在“已删除的创作”中恢复。');
+  await history();clearError();
  }catch(e){error(e);}
 };
 document.addEventListener('click',e=>{if(!e.target.closest('#historyContextMenu'))closeHistoryMenu();});

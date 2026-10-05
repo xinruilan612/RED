@@ -656,6 +656,24 @@ class DurableTests(unittest.TestCase):
         with self.store.connect() as db:
             self.assertEqual(db.execute("SELECT state FROM live_calls WHERE stage='strategy'").fetchone()[0],'validated')
 
+    def test_delete_wins_late_results_and_preserves_usage(self):
+        self.start();deleted=[]
+        def delete(point,stage):
+            if point=='after_response' and stage=='strategy' and not deleted:
+                deleted.append(True)
+                self.store.set_visibility(self.run_id,self.owner,True)
+        Worker(self.service,fault=delete).once()
+        self.assertTrue(deleted)
+        self.assertEqual(self.run_value().run_status,'CANCELLED')
+        self.assertFalse(self.run_value().artifacts)
+        self.assertEqual(self.job()['status'],'done')
+        self.assertEqual(self.store.list_runs(self.owner),[])
+        self.assertEqual(self.store.list_runs(self.owner,deleted=True)[0].run_id,self.run_id)
+        with self.store.connect() as db:
+            self.assertEqual(db.execute("SELECT state FROM live_calls WHERE stage='strategy'").fetchone()[0],'validated')
+        self.store.set_visibility(self.run_id,self.owner,False)
+        self.assertEqual(self.run_value().run_status,'CANCELLED')
+
     def test_pause_between_nodes_then_resume(self):
         self.start();paused=[]
         def pause(point,stage):

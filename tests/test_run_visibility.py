@@ -89,16 +89,17 @@ class VisibilityChecks:
         self.assertEqual(self.post(path, {'deleted':False}).status_code, 404)
         self.assertEqual(self.post('/api/runs/nonexistent/visibility', {'deleted':True}).status_code, 404)
 
-    def test_active_runs_cannot_be_hidden(self):
+    def test_delete_active_run_cancels_and_restore_does_not_restart(self):
         self.register()
         run = self.create()
         response = self.post('/api/runs/' + run['run_id'] + '/visibility', {'deleted':True})
-        self.assertEqual(response.status_code, 409)
-        self.assertEqual(response.json()['error']['code'], 'RUN_ACTIVE')
-        self.assertEqual(len(self.client.get('/api/runs').json()), 1)
-        self.assertEqual(self.client.get('/api/runs?deleted=true').json(), [])
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.client.get('/api/runs').json(), [])
+        self.assertEqual(self.client.get('/api/runs?deleted=true').json()[0]['run_status'], 'CANCELLED')
+        self.assertEqual(self.post('/api/runs/' + run['run_id'] + '/visibility', {'deleted':False}).status_code,200)
+        self.assertEqual(self.client.get('/api/runs').json()[0]['run_status'],'CANCELLED')
 
-    def test_pending_worker_cannot_be_hidden_even_with_terminal_run(self):
+    def test_delete_fences_pending_worker_even_with_terminal_run(self):
         self.register()
         run = self.create()
         path = '/api/runs/' + run['run_id']
@@ -108,8 +109,10 @@ class VisibilityChecks:
         with self.store.connect() as db:
             db.execute("UPDATE runtime_jobs SET status='running' WHERE run_id=?", (run['run_id'],))
         response = self.post(path + '/visibility', {'deleted':True})
-        self.assertEqual(response.status_code, 409)
-        self.assertEqual(response.json()['error']['code'], 'JOB_ACTIVE')
+        self.assertEqual(response.status_code, 200)
+        with self.store.connect() as db:
+            row=db.execute('SELECT status,token,lease_until FROM runtime_jobs WHERE run_id=?',(run['run_id'],)).fetchone()
+        self.assertEqual(tuple(row),('done',None,None))
 
 
 class SQLiteVisibilityTests(VisibilityChecks, unittest.TestCase):

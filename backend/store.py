@@ -135,21 +135,19 @@ class Store:
             db.execute('UPDATE reservations SET actual=? WHERE run_id=? AND call_id=?', (actual,run_id,call_id))
 
     def set_visibility(self, run_id, owner, deleted):
-        """Move completed records to/from trash without altering workflow evidence."""
+        """Move records to trash, atomically cancelling active work and fencing late results."""
         require(type(deleted) is bool, 'INVALID_INPUT', '删除状态必须为布尔值')
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             run = self._get(db, run_id, owner)
             if deleted:
-                require(run.run_status in ('SUCCEEDED','FAILED','CANCELLED','EXPIRED'),
-                        'RUN_ACTIVE', '创作还未结束，请先完成或取消，再删除')
+                if run.run_status not in ('SUCCEEDED','FAILED','CANCELLED','EXPIRED'):
+                    run.cancel()
+                    run.status_version += 1
+                    db.execute('UPDATE runs SET payload=? WHERE id=?',
+                               (json.dumps(asdict(run),ensure_ascii=False),run_id))
                 if db.has_table('runtime_jobs'):
-                    job = db.execute('SELECT status FROM runtime_jobs WHERE run_id=?', (run_id,)).fetchone()
-                    require(not job or job[0] not in ('queued','running','pausing'),
-                            'JOB_ACTIVE', '后台任务尚未停稳，请稍后再删除')
-                if db.has_table('live_steps'):
-                    require(not db.execute("SELECT 1 FROM live_steps WHERE run_id=? AND state='running'", (run_id,)).fetchone(),
-                            'JOB_ACTIVE', '模型正在执行，请等待完成后再删除')
+                    db.execute("UPDATE runtime_jobs SET status='done',token=NULL,lease_until=NULL,updated=? WHERE run_id=? AND status!='done'",(time.time(),run_id))
             db.execute('INSERT INTO run_visibility(run_id,owner,deleted,changed_at) VALUES(?,?,?,?) '
                        'ON CONFLICT(run_id) DO UPDATE SET deleted=excluded.deleted,changed_at=excluded.changed_at',
                        (run_id,owner,int(deleted),time.time()))
