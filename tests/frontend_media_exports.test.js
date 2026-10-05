@@ -21,6 +21,8 @@ test('confirmed draft gets a full bundle button using the authenticated endpoint
  const s=setup();await s.mount({workflow_type:'creation',run_status:'SUCCEEDED',accepted_ref:'v5',run_id:'run-1'});
  const section=s.host.children[0],buttons=section.children[2];
  assert.equal(buttons.children[0].textContent,'下载完整发布前成品包');
+ assert.equal(buttons.children[0].className,'primary media-export-primary');
+ assert.equal(buttons.children[1].className,'secondary');
  await buttons.children[0].click();
  assert.deepEqual(s.calls,['/api/runs/run-1/media/capabilities','/api/runs/run-1/media-export?kind=complete']);
  assert.deepEqual(s.downloads,['youji-complete-run-1.zip']);
@@ -30,3 +32,5 @@ test('unconfirmed creation does not expose full bundle or fetch',async()=>{
  const s=setup();await s.mount({workflow_type:'creation',run_status:'RUNNING',run_id:'run-1'});
  assert.equal(s.host.children.length,0);assert.equal(s.calls.length,0);
 });
+
+test("export bundle sits beside confirmation and usage details are collapsed",()=>{const html=fs.readFileSync("frontend/index.html","utf8");assert.ok(html.indexOf('id="mediaExports"')<html.indexOf('id="draftPanel"'));assert.match(html,/<details id="usageDetails" class="usage-details" hidden>/);assert.doesNotMatch(html,/<details id="usageDetails"[^>]*\sopen/);});

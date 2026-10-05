@@ -260,15 +260,17 @@ test('unavailable confirmation buttons remain disabled after workbench rendering
  assert.equal(s.element('reviewConfirmUnavailable').disabled,true);
  assert.equal(s.element('confirmationPending').disabled,true);
 });
-test('routine budget explanation stays hidden',()=>{
+test('routine budget explanation is neutral and inside collapsed details',()=>{
  const s=setup();s.eval("run.testing_budget={target_cny:0.30,target_runs:3,spent_cny:0.09,warning:''};renderTestingBudget()");
- assert.equal(s.element('testingBudget').hidden,true);
- assert.equal(s.element('testingBudget').textContent,'');
+ assert.equal(s.element('usageDetails').hidden,false);
+ assert.match(s.element('testingBudget').textContent,/累计用量：¥0.09/);
+ assert.doesNotMatch(s.element('testingBudget').textContent,/警告|预算提醒|已超/);
 });
-test('only actionable budget warning is shown without disabling continuation',()=>{
+test('soft budget excess stays neutral without disabling continuation',()=>{
  const s=setup();s.eval("run.testing_budget={warning:'已超过参考预算，仍可继续'};renderTestingBudget()");
  assert.equal(s.element('testingBudget').hidden,false);
- assert.equal(s.element('testingBudget').textContent,'预算提醒：已超过参考预算，仍可继续');
+ assert.match(s.element('testingBudget').textContent,/不影响继续创作/);
+ assert.doesNotMatch(s.element('testingBudget').textContent,/已超过|预算提醒/);
  assert.equal(s.element('start').disabled,false);
  s.eval('run.testing_budget=null;renderTestingBudget()');
  assert.equal(s.element('testingBudget').hidden,true);

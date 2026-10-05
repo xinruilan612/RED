@@ -4,8 +4,8 @@ async function mountMediaExports(run, container) {
  container.replaceChildren();
  if(run.workflow_type!=='creation'||run.run_status!=='SUCCEEDED'||!run.accepted_ref)return;
  const section=document.createElement('section');section.className='media-exports panel';
- const title=document.createElement('h3');title.textContent='把这份稿件做成图片或视频';
- const summary=document.createElement('p');summary.textContent='使用你已确认的准确版本，本机排版，不额外调用模型。';
+ const title=document.createElement('h3');title.textContent='下一步：下载发布前成品';
+ const summary=document.createElement('p');summary.textContent='一次下载文案、图片、无声视频和字幕。本机排版，不额外调用模型。';
  const status=document.createElement('p');status.className='media-export-status';status.textContent='正在检查导出工具…';status.setAttribute('aria-live','polite');
  const buttons=document.createElement('div');buttons.className='media-export-buttons';
  section.append(title,summary,buttons,status);container.append(section);
@@ -15,7 +15,7 @@ async function mountMediaExports(run, container) {
   const caps=await response.json();
   const choices=[['complete','下载完整发布前成品包',caps.complete_available],['images','下载图文包',caps.images_available],['video','下载无声图文视频',caps.video_available],['storyboard','下载分镜与字幕',caps.storyboard_available]];
   for(const [kind,label,available] of choices){
-   const button=document.createElement('button');button.textContent=label;button.disabled=!available;
+   const button=document.createElement('button');button.textContent=label;button.className=kind==='complete'?'primary media-export-primary':'secondary';button.disabled=!available;
    button.addEventListener('click',async()=>{
     buttons.querySelectorAll('button').forEach(b=>b.disabled=true);
     status.textContent=(kind==='video'||kind==='complete')?'正在生成视频，请稍等，通常需要十几秒…':'正在制作成品…';

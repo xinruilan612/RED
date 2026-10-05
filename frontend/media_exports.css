@@ -1,1 +1,3 @@
 .media-exports{margin-top:20px}.media-export-buttons{display:flex;flex-wrap:wrap;gap:12px;margin:16px 0}.media-export-status{color:var(--muted,#5b6b63);font-size:14px;line-height:1.7}.media-exports h3{margin-top:0}
+
+.media-exports{background:#f0f5f0;border:1px solid #cfddd1;box-shadow:none}.media-export-buttons .media-export-primary{background:#28614f;color:#fff;border:1px solid #28614f;font-weight:600;padding:13px 22px;min-height:48px}.media-export-buttons .media-export-primary:hover:not(:disabled){background:#204e40}.media-export-buttons .media-export-primary:focus-visible{outline:3px solid #8bbda6;outline-offset:3px}.media-export-buttons .media-export-primary:disabled{opacity:.5;cursor:wait}
