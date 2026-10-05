@@ -187,7 +187,12 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
         return due_reviews(service.operations.read(user['owner']))
 
     @app.get('/api/runs')
-    def runs(user=Depends(logged)): return [service.view(r) for r in store.list_runs(user['owner'])]
+    def runs(deleted: bool=False,user=Depends(logged)): return [service.view(r) for r in store.list_runs(user['owner'],deleted=deleted)]
+
+    @app.post('/api/runs/{run_id}/visibility')
+    def visibility(run_id: str,data: dict,user=Depends(logged)):
+        require(set(data)=={'deleted'},'INVALID_INPUT','删除字段无效')
+        return store.set_visibility(run_id,user['owner'],data['deleted'])
 
     @app.get('/api/windtunnel/checklists')
     def windtunnel_checklists(account_id: str,user=Depends(logged)):

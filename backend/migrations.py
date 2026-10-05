@@ -63,6 +63,12 @@ CREATE TABLE analytics_review_attempts (
  owner TEXT NOT NULL, analysis_id TEXT NOT NULL, run_id TEXT NOT NULL,
  snapshot_hash TEXT NOT NULL, status TEXT NOT NULL, response TEXT, error TEXT,
  created_at DOUBLE PRECISION NOT NULL, PRIMARY KEY(owner,analysis_id));
+'''), (7, '''
+CREATE TABLE run_visibility (
+ run_id TEXT PRIMARY KEY REFERENCES runs(id), owner TEXT NOT NULL,
+ deleted INTEGER NOT NULL DEFAULT 0 CHECK(deleted IN (0,1)),
+ changed_at DOUBLE PRECISION NOT NULL);
+CREATE INDEX run_visibility_owner ON run_visibility(owner,deleted);
 '''))
 
 

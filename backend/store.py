@@ -1,5 +1,6 @@
 """Transactional domain repository for PostgreSQL and offline SQLite compatibility."""
 import json
+import time
 from dataclasses import asdict
 from uuid import uuid4
 from backend.database import connect
@@ -133,7 +134,36 @@ class Store:
             require(row[1] is None or row[1] == actual, 'IDEMPOTENCY_CONFLICT', '用量已结算')
             db.execute('UPDATE reservations SET actual=? WHERE run_id=? AND call_id=?', (actual,run_id,call_id))
 
-    def list_runs(self, owner):
+    def set_visibility(self, run_id, owner, deleted):
+        """Move completed records to/from trash without altering workflow evidence."""
+        require(type(deleted) is bool, 'INVALID_INPUT', '删除状态必须为布尔值')
         with self.connect() as db:
-            rows = db.execute(f'SELECT payload FROM runs WHERE owner=? ORDER BY {self.order_column} DESC LIMIT 50', (owner,)).fetchall()
+            db.execute('BEGIN IMMEDIATE')
+            run = self._get(db, run_id, owner)
+            if deleted:
+                require(run.run_status in ('SUCCEEDED','FAILED','CANCELLED','EXPIRED'),
+                        'RUN_ACTIVE', '创作还未结束，请先完成或取消，再删除')
+                if db.has_table('runtime_jobs'):
+                    job = db.execute('SELECT status FROM runtime_jobs WHERE run_id=?', (run_id,)).fetchone()
+                    require(not job or job[0] not in ('queued','running','pausing'),
+                            'JOB_ACTIVE', '后台任务尚未停稳，请稍后再删除')
+                if db.has_table('live_steps'):
+                    require(not db.execute("SELECT 1 FROM live_steps WHERE run_id=? AND state='running'", (run_id,)).fetchone(),
+                            'JOB_ACTIVE', '模型正在执行，请等待完成后再删除')
+            db.execute('INSERT INTO run_visibility(run_id,owner,deleted,changed_at) VALUES(?,?,?,?) '
+                       'ON CONFLICT(run_id) DO UPDATE SET deleted=excluded.deleted,changed_at=excluded.changed_at',
+                       (run_id,owner,int(deleted),time.time()))
+        return {'run_id':run_id, 'deleted':deleted}
+
+    def list_runs(self, owner, deleted=False):
+        with self.connect() as db:
+            # Standalone offline Store users need not initialize the runtime schema.
+            if not db.has_table('run_visibility'):
+                if deleted:
+                    return []
+                rows = db.execute(f'SELECT payload FROM runs WHERE owner=? ORDER BY {self.order_column} DESC LIMIT 50', (owner,)).fetchall()
+            else:
+                rows = db.execute(f'SELECT r.payload FROM runs r LEFT JOIN run_visibility v ON v.run_id=r.id '
+                                  f'WHERE r.owner=? AND COALESCE(v.deleted,0)=? ORDER BY r.{self.order_column} DESC LIMIT 50',
+                                  (owner,int(deleted))).fetchall()
             return [Run(**json.loads(row[0])) for row in rows]
