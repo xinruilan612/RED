@@ -118,9 +118,12 @@ class WindtunnelRuntimeTests(unittest.TestCase):
         self.work();self.confirm();self.fixture.failure=TimeoutError('private provider secret')
         self.work();self.assertEqual(self.job()['status'],'blocked')
         self.assertNotIn('private provider secret',self.job()['error'])
-        before=len(self.fixture.calls);self.fixture.failure=None;self.work()
+        before=len(self.fixture.calls);self.fixture.failure=None
+        with self.assertRaises(DomainError) as caught:self.start()
+        self.assertEqual(caught.exception.code,'USAGE_UNKNOWN')
+        self.assertFalse(Worker(self.service).once())
         self.assertEqual(len(self.fixture.calls),before)
-        self.assertIn('未知',self.job()['error'])
+        self.assertEqual(self.job()['status'],'blocked')
         self.assertEqual(self.value().windtunnel['reports'],[])
 
     def test_cancel_wins_late_result(self):
