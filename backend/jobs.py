@@ -49,6 +49,9 @@ class Jobs:
                 require(run.run_status in ('QUEUED','RUNNING'),'INVALID_TRANSITION','请先完成人工操作')
                 require(not db.execute("SELECT 1 FROM live_steps WHERE run_id=? AND state='running'",(run_id,)).fetchone(),'STEP_ALREADY_ATTEMPTED','旧同步调用未决，需先核对')
                 require(not row or row[0] not in ACTIVE,'JOB_ACTIVE','任务已在后台执行')
+                if row and row[0]=='blocked':
+                    require(not db.execute("SELECT 1 FROM live_calls WHERE run_id IN (SELECT run_id FROM live_lineage WHERE budget_id=(SELECT budget_id FROM live_lineage WHERE run_id=?)) AND actual IS NULL",(run_id,)).fetchone(),
+                            'USAGE_UNKNOWN','上次调用用量尚未确认，已保留进度；请先核对接口用量，暂不重复请求')
                 from backend.review_recovery import public as recovery_public
                 require(not recovery_public(self.store,run)['available'],'INVALID_TRANSITION','审核引用需要处理，请先点击免费查看审核问题并进入改稿')
                 from backend.model_router import review_execution

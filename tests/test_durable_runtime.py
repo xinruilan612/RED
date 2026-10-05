@@ -42,6 +42,49 @@ class DurableTests(unittest.TestCase):
     def step(self, action='step', **extra):
         return self.service.background(self.owner,self.run_id,dict(action=action,version=self.run_value().status_version,key=str(uuid4()),**extra))
 
+    def test_parse_failure_keeps_usage_and_explicit_resume_reuses_successful_branch(self):
+        from backend.provider import ProviderOutputError
+        base=self.model.complete
+        failed=[]
+        def complete_result(messages):
+            if '负责 audience 的' in messages[0]['content'] and not failed:
+                failed.append(True)
+                raise ProviderOutputError('模型正文格式无效',tokens=210,
+                    metadata={'request_id':'fixture-response','input_tokens':100,'output_tokens':110})
+            value,tokens=base(messages)
+            return value,tokens,{}
+        self.model.complete_result=complete_result
+        self.start();Worker(self.service).once()
+        self.assertEqual(self.job()['status'],'blocked')
+        report=self.service.view(self.run_value())
+        self.assertEqual(report['usage']['unknown_calls'],0)
+        self.assertEqual(self.model.calls.count('research'),1)
+        with self.store.connect() as db:
+            actual=db.execute("SELECT actual FROM live_calls WHERE run_id=? AND state='failed'",(self.run_id,)).fetchone()[0]
+            audit=db.execute("SELECT request_id,input_tokens,output_tokens FROM model_audit WHERE run_id=? AND outcome='failed'",(self.run_id,)).fetchone()
+        self.assertEqual(actual,210);self.assertEqual(tuple(audit),('fixture-response',100,110))
+        self.assertFalse(Worker(self.service).once())  # No implicit paid retry.
+        self.service=Service(self.store,self.config,self.model)
+        self.start();Worker(self.service).once()
+        self.assertEqual(self.run_value().run_status,'WAITING_USER')
+        self.assertEqual(self.model.calls.count('research'),1)
+        self.assertEqual(self.model.calls.count('audience'),1)
+        self.assertEqual(self.service.view(self.run_value())['usage']['unknown_calls'],0)
+
+    def test_parse_failure_unknown_usage_blocks_resume_before_queue(self):
+        from backend.provider import ProviderOutputError
+        def failure(messages):raise ProviderOutputError('无法确认用量')
+        self.model.complete_result=failure
+        self.start();Worker(self.service).once()
+        self.assertEqual(self.job()['status'],'blocked')
+        with self.assertRaises(DomainError) as caught:self.start()
+        self.assertEqual(caught.exception.code,'USAGE_UNKNOWN')
+        report=self.service.view(self.run_value())
+        self.assertNotIn('next',report['allowed_actions'])
+        self.assertNotIn('recover',report['allowed_actions'])
+        self.assertGreater(report['usage']['unknown_calls'],0)
+        self.assertFalse(Worker(self.service).once())
+
     def invalid_citation_review(self):
         base=self.model.complete
         def invalid(messages):
@@ -580,9 +623,11 @@ class DurableTests(unittest.TestCase):
         self.model.complete=fail;self.start();Worker(self.service).once()
         self.assertEqual(self.job()['status'],'blocked')
         self.model.complete=original;before=len(self.model.calls)
-        self.start();Worker(self.service).once()
+        with self.assertRaises(DomainError) as caught:self.start()
+        self.assertEqual(caught.exception.code,'USAGE_UNKNOWN')
+        self.assertFalse(Worker(self.service).once())
         self.assertEqual(len(self.model.calls),before)
-        self.assertIn('未知',self.job()['error'])
+        self.assertEqual(self.job()['status'],'blocked')
 
     def test_owner_idempotency_and_old_lease_fencing(self):
         run=self.run_value();data=dict(action='start',version=run.status_version,key='same')

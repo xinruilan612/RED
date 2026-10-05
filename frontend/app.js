@@ -70,7 +70,7 @@ async function history(){
  const request=++historyRequest,deleted=historyDeleted;
  const rows=(await api('/api/runs'+(deleted?'?deleted=true':''))).filter(r=>r.workflow_type!=='windtunnel'&&(typeof matchesAccount!=='function'||matchesAccount(r)));
  if(request!==historyRequest)return rows;
- $('history').innerHTML=rows.length?rows.map(r=>`<button data-run="${esc(r.run_id)}" data-title="${esc(r.context.topic||'旧任务')}" class="${run?.run_id===r.run_id?'selected':''}" title="右键${deleted?'恢复':'删除'}这条创作记录">${esc(r.context.topic||'旧任务')}<small>${deleted?'已删除 · 右键恢复':esc(states[r.run_status])+' · '+r.drafts.length+' 个版本'}</small></button>`).join(''):`<p class="helper">${deleted?'没有已删除的创作':'还没有创作记录'}</p>`;
+ $('history').innerHTML=rows.length?rows.map(r=>`<button data-run="${esc(r.run_id)}" data-title="${esc(r.context.topic||'旧任务')}" class="${run?.run_id===r.run_id?'selected':''}" title="右键${deleted?'恢复':'删除'}这条创作记录">${esc(r.context.topic||'旧任务')}<small>${deleted?'已删除 · 右键恢复':esc(r.background?.status==='blocked'?'已暂停 · 查看原因':states[r.run_status])+' · '+r.drafts.length+' 个版本'}</small></button>`).join(''):`<p class="helper">${deleted?'没有已删除的创作':'还没有创作记录'}</p>`;
  $('historyTrash').textContent=deleted?'返回最近的创作':'已删除的创作';
  return rows;
 }
@@ -120,7 +120,7 @@ function modelFailureGuidance(task){
  if(!/格式|JSON|MODEL_OUTPUT_INVALID|模型返回|用量不确定|用量未知/.test(message)&&!failed)return '';
  const stage=(failed?.stage==='analysis'?stages[failed?.agent]:stages[failed?.stage])||stages[failed?.agent]||'当前步骤';
  const saved='已完成的分析、资料和稿件都保留，不用重新上传。';
- if(unresolvedUsage(task))return `${stage}暂时停止：模型服务没有留下完整的结果或用量记录。${saved}为避免重复计费，当前不能直接重试，需要先核对这次调用的用量；不要另建任务反复提交。`;
+ if(unresolvedUsage(task))return `${stage}暂时停止：这次调用未保存完整的结果或用量记录。${saved}为避免重复计费，当前不能直接重试，需要先核对这次调用的用量；不要另建任务反复提交。`;
  if((task.allowed_actions||[]).includes('recover'))return `${stage}的模型结果未能通过检查。${saved}可以点击“从失败步骤继续”，保留已有进度和累计用量；新的模型请求仍受原来的额度限制。`;
  if((task.allowed_actions||[]).includes('next'))return `${stage}的模型结果未能通过检查。${saved}可以点击“重试未完成步骤”，已成功的步骤会复用；新的模型请求仍受原来的额度限制。`;
  return `${stage}的模型结果未能通过检查。${saved}请查看运行记录中的具体原因，当前没有可执行的重试步骤。`;

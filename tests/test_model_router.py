@@ -62,3 +62,22 @@ class RouterTests(unittest.TestCase):
         self.assertEqual(self.run.run_status,'FAILED')
         with self.assertRaises(DomainError):
             self.store.command(self.run.run_id,'me',self.run.status_version,'unsafe','accept',{'draft_ref':self.run.drafts[-1]['ref'],'review_ref':'forged'})
+
+    def test_known_parse_retries_keep_original_stage_limit(self):
+        from backend.provider import ProviderOutputError
+        attempts=[]
+        def invalid(messages):
+            attempts.append(1)
+            raise ProviderOutputError('模型返回空内容',tokens=120,metadata={})
+        self.model.complete_result=invalid
+        messages=[{'role':'user','content':'json'}]
+        for _ in range(3):
+            with self.assertRaises(DomainError) as caught:
+                self.executor.calls.invoke(self.run,'audience','audience',messages,lambda db:None,reuse=True)
+            self.assertEqual(caught.exception.code,'MODEL_OUTPUT_INVALID')
+        with self.assertRaises(DomainError) as caught:
+            self.executor.calls.invoke(self.run,'audience','audience',messages,lambda db:None,reuse=True)
+        self.assertEqual(caught.exception.code,'STAGE_ATTEMPT_LIMIT')
+        self.assertEqual(len(attempts),3)
+        self.assertEqual(self.executor.public(self.run)['usage']['tokens'],360)
+        self.assertEqual(self.executor.public(self.run)['usage']['unknown_calls'],0)

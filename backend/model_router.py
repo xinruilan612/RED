@@ -4,7 +4,7 @@ import time
 from dataclasses import asdict, dataclass, replace
 from uuid import uuid4
 from backend.contracts import require, DomainError, CONTRACT, PARAMETERS
-from backend.provider import DeepSeek, RATE
+from backend.provider import DeepSeek, RATE, ProviderOutputError
 from backend.workflow import digest
 
 CREATION_STAGES = ('audience','research','strategy','outline','hook','title','body','revise','review')
@@ -29,8 +29,10 @@ def stage_attempt_count(db, budget_id, agent, stage):
 
 
 def cached_response(db, run, stage, input_hash):
-    old=db.execute('SELECT c.id,c.response_json,c.actual,c.state FROM live_calls c JOIN model_audit a ON a.call_id=c.id WHERE c.run_id=? AND a.input_hash=? AND c.stage=?',(run.run_id,input_hash,stage)).fetchone()
+    old=db.execute('SELECT c.id,c.response_json,c.actual,c.state FROM live_calls c JOIN model_audit a ON a.call_id=c.id WHERE c.run_id=? AND a.input_hash=? AND c.stage=? ORDER BY CASE WHEN c.response_json IS NOT NULL THEN 0 ELSE 1 END, a.started DESC',(run.run_id,input_hash,stage)).fetchone()
     if old:
+        if old[3]=='failed' and old[2] is not None and old[1] is None:
+            return None  # Explicit resumed job may retry within the original shared limits.
         require(old[1] is not None and old[2] is not None,'USAGE_UNKNOWN','上次调用结果或用量未知；已停止，未重复收费调用')
         if old[3]=='invalid':
             from backend.citation_ids import repair
@@ -155,10 +157,14 @@ class Calls:
             return value,tokens,call_id
         except Exception as error:
             safe=str(error) if isinstance(error,DomainError) else '模型调用失败，未自动重试'
+            tokens=None;meta={}
+            if isinstance(error,ProviderOutputError):
+                if type(error.tokens) is int and 0<=error.tokens<=reserve:tokens=error.tokens
+                meta=error.metadata
             with self.store.connect() as db:
-                db.execute("UPDATE live_calls SET state='failed',error=? WHERE id=?",(safe,call_id))
-                db.execute("UPDATE model_audit SET outcome='failed',duration_ms=? WHERE call_id=?",(round((time.monotonic()-started)*1000),call_id))
-            raise DomainError('PROVIDER_ERROR',safe) from None
+                db.execute("UPDATE live_calls SET state='failed',actual=COALESCE(actual,?),error=? WHERE id=?",(tokens,safe,call_id))
+                db.execute("UPDATE model_audit SET outcome='failed',duration_ms=?,request_id=COALESCE(request_id,?),input_tokens=COALESCE(input_tokens,?),output_tokens=COALESCE(output_tokens,?) WHERE call_id=?",(round((time.monotonic()-started)*1000),meta.get('request_id'),meta.get('input_tokens'),meta.get('output_tokens'),call_id))
+            raise DomainError(error.code if isinstance(error,DomainError) else 'PROVIDER_ERROR',safe) from None
 
     def validated(self, call_id, error):
         with self.store.connect() as db:

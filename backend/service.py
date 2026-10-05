@@ -53,6 +53,8 @@ class Service:
         with self.store.connect() as db:result['review_execution']=review_execution(db,run)
         if result['review_execution'] and result['review_execution']['blocked']:
             result['allowed_actions']=[a for a in result['allowed_actions'] if a!='next']
+        if result.get('usage',{}).get('unknown_calls',0) and (run.run_status=='FAILED' or result['background']['status']=='blocked'):
+            result['allowed_actions']=[a for a in result['allowed_actions'] if a not in ('next','recover')]
         if result['in_flight']:result['allowed_actions']=[a for a in result['allowed_actions'] if a=='cancel']
         return result
 
