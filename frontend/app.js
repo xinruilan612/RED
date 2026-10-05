@@ -65,11 +65,36 @@ $('approveLiveBudget').onclick=async()=>{
  if(busy||run?.run_id!==pending.runId||run.snapshot_id!==pending.snapshotId){error(new Error('任务或素材已变化，请重新确认费用。'));return;}
  confirmedLiveRuns.add(pending.runId);await pending.resume();
 };
+let historyDeleted=false,historyRequest=0,historyMenuRun=null,historyMenuOpener=null;
 async function history(){
- const rows=(await api('/api/runs')).filter(r=>r.workflow_type!=='windtunnel'&&(typeof matchesAccount!=='function'||matchesAccount(r)));
- $('history').innerHTML=rows.length?rows.map(r=>`<button data-run="${esc(r.run_id)}" class="${run?.run_id===r.run_id?'selected':''}">${esc(r.context.topic||'旧任务')}<small>${esc(states[r.run_status])} · ${r.drafts.length} 个版本</small></button>`).join(''):'<p class="helper">还没有创作记录</p>';
+ const request=++historyRequest,deleted=historyDeleted;
+ const rows=(await api('/api/runs'+(deleted?'?deleted=true':''))).filter(r=>r.workflow_type!=='windtunnel'&&(typeof matchesAccount!=='function'||matchesAccount(r)));
+ if(request!==historyRequest)return rows;
+ $('history').innerHTML=rows.length?rows.map(r=>`<button data-run="${esc(r.run_id)}" data-title="${esc(r.context.topic||'旧任务')}" class="${run?.run_id===r.run_id?'selected':''}" title="右键${deleted?'恢复':'删除'}这条创作记录">${esc(r.context.topic||'旧任务')}<small>${deleted?'已删除 · 右键恢复':esc(states[r.run_status])+' · '+r.drafts.length+' 个版本'}</small></button>`).join(''):`<p class="helper">${deleted?'没有已删除的创作':'还没有创作记录'}</p>`;
+ $('historyTrash').textContent=deleted?'返回最近的创作':'已删除的创作';
  return rows;
 }
+function closeHistoryMenu(){ $('historyContextMenu').hidden=true;historyMenuRun=null; }
+function openHistoryMenu(button,x,y){
+ if(busy)return;
+ historyMenuOpener=button;historyMenuRun={id:button.dataset.run,title:button.dataset.title,deleted:historyDeleted};
+ const menu=$('historyContextMenu');$('historyDelete').textContent=historyDeleted?'恢复这条创作':'删除这条创作';
+ menu.hidden=false;menu.style.left=Math.max(8,Math.min(x,window.innerWidth-200))+'px';menu.style.top=Math.max(8,Math.min(y,window.innerHeight-65))+'px';$('historyDelete').focus();
+}
+$('history').addEventListener('contextmenu',e=>{const b=e.target.closest('[data-run]');if(!b)return;e.preventDefault();openHistoryMenu(b,e.clientX,e.clientY);});
+$('history').addEventListener('keydown',e=>{if(e.key!=='ContextMenu'&&!(e.shiftKey&&e.key==='F10'))return;const b=e.target.closest('[data-run]');if(!b)return;e.preventDefault();const r=b.getBoundingClientRect();openHistoryMenu(b,r.left,r.bottom);});
+$('historyTrash').onclick=async()=>{if(busy||!dirtyGuard())return;closeHistoryMenu();historyDeleted=!historyDeleted;try{await history();}catch(e){error(e);}};
+$('historyDelete').onclick=async()=>{
+ const target=historyMenuRun;if(!target||busy||!dirtyGuard())return;closeHistoryMenu();
+ try{
+  await api('/api/runs/'+encodeURIComponent(target.id)+'/visibility','POST',{deleted:!target.deleted});
+  if(!target.deleted&&run?.run_id===target.id){auto=false;editing=false;run=null;viewVersion=null;$('editor').hidden=true;$('workbench').hidden=true;$('welcome').hidden=false;}
+  await history();toast(target.deleted?'创作已恢复，可在最近的创作中打开。':'创作已删除，可在“已删除的创作”中恢复。');
+ }catch(e){error(e);}
+};
+document.addEventListener('click',e=>{if(!e.target.closest('#historyContextMenu'))closeHistoryMenu();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('historyContextMenu').hidden){closeHistoryMenu();historyMenuOpener?.focus();}});
+window.addEventListener('resize',closeHistoryMenu);
 function currentAgent(){if(!run)return 'audience';if(run.run_status==='WAITING_USER'||run.run_status==='SUCCEEDED'||(!run.in_flight&&run.review?.decision==='revision_required'&&run.allowed_actions.includes('edit')))return 'human';if(run.current_stage==='brief')return 'audience';return run.current_stage;}
 function renderTestingBudget(){
  const warning=run?.testing_budget?.warning,host=$('testingBudget');
@@ -285,7 +310,7 @@ async function autoRun(){
 $('briefForm').addEventListener('submit',async e=>{e.preventDefault();if(busy)return;busy=true;clearError();e.submitter.disabled=true;
  try{const accountId=currentAccount()?.id,documentIds=[...$('materialDocumentSelect').selectedOptions].map(o=>o.value);if(documentIds.length>3)throw new Error('本次最多选择 3 份资料');run=await api('/api/runs','POST',{...(websiteSession?.auth_required?{knowledge:{enabled:$('useKnowledge').checked,document_ids:$('useKnowledge').checked?documentIds:[]}}:{}),...($('useWebResearch').checked?{web_research:{enabled:true,queries:[$('webQuery1').value,$('webQuery2').value].map(q=>q.trim()).filter(Boolean)}}:{}),mode:$('mode').value,topic:$('topic').value,audience:$('audience').value,tone:$('tone').value,material:$('material').value,scenario:$('scenario').value,allow_hypothesis:$('hypothesis').checked,operations:{platform:$('targetPlatform').value,account_id:accountId,account:$('accountName').value,trend_id:chosenTrend?.id||null,hypothesis_id:chosenHypothesis?.id||null}});chosenHypothesis=null;selected='audience';detailStage=null;viewVersion=null;editing=false;$('editor').hidden=true;render();await history();}
  catch(err){error(err);}finally{busy=false;e.submitter.disabled=false;if(run&&!$('workbench').hidden)render();}});
-$('history').addEventListener('click',async e=>{const b=e.target.closest('[data-run]');if(!b||busy||!dirtyGuard())return;auto=false;editing=false;$('editor').hidden=true;clearError();showPage('studio');try{run=await api('/api/runs/'+b.dataset.run);viewVersion=null;detailStage=null;selected=currentAgent();render();await history();}catch(err){error(err);}});
+$('history').addEventListener('click',async e=>{const b=e.target.closest('[data-run]');if(!b||busy||!dirtyGuard())return;if(historyDeleted){const box=b.getBoundingClientRect();openHistoryMenu(b,box.left,box.bottom);return;}auto=false;editing=false;$('editor').hidden=true;clearError();showPage('studio');try{run=await api('/api/runs/'+b.dataset.run);viewVersion=null;detailStage=null;selected=currentAgent();render();await history();}catch(err){error(err);}});
 function startCreation({trend=null,hypothesis=null}={}){
  if(busy||!dirtyGuard())return false;
  creationSequence++;
