@@ -208,3 +208,7 @@ test('demo recap next-creation remains free simulation rather than live account 
  await s.element('operationsContent').onclick({target:{closest:()=>({dataset:{reviewCreate:'a'}})}});
  assert.equal(s.element('mode').value,'simulation');assert.equal(s.element('topic').value,'虚构示例');
 });
+
+ test('onboarding distinguishes free examples from configured live default',()=>{
+ const source=fs.readFileSync('frontend/guidance.js','utf8');assert.doesNotMatch(source,/默认模拟免费/);assert.match(source,/体验示例使用免费模拟/);
+ });
