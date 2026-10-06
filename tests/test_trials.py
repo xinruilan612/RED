@@ -1,5 +1,7 @@
 """Evidence gates for signal-to-hypothesis and the three trial stages."""
 import json
+import os
+from datetime import datetime, timedelta, timezone
 import tempfile
 import unittest
 from dataclasses import asdict
@@ -15,7 +17,7 @@ from backend.workflow import Run
 class ContentTrialTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
-        self.store = Store(Path(self.tmp.name) / 'trials.sqlite')
+        self.store = Store(getattr(self, 'database_url', Path(self.tmp.name) / 'trials.sqlite'))
         self.ops = Operations(self.store)
         self.owner = 'creator-a'
         self.account = self.ops.read(self.owner)['accounts'][0]['id']
@@ -131,7 +133,7 @@ class ContentTrialTests(unittest.TestCase):
                     content_hash='hash-'+run.drafts[0]['ref'],account_id=self.account,platform='xiaohongshu',
                     account='试验账号',
                     hypothesis_id=self.hyp['id'],status='MANUAL_REPORTED',mode='live',provenance='manual',
-                    url='https://www.xiaohongshu.com/explore/'+str(idx),published_at='2026-09-26T10:00:00Z',window='24h'))
+                    url='https://www.xiaohongshu.com/explore/'+str(idx),published_at=(datetime.now(timezone.utc)-timedelta(hours=25)).isoformat(),window='24h'))
                 state['metrics'].append(dict(id=mid,publication_id=pid,account_id=self.account,source_type='manual',
                     window='24h',observed_at=now(),values={'signups':10+idx,'link_clicks':100}))
                 pub_metric.append((pid,mid))
@@ -216,6 +218,54 @@ class ContentTrialTests(unittest.TestCase):
         with self.assertRaises(DomainError) as error:
             self.command('record_trial',dict(hypothesis_id=self.hyp['id'],level='live_attribution',payload=dict(items=items,evidence_method='manual_entry',source_note='actual records',observed_at=now())))
         self.assertEqual(error.exception.code,'VERSION_CONFLICT')
+
+    def attribution_fixture(self):
+        runs=self.record_wind_and_race()
+        items=[]
+        with self.store.connect() as db:
+            state=json.loads(db.execute('SELECT payload FROM operations WHERE owner=?',(self.owner,)).fetchone()[0])
+            for i, (arm, outcome, denominator) in enumerate([(0,1,10),(1,2,10),(0,80,100)]):
+                run=runs[arm];pid='pub-'+str(i);mid='metric-'+str(i)
+                items.append(dict(publication_id=pid,metric_id=mid))
+                state['publications'].append(dict(id=pid,run_id=run.run_id,draft_ref=run.drafts[0]['ref'],content_hash=run.drafts[0]['content_hash'],account_id=self.account,platform=self.hyp['platform'],status='MANUAL_REPORTED',mode='live',provenance='manual',url='https://example.org/'+str(i),published_at=(datetime.now(timezone.utc)-timedelta(hours=25)).isoformat()))
+                state['metrics'].append(dict(id=mid,publication_id=pid,account_id=self.account,source_type='manual',window='24h',observed_at=now(),values={'signups':outcome,'link_clicks':denominator}))
+            db.execute('UPDATE operations SET payload=? WHERE owner=?',(json.dumps(state),self.owner))
+        return dict(items=items,evidence_method='manual_entry',source_note='授权后台人工记录',observed_at=now())
+
+    def test_attribution_aggregates_every_publication_not_just_first(self):
+        payload=self.attribution_fixture()
+        result=self.command('record_trial',dict(hypothesis_id=self.hyp['id'],level='live_attribution',payload=payload))['hypotheses'][0]['validations']['live_attribution']
+        self.assertEqual(result['aggregates']['A']['outcome'],81)
+        self.assertEqual(result['aggregates']['A']['denominator'],110)
+        self.assertLess(result['variant_lift_pct'],0)
+        self.assertFalse(result['meets_minimum_lift'])
+        self.assertGreaterEqual(result['items'][0]['elapsed_hours'],25)
+        restored=Operations(Store(self.store.path)).read(self.owner)
+        self.assertEqual(restored['hypotheses'][0]['validations']['live_attribution'],result)
+
+    def test_attribution_rejects_mislabeled_observation_window(self):
+        payload=self.attribution_fixture()
+        with self.store.connect() as db:
+            state=json.loads(db.execute('SELECT payload FROM operations WHERE owner=?',(self.owner,)).fetchone()[0])
+            state['publications'][-1]['published_at']=(datetime.now(timezone.utc)-timedelta(hours=93)).isoformat()
+            db.execute('UPDATE operations SET payload=? WHERE owner=?',(json.dumps(state),self.owner))
+        with self.assertRaises(DomainError) as error:
+            self.command('record_trial',dict(hypothesis_id=self.hyp['id'],level='live_attribution',payload=payload))
+        self.assertIn('93',str(error.exception))
+        self.assertNotIn('live_attribution',self.ops.read(self.owner)['hypotheses'][0]['validations'])
+
+
+@unittest.skipUnless(os.environ.get('TEST_DATABASE_URL'), 'requires actual PostgreSQL')
+class PostgresContentTrialTests(ContentTrialTests):
+    def setUp(self):
+        import psycopg
+        base=os.environ['TEST_DATABASE_URL'];schema='trials_'+uuid4().hex
+        with psycopg.connect(base,autocommit=True) as db: db.execute('CREATE SCHEMA '+schema)
+        def cleanup():
+            with psycopg.connect(base,autocommit=True) as db: db.execute('DROP SCHEMA '+schema+' CASCADE')
+        self.addCleanup(cleanup)
+        self.database_url=base+('&' if '?' in base else '?')+'options=-csearch_path%3D'+schema
+        super().setUp()
 
 
 if __name__ == '__main__':

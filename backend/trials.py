@@ -235,6 +235,7 @@ def _record_race(operations, db, owner, hypothesis, payload, now, timestamp):
 
 def _record_attribution(operations, db, owner, state, hypothesis, payload, now, timestamp):
     from backend.operations import item
+    from backend.analytics import window_quality, parsed
     require(set(payload) == {'items', 'evidence_method', 'source_note', 'observed_at'}, 'INVALID_INPUT', '实盘归因字段无效')
     require(payload['evidence_method'] == 'manual_entry', 'INVALID_INPUT', '首期只支持人工回填；平台导出与追踪链接尚未接入核验')
     items = payload['items']
@@ -261,6 +262,10 @@ def _record_attribution(operations, db, owner, state, hypothesis, payload, now, 
         require(metric['window'] == hypothesis['window'], 'INVALID_INPUT', '实盘指标必须使用假设卡预设观察窗口')
         latest = [m for m in state['metrics'] if m['publication_id'] == publication['id'] and m['window'] == metric['window']][-1]
         require(latest['id'] == metric['id'], 'VERSION_CONFLICT', '只能使用最新指标快照')
+        require(publication.get('published_at'), 'INVALID_INPUT', '请先补全作品的实际发布时间')
+        quality, hours = window_quality(publication, metric)
+        require(quality == 'comparable', 'INVALID_INPUT', f"{race_arm['label']} 版实际记录在发布后 {hours} 小时，不在 {hypothesis['window']} 的可比较范围内；请选同一观察时长的数据")
+        require(parsed(metric['observed_at']) <= parsed(observed), 'INVALID_INPUT', '结果记录时间不能早于所选数据的采集时间')
         values = metric['values']
         outcome = values.get(hypothesis['metric'])
         denominator = values.get(hypothesis['denominator'])
@@ -268,14 +273,20 @@ def _record_attribution(operations, db, owner, state, hypothesis, payload, now, 
         require(outcome <= denominator, 'INVALID_INPUT', '目标转化数不能大于曝光/播放分母')
         normalized.append(dict(publication_id=publication['id'], run_id=publication['run_id'], label=race_arm['label'], draft_ref=publication['draft_ref'],
             content_hash=publication['content_hash'], metric_id=metric['id'], window=metric['window'],
-            observed_at=metric['observed_at'], denominator=denominator, outcome=outcome,
+            observed_at=metric['observed_at'], elapsed_hours=hours, denominator=denominator, outcome=outcome,
             rate=round(outcome/denominator, 6), evidence_source='user_recorded_metrics'))
     require(result_refs == expected_refs, 'INVALID_INPUT', '需为赛马中的每个内容版本提供真实发布和指标记录')
-    control = next(x for x in normalized if x['label'] == 'A')
-    variant = next(x for x in normalized if x['label'] == 'B')
+    # Multiple publications of either fixed version contribute to that arm.
+    aggregates = {}
+    for label in ('A', 'B'):
+        group = [x for x in normalized if x['label'] == label]
+        denominator = sum(x['denominator'] for x in group)
+        outcome = sum(x['outcome'] for x in group)
+        aggregates[label] = dict(publications=len(group), denominator=denominator, outcome=outcome, rate=outcome / denominator)
+    control, variant = aggregates['A'], aggregates['B']
     lift = _relative_lift(control['rate'], variant['rate'])
     source_note = validate_text(payload['source_note'], '数据来源说明', 600)
-    return dict(items=normalized, evidence_method=payload['evidence_method'], source_note=source_note,
+    return dict(items=normalized, aggregates=aggregates, evidence_method=payload['evidence_method'], source_note=source_note,
         observed_at=observed, recorded_at=now(), evidence_class='user_provided_real_publication_data',
         variant_lift_pct=lift, meets_minimum_lift=lift is not None and lift >= hypothesis['minimum_lift_pct'],
         causal_claim='not_established', interpretation='与具体发布版本关联的用户提供数据；平台未授权核验或随机设计不足时只作描述性归因。')
