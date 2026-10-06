@@ -195,7 +195,7 @@ test('experience page offers unverified next experiments without inventing accep
 test('accepted simulated experience only pre-fills free simulation and does not invoke models',async()=>{
  const s=setup();s.eval("activeAccountId='a';ops={memories:[{id:'m',account_id:'a',status:'accepted',source_type:'simulation',text:'模拟建议',observation:'虚构',limitation:'未验证'}]};startCreation=()=>true;modelCalls=0;api=async()=>{modelCalls++}");
  await s.element('operationsContent').onclick({target:{closest:()=>({dataset:{memoryCreate:'m'}})}});
- assert.equal(s.element('mode').value,'simulation');assert.match(s.element('material').value,/不是已证实效果/);assert.equal(s.eval('modelCalls'),0);
+ assert.equal(s.element('mode').value,'simulation');assert.equal(s.element('topic').value,'围绕当前栏目继续创作');assert.match(s.element('material').value,/不是已证实效果/);assert.equal(s.eval('modelCalls'),0);
 });
 test('example account provides free creation and return without paid calls',async()=>{
  const s=setup();s.eval("activeAccountId='sample';ops={accounts:[{id:'real',name:'真实账号'},{id:'sample',demo_sample:true}]};startCreation=()=>true;showPage=p=>{currentPage=p};syncAccounts=()=>{};history=async()=>{};renderExamples()");
