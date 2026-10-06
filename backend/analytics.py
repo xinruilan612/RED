@@ -122,6 +122,12 @@ def invalidate(state, publication_id, window):
     for memory in state['memories']:
         if obsolete.intersection(memory.get('metric_refs', [memory['metric_id']])):
             memory['status'] = 'superseded'
+    for hypothesis in state.get('hypotheses', []):
+        attribution = hypothesis.get('validations', {}).get('live_attribution', {})
+        if any(entry.get('metric_id') in obsolete for entry in attribution.get('items', [])):
+            hypothesis['status'] = 'superseded'
+            if hypothesis.get('ledger_status') in ('proposed', 'accepted'):
+                hypothesis['ledger_status'] = 'superseded'
     refresh_plans(state)
 
 

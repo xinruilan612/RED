@@ -22,6 +22,26 @@ class AccountTests(unittest.TestCase):
         return dict(id=identity, name=name, platform='xiaohongshu',
                     profile={**{k: '' for k in PROFILE_FIELDS}, 'weekly_frequency': 3})
 
+    def test_unchanged_profile_save_keeps_revision_and_week_plan(self):
+        from datetime import datetime, timezone, timedelta
+        state = self.command('save_account', self.profile())
+        account = state['accounts'][-1]
+        today = datetime.now(timezone.utc).date()
+        state = self.command('create_plan', dict(account_id=account['id'],
+            week_start=(today-timedelta(days=today.weekday())).isoformat(), source_type='manual'))
+        plan = state['plans'][0]
+        state = self.command('save_account', self.profile(account['id']))
+        saved = next(a for a in state['accounts'] if a['id'] == account['id'])
+        self.assertEqual(saved['revision'], account['revision'])
+        self.assertEqual(saved['revisions'], [])
+        self.assertEqual(state['plans'][0]['status'], plan['status'])
+        changed = self.profile(account['id'])
+        changed['profile']['audience'] = '首次整理衣橱的学生'
+        state = self.command('save_account', changed)
+        saved = next(a for a in state['accounts'] if a['id'] == account['id'])
+        self.assertEqual(saved['revision'], account['revision'] + 1)
+        self.assertEqual(state['plans'][0]['status'], 'needs_review')
+
     def test_stable_identity_rename_and_import_independent_of_model(self):
         state = self.command('save_account', self.profile())
         account = state['accounts'][-1]

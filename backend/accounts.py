@@ -64,6 +64,8 @@ def save_account(state, data):
     if data['id']:
         account = find_account(state, data['id'])
         require(account['platform'] == data['platform'], 'INVALID_INPUT', '已有账号不能更换平台，请新建账号')
+        if account['name'] == name and account['profile'] == profile:
+            return
         account['revisions'].append(dict(revision=account['revision'], name=account['name'], profile=copy.deepcopy(account['profile'])))
         account['revision'] += 1
         account.update(name=name, profile=profile)

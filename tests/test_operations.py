@@ -46,6 +46,33 @@ class OperationsTests(unittest.TestCase):
         payload.update(overrides)
         return self.command('metrics',payload)
 
+    def test_saving_unchanged_classification_preserves_accepted_experience(self):
+        state = self.command('load_sample', {})
+        metric = state['metrics'][-1]
+        state = self.command('analyze', {'id': metric['id']})
+        memory = state['memories'][0]
+        state = self.command('memory', {'id': memory['id'], 'status': 'accepted'})
+        post = next(p for p in state['publications'] if p['id'] == metric['publication_id'])
+        unchanged = {'id': post['id'], **{key: post[key] for key in ('format', 'pillar', 'traffic')}}
+        state = self.command('post_metadata', unchanged)
+        self.assertEqual(state['memories'][0]['status'], 'accepted')
+        self.assertEqual(state['analyses'][0]['status'], 'descriptive')
+        state = self.command('post_metadata', {**unchanged, 'traffic': 'paid'})
+        self.assertEqual(state['memories'][0]['status'], 'superseded')
+        self.assertEqual(state['analyses'][0]['status'], 'superseded')
+
+    def test_classification_correction_invalidates_linked_trial_experience_only(self):
+        from backend.analytics import invalidate
+        state = self.command('load_sample', {})
+        metric = state['metrics'][-1]
+        state['hypotheses'] = [dict(id=key, status='supported', ledger_status='accepted',
+            validations={'live_attribution': {'items': [{'metric_id': ref}]}})
+            for key, ref in [('linked', metric['id']), ('unrelated', 'other-metric')]]
+        invalidate(state, metric['publication_id'], metric['window'])
+        self.assertEqual(state['hypotheses'][0]['status'], 'superseded')
+        self.assertEqual(state['hypotheses'][0]['ledger_status'], 'superseded')
+        self.assertEqual(state['hypotheses'][1]['ledger_status'], 'accepted')
+
     def test_persistent_loop_with_accepted_memory_and_revoke(self):
         run,pub=self.publication()
         self.command('approve',dict(id=pub['id']))
