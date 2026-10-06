@@ -202,3 +202,9 @@ test('example account provides free creation and return without paid calls',asyn
  assert.match(s.element('operationsContent').innerHTML,/示例已准备好/);s.element('exampleCreate').onclick();assert.equal(s.element('mode').value,'simulation');
  await s.element('exampleReturn').onclick();assert.equal(s.eval('activeAccountId'),'real');assert.equal(s.eval('currentPage'),'overview');
 });
+
+test('demo recap next-creation remains free simulation rather than live account default',async()=>{
+ const s=setup();s.eval("ops={analyses:[{id:'a',source_type:'simulation',status:'ready'}]};startCreation=()=>true;nextReviewBrief=()=>({topic:'虚构示例',material:'虚构资料'})");
+ await s.element('operationsContent').onclick({target:{closest:()=>({dataset:{reviewCreate:'a'}})}});
+ assert.equal(s.element('mode').value,'simulation');assert.equal(s.element('topic').value,'虚构示例');
+});

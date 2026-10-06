@@ -137,7 +137,7 @@ function plainReview(a){
  if(v.new_followers==null)missing.push('未记录这篇带来的关注，暂时看不出它是否帮助涨粉。');
  if(!hasHistory)missing.push('还没有可比的历史作品，先把下一篇当作一次尝试。');
  const keep=[steps?'保留原稿已有的编号步骤':'保留围绕一个具体问题的写法',source?'保留资料出处':'事实说明继续补充可核查出处',question?'保留现有结尾提问':''].filter(Boolean).join('；')+'。';
- return {counts,observed,summary:views?(v.saves?'已经有人收藏这篇内容；这不能证明长期复用价值，也不能说明哪种写法带来了收藏。':'这篇已经获得阅读；仅凭这些数字，还不能判断读者为什么点击或离开。'):'已保存记录；阅读或播放数未知，暂不计算互动占比。',
+ return {counts,observed,summary:a.source_type==='simulation'?'这是虚构示例数据，只用于学习复盘操作，不代表真实读者反馈。':views?(v.saves?'已经有人收藏这篇内容；这不能证明长期复用价值，也不能说明哪种写法带来了收藏。':'这篇已经获得阅读；仅凭这些数字，还不能判断读者为什么点击或离开。'):'已保存记录；阅读或播放数未知，暂不计算互动占比。',
  keep,change:steps?'只试一个改动：用一个具体日常场景串起原有步骤；篇幅、封面风格和结尾形式尽量保持接近。':'只试一个改动：把现有正文整理成编号步骤；其他表达和封面风格尽量保持接近。',
  next_topic:`${p?.content.selected_title||'同一主题'}：用一个日常场景讲清楚`,
  check_next:`发布后 24 小时、72 小时分别记录阅读、收藏、评论和这篇带来的关注；未知留空。只与相近观察时长比较。${Number.isFinite(elapsed)&&Math.abs(elapsed-24)>6?`新篇 24 小时数据不能直接与这篇 ${elapsed.toFixed(1)} 小时的数据比较。`:''}`,
@@ -147,7 +147,7 @@ function reviewAdvice(a){return a.ai_review?.review_version===2?a.ai_review:plai
 function nextReviewBrief(a){
  const r=reviewAdvice(a),p=ops.publications.find(x=>x.id===a.publication_id),base=plainReview(a);
  return {topic:r.next_topic.slice(0,100),material:[
- '【上一篇复盘与下一篇实验要求，不是产品事实或医学证据】',
+ a.source_type==='simulation'?'【虚构演练数据，仅用于免费模拟，不得作为真实运营依据】':'【上一篇复盘与下一篇实验要求，不是产品事实或医学证据】',
  `来源作品：${p?.content.selected_title||''}`,`复盘记录：${a.id}`,base.timing,
  `已有数据：${base.counts.map(([k,v])=>`${k} ${v}`).join('；')}`,
  `保留什么：${r.keep}`,`只改一点：${r.change}`,`之后记录：${r.check_next}`,
