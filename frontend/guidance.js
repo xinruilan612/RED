@@ -30,19 +30,27 @@ function gettingStartedHTML(account,runs=[]){
  return state.profile&&state.creation?`<details id="gettingStarted" class="panel getting-started"><summary>使用指引（基础步骤已完成，按需查看）</summary>${content}</details>`:`<section id="gettingStarted" class="panel getting-started" aria-labelledby="gettingStartedTitle">${content}</section>`;
 }
 
+let exampleReturnAccountId=null;
 async function loadExampleAccount(){
  if(busy||opsBusy||!dirtyGuard())return;
+ if(currentAccount()&&!currentAccount().demo_sample)exampleReturnAccountId=activeAccountId;
  let sample=ops.accounts.find(a=>a.demo_sample);
  if(!sample){if(!await operate('load_sample',{}))return;sample=ops.accounts.find(a=>a.demo_sample);}
  if(!sample)return;
  activeAccountId=sample.id;run=null;editing=false;chosenTrend=null;chosenHypothesis=null;window.activeTrialHypothesisId=null;
  $('editor').hidden=true;$('workbench').hidden=true;$('welcome').hidden=false;
- syncAccounts();showPage('overview');await history();toast('已切换到示例账号；回到自己的账号请使用顶部账号选择。');
+ syncAccounts();showPage('examples');await history();toast('已切换到示例账号；可按下方步骤体验，再返回自己的账号。');
 }
 
 function renderExamples(){
  $('operationsContent').innerHTML=`<section class="panel"><h2>了解完整闭环，不需要填造真实数据</h2><p>穿搭示例包含虚构作品和演练指标，可看周计划、复盘和经验如何连接。示例在独立账号中保留，不替代你自己的业务记录。</p><div class="buttons"><button id="sampleAccount" class="secondary">体验穿搭示例账号</button><button class="quiet" data-go-page="trends">查看选题来源 →</button></div><p class="helper">自己的稿件也可使用免费模拟模式。模拟发布不会发送到小红书或抖音，模拟检查不能证明真实读者理解。</p></section>`;
  $('sampleAccount').onclick=loadExampleAccount;
+ if(currentAccount()?.demo_sample){
+  $('operationsContent').insertAdjacentHTML('beforeend',`<section class="panel"><h2>示例已准备好，按顺序体验</h2><p>① 看虚构作品 → ② 看演练数据与复盘 → ③ 接受或撤销示例经验 → ④ 免费模拟创作。</p><div class="buttons"><button data-go-page="publish">1. 看示例作品</button><button data-go-page="metrics">2. 看示例复盘</button><button data-go-page="memory">3. 看示例经验</button><button id="exampleCreate">4. 免费模拟创作</button><button id="exampleReturn" class="secondary">返回自己的账号</button></div></section>`);
+  $('exampleCreate').onclick=()=>{if(startCreation()){$('topic').value='上课前怎样搭配一套方便活动的穿搭';$('material').value='这是虚构穿搭示例，只用于免费模拟流程，不是真实商品或效果证据。';$('mode').value='simulation';$('mode').onchange();}};
+  $('exampleReturn').onclick=async()=>{if(busy||opsBusy||!dirtyGuard())return;const account=ops.accounts.find(a=>a.id===exampleReturnAccountId&&!a.demo_sample)||ops.accounts.find(a=>!a.demo_sample);if(!account){showPage('accounts');return;}activeAccountId=account.id;run=null;editing=false;chosenTrend=null;chosenHypothesis=null;window.activeTrialHypothesisId=null;syncAccounts();showPage('overview');await history();};
+ }
+
 }
 
 document.addEventListener('click',e=>{

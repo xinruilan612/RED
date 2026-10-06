@@ -187,3 +187,18 @@ test('empty reader conditions offer an explicit free author question without fak
  const html=s.eval('wtCardsView()');assert.match(html,/id="wtInitialQuestion"/);assert.match(html,/保存我的问题（不调用 AI）/);assert.match(html,/来源：作者设定/);
  s.eval('wt.run.in_flight=true');assert.doesNotMatch(s.eval('wtCardsView()'),/id="wtInitialQuestion"/);
 });
+
+test('experience page offers unverified next experiments without inventing accepted memories',()=>{
+ const s=setup();s.eval("activeAccountId='a';ops={memories:[],analyses:[{id:'r',account_id:'a',status:'insufficient',source_type:'manual',publication_id:'p'}],publications:[{id:'p',content:{selected_title:'真实作品'}}]};reviewAdvice=()=>({change:'只改一个场景',check_next:'24小时记录'});renderMemory()");
+ assert.match(s.element('operationsContent').innerHTML,/下一次可以试什么/);assert.match(s.element('operationsContent').innerHTML,/尚未验证/);assert.match(s.element('operationsContent').innerHTML,/data-review-create="r"/);assert.equal(s.eval('ops.memories.length'),0);
+});
+test('accepted simulated experience only pre-fills free simulation and does not invoke models',async()=>{
+ const s=setup();s.eval("activeAccountId='a';ops={memories:[{id:'m',account_id:'a',status:'accepted',source_type:'simulation',text:'模拟建议',observation:'虚构',limitation:'未验证'}]};startCreation=()=>true;modelCalls=0;api=async()=>{modelCalls++}");
+ await s.element('operationsContent').onclick({target:{closest:()=>({dataset:{memoryCreate:'m'}})}});
+ assert.equal(s.element('mode').value,'simulation');assert.match(s.element('material').value,/不是已证实效果/);assert.equal(s.eval('modelCalls'),0);
+});
+test('example account provides free creation and return without paid calls',async()=>{
+ const s=setup();s.eval("activeAccountId='sample';ops={accounts:[{id:'real',name:'真实账号'},{id:'sample',demo_sample:true}]};startCreation=()=>true;showPage=p=>{currentPage=p};syncAccounts=()=>{};history=async()=>{};renderExamples()");
+ assert.match(s.element('operationsContent').innerHTML,/示例已准备好/);s.element('exampleCreate').onclick();assert.equal(s.element('mode').value,'simulation');
+ await s.element('exampleReturn').onclick();assert.equal(s.eval('activeAccountId'),'real');assert.equal(s.eval('currentPage'),'overview');
+});
