@@ -512,7 +512,11 @@ class Windtunnel:
                     if run.wait_reason == 'wt_patch':
                         allowed.append('apply_patch')
         elif state['reports']:
-            allowed.append('export')
+            try:
+                current_report(run)
+                allowed.append('export')
+            except ValueError:
+                pass
         with self.store.connect() as db:
             if initial_conditions_available(db,run):allowed.append('set_initial_conditions')
         result.update(mode=run.context['mode'], allowed_actions=allowed)
@@ -528,7 +532,10 @@ class Windtunnel:
         for row in report['results']:
             c = by_id[row['condition_id']]
             lines += ['', '### ' + c['question'], '来源类型：' + ('历史反馈' if c['origin'] == 'feedback' else '作者设定'),
-                      '状态：' + ('通过' if row['status'] == 'pass' else LABELS[row['status']]), row['reason'], '稿件引文：' + row['reading']['excerpt']]
+                      '稿件给出的答案：' + row['reading'].get('answer', ''),
+                      '有没有讲清楚：' + ('稿件已回答' if row['reading']['status'] == 'pass' else '还没讲清楚'),
+                      '答案有没有依据：' + {'pass':'有材料支持','unsupported':'与材料不一致','insufficient':'还需要支持材料','unclear':'先把正文讲清楚'}[row['status']],
+                      row['reason'], '稿件引文：' + row['reading']['excerpt']]
             for ref in c['source_ids']:
                 src = next(s for s in state['sources'] if s['id'] == ref)
                 lines.append('反馈来源：' + src['origin'] + '；原文：' + src['text'])

@@ -85,6 +85,23 @@ class WindtunnelRuntimeTests(unittest.TestCase):
         exported=self.service.export(self.owner,self.run_id)
         self.assertIn('内容预演报告',exported);self.assertIn('不代表',exported)
 
+    def test_cancel_after_edit_does_not_offer_stale_report_export(self):
+        self.report()
+        before = wt.draft(self.value())
+        self.action('edit_draft', {'title': before['title'], 'text': before['text'] + '\n补充说明。', 'base_hash': before['hash']})
+        self.action('cancel')
+        self.assertNotIn('export', self.service.view(self.value())['allowed_actions'])
+        with self.assertRaises(DomainError):
+            self.service.export(self.owner, self.run_id)
+        self.assertEqual(len(self.value().windtunnel['reports']), 1)
+
+    def test_export_separates_readability_from_fact_support(self):
+        self.report()
+        exported = self.service.export(self.owner, self.run_id)
+        self.assertIn('稿件给出的答案：', exported)
+        self.assertIn('有没有讲清楚：', exported)
+        self.assertIn('答案有没有依据：', exported)
+
     def test_reading_and_actual_visible_source_audit_are_isolated(self):
         self.report()
         read=next(n for n in self.value().node_runs if n['stage']=='wt_read')
