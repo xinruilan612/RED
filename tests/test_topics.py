@@ -134,6 +134,54 @@ class TopicTests(unittest.TestCase):
         state['metrics'][-1]['observed_at']=(datetime.fromisoformat(p['published_at'])+timedelta(hours=72)).isoformat()
         self.assertEqual(history_rows(state,account,config)[0]['value'],19)
         state['publications'][0]['provenance']='simulation';self.assertEqual(history_rows(state,account,config),[])
+    def test_skapp_missing_never_exposes_old_kernel_estimate(self):
+        from unittest.mock import patch
+        r=self.configure()
+        original=__import__('backend.topic_ranking',fromlist=['evaluate']).evaluate
+        def old(*args):
+            value=original(*args)
+            value['candidates'][0]['estimated_value']=9999
+            value['status']='experimental_prediction'
+            return value
+        with patch('backend.topic_ranking.evaluate',side_effect=old):
+            result=self.post('/api/topics/evaluate',dict(account_id=self.identity,version=r['version'],candidates=[dict(id='a',title='摄影')])).json()
+        self.assertEqual(result['status'],'matching_only')
+        self.assertIsNone(result['candidates'][0]['estimated_value'])
+        self.assertFalse(result['validation']['gate'])
+        self.assertEqual(result['skapp']['status'],'not_trained')
+
+    def test_only_skapp_prediction_is_exposed(self):
+        from unittest.mock import patch
+        r=self.configure()
+        with patch('backend.skapp_personal.predict',return_value=dict(available=True,status='ready',method='upstream_skapp_personal',predictions=[dict(id='a',predicted_value=42)],message='原模型测试替身')):
+            result=self.post('/api/topics/evaluate',dict(account_id=self.identity,version=r['version'],candidates=[dict(id='a',title='摄影')])).json()
+        self.assertEqual(result['candidates'][0]['estimated_value'],42)
+        self.assertEqual(result['method'],'upstream_skapp_personal')
+
+    def test_training_snapshot_invalidates_only_relevant_changes(self):
+        import copy
+        from backend.topics import training_history_digest
+        p=self.publication();state=self.ops.read(self.owner);account=state['accounts'][0];config=config_for(state,account)
+        before=training_history_digest(state,account,config)
+        changed=copy.deepcopy(state);changed['version']+=1;changed['topic_results']={'anything':{}}
+        self.assertEqual(before,training_history_digest(changed,account,config))
+        changed['publications'][0]['traffic']='paid'
+        self.assertNotEqual(before,training_history_digest(changed,account,config))
+        changed=copy.deepcopy(state);changed['topic_images']={p['id']:{'model':'new','vector':[1]}}
+        self.assertNotEqual(before,training_history_digest(changed,account,config))
+        self.assertNotEqual(before,training_history_digest(state,account,dict(config,positioning='新方向')))
+
+    def test_training_export_empty_and_access_boundaries(self):
+        r=self.configure()
+        result=self.post('/api/topics/training-data',dict(account_id=self.identity,version=r['version']))
+        self.assertEqual(result.status_code,200,result.text)
+        self.assertEqual(result.json()['records'],[])
+        self.assertEqual(result.json()['target_metric'],'views')
+        self.assertEqual(result.json()['minimum_training_records'],100)
+        other=self.ops.read('other')['accounts'][0]['id']
+        self.assertEqual(self.post('/api/topics/training-data',dict(account_id=other,version=r['version'])).status_code,404)
+        self.assertEqual(self.client.post('/api/topics/training-data',json={}).status_code,403)
+
     def test_bad_config_and_duplicates_fail(self):
         r=self.configure();bad=dict(r['config'],text_weight=-1)
         self.assertEqual(self.post('/api/topics/config',dict(account_id=self.identity,version=r['version'],config=bad)).status_code,400)

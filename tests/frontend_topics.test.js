@@ -16,7 +16,7 @@ test('free text positioning is editable with no hard-coded niche; unavailable en
 test('result distinguishes numeric predictions from matching suggestions and escapes source content',()=>{
  const {s}=setup();const html=s.topicsResultHTML({method:'<script>bad</script>',candidates:[{id:'one',title:'<img src=x>',fit_score:.6,estimated_value:null,reason:'<b>why</b>',references:[{title:'<script>bad</script>',similarity:.7}]}]},data().config);
  assert.match(html,/先看匹配建议/);assert.match(html,/不是爆款概率/);assert.match(html,/&lt;img/);assert.doesNotMatch(html,/<script>|<img src=x>|参考值/);
- const withNumber=s.topicsResultHTML({candidates:[{title:'标题',estimated_value:21,fit_score:.6,references:[]}]},data().config);assert.match(withNumber,/21.0/);assert.match(withNumber,/72h/);
+ const withNumber=s.topicsResultHTML({candidates:[{id:'one',title:'标题',estimated_value:9876,fit_score:.6,references:[]}],skapp:{status:'ready',method:'upstream_skapp_personal',predictions:[{id:'one',predicted_value:21}]}},data().config);assert.match(withNumber,/21.0/);assert.match(withNumber,/72h/);assert.match(withNumber,/SKAPP 选题预测/);assert.doesNotMatch(withNumber,/9876/);
 });
 test('switching account clears candidates and ignores late previous-account reads',async()=>{
  const x=setup();let finish;x.s.api=()=>new Promise(r=>finish=r);const pending=x.s.renderTopics();x.s.activeAccountId='b';x.s.resetTopics();x.e('operationsContent').innerHTML='账号B';finish(data());await pending;assert.equal(x.e('operationsContent').innerHTML,'账号B');assert.equal(x.eval('topicsState.candidates.length'),0);
@@ -158,3 +158,17 @@ test('reference search has one positioning action and no extra keyword field',as
  let sent;x.s.api=async(path,method,payload)=>{sent=payload;return {version:2,samples:[]};};
  await x.s.topicsSearchPublic();assert.equal(sent.keyword,'摄影');
 });
+
+ test('SKAPP unavailable states never display legacy estimates or unready predictions',()=>{
+ const {s}=setup();for(const status of ['not_trained','missing_cover','ready']){
+ const html=s.topicsResultHTML({candidates:[{id:'a',title:'标题',estimated_value:9876}],skapp:{status,method:status==='ready'?'kernel_regression':'upstream_skapp_personal',message:'需要训练或补充图片 <script>',predictions:[{id:'a',predicted_value:12345}]}},data().config);
+ assert.doesNotMatch(html,/9876|12345|SKAPP 选题预测|class="error/);assert.match(html,/需要训练或补充图片 &lt;script&gt;/);assert.match(html,/参考相关性/);
+ }
+ });
+ test('SKAPP matches prediction by id and labels model metric and observation window',()=>{
+ const {s}=setup();const html=s.topicsResultHTML({candidates:[{id:'a',title:'标题A'},{id:'b',title:'标题B'}],skapp:{status:'ready',method:'upstream_skapp_personal',metric:'likes',window:'24h',predictions:[{id:'b',predicted_value:22},{id:'a',predicted_value:11}]}},data().config);
+ assert.match(html,/标题A[\s\S]*24h 点赞预测值 <b>11.0/);assert.match(html,/标题B[\s\S]*24h 点赞预测值 <b>22.0/);assert.doesNotMatch(html,/72h/);
+ });
+ test('page displays SKAPP readiness calmly before evaluation',async()=>{
+ const x=setup();x.s.api=async()=>data({skapp:{status:'not_trained',message:'SKAPP 预测尚未就绪，请先训练。'}});await x.s.renderTopics();const html=x.e('operationsContent').innerHTML;assert.match(html,/SKAPP 预测尚未就绪/);assert.doesNotMatch(html,/class="error/);
+ });

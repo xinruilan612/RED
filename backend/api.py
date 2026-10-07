@@ -147,11 +147,11 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
 
     @app.post('/api/topics/{action}')
     def topic_action(action: str, data: dict, user=Depends(logged)):
-        require(action in ('config','history-image','evaluate'),'RESOURCE_NOT_FOUND','操作不存在')
+        require(action in ('config','history-image','evaluate','training-data'),'RESOURCE_NOT_FOUND','操作不存在')
         auth.throttle('topics:'+user['owner'],30,3600)
         from backend.topic_encoder import TopicEncoderError
         try:
-            return {'config':topics.save,'history-image':topics.image,'evaluate':topics.evaluate}[action](user['owner'],data)
+            return {'config':topics.save,'history-image':topics.image,'evaluate':topics.evaluate,'training-data':topics.training_data}[action](user['owner'],data)
         except DomainError:
             raise
         except TopicEncoderError as error:

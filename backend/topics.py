@@ -1,6 +1,7 @@
 """Account-scoped editable multimodal adapter, independent of benchmark weights."""
 import copy
 import hashlib
+import json
 import math
 from datetime import datetime, timezone
 from uuid import uuid4
@@ -46,7 +47,16 @@ def apply_topic_action(state,action,data):
 def config_for(state,account):
     return {**DEFAULTS,**state.get('topic_settings',{}).get(account['id'],{}),'positioning':account['profile'].get('positioning',''),'audience':account['profile'].get('audience','')}
 
-def history_rows(state,account,config):
+def training_history_digest(state,account,config):
+    """Stable model invalidation; prediction saves do not change this snapshot."""
+    posts=sorted([p for p in state['publications'] if p.get('account_id')==account['id'] and p.get('provenance')=='manual'],key=lambda p:p['id'])
+    ids={p['id'] for p in posts}
+    metrics=sorted([m for m in state['metrics'] if m.get('publication_id') in ids],key=lambda m:json.dumps(m,sort_keys=True))
+    images={key:value for key,value in state.get('topic_images',{}).items() if key in ids}
+    payload=dict(posts=posts,metrics=metrics,images=images,profile={k:config[k] for k in ('positioning','audience','metric','window')})
+    return hashlib.sha256(json.dumps(payload,sort_keys=True,ensure_ascii=False,allow_nan=False).encode()).hexdigest()
+
+def history_rows(state,account,config,limit=100):
     latest=latest_metrics(state); rows=[]; now=datetime.now(timezone.utc)
     for post in state['publications']:
         if post.get('account_id')!=account['id'] or post.get('platform')!=account['platform'] or post.get('provenance')!='manual' or not post.get('published_at'): continue
@@ -66,7 +76,7 @@ def history_rows(state,account,config):
         if image and image.get('model') != MODEL_NAME: image=None
         rows.append(dict(id=post['id'],title=post['content']['selected_title'],body=post['content'].get('body',''),published_at=post['published_at'],observed_at=observed,value=value,eligible=value is not None,exclusion=reason,has_image=bool(image),image_vector=image.get('vector') if image else None))
     rows.sort(key=lambda r:parsed(r['published_at']),reverse=True)
-    return rows[:100]
+    return rows[:limit] if limit is not None else rows
 
 class Topics:
     def __init__(self,operations,encoder=None): self.operations=operations;self.encoder=encoder
@@ -106,7 +116,8 @@ class Topics:
     def read(self,owner,identity):
         state,account=self.current(owner,identity);config=config_for(state,account);rows=history_rows(state,account,config)
         from backend.topic_encoder import availability
-        return dict(profile=account['profile'],account_revision=account['revision'],version=state['version'],config=config,history=[{k:r[k] for k in ('id','title','has_image','eligible','exclusion')} for r in rows],encoder_ready=bool(self.encoder) or availability()['ready'])
+        from backend.skapp_personal import availability as skapp_availability
+        return dict(skapp=skapp_availability(owner,identity,dict(config,_training_history_digest=training_history_digest(state,account,config))),profile=account['profile'],account_revision=account['revision'],version=state['version'],config=config,history=[{k:r[k] for k in ('id','title','has_image','eligible','exclusion')} for r in rows],encoder_ready=bool(self.encoder) or availability()['ready'])
     def save(self,owner,data):
         require(set(data)=={'account_id','version','config'},'INVALID_INPUT','设置参数无效')
         self.current(owner,data['account_id'],data['version']);validate_config(data['config'])
@@ -121,6 +132,38 @@ class Topics:
         value=dict(vector=encoded['image_vectors'][0],model=encoded['model'],hash=hashlib.sha256(data['image'].encode()).hexdigest())
         self.operations.command(owner,dict(action='topic_image',payload=dict(account_id=data['account_id'],publication_id=data['publication_id'],encoded=value),version=data['version'],key=str(uuid4())),internal=True)
         return self.read(owner,data['account_id'])
+    def training_data(self,owner,data):
+        """Export only this owner's compatible manual history, never public counts."""
+        require(set(data)=={'account_id','version'},'INVALID_INPUT','训练数据参数无效')
+        state,account=self.current(owner,data['account_id'],data['version'])
+        config=config_for(state,account)
+        history=history_rows(state,account,config,limit=None)
+        require(len(history)<=10000,'INVALID_INPUT','历史过多，请分批整理训练数据')
+        eligible=[];excluded=[]
+        hours=int(config['window'][:-1])
+        posts={p['id']:p for p in state['publications']}
+        for row in history:
+            reason=row['exclusion']
+            if not reason and not row['has_image']: reason='缺少真实封面特征'
+            if not reason:
+                elapsed=(parsed(row['observed_at'])-parsed(row['published_at'])).total_seconds()/3600
+                if abs(elapsed-hours)>hours*.05: reason='实际观测时长不在训练窗口的±5%以内'
+            url=posts[row['id']].get('url','')
+            if not reason and not url.startswith(('https://','http://')): reason='缺少作品来源链接'
+            if reason: excluded.append({'id':row['id'],'reason':reason})
+            else: eligible.append(row)
+        from backend.topic_encoder import MODEL_NAME
+        from backend.skapp_personal import scope_digest
+        records=[]
+        for start in range(0,len(eligible),128):
+            batch=eligible[start:start+128]
+            encoded=self.encode([r['title']+'。'+r['body'] for r in batch],[])
+            require(encoded['model']==MODEL_NAME,'INVALID_INPUT','训练数据编码器不兼容')
+            for row,vector in zip(batch,encoded['text_vectors']):
+                records.append(dict(id=row['id'],published_at=row['published_at'],observed_at=row['observed_at'],value=row['value'],visual=row['image_vector'],textual=vector,source_url=posts[row['id']]['url']))
+        self.current(owner,data['account_id'],data['version'])
+        return dict(schema_version=1,training_history_digest=training_history_digest(state,account,config),scope_digest=scope_digest(owner,account['id']),encoder_id=MODEL_NAME,target_metric=config['metric'],window_hours=hours,records=records,excluded=excluded,provenance='manual_reported_not_platform_verified',minimum_training_records=100)
+
     def evaluate(self,owner,data):
         require(set(data)=={'account_id','version','candidates'},'INVALID_INPUT','比较参数无效')
         state,account=self.current(owner,data['account_id'],data['version']);config=config_for(state,account)
@@ -145,7 +188,19 @@ class Topics:
             row['text_vector']=encoded['text_vectors'][i+1];row['image_vector']=encoded['image_vectors'][ix[i]] if i in ix else None
         for i,row in enumerate(history): row['text_vector']=encoded['text_vectors'][1+len(candidates)+i]
         from backend.topic_ranking import evaluate
+        # Legacy matching remains useful, but its kernel estimates are not SKAPP.
         result=evaluate(encoded['text_vectors'][0],candidates,history,config)
+        from backend.skapp_personal import predict as skapp_predict
+        skapp=skapp_predict(owner,account['id'],dict(config,_training_history_digest=training_history_digest(state,account,config)),candidates,encoded['model'])
+        predictions={r['id']:r for r in skapp.get('predictions',[])} if skapp.get('available') else {}
+        result.update(skapp=skapp,method='upstream_skapp_personal' if predictions else 'reference_matching_only',status='experimental_prediction' if predictions else 'matching_only')
+        result['validation']={'history_count':len(history),'eligible_count':sum(r['eligible'] for r in history),'gate':bool(predictions),'reason':skapp.get('message',''),'model_validation':skapp.get('validation')}
+        for row in result['candidates']:
+            row['estimated_value']=predictions.get(row['id'],{}).get('predicted_value')
+            row['reason']=skapp.get('message','')
+            for ref in row.get('references',[]):
+                ref.pop('contribution',None);ref.pop('contribution_observations',None)
+        result['candidates'].sort(key=lambda r:(r['estimated_value'] is None,-(r['estimated_value'] or 0),-r['fit_score'],r['id']))
         from backend.public_topic_ranking import rank_public
         offset=1+len(candidates)+len(history)
         for i,row in enumerate(public_samples): row['text_vector']=encoded['text_vectors'][offset+i]

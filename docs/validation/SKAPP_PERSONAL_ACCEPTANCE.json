@@ -1,0 +1,47 @@
+{
+  "date": "2026-10-07",
+  "implementation": "Unmodified vendored SKAPP and Teacher classes; ChineseCLIP 512-dimensional target-domain retraining adapter",
+  "upstream_commit": "3353b5a79bbeacf8110971b2ef035a4046c1a25c",
+  "original_vendor_hash_verified": true,
+  "backend_tests": {
+    "passed": 775,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 302.415,
+    "postgresql": true
+  },
+  "frontend_tests": {
+    "passed": 224,
+    "failed": 0,
+    "skipped": 0
+  },
+  "model_execution": {
+    "synthetic_only": true,
+    "dimension": 512,
+    "records": 100,
+    "epochs": 1,
+    "stages": [
+      "all teacher",
+      "single teacher",
+      "RRCP",
+      "SKAPP",
+      "save",
+      "reload",
+      "infer"
+    ],
+    "production_activation": false
+  },
+  "actual_account": {
+    "eligible_training_records": 0,
+    "model_trained": false,
+    "predictive_effectiveness_verified": false
+  },
+  "browser": "Chrome live #topics confirmed calm not-trained status; original three candidate inputs preserved in original tab",
+  "service": "127.0.0.1:8766 API and Worker restarted; PostgreSQL health ok",
+  "limitations": [
+    "Requires legitimate target-domain fixed-window multimodal training data",
+    "Public cumulative reference counts are not fixed-window training labels",
+    "Current classes reproduce the upstream reference implementation, not a formula-by-formula paper reproduction",
+    "Synthetic execution tests do not establish real predictive quality"
+  ]
+}
