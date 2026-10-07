@@ -85,13 +85,13 @@ test('reading public library never starts an external search',async()=>{
 test('explicit public search keeps drafts and configuration, invalidates stale report and advances version',async()=>{
  const x=setup();await x.s.renderTopics();x.eval("topicsState.keyword=' 夜景 ';topicsState.config.positioning='新方向';topicsState.candidates[0].title='保留草稿';topicsState.result={candidates:[]}");let sent;
  x.s.api=async(path,method,payload)=>{if(path.endsWith('/config'))return data({version:4,config:payload.config});sent={path,payload};return {version:5,samples:[{title:'参考',url:'https://example.com',likes:2}],connection:{ready:true}};};await x.s.topicsSearchPublic();
- assert.equal(sent.path,'/api/topics/public/search');assert.equal(sent.payload.keyword,'夜景');assert.equal(x.eval('topicsState.data.version'),5);assert.equal(x.eval('topicsState.config.positioning'),'新方向');assert.equal(x.eval('topicsState.candidates[0].title'),'保留草稿');assert.equal(x.eval('topicsState.result'),null);
+ assert.equal(sent.path,'/api/topics/public/search');assert.equal(sent.payload.keyword,'新方向');assert.equal(x.eval('topicsState.data.version'),5);assert.equal(x.eval('topicsState.config.positioning'),'新方向');assert.equal(x.eval('topicsState.candidates[0].title'),'保留草稿');assert.equal(x.eval('topicsState.result'),null);
 });
 test('account switch rejects a late public search response',async()=>{
  const x=setup();await x.s.renderTopics();x.eval("topicsState.keyword='摄影'");let finish;x.s.api=()=>new Promise(r=>finish=r);const pending=x.s.topicsSearchPublic();x.s.activeAccountId='b';x.s.resetTopics();finish({version:9,samples:[{title:'A账号记录'}]});await pending;assert.equal(x.eval('topicsState.publicData'),null);assert.equal(x.eval('topicsState.busy'),false);
 });
 test('no keyword makes no external request and connection errors are calm',async()=>{
- const x=setup();await x.s.renderTopics();x.eval("topicsState.config.positioning=''");let called=0;x.s.api=async()=>{called++;throw new Error('搜索服务未连接');};await x.s.topicsSearchPublic();assert.equal(called,0);x.eval("topicsState.keyword='摄影'");await x.s.topicsSearchPublic();assert.equal(called,1);assert.match(x.e('operationsContent').innerHTML,/搜索服务未连接/);assert.doesNotMatch(x.e('operationsContent').innerHTML,/class="error/);
+ const x=setup();await x.s.renderTopics();x.eval("topicsState.config.positioning=''");let called=0;x.s.api=async()=>{called++;throw new Error('搜索服务未连接');};await x.s.topicsSearchPublic();assert.equal(called,0);x.eval("topicsState.config.positioning='摄影'");await x.s.topicsSearchPublic();assert.equal(called,1);assert.match(x.e('operationsContent').innerHTML,/搜索服务未连接/);assert.doesNotMatch(x.e('operationsContent').innerHTML,/class="error/);
 });
 test('backend public count snapshots render observed time and preserve unknown values',()=>{const {s}=setup();const html=s.topicsPublicRows([{title:'真实参考',counts:{likes:4,saves:0,comments:null},observed_at:'2026-10-07T12:00:00Z'}]);assert.match(html,/点赞 4/);assert.match(html,/收藏 0/);assert.match(html,/评论 未提供/);assert.match(html,/2026-10-07/);});
 test('QR connection is explicit, local image only and successful login clears it',async()=>{const x=setup();await x.s.renderTopics();let calls=[];x.s.api=async(path,method,payload)=>{calls.push({path,payload});return payload.mode==='qrcode'?{data:{img:'data:image/png;base64,'+'a'.repeat(120)}}:{is_logged_in:true};};await x.s.topicsConnect('qrcode');assert.match(x.eval('topicsState.publicQR'),/^data:image\/png/);assert.equal(calls[0].payload.mode,'qrcode');await x.s.topicsConnect('status');assert.equal(x.eval('topicsState.publicQR'),'');assert.match(x.eval('topicsState.message'),/已登录/);});
@@ -147,4 +147,14 @@ test('unsaved positioning labels saved library honestly and failed profile searc
 test('late scoped library read cannot overwrite another account',async()=>{
  const x=setup();await x.s.renderTopics();let finish;x.s.api=async path=>path.endsWith('/config')?data({version:2}):new Promise(r=>finish=r);
  const pending=x.s.topicsAction('save');await new Promise(r=>setTimeout(r,0));x.s.activeAccountId='b';x.s.resetTopics();finish({positioning:'摄影',samples:[{title:'旧账号'}]});await pending;assert.equal(x.eval('topicsState.publicData'),null);
+});
+
+
+test('reference search has one positioning action and no extra keyword field',async()=>{
+ const x=setup();await x.s.renderTopics();
+ assert.doesNotMatch(x.e('operationsContent').innerHTML,/data-topics-keyword|想细化方向|输入更具体的方向/);
+ assert.match(x.e('operationsContent').innerHTML,/按我的定位找参考/);
+ x.eval("topicsState.keyword='obsolete hidden value'");
+ let sent;x.s.api=async(path,method,payload)=>{sent=payload;return {version:2,samples:[]};};
+ await x.s.topicsSearchPublic();assert.equal(sent.keyword,'摄影');
 });
