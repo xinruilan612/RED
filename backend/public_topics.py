@@ -94,7 +94,9 @@ class PublicClient:
         opener=urllib.request.build_opener(urllib.request.ProxyHandler({}),NoRedirect())
         request=urllib.request.Request('http://127.0.0.1:18060/api/v1'+path,data=json.dumps(data).encode() if data is not None else None,headers=headers)
         try:
-            with opener.open(request,timeout=15) as response:
+            # Detail navigation can need longer than the search card request on a cold browser.
+            # Keep it bounded and never automatically repeat an external request.
+            with opener.open(request,timeout=30 if path=='/feeds/detail' else 15) as response:
                 raw=response.read(3_000_001)
             if len(raw)>3_000_000: raise ValueError('oversized')
             result=json.loads(raw)

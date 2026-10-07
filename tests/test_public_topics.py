@@ -111,3 +111,23 @@ class PublicTopicTests(unittest.TestCase):
         new=normalize(dict(id='abc123456789',body='搜索摘要'),'public_search')
         row=merge_samples([old],[new])[0]
         self.assertEqual(row['body'],'完整正文');self.assertEqual(row['content_status'],'detail_read')
+
+class PublicClientTimeoutTests(unittest.TestCase):
+    def test_detail_gets_bounded_longer_timeout_without_changing_search(self):
+        from unittest.mock import MagicMock
+        response=MagicMock()
+        response.__enter__.return_value.read.return_value=b'{"success":true,"data":{}}'
+        opener=MagicMock();opener.open.return_value=response
+        with patch('backend.public_topics.urllib.request.build_opener',return_value=opener):
+            client=PublicClient();client.detail('abc123456789','secret')
+            self.assertEqual(opener.open.call_args.kwargs['timeout'],30)
+            client.search('test','综合')
+            self.assertEqual(opener.open.call_args.kwargs['timeout'],15)
+    def test_timeout_is_not_automatically_retried(self):
+        from unittest.mock import MagicMock
+        opener=MagicMock();opener.open.side_effect=TimeoutError('private upstream detail')
+        with patch('backend.public_topics.urllib.request.build_opener',return_value=opener):
+            with self.assertRaises(DomainError) as caught:
+                PublicClient().detail('abc123456789','secret')
+            self.assertEqual(opener.open.call_count,1)
+            self.assertNotIn('private upstream',str(caught.exception))
