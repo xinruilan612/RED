@@ -26,7 +26,7 @@ def validate_payload(payload):
         raise ValueError('请添加文字或图片。')
     if any(not isinstance(t, str) or not t.strip() or len(t) > 10000 for t in texts):
         raise ValueError('文字不能为空，且每段不能超过 10000 字。')
-    if any(not isinstance(i, str) or len(i) > 4 * MAX_IMAGE_BYTES // 3 + 4 for i in images):
+    if any(not isinstance(i, str) or len(i) > 4 * MAX_IMAGE_BYTES // 3 + 64 for i in images):
         raise ValueError('每张图片不能超过 3 MB。')
     return texts, images
 
@@ -35,6 +35,10 @@ def decode_image(value):
     from PIL import Image, ImageOps
     Image.MAX_IMAGE_PIXELS = MAX_PIXELS
     try:
+        if value.startswith('data:'):
+            header, value = value.split(',', 1)
+            if header not in ('data:image/png;base64', 'data:image/jpeg;base64', 'data:image/webp;base64'):
+                raise ValueError()
         raw = base64.b64decode(value, validate=True)
         if not raw or len(raw) > MAX_IMAGE_BYTES:
             raise ValueError()
@@ -64,6 +68,13 @@ def chunk_token_ids(tokenizer, text, capacity):
     return [ids[start:start + capacity] for start in range(0, len(ids), capacity)]
 
 
+def text_features(model, inputs):
+    # Follow ChineseCLIPModel.forward exactly. transformers 4.57.1's
+    # get_text_features mistakenly reads pooler_output although pooling is off.
+    outputs = model.text_model(**inputs, return_dict=True)
+    return model.text_projection(outputs.last_hidden_state[:, 0, :])
+
+
 def encode_payload(payload):
     texts, encoded_images = validate_payload(payload)
     images = [decode_image(value) for value in encoded_images]
@@ -73,7 +84,7 @@ def encode_payload(payload):
     import torch
     from transformers import ChineseCLIPModel, ChineseCLIPProcessor
     torch.set_num_threads(min(4, os.cpu_count() or 1))
-    processor = ChineseCLIPProcessor.from_pretrained(str(MODEL_PATH), local_files_only=True, trust_remote_code=False)
+    processor = ChineseCLIPProcessor.from_pretrained(str(MODEL_PATH), local_files_only=True, trust_remote_code=False, use_fast=False)
     model = ChineseCLIPModel.from_pretrained(str(MODEL_PATH), local_files_only=True, trust_remote_code=False, use_safetensors=True)
     model.eval()
     dimension = model.config.projection_dim
@@ -90,7 +101,7 @@ def encode_payload(payload):
                 group = chunks[start:start + 8]
                 prepared = [processor.tokenizer.prepare_for_model(ids, add_special_tokens=True, truncation=False, return_attention_mask=True) for ids in group]
                 inputs = processor.tokenizer.pad(prepared, padding=True, return_tensors='pt')
-                features = model.get_text_features(**inputs)
+                features = text_features(model, inputs)
                 vectors.append(torch.nn.functional.normalize(features, dim=-1))
                 weights.extend(len(ids) for ids in group)
             all_features = torch.cat(vectors)

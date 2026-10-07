@@ -87,6 +87,26 @@ class TopicEncoderTests(unittest.TestCase):
         self.assertEqual(decoded.mode, 'RGB')
         self.assertEqual(decoded.info, {})
 
+    def test_data_url_and_plain_image_match(self):
+        from PIL import Image
+        buffer = io.BytesIO()
+        Image.new('RGB', (3, 4), 'red').save(buffer, format='PNG')
+        value = base64.b64encode(buffer.getvalue()).decode()
+        self.assertEqual(topic_encode.decode_image('data:image/png;base64,' + value).tobytes(), topic_encode.decode_image(value).tobytes())
+        with self.assertRaisesRegex(ValueError, '图片无效'):
+            topic_encode.decode_image('data:text/html;base64,' + value)
+
+    def test_text_uses_cls_state_when_pooler_is_disabled(self):
+        from types import SimpleNamespace
+        from unittest.mock import MagicMock
+        state = MagicMock()
+        model = MagicMock()
+        model.text_model.return_value = SimpleNamespace(last_hidden_state=state, pooler_output=None)
+        topic_encode.text_features(model, {'input_ids': 'tokens'})
+        model.text_model.assert_called_once_with(input_ids='tokens', return_dict=True)
+        state.__getitem__.assert_called_once_with((slice(None), 0, slice(None)))
+        model.text_projection.assert_called_once_with(state.__getitem__.return_value)
+
     def test_invalid_and_disallowed_images(self):
         from PIL import Image
         buffer = io.BytesIO()
