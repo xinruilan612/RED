@@ -132,3 +132,5 @@ test('candidate helper and reference library make provenance and role understand
  assert.match(html,/准备写的想法，不是已发布作品或平台数据/);assert.match(html,/产品事实仍以资料库中的原文为准/);assert.match(html,/其他定位的 2 条参考已保留，本次不参与比较/);
  const rows=x.s.topicsPublicRows([{title:'手录',source:'manual_public',observed_at:'2026-10-07T12:00:00Z'},{title:'搜索',source:'public_search',observed_at:'2026-10-07T12:00:00Z'}]);assert.match(rows,/手动录入/);assert.match(rows,/小红书公开检索/);assert.match(rows,/2026-10-07/);assert.doesNotMatch(rows,/T12:00:00Z/);
 });
+
+test('explicit logged-out status overrides an old successful search connection',async()=>{const x=setup();await x.s.renderTopics();x.eval("topicsState.publicData={samples:[],connection:{ready:true}};topicsState.publicConnected=false");const html=x.s.topicsPublicHTML();assert.match(html,/先连接小红书/);assert.doesNotMatch(html,/小红书已连接/);});
