@@ -37,6 +37,7 @@ function renderOperations(){
  if(currentPage==='metrics')renderMetrics();
  if(currentPage==='memory')renderMemory();
  if(currentPage==='examples')renderExamples();
+ if(currentPage==='skapp'&&typeof renderSkapp==='function')renderSkapp();
 }
 function stat(label,value,note){return `<div><span>${esc(label)}</span><b>${esc(value)}</b><small>${esc(note)}</small></div>`;}
 function renderTrends(){

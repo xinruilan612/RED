@@ -120,6 +120,19 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
         current=auth.session(fresh)
         return set_cookie(JSONResponse({'user':current['user'],'csrf':current['csrf'],'recovery_code':recovery}),fresh)
 
+    @app.get('/api/skapp/report')
+    def skapp_report(user=Depends(logged)):
+        from backend.skapp_report import read_report
+        return read_report()
+
+    @app.get('/api/skapp/report/download')
+    def skapp_report_download(user=Depends(logged)):
+        from backend.skapp_report import read_report
+        report = read_report()
+        require(report['status'] == 'ready', 'RESOURCE_NOT_FOUND', '暂时没有可下载的实验报告')
+        return Response(json.dumps(report, ensure_ascii=False, allow_nan=False, indent=2),
+                        media_type='application/json', headers={'Content-Disposition': 'attachment; filename=youji-skapp-report.json'})
+
     @app.get('/api/operations')
     def operations(user=Depends(logged)): return service.operations.read(user['owner'])
 
@@ -241,7 +254,7 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
 
     @app.get('/{asset}')
     def asset(asset: str):
-        require(asset in ('style.css','app.js','operations.js','account.js','account_profile.js','auth.js','knowledge.js','windtunnel.js','windtunnel.css','trials.js','trials.css','guidance.js','media_exports.js','media_exports.css'),'RESOURCE_NOT_FOUND','页面不存在')
+        require(asset in ('style.css','app.js','operations.js','account.js','account_profile.js','auth.js','knowledge.js','windtunnel.js','windtunnel.css','trials.js','trials.css','guidance.js','media_exports.js','media_exports.css','skapp.js'),'RESOURCE_NOT_FOUND','页面不存在')
         require((FRONTEND/asset).is_file(),'RESOURCE_NOT_FOUND','页面不存在')
         media_type = 'text/css' if asset.endswith('.css') else 'text/javascript'
         return FileResponse(FRONTEND/asset, media_type=media_type)
