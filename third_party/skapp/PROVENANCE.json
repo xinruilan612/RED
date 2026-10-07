@@ -1,0 +1,26 @@
+{
+  "repository": "https://github.com/YifanZhang-git/SKAPP",
+  "commit": "3353b5a79bbeacf8110971b2ef035a4046c1a25c",
+  "license": "MIT",
+  "vendored_at": "2026-10-07",
+  "modifications": [],
+  "files_sha256": {
+    "LICENSE": "77eeddc2db85e1e20af22fe32a98d3995ea8ff6507037ff4048da653a3a6ae7b",
+    "README.md": "36a922ae74c583e1eb93d80e4186ddf1fa413a11b1861e1cc599fcbc46f242ba",
+    "requirements.txt": "a760ff6120b5db45a97f5314c377e48ea39790dd39e7f70bc1b67d145a3e275c",
+    "src/_evaluate_checkpoint.py": "378632cc90bd67e14c1ddf9b9a9fdee3ab43c232ff6376e27588320bc65e9e49",
+    "src/build_rrcp.py": "60c4c329b37c5610ff79554abeefef2917a21abacc62712448f3ee736c34629f",
+    "src/data.py": "369222ae4853db14f371d260f20b5bb6b39b7ebb6175c1cf8df9e2d906e44918",
+    "src/datasets.json": "6e470203415652101fc65badd24a1bd756b7645657ac0dd9f55baaba101eda4d",
+    "src/datasets.py": "3723f0eb28107d8e2b866cb5bca97213beb5d97cc069f42e0b17c2b8bf95c54b",
+    "src/download.py": "1faadb7a2605731971dd976a022adba951b0f3e42e61151f6520af7852b6fb2b",
+    "src/evaluate.py": "cf668bd892092b624876d6c39cf3417619533f8a07139418d8457accfab09483",
+    "src/mean_views.py": "fc2fb9b8b55dbedf4980608c059ac61daad76fc9955c8bfe81839f4830b0055e",
+    "src/model.py": "e253cd6cec690ddcdc4a482865b460646c67f9868bd4753cc2c791aaef0f6187",
+    "src/teacher_graph.py": "25b531f1cf74a48ad249d37d9fa78dac83dda2463737dfa54ee6d5a025e22c01",
+    "src/teachers.py": "2418ffdcb2dca4955c96818bc73a7fb18036f2a5dc103328afcc626dd29bf30a",
+    "src/train.py": "8ca9970dfa0cedf3f1c789982225ac665a4126fb6f85e840438a78250f00efe2",
+    "src/train_teachers.py": "2df2cc4e6959558cf1ad6b76f5d10a38fa1b134822fee048e692841bd145898a",
+    "tests/test_mean_views.py": "a0f8b24614d3c9c91a0fcfb9247430dcdabe361b3622cd968175b3b8b283b6dc"
+  }
+}
