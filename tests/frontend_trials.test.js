@@ -56,3 +56,9 @@ test('download validates both versions and the shared question using local guida
  assert.equal(run('trialReaderDownloadIssue([{content_hash:"x"},{content_hash:"y"}],"读完先做什么？")'),'');
  const html=run("trialReaderForm({id:'h',desired_action:'进一步了解'})");assert.match(html,/data-reader-message role="status" hidden/);assert.doesNotMatch(html,/style="/);
 });
+
+
+test('demo account cannot accidentally enter invented evidence as real reader feedback',()=>{
+ const run=setup();run(`currentAccount=()=>({demo_sample:true});output={innerHTML:''};$=()=>output;trialPaint()`);
+ const html=run('output.innerHTML');assert.match(html,/当前是虚构数据练习账号/);assert.match(html,/href="#examples"/);assert.doesNotMatch(html,/<form/);
+});

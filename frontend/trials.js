@@ -43,6 +43,10 @@ async function renderTrials(){
 }
 
 function trialPaint(){
+ if(currentAccount()?.demo_sample){
+  $('operationsContent').innerHTML='<section class="panel trial-start"><h2>真人试读需要你自己的稿件和真实回答</h2><p>当前是虚构数据练习账号，这里不会用模拟回答代替真人反馈。请在顶部“当前运营账号”切换到自己的账号，再选择原稿和修改稿。</p><a class="secondary" href="#examples">回练习页，返回自己的账号 →</a><p class="helper">还没有读者时，先准备两份稿件并下载，等朋友看完后再填写回答即可。</p></section>';
+  return;
+ }
  const signals=accountRows('signals'),hypotheses=accountRows('hypotheses');
  $('operationsContent').innerHTML=`<div class="ops-hero"><div><span class="eyebrow">内容试飞台 · ${esc(currentAccount()?.name||'')}</span><h2>哪份稿件更容易看懂？让读者告诉你。</h2><p>选同一内容的两个版本，分别请朋友阅读。不需要懂实验术语，也不需要先做 AI 检查。</p></div>${badge(hypotheses.filter(h=>h.ledger_status==='accepted').length+' 条私有经验')}</div>
  <div class="trial-ladder"><div><b>01</b><strong>选两份稿件</strong><small>A 是原稿，B 是修改稿</small></div><span>→</span><div><b>02</b><strong>记录读者反馈</strong><small>每人看一版，记下真实回答</small></div><span>→</span><div><b>03</b><strong>看结果</strong><small>谁看懂了，还有什么疑问</small></div></div>
