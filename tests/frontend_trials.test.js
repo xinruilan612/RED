@@ -38,3 +38,21 @@ test('reader result shows counts prominently without pretending small feedback p
  assert.match(html,/3 · 试读结果/);assert.match(html,/3 人看懂 · 2 人愿意了解产品/);assert.match(html,/不能证明发布后会涨粉或成交/);
  assert.equal(run('trialReaderSummary({validations:{}})'), '');
 });
+
+
+test('cold start explains the real first step and reuses audience without inventing signals',()=>{
+ const run=setup();run(`badge=t=>String(t);currentAccount=()=>({name:'test',profile:{audience:'初学者'}});empty=()=>'';output={innerHTML:''};$=()=>output;trialBind=()=>{};accountRows=()=>[];trialPaint()`);
+ const html=run('output.innerHTML');assert.match(html,/先请一位朋友看看原稿/);assert.match(html,/href="#studio"/);assert.match(html,/name="audience"[^>]*value="初学者"/);assert.doesNotMatch(html,/name="signal_ids" multiple/);
+});
+test('default pair chooses two different revisions of one work and never mixes topics',()=>{
+ const run=setup();run(`trialRuns=[{run_id:'only',workflow_type:'creation',context:{mode:'live'},drafts:[{ref:'one',content_hash:'1'}]},{run_id:'pair',workflow_type:'creation',context:{mode:'live'},drafts:[{ref:'old',content_hash:'2'},{ref:'copy',content_hash:'2'},{ref:'new',content_hash:'3'}]}]`);
+ assert.equal(run('JSON.stringify(trialDefaultPair().map(x=>x.run.run_id+"|"+x.draft.ref))'),'["pair|old","pair|new"]');
+ run('trialRuns=trialRuns.map(r=>({...r,drafts:r.drafts.slice(0,1)}))');assert.equal(run('trialDefaultPair().length'),1);
+});
+test('download validates both versions and the shared question using local guidance',()=>{
+ const run=setup();assert.match(run('trialReaderDownloadIssue([],"问题")'),/两份稿件/);
+ assert.match(run('trialReaderDownloadIssue([{content_hash:"x"},{content_hash:"x"}],"问题")'),/内容相同/);
+ assert.match(run('trialReaderDownloadIssue([{content_hash:"x"},{content_hash:"y"}],"   ")'),/理解问题/);
+ assert.equal(run('trialReaderDownloadIssue([{content_hash:"x"},{content_hash:"y"}],"读完先做什么？")'),'');
+ const html=run("trialReaderForm({id:'h',desired_action:'进一步了解'})");assert.match(html,/data-reader-message role="status" hidden/);assert.doesNotMatch(html,/style="/);
+});
