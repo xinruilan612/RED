@@ -39,3 +39,11 @@ test('editing profile or candidate invalidates old result immediately',async()=>
  const x=setup();await x.s.renderTopics();x.eval("topicsState.result={candidates:[]}");x.e('operationsContent').oninput({target:{dataset:{topicsConfig:'positioning'},value:'植物养护'}});assert.equal(x.eval('topicsState.result'),null);assert.equal(x.e('topicsResults').innerHTML,'');assert.equal(x.eval('topicsState.config.positioning'),'植物养护');
 });
 test('adopt starts existing creation form with title audience and body rather than publishing',async()=>{const x=setup();await x.s.renderTopics();x.eval("topicsState.result={candidates:[]};topicsState.candidates=[{id:'one',title:'夜景摄影',body:'如何选机位',image:''}]");x.s.topicsAdopt('one');assert.equal(x.e('topic').value,'夜景摄影');assert.equal(x.e('audience').value,'初学者');assert.equal(x.e('material').value,'如何选机位');});
+
+test('crossmodal results describe actual image-text use, without claiming paired covers',()=>{
+ const {s}=setup();const html=s.topicsResultHTML({candidates:[{id:'one',title:'选题',image_mode:'crossmodal',fit_score:45,estimated_value:null,references:[{title:'参考',image_mode:'crossmodal',similarity:.4,contribution:.2}]}]},data().config);
+ assert.match(html,/图文跨模态匹配/);assert.match(html,/回测帮助值/);assert.doesNotMatch(html,/本次按文字比较|参考权重/);
+});
+test('uploading historical cover preserves unsaved positioning while advancing version',async()=>{
+ const x=setup();await x.s.renderTopics();x.eval("topicsState.config.positioning='自己新写的方向'");x.s.FileReader=class{readAsDataURL(){this.result='data:image/png;base64,eA==';this.onload();}};x.s.api=async()=>data({version:2});await x.s.topicsAction('history','p',{type:'image/png',size:1});assert.equal(x.eval('topicsState.config.positioning'),'自己新写的方向');assert.equal(x.eval('topicsState.data.version'),2);
+});
