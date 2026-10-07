@@ -24,8 +24,8 @@ test('switching account clears candidates and ignores late previous-account read
 test('leaving the page ignores late initial read',async()=>{const x=setup();let finish;x.s.api=()=>new Promise(r=>finish=r);const pending=x.s.renderTopics();x.s.currentPage='studio';x.e('operationsContent').innerHTML='创作';finish(data());await pending;assert.equal(x.e('operationsContent').innerHTML,'创作');});
 test('evaluation first saves custom profile then uses returned new version',async()=>{
  const x=setup();await x.s.renderTopics();x.eval("topicsState.config.positioning='做饭';topicsState.candidates=[{id:'c',title:' 饭盒 ',body:' 新手 ',image:''}]");const calls=[];
- x.s.api=async(path,method,payload)=>{calls.push({path,method,payload});return path.endsWith('config')?data({version:7}):{status:'insufficient',version:8,candidates:[]};};
- await x.s.topicsAction('evaluate');assert.equal(calls.length,2);assert.equal(calls[0].payload.config.positioning,'做饭');assert.equal(calls[1].payload.version,7);assert.equal(calls[1].payload.candidates[0].title,'饭盒');assert.equal(x.eval('topicsState.busy'),false);assert.equal(x.eval('topicsState.data.version'),8);
+ x.s.api=async(path,method,payload)=>{calls.push({path,method,payload});return path.endsWith('config')?data({version:7}):path.includes('/public?')?{version:7,samples:[],positioning:'做饭'}:{status:'insufficient',version:8,candidates:[]};};
+ await x.s.topicsAction('evaluate');assert.equal(calls.length,3);assert.equal(calls[0].payload.config.positioning,'做饭');assert.equal(calls[2].payload.version,7);assert.equal(calls[2].payload.candidates[0].title,'饭盒');assert.equal(x.eval('topicsState.busy'),false);assert.equal(x.eval('topicsState.data.version'),8);
 });
 test('account switch during save prevents evaluation of a different account',async()=>{
  const x=setup();await x.s.renderTopics();x.eval("topicsState.candidates=[{id:'c',title:'标题',body:'内容',image:''}]");let finish;let calls=0;x.s.api=()=>{calls++;return new Promise(r=>finish=r);};const pending=x.s.topicsAction('evaluate');x.s.activeAccountId='b';x.s.resetTopics();finish(data({version:2}));await pending;assert.equal(calls,1);assert.equal(x.eval('topicsState.result'),null);assert.equal(x.eval('topicsState.busy'),false);
@@ -134,3 +134,17 @@ test('candidate helper and reference library make provenance and role understand
 });
 
 test('explicit logged-out status overrides an old successful search connection',async()=>{const x=setup();await x.s.renderTopics();x.eval("topicsState.publicData={samples:[],connection:{ready:true}};topicsState.publicConnected=false");const html=x.s.topicsPublicHTML();assert.match(html,/先连接小红书/);assert.doesNotMatch(html,/小红书已连接/);});
+
+test('saving new positioning refreshes scoped library before any comparison',async()=>{
+ const x=setup();await x.s.renderTopics();x.eval("topicsState.publicData={positioning:'摄影',samples:[{title:'旧摄影'}]};topicsState.config.positioning='做饭'");let cleared=false;
+ x.s.api=async(path,method,payload)=>{if(path.endsWith('/config')){cleared=x.eval('topicsState.publicData===null');return data({version:4,config:payload.config});}assert.match(path,/public\?/);return {positioning:'做饭',version:4,samples:[{title:'新做饭'}]};};
+ await x.s.topicsAction('save');assert.equal(cleared,true);const html=x.s.topicsHTML();assert.match(html,/做饭参考库/);assert.match(html,/新做饭/);assert.doesNotMatch(html,/旧摄影/);
+});
+test('unsaved positioning labels saved library honestly and failed profile search clears old rows',async()=>{
+ const x=setup();await x.s.renderTopics();x.eval("topicsState.publicData={positioning:'摄影',samples:[{title:'旧摄影'}]};topicsState.config.positioning='做饭'");const html=x.s.topicsHTML();assert.match(html,/摄影参考库/);assert.match(html,/保存到“摄影”参考库/);
+ x.s.api=async()=>{throw new Error('暂时无法保存');};await x.s.topicsSearchPublic();assert.equal(x.eval('topicsState.publicData'),null);assert.doesNotMatch(x.s.topicsHTML(),/旧摄影/);
+});
+test('late scoped library read cannot overwrite another account',async()=>{
+ const x=setup();await x.s.renderTopics();let finish;x.s.api=async path=>path.endsWith('/config')?data({version:2}):new Promise(r=>finish=r);
+ const pending=x.s.topicsAction('save');await new Promise(r=>setTimeout(r,0));x.s.activeAccountId='b';x.s.resetTopics();finish({positioning:'摄影',samples:[{title:'旧账号'}]});await pending;assert.equal(x.eval('topicsState.publicData'),null);
+});
