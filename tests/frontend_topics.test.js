@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 function setup(){
  const elements={};const e=id=>elements[id]||(elements[id]={innerHTML:'',value:''});let n=0;
- const s={pageInfo:{},activeAccountId:'a',currentPage:'topics',crypto:{randomUUID:()=>`c${++n}`},$:e,esc:value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),currentAccount:()=>({name:'测试账号'}),setTimeout,noticeSeverity:()=> 'info',api:async()=>data(),toast:()=>{},startCreation:()=>true};
+ const s={URL,pageInfo:{},activeAccountId:'a',currentPage:'topics',crypto:{randomUUID:()=>`c${++n}`},$:e,esc:value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),currentAccount:()=>({name:'测试账号'}),setTimeout,noticeSeverity:()=> 'info',api:async()=>data(),toast:()=>{},startCreation:()=>true};
  vm.createContext(s);vm.runInContext(fs.readFileSync('frontend/topics.js','utf8'),s);
  return {s,e,eval:code=>vm.runInContext(code,s)};
 }
@@ -73,3 +73,26 @@ test('five transformed images fit total request limit and excess image output is
  const payload=JSON.stringify({candidates:Array.from({length:5},()=>({image,title:'图文选题',body:'内容'.repeat(3000)}))});assert.ok(Buffer.byteLength(payload)<8*1024*1024);
  mockImageTools(s,{encoded:'data:image/jpeg;base64,'+'a'.repeat(1100000)});await assert.rejects(()=>s.topicsReadImage({type:'image/jpeg',size:3000000}),/压缩后仍较大/);
 });
+
+test('public samples keep public counts separate and reject unsafe source links',()=>{
+ const {s}=setup();const html=s.topicsPublicRows([{title:'<script>test</script>',url:'javascript:alert(1)',likes:0,saves:null,comments:3,collected_at:'2026-10-07'},{title:'来源',url:'https://www.xiaohongshu.com/explore/abc',likes:20}]);
+ assert.doesNotMatch(html,/javascript:|<script>/);assert.match(html,/点赞 0/);assert.match(html,/收藏 未提供/);assert.match(html,/2026-10-07/);assert.match(html,/rel="noopener noreferrer"/);
+});
+test('reading public library never starts an external search',async()=>{
+ const x=setup(),calls=[];x.s.api=async path=>{calls.push(path);return path.includes('/public?')?{version:3,samples:[],connection:{message:'等待连接'}}:data();};await x.s.renderTopics();
+ assert.equal(calls.length,2);assert.match(calls[1],/\/public\?/);assert.equal(x.eval('topicsState.data.version'),3);assert.match(x.e('operationsContent').innerHTML,/等待连接/);
+});
+test('explicit public search keeps drafts and configuration, invalidates stale report and advances version',async()=>{
+ const x=setup();await x.s.renderTopics();x.eval("topicsState.keyword=' 夜景 ';topicsState.config.positioning='新方向';topicsState.candidates[0].title='保留草稿';topicsState.result={candidates:[]}");let sent;
+ x.s.api=async(path,method,payload)=>{sent={path,payload};return {version:5,samples:[{title:'参考',url:'https://example.com',likes:2}],connection:{ready:true}};};await x.s.topicsSearchPublic();
+ assert.equal(sent.path,'/api/topics/public/search');assert.equal(sent.payload.keyword,'夜景');assert.equal(x.eval('topicsState.data.version'),5);assert.equal(x.eval('topicsState.config.positioning'),'新方向');assert.equal(x.eval('topicsState.candidates[0].title'),'保留草稿');assert.equal(x.eval('topicsState.result'),null);
+});
+test('account switch rejects a late public search response',async()=>{
+ const x=setup();await x.s.renderTopics();x.eval("topicsState.keyword='摄影'");let finish;x.s.api=()=>new Promise(r=>finish=r);const pending=x.s.topicsSearchPublic();x.s.activeAccountId='b';x.s.resetTopics();finish({version:9,samples:[{title:'A账号记录'}]});await pending;assert.equal(x.eval('topicsState.publicData'),null);assert.equal(x.eval('topicsState.busy'),false);
+});
+test('no keyword makes no external request and connection errors are calm',async()=>{
+ const x=setup();await x.s.renderTopics();let called=0;x.s.api=async()=>{called++;throw new Error('搜索服务未连接');};await x.s.topicsSearchPublic();assert.equal(called,0);x.eval("topicsState.keyword='摄影'");await x.s.topicsSearchPublic();assert.equal(called,1);assert.match(x.e('operationsContent').innerHTML,/搜索服务未连接/);assert.doesNotMatch(x.e('operationsContent').innerHTML,/class="error/);
+});
+test('backend public count snapshots render observed time and preserve unknown values',()=>{const {s}=setup();const html=s.topicsPublicRows([{title:'真实参考',counts:{likes:4,saves:0,comments:null},observed_at:'2026-10-07T12:00:00Z'}]);assert.match(html,/点赞 4/);assert.match(html,/收藏 0/);assert.match(html,/评论 未提供/);assert.match(html,/2026-10-07T12:00:00Z/);});
+test('QR connection is explicit, local image only and successful login clears it',async()=>{const x=setup();await x.s.renderTopics();let calls=[];x.s.api=async(path,method,payload)=>{calls.push({path,payload});return payload.mode==='qrcode'?{data:{img:'data:image/png;base64,'+'a'.repeat(120)}}:{is_logged_in:true};};await x.s.topicsConnect('qrcode');assert.match(x.eval('topicsState.publicQR'),/^data:image\/png/);assert.equal(calls[0].payload.mode,'qrcode');await x.s.topicsConnect('status');assert.equal(x.eval('topicsState.publicQR'),'');assert.match(x.eval('topicsState.message'),/已登录/);});
+test('remote or malicious QR images are not embedded',async()=>{const x=setup();await x.s.renderTopics();x.s.api=async()=>({img:'https://attacker.example/track.png'});await x.s.topicsConnect('qrcode');assert.equal(x.eval('topicsState.publicQR'),'');assert.doesNotMatch(x.e('operationsContent').innerHTML,/attacker/);});
