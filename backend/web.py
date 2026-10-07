@@ -165,7 +165,8 @@ class Handler(BaseHTTPRequestHandler):
                 from backend.planning import due_reviews
                 self.send(200, due_reviews(self.server.operations.read(owner))); return
             if path=='/api/operations':
-                self.send(200,self.server.operations.command(owner,data) if write else self.server.operations.read(owner)); return
+                from backend.public_topics import public_response
+                self.send(200,public_response(self.server.operations.command(owner,data) if write else self.server.operations.read(owner))); return
             if path=='/api/runs':
                 if write:
                     mode=data.get('mode','simulation')

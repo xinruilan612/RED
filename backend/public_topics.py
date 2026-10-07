@@ -123,6 +123,15 @@ def merge_samples(previous,incoming):
         else: result.append(row)
     return result[-200:]
 
+def public_response(value):
+    """Remove connector-only access fields from API responses, including nested state.
+
+    Work on new containers so refresh operations retain server-side source tokens.
+    """
+    if isinstance(value,dict): return {k:public_response(v) for k,v in value.items() if k not in ('xsec_token','xsecToken')}
+    if isinstance(value,list): return [public_response(v) for v in value]
+    return value
+
 def apply_public_topic_action(state,action,data):
     require(action=='public_topics_update' and set(data)=={'account_id','samples'},'INVALID_INPUT','公开参考参数无效')
     account=find_account(state,data['account_id'])

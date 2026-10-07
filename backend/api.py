@@ -9,6 +9,7 @@ from fastapi import FastAPI, Request, Depends
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, FileResponse, Response
 from backend.auth import Auth
+from backend.public_topics import public_response
 from backend.contracts import DomainError, require
 from backend.provider import Config, load_config
 from backend.service import Service
@@ -172,7 +173,7 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
                         media_type='application/json', headers={'Content-Disposition': 'attachment; filename=youji-skapp-report.json'})
 
     @app.get('/api/operations')
-    def operations(user=Depends(logged)): return service.operations.read(user['owner'])
+    def operations(user=Depends(logged)): return public_response(service.operations.read(user['owner']))
 
     @app.get('/api/knowledge')
     def documents(account_id: str,user=Depends(logged)): return service.knowledge.list(user['owner'],account_id)
@@ -220,17 +221,17 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
                                       source_type='web',source_url=article['url'],metadata={k:article[k] for k in ('fetched_at','published_at','verification')})
 
     @app.post('/api/operations')
-    def operate(data: dict, user=Depends(logged)): return service.operations.command(user['owner'],data)
+    def operate(data: dict, user=Depends(logged)): return public_response(service.operations.command(user['owner'],data))
 
     @app.post('/api/operations/agent-plan')
     def agent_plan(data: dict, user=Depends(logged)):
         auth.throttle('operations-plan:'+user['owner'],12,3600)
-        return service.operations_planner.generate(user['owner'],data)
+        return public_response(service.operations_planner.generate(user['owner'],data))
 
     @app.post('/api/operations/ai-review')
     def ai_review(data: dict,user=Depends(logged)):
         auth.throttle('ai-review:'+user['owner'],12,3600)
-        return service.analytics_review.generate(user['owner'],data)
+        return public_response(service.analytics_review.generate(user['owner'],data))
 
     @app.get('/api/operations/due')
     def due(user=Depends(logged)):
