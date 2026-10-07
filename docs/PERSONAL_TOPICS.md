@@ -51,3 +51,5 @@ runtime/venv/bin/python scripts/local_dev.py start
 - 前端197项通过，零跳过；全部前端JavaScript语法、角色卡同步一致性、git diff空白检查通过。
 
 软件流程通过不等于选题热度预测准确。适配算法仍需足够真实同口径历史与前瞻发布验证；公开SKAPP基准成绩不能替代本模块的用户效果证据。
+
+公开样本检索扩展见 [公开参考库与选题比较](PUBLIC_TOPIC_REFERENCES.md)。此扩展独立于自有历史预测标签，不能沿用本文旧版“没有跨账号参考”的范围描述。
