@@ -21,6 +21,9 @@ function noticeSeverity(e){
  return ['INTERNAL_ERROR','FORBIDDEN','CSRF_INVALID','DATA_INTEGRITY_ERROR'].includes(e?.code)||e?.status===500?'critical':'info';
 }
 function error(e,source='request'){
+ // Restoring/polling a creation must not surface its old budget or execution state in unrelated tools.
+ // Fresh request failures still appear on the page where the user is working.
+ if(source==='run'&&typeof currentPage!=='undefined'&&currentPage!=='studio')return;
  const host=$('error'),critical=noticeSeverity(e)==='critical';
  host.textContent=e.message||String(e);host.className=critical?'error critical':'error';
  host.role=critical?'alert':'status';host.hidden=false;errorSource=source;

@@ -464,3 +464,30 @@ test('active paid call does not get presented as a failed unknown-usage request'
  assert.match(s.element('workbenchGuide').textContent,/正在处理/);
  assert.equal(s.element('auto').hidden,false);assert.equal(s.eval('modelFailureGuidance(run)'), '');
 });
+
+
+test('restored creation budget and failure banners stay inside studio rather than leaking into tools',()=>{
+ const s=setup();
+ s.eval("currentPage='trials';clearError();run.background={status:'blocked',error:'Token预留不足：已计入56952下一步30969上限80000'}");
+ for(const page of ['trials','windtunnel','accounts','memory','examples','library','overview']){
+  s.eval(`currentPage='${page}';render()`);
+  assert.equal(s.element('error').hidden,true,page);
+ }
+ s.eval("currentPage='studio';render()");
+ assert.equal(s.element('error').hidden,false);
+ assert.match(s.element('error').textContent,/Token预留不足/);
+ s.eval("currentPage='trials';render()");assert.equal(s.element('error').hidden,true);
+ s.eval("run.run_status='FAILED';run.events=[{type:'agent.failed',payload:{message:'旧任务失败'}}];render()");
+ assert.equal(s.element('error').hidden,true);
+});
+
+test('current tool request failures survive background rendering of an unrelated old creation',()=>{
+ const s=setup();
+ s.eval("currentPage='trials';run.background={status:'blocked',error:'旧任务Token额度提示'};error({code:'INTERNAL_ERROR',message:'本次反馈保存失败，原数据保留'});render()");
+ assert.equal(s.element('error').hidden,false);
+ assert.equal(s.element('error').textContent,'本次反馈保存失败，原数据保留');
+ assert.equal(s.element('error').className,'error critical');
+ s.eval("error({code:'INVALID_INPUT',message:'请填写本次读者意见'});render()");
+ assert.equal(s.element('error').textContent,'请填写本次读者意见');
+ assert.equal(s.element('error').className,'error');
+});
