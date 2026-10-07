@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-07",
+  "status": "not_ready",
+  "candidate_samples": 10,
+  "sample_kind": "public English official tutorial excerpts",
+  "frozen_samples": 0,
+  "final_model_packets": 0,
+  "consented_readers": 0,
+  "readings_planned": 42,
+  "readings_completed": null,
+  "model_calls": 0,
+  "pending": [
+    "exploration and mechanism/task freezing",
+    "explicit paid model scope and budget",
+    "14 process outputs and audited costs",
+    "6 reader consents and 42 readings",
+    "effect/cost analysis after locked scoring"
+  ],
+  "license_snapshot_ref": "../public_samples/LICENSE_PSF.txt",
+  "study_workspace": "runtime/windtunnel-study-20261007",
+  "public_sample_manifest_sha256": "f47bdcb30e5ed2639dfb6ca335961653fe60f45ed0922d36c5e189a829f5a656"
+}

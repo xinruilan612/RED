@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-07",
+  "scope": "current working tree; pre-existing showcase files are not part of this change",
+  "python": {
+    "run": 392,
+    "seconds": 183.359,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "database": "actual PostgreSQL temporary schemas"
+  },
+  "frontend": {
+    "tests": 29,
+    "failures": 0,
+    "syntax_scripts": 8
+  },
+  "study_tests": 18,
+  "public_candidates": 10,
+  "model_calls": 0,
+  "real_reader_results": false,
+  "prepared_study_status": "not_ready",
+  "script_sha256": "b838c30012358548fdf17a1ced6ac4227c6cd22d5c7a8de877d5c9a89c81a178",
+  "evidence": [
+    "2026-10-07-tests.txt",
+    "2026-10-07-frontend.txt",
+    "2026-10-07-preparation-status.json"
+  ]
+}

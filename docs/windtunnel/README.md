@@ -8,6 +8,8 @@
 | --- | --- |
 | [部署与复现](DEPLOYMENT.md) | 空 PostgreSQL 数据库、API、Worker、默认免费模拟和源码包校验 |
 | [研究执行方案](STUDY_PROTOCOL.md) | 10 篇样本、3 篇探索、7 篇留出，6 位读者的 42 次盲评分配 |
+| [执行指南与校验工具](EXECUTION_GUIDE.md) | 初始化私有准备目录、冻结条件检查、隔离读者包与结果记录 |
+| [公开许可候选样本](public_samples/README.md) | 10 个 Python 官方英文教程主题、原文快照、许可与哈希；不是实际评测结果 |
 | [团队自建演示](DEMO_MATERIAL.md) | 可复制的稿件、材料和作者设定问题，不是真人反馈 |
 | [演示脚本](DEMO_SCRIPT.md) | 完整操作、证据定位、修改差异和固定条件复查 |
 | [工程验证记录](ENGINEERING_REPORT.md) | 本轮实测结果、修复记录与未验证边界 |
