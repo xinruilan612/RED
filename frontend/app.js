@@ -12,10 +12,19 @@ let creationSequence=0;
 let pendingLiveBudget=null;
 async function api(path,method='GET',body){
  const r=await fetch(path,{method,headers:method==='POST'?{'Content-Type':'application/json','X-CSRF-Token':csrf}:{},body:body===undefined?undefined:JSON.stringify(body)});
- const data=await r.json(); if(!r.ok){const failure=new Error(data.error?.message||'请求失败');failure.code=data.error?.code;throw failure;}return data;
+ const data=await r.json(); if(!r.ok){const failure=new Error(data.error?.message||'请求失败');failure.code=data.error?.code;failure.status=r.status;throw failure;}return data;
 }
 let errorSource=null;
-function error(e,source='request'){$('error').textContent=e.message||String(e);$('error').hidden=false;errorSource=source;}
+// Business limits and recoverable interruptions are guidance, not critical failures.
+// Keep severity tied to machine codes/status, never to alarming words in model text.
+function noticeSeverity(e){
+ return ['INTERNAL_ERROR','FORBIDDEN','CSRF_INVALID','DATA_INTEGRITY_ERROR'].includes(e?.code)||e?.status===500?'critical':'info';
+}
+function error(e,source='request'){
+ const host=$('error'),critical=noticeSeverity(e)==='critical';
+ host.textContent=e.message||String(e);host.className=critical?'error critical':'error';
+ host.role=critical?'alert':'status';host.hidden=false;errorSource=source;
+}
 function clearError(){$('error').hidden=true;errorSource=null;}
 function toast(text){$('toast').textContent=text;$('toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').hidden=true,3500);}
 function json(value){return '<pre class="json">'+esc(JSON.stringify(value,null,2))+'</pre>';}
