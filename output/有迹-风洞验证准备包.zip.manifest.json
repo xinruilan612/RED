@@ -1,0 +1,294 @@
+{
+  "source_commit": "f40b57fa4e15f4fa6c48703f33a5fda5334b58a9",
+  "scope": "research preparation only; no app installation or reader outcomes",
+  "files": {
+    ".gitattributes": {
+      "sha256": "be4489204c4faa0119cdf483c58eadbe720aeb251e1504dda83063a75d8ab301",
+      "bytes": 192
+    },
+    "START_HERE.md": {
+      "sha256": "5fd47df9ee04751682e4d80023acca8c45a6e25a9278e89a3ef662281f91bccf",
+      "bytes": 930
+    },
+    "docs/windtunnel/DEMO_MATERIAL.md": {
+      "sha256": "3f84bf95fe6cd6f71885951c8796598c21d9e463bea044ada80d31fb583e7da0",
+      "bytes": 2068
+    },
+    "docs/windtunnel/DEMO_SCRIPT.md": {
+      "sha256": "c311bd7e562025150946eec70dcd7460bd073ddff5008c6a08a20a7951000cc6",
+      "bytes": 2055
+    },
+    "docs/windtunnel/DEPLOYMENT.md": {
+      "sha256": "5f57e957acf3eaa749d6f51d5cafdc8a9bd7c3b1b4248ffb1c6e2b140504aba4",
+      "bytes": 4842
+    },
+    "docs/windtunnel/ENGINEERING_REPORT.md": {
+      "sha256": "3bea3a520a9d99e743d37f0883e6869936c926a63b9a624058ed5516a48247ae",
+      "bytes": 4105
+    },
+    "docs/windtunnel/EXECUTION_GUIDE.md": {
+      "sha256": "b8d5cb1d1ddc461499a01c4f041c41a1e5f69e47fc53dc2ac36dc59bb6048448",
+      "bytes": 8732
+    },
+    "docs/windtunnel/OPEN_ITEMS.md": {
+      "sha256": "5c42cfff96a02191fd0c643d585af16ebfabf2fe0f1471009e51d4ba2f1e9d65",
+      "bytes": 6472
+    },
+    "docs/windtunnel/README.md": {
+      "sha256": "3cb00f539552038af5d4db498b3835f376ca7483d9a2ea3d73d3e3db57e3bffc",
+      "bytes": 1766
+    },
+    "docs/windtunnel/STUDY_PROTOCOL.md": {
+      "sha256": "0826dbed9e0950d903d8ef080ce29455e89f5d92e31dd69e43134f597168efc3",
+      "bytes": 3879
+    },
+    "docs/windtunnel/evidence/2026-10-07-frontend.txt": {
+      "sha256": "290dbf0aa2f2bece6d2fdc23a5f25b4141c962e840246b2d32824ddf74789b09",
+      "bytes": 2667
+    },
+    "docs/windtunnel/evidence/2026-10-07-official-check.md": {
+      "sha256": "50026b9a5d034d89d1c92cde447e3d5a7b4a10a75188fc1a3a5cd4390d7ef2a0",
+      "bytes": 4852
+    },
+    "docs/windtunnel/evidence/2026-10-07-preparation-status.json": {
+      "sha256": "d3001a662ed4ee459704e70a90f7f925165eb6ee3ba58851d448fad9cb464aae",
+      "bytes": 762
+    },
+    "docs/windtunnel/evidence/2026-10-07-tests.txt": {
+      "sha256": "06f936fc6f8f78f3cb316dfe4add592e27283d7c71225a20e43b3d3ff816fb48",
+      "bytes": 61121
+    },
+    "docs/windtunnel/evidence/2026-10-07-verification.json": {
+      "sha256": "f6bc68a8d13b7d39f6365bfd0efc2f8397dd2ed23a9e58b6f3891c89e05e5440",
+      "bytes": 1058
+    },
+    "docs/windtunnel/evidence/browser-evidence.json": {
+      "sha256": "a493ea895bb9060654525f9210a993a1c84359763e5955de514562e75de8501e",
+      "bytes": 889
+    },
+    "docs/windtunnel/evidence/final-browser-smoke.json": {
+      "sha256": "b125d80cbce742185ecd0e70d50b03b83e5b0e997a64cbb1ceb9441013318b06",
+      "bytes": 846
+    },
+    "docs/windtunnel/evidence/simulated-report.md": {
+      "sha256": "e73d45a8b96440035b77d7f6596006399c4451452dc37da1c44d5c6fb79ee835",
+      "bytes": 1155
+    },
+    "docs/windtunnel/evidence/unittest.txt": {
+      "sha256": "01c16fa69e949eeb8604ad27a164d25d39d4b4a76942e9ce018a945b59f102b4",
+      "bytes": 33477
+    },
+    "docs/windtunnel/evidence/verification.json": {
+      "sha256": "dfa21cfaf3d14f77936cf8a0ccec185487d527501f3d0e83047bf4678a577e0e",
+      "bytes": 552
+    },
+    "docs/windtunnel/public_samples/LICENSE_0BSD.txt": {
+      "sha256": "48b6aee90e7b570464311282f7e8e3811ae75d756315312ea1fbd984f40ec5c8",
+      "bytes": 670
+    },
+    "docs/windtunnel/public_samples/LICENSE_PSF.txt": {
+      "sha256": "073140a41423ee76db7d318fb6934a855283a77491554cf4d60b37f59ca445f4",
+      "bytes": 2398
+    },
+    "docs/windtunnel/public_samples/LICENSE_SOURCE.txt": {
+      "sha256": "d3e62211600f0f2bee184f6f52cd1725458a5a6268995fb99ee82ca7deb13e38",
+      "bytes": 49742
+    },
+    "docs/windtunnel/public_samples/README.md": {
+      "sha256": "5b0f8ea0c0a316425cfc234a1437a4a8bcdeb1d4225530689d3efbc317824727",
+      "bytes": 3455
+    },
+    "docs/windtunnel/public_samples/S01/draft.md": {
+      "sha256": "60e1a164cc49658de5bf75fdb8de4befff8d84181e7da79e657fe196ada08f2c",
+      "bytes": 8064
+    },
+    "docs/windtunnel/public_samples/S01/support.md": {
+      "sha256": "a551eff6c337741dedabc357a322ac15b4d645e51eb66e0c3b354a30c66a811a",
+      "bytes": 7779
+    },
+    "docs/windtunnel/public_samples/S02/draft.md": {
+      "sha256": "cb8eccef6aac301abf7fbc4ec3dbdde6478a3ec04254fdf739cc3927f01e556a",
+      "bytes": 3626
+    },
+    "docs/windtunnel/public_samples/S02/support.md": {
+      "sha256": "8baddd11396e4f3e6238f62aa4ad3b7057d715b927611ec53a0b60b6715ed806",
+      "bytes": 3341
+    },
+    "docs/windtunnel/public_samples/S03/draft.md": {
+      "sha256": "ef83f431144c8feb23b3cb3ad59dd5c1ae6c1f2970a5b79c96708e23f2b90837",
+      "bytes": 5358
+    },
+    "docs/windtunnel/public_samples/S03/support.md": {
+      "sha256": "1cda6b99a180ee4d755d59df3f996633baad4426bbcd6f2147e9b5b703da4f02",
+      "bytes": 5073
+    },
+    "docs/windtunnel/public_samples/S04/draft.md": {
+      "sha256": "a23dbabe071f9e237194eb0a51d7789f6feeedbd24dbd6edea9da3cfbcccbc6b",
+      "bytes": 3745
+    },
+    "docs/windtunnel/public_samples/S04/support.md": {
+      "sha256": "a6352d7035652e7642fcf07d7706dc8f95c70c7e3f7e0d84d3a53427294e923b",
+      "bytes": 3460
+    },
+    "docs/windtunnel/public_samples/S05/draft.md": {
+      "sha256": "269d80bd47a9e7c7f10a9fb4dd6a89c8d5f09af6f567c2cdc35c4317c9674015",
+      "bytes": 3423
+    },
+    "docs/windtunnel/public_samples/S05/support.md": {
+      "sha256": "d1181fa14e432b23827f9dbb339058bf3c418109d5d3f8b8a9270195437ffc0f",
+      "bytes": 3138
+    },
+    "docs/windtunnel/public_samples/S06/draft.md": {
+      "sha256": "d66b7563463ef984a107f41ff1ff687713a4ab20c33056204037c7103a95f6f4",
+      "bytes": 9545
+    },
+    "docs/windtunnel/public_samples/S06/support.md": {
+      "sha256": "6ab7935261aa7a0a6105d5917f226d9f546376ef93fd5c82239f5cc1554cac5b",
+      "bytes": 9260
+    },
+    "docs/windtunnel/public_samples/S07/draft.md": {
+      "sha256": "7a11c0952c743e14807fa625346fb4e59cf7ea59a2399506609aa6f29dbd8d95",
+      "bytes": 3378
+    },
+    "docs/windtunnel/public_samples/S07/support.md": {
+      "sha256": "07a1a6fdc72b6621d5bec055d81c30b997f94307e33dff441fbb34d14dbdc020",
+      "bytes": 3093
+    },
+    "docs/windtunnel/public_samples/S08/draft.md": {
+      "sha256": "2b398bbc4d5094629c4b1665d420a63a555f3ea10e9996cc09722b457052cc5b",
+      "bytes": 6486
+    },
+    "docs/windtunnel/public_samples/S08/support.md": {
+      "sha256": "c836a67d4bf4aff987ef92a0cabd8ad1c936c7cf1ed82a5bb9702f1b4a57d998",
+      "bytes": 6201
+    },
+    "docs/windtunnel/public_samples/S09/draft.md": {
+      "sha256": "e991c982012d6a7c620badad7cfc7d3bf5b243a680c3f6c1c911fcbe8dc36e88",
+      "bytes": 1635
+    },
+    "docs/windtunnel/public_samples/S09/support.md": {
+      "sha256": "c8f4b2a16dfbac94513b3770a26e59928237066263364513ed7d9ab0add5509e",
+      "bytes": 1350
+    },
+    "docs/windtunnel/public_samples/S10/draft.md": {
+      "sha256": "456190e2d4eafe656f4d3cdf710638fd19d9e02151cef4e90b89cf466cef22e1",
+      "bytes": 4081
+    },
+    "docs/windtunnel/public_samples/S10/support.md": {
+      "sha256": "ba277f0adc60667b308820b0f05ca08bb0165911162684634e33ab53825073fb",
+      "bytes": 3796
+    },
+    "docs/windtunnel/public_samples/collect.py": {
+      "sha256": "487ce06b83f0d17970f8e95f468c7822228f3de05dbee1ac1c5cf2f2e1ad797e",
+      "bytes": 6964
+    },
+    "docs/windtunnel/public_samples/license.html": {
+      "sha256": "4aa9eb676fb9cbae7d73b91590335e25715a1b64efc3aa34b05a19c143ba3817",
+      "bytes": 81999
+    },
+    "docs/windtunnel/public_samples/manifest.json": {
+      "sha256": "f47bdcb30e5ed2639dfb6ca335961653fe60f45ed0922d36c5e189a829f5a656",
+      "bytes": 15930
+    },
+    "docs/windtunnel/public_samples/sources/howto_argparse.html": {
+      "sha256": "90db41d77990738eea3a3a95c4e6a437a33582b2ee5dab1b4514a3efd83c7109",
+      "bytes": 107130
+    },
+    "docs/windtunnel/public_samples/sources/library_pathlib.html": {
+      "sha256": "85fa64bd13ef47a0a837c1b1d3523db7312601def534c7d9783effd0845e333c",
+      "bytes": 210454
+    },
+    "docs/windtunnel/public_samples/sources/tutorial_controlflow.html": {
+      "sha256": "427b9a7efd964a059824fd290770e1e51c1160e7d065fc2b3e6705aaf70d91e5",
+      "bytes": 137694
+    },
+    "docs/windtunnel/public_samples/sources/tutorial_datastructures.html": {
+      "sha256": "da391aa509c1609bf291925c9a96ac4e7edf2172632e9deb8e6e8b40010a1342",
+      "bytes": 96503
+    },
+    "docs/windtunnel/public_samples/sources/tutorial_errors.html": {
+      "sha256": "812f08c04914c5d8d42991d89d59b741d78195a70cd137347b4af7cc6b2fec92",
+      "bytes": 79557
+    },
+    "docs/windtunnel/public_samples/sources/tutorial_inputoutput.html": {
+      "sha256": "dfd790d5034d2bf51f33dab1043ca70674aaa68acbbf7dfd4774b72658a35a78",
+      "bytes": 76076
+    },
+    "docs/windtunnel/public_samples/sources/tutorial_introduction.html": {
+      "sha256": "63d76a1173c4a909d060bd144c8d4f27340032907d41c2ba38f3bb4763ce28ff",
+      "bytes": 70328
+    },
+    "docs/windtunnel/public_samples/verify.py": {
+      "sha256": "71d16b75985d57b6d6f5f14ea7794bbbd2872042006dba112688f0f5ee09a747",
+      "bytes": 1977
+    },
+    "docs/windtunnel/templates/README.md": {
+      "sha256": "49de847d170a4cb0f57463f29e433930dc4f57b2677032faa148e0172d1d3670",
+      "bytes": 2684
+    },
+    "docs/windtunnel/templates/assignment_key_RESEARCHER_ONLY.csv": {
+      "sha256": "d380503d958e4a360f3620ca6ae10724525eb306d8b7fea7a87f6d1674d57f1e",
+      "bytes": 367
+    },
+    "docs/windtunnel/templates/human_scoring_RESEARCHER_ONLY.csv": {
+      "sha256": "0b2d7b9a3567164bc48785ee631e32e060588311697141f474d31c305b616727",
+      "bytes": 708
+    },
+    "docs/windtunnel/templates/reader_R01.csv": {
+      "sha256": "4213ed15b038686a5fe64c75cfa294db923fe3102342f3ada629b7cdd150f6d5",
+      "bytes": 137
+    },
+    "docs/windtunnel/templates/reader_R02.csv": {
+      "sha256": "b5e5bdd9c11e0d9e71359041f3fa57068a0cec5e4410a4166ce0a7e17c60077b",
+      "bytes": 137
+    },
+    "docs/windtunnel/templates/reader_R03.csv": {
+      "sha256": "2597f4d18ebf30d68cd620aaf5db94ef0b85e5983bc541bc2106c4e327bfad9e",
+      "bytes": 137
+    },
+    "docs/windtunnel/templates/reader_R04.csv": {
+      "sha256": "d3587f7a6345e8d926bc2518b8069dba69819e7d3b3fbf350629570b1b2793af",
+      "bytes": 137
+    },
+    "docs/windtunnel/templates/reader_R05.csv": {
+      "sha256": "631d34426617286d0755e1ed1042cd541e6409732834a6bc107517dac7a5cf00",
+      "bytes": 137
+    },
+    "docs/windtunnel/templates/reader_R06.csv": {
+      "sha256": "9a2739be30e2e2641e3e79b3979580c5fe5dc4c292f9d3e0c88d3a67a0dc3198",
+      "bytes": 137
+    },
+    "docs/windtunnel/templates/reader_consent_RESEARCHER_ONLY.csv": {
+      "sha256": "2f15ea9f32da562b2f3a96be8e6a2d98376dda1c078d3f5bb275fe5ad29e8d27",
+      "bytes": 138
+    },
+    "docs/windtunnel/templates/reader_evaluation_TEMPLATE.csv": {
+      "sha256": "5c79653ce1f3934747d0aecbcd8df533d1c61db5d12a209f3a56ff5b22ffe180",
+      "bytes": 870
+    },
+    "docs/windtunnel/templates/run_costs_RESEARCHER_ONLY.csv": {
+      "sha256": "7bec208feb9c72a5ac5ac1bf69557ed804c5313cb4d4d89204bcae87e9d52d74",
+      "bytes": 479
+    },
+    "docs/windtunnel/templates/sample_registry.csv": {
+      "sha256": "1b8cf00e358c71fa7a0035b80b10ad1fecdebba8e1069bc1d256cacdb2dc1295",
+      "bytes": 335
+    },
+    "docs/windtunnel/templates/source_authorization.csv": {
+      "sha256": "8419be4185178b6ddcd253fba4237ef99fe3dda4952cbc44dde8111797ef5a05",
+      "bytes": 303
+    },
+    "docs/windtunnel/templates/study_run_TEMPLATE.json": {
+      "sha256": "7a53b0e3cdeb5596329de207d98ab41d508dd0a66a1f0a01c4c4ab54476e82e5",
+      "bytes": 688
+    },
+    "scripts/windtunnel_study.py": {
+      "sha256": "b838c30012358548fdf17a1ced6ac4227c6cd22d5c7a8de877d5c9a89c81a178",
+      "bytes": 17711
+    },
+    "tests/test_windtunnel_study.py": {
+      "sha256": "519a3b70d4928919913f76a74fa5f5bbc4c67abe8aa65879287fc2f4dfefbf2b",
+      "bytes": 15257
+    }
+  }
+}
