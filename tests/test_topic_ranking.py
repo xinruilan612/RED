@@ -44,7 +44,36 @@ class TopicRankingTests(unittest.TestCase):
         self.assertEqual(b['reference_ids'], ['1'])
         self.assertEqual(a['image_mode'], 'multimodal')
         c = evaluate([1, 0], [candidate(0)], history, config)['candidates'][0]
-        self.assertEqual(c['image_mode'], 'text_only')
+        self.assertEqual(c['image_mode'], 'crossmodal')
+
+    def test_cold_start_image_participates_in_profile_fit(self):
+        candidates = [candidate(0, [1, 0], [1, 0]), candidate(1, [1, 0], [0, 1])]
+        result = evaluate([0, 1], candidates, [])
+        self.assertEqual(result['candidates'][0]['id'], 'c1')
+        self.assertGreater(result['candidates'][0]['fit_score'], result['candidates'][1]['fit_score'])
+        self.assertGreater(result['candidates'][0]['profile_similarity'], result['candidates'][1]['profile_similarity'])
+        self.assertTrue(all(r['image_mode'] == 'crossmodal' for r in result['candidates']))
+        self.assertTrue(all(r['estimated_value'] is None for r in result['candidates']))
+
+    def test_candidate_image_retrieves_text_only_history(self):
+        history = [item(0, [1, 0]), item(1, [0, 1])]
+        config = dict(text_weight=0, image_weight=1, profile_weight=0, neighbors=1)
+        result = evaluate([1, 0], [candidate(0, [1, 0], [0, 1])], history, config)['candidates'][0]
+        self.assertEqual(result['reference_ids'], ['1'])
+        self.assertEqual(result['image_mode'], 'crossmodal')
+        self.assertTrue(result['references'][0]['image_used'])
+        self.assertEqual(result['references'][0]['image_mode'], 'crossmodal')
+
+    def test_history_image_retrieved_with_candidate_text(self):
+        history = [item(0, [1, 0], image=[0, 1]), item(1, [1, 0], image=[1, 0])]
+        config = dict(text_weight=0, image_weight=1, profile_weight=0, neighbors=1)
+        result = evaluate([1, 0], [candidate(0, [0, 1])], history, config)['candidates'][0]
+        self.assertEqual(result['reference_ids'], ['0'])
+        self.assertEqual(result['image_mode'], 'crossmodal')
+
+    def test_image_dimension_must_match_shared_text_space(self):
+        with self.assertRaises(ValueError):
+            evaluate([1, 0], [candidate(0, image=[1, 0, 0])], [])
 
     def test_missing_metrics_are_references_but_never_training(self):
         history = [item(i, value=None) for i in range(15)]

@@ -62,9 +62,7 @@ def evaluate(profile_vector, candidates, history, config=None):
     neighbors = config.get('neighbors', 5)
     if isinstance(neighbors, bool) or not isinstance(neighbors, int) or not 1 <= neighbors <= 20:
         raise ValueError('参考作品数量需为 1 至 20')
-    image_dimension = None
     def prepare(rows, historical):
-        nonlocal image_dimension
         result, seen = [], set()
         for row in rows:
             if not isinstance(row, dict) or not isinstance(row.get('id'), str) or not row['id'] or row['id'] in seen:
@@ -72,8 +70,7 @@ def evaluate(profile_vector, candidates, history, config=None):
             seen.add(row['id'])
             item = dict(id=row['id'], title=str(row.get('title', ''))[:500], text=_vector(row.get('text_vector'), len(profile)), image=None)
             if row.get('image_vector') is not None:
-                item['image'] = _vector(row['image_vector'], image_dimension)
-                image_dimension = len(item['image'])
+                item['image'] = _vector(row['image_vector'], len(profile))
             if historical:
                 value = row.get('value')
                 if value is not None and (isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or not 0 <= value <= 1e12):
@@ -92,14 +89,29 @@ def evaluate(profile_vector, candidates, history, config=None):
 
     eligible = [r for r in history_rows if r['value'] is not None]
 
+    def profile_similarity(row):
+        text = _cos(profile, row['text'])
+        if row['image'] is None or weights[1] == 0:
+            return text
+        # ChineseCLIP text and image embeddings share the same feature space.
+        denominator = weights[0] + weights[1]
+        return (weights[0]*text + weights[1]*_cos(profile, row['image']))/denominator
+
     def similarity(query, ref):
         text = _cos(query['text'], ref['text'])
-        image = _cos(query['image'], ref['image']) if query['image'] is not None and ref['image'] is not None else None
-        personal = _cos(profile, ref['text'])
+        image, mode = None, 'text_only'
+        if weights[1] > 0:
+            if query['image'] is not None and ref['image'] is not None:
+                image, mode = _cos(query['image'], ref['image']), 'multimodal'
+            elif query['image'] is not None:
+                image, mode = _cos(query['image'], ref['text']), 'crossmodal'
+            elif ref['image'] is not None:
+                image, mode = _cos(query['text'], ref['image']), 'crossmodal'
+        personal = profile_similarity(ref)
         denominator = weights[0] + weights[2] + (weights[1] if image is not None else 0)
-        # An image-only configuration still provides a documented text fallback.
+        # If neither side has an image, an image-only setting uses text fallback.
         score = (weights[0]*text + weights[2]*personal + (weights[1]*image if image is not None else 0))/denominator if denominator else text
-        return score, image is not None
+        return score, mode
 
     def select(query, pool, contributions):
         refs = []
@@ -156,19 +168,19 @@ def evaluate(profile_vector, candidates, history, config=None):
     output = []
     for query in candidate_rows:
         refs = select(query, history_rows, contributions)
-        personal = _cos(profile, query['text'])
+        personal = profile_similarity(query)
         relevance = sum(s for s, _, _ in refs)/len(refs) if refs else personal
         # Profile is always expressed in the ranking, including cold start.
         fit = weights[2]*personal + (1-weights[2])*relevance if refs else personal
         estimate = predict(refs) if gate and sum(r['value'] is not None for _, r, _ in refs) >= 3 else None
         details = []
-        for score, ref, image_used in refs:
+        for score, ref, image_mode in refs:
             evidence = contributions.get(ref['id'], [])
-            details.append(dict(id=ref['id'], title=ref['title'], similarity=round(score, 6), value=ref['value'], eligible=ref['value'] is not None, image_used=image_used,
+            details.append(dict(id=ref['id'], title=ref['title'], similarity=round(score, 6), value=ref['value'], eligible=ref['value'] is not None, image_used=image_mode != 'text_only', image_mode=image_mode,
                 contribution=sum(evidence)/len(evidence) if evidence else None, contribution_observations=len(evidence)))
         output.append(dict(id=query['id'], title=query['title'], fit_score=round(100*fit, 2), estimated_value=round(estimate, 4) if estimate is not None else None,
             reference_ids=[r['id'] for _, r, _ in refs], references=details,
-            profile_similarity=round(personal, 6), image_mode='multimodal' if any(x['image_used'] for x in details) else 'text_only',
+            profile_similarity=round(personal, 6), image_mode=('multimodal' if any(x['image_mode'] == 'multimodal' for x in details) else 'crossmodal' if (query['image'] is not None and weights[1] > 0) or any(x['image_used'] for x in details) else 'text_only'),
             reason=(reason if estimate is not None or not gate else '此选题的可比参考数据不足，仅显示匹配度。') if refs else '尚无相似历史作品，仅展示与账号定位的匹配度。'))
     output.sort(key=lambda r: (r['estimated_value'] is None, -(r['estimated_value'] or 0), -r['fit_score'], r['id']))
     return dict(status='experimental_prediction' if gate else 'matching_only', method=METHOD,
