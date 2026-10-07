@@ -1,0 +1,131 @@
+{
+  "reader_id": "R02",
+  "participant_type": "codex_proxy",
+  "human_reading_seconds": null,
+  "responses": [
+    {
+      "blind_id": "Bb430d91adaf8e165eb552780af92edfb",
+      "points": [
+        {
+          "point": 1,
+          "answer_text": "missing_information",
+          "evidence": [],
+          "missing_information": "稿件未提供最初--verbosity缺省时的值及输出。"
+        },
+        {
+          "point": 2,
+          "answer_text": "missing_information",
+          "evidence": [],
+          "missing_information": "稿件未提供仅写--verbosity报错的原因。"
+        },
+        {
+          "point": 3,
+          "answer_text": "missing_information",
+          "evidence": [],
+          "missing_information": "稿件未提供无需值的--verbose的add_argument写法及启用、缺省值。"
+        },
+        {
+          "point": 4,
+          "answer_text": "missing_information",
+          "evidence": [],
+          "missing_information": "稿件未提供--verbose 1报错的原因。"
+        },
+        {
+          "point": 5,
+          "answer_text": "missing_information",
+          "evidence": [],
+          "missing_information": "稿件未提供-v别名的add_argument写法、-v的输出及help内容。"
+        }
+      ],
+      "perceived_difficulty_1_to_5": null,
+      "open_feedback": "文件可读，但稿件仅提供一般介绍，未提供题目所需细节。"
+    },
+    {
+      "blind_id": "Be1f92e481df1a665c9cd6a88aee52faf",
+      "points": [
+        {
+          "point": 1,
+          "answer_text": "将Python数据层次转换为字符串称为serializing；从字符串表示重建数据称为deserializing。",
+          "evidence": [
+            "this process is called serializing.",
+            "Reconstructing the data from the string representation is called deserializing."
+          ],
+          "missing_information": ""
+        },
+        {
+          "point": 2,
+          "answer_text": "调用json.dumps(x)，得到JSON字符串'[1, \"simple\", \"list\"]'。",
+          "evidence": [
+            "json.dumps(x), which produces '[1, \"simple\", \"list\"]'."
+          ],
+          "missing_information": ""
+        },
+        {
+          "point": 3,
+          "answer_text": "已打开的文本文件对象f用于写入时调用json.dump(x, f)；用于读取时调用x = json.load(f)。",
+          "evidence": [
+            "If f is a text file object opened for writing, call json.dump(x, f).",
+            "if f is a binary file or text file object opened for reading, call x = json.load(f)."
+          ],
+          "missing_information": ""
+        },
+        {
+          "point": 4,
+          "answer_text": "JSON文件必须采用UTF-8编码；以文本文件打开进行读写时均使用encoding=\"utf-8\"。",
+          "evidence": [
+            "JSON files must be encoded in UTF-8; use encoding=\"utf-8\" when opening a JSON file as a text file for both reading and writing."
+          ],
+          "missing_information": ""
+        },
+        {
+          "point": 5,
+          "answer_text": "不能随便用pickle替换不可信JSON：pickle默认不安全，攻击者构造的不可信数据在反序列化时可执行任意代码。JSON支持列表和字典，但序列化任意类实例需要额外工作。",
+          "evidence": [
+            "pickle is insecure by default, and deserializing pickle data from an untrusted source can execute arbitrary code if the data was crafted by a skilled attacker.",
+            "JSON can handle lists and dictionaries, but serializing arbitrary class instances in JSON requires extra effort."
+          ],
+          "missing_information": ""
+        }
+      ],
+      "perceived_difficulty_1_to_5": null,
+      "open_feedback": ""
+    },
+    {
+      "blind_id": "Baf19632e241d201055331acd1cc48574",
+      "points": [
+        {
+          "point": 1,
+          "answer_text": "missing_information",
+          "evidence": [],
+          "missing_information": "稿件未提供追加模式、UTF-8打开写法及与w模式的差异。"
+        },
+        {
+          "point": 2,
+          "answer_text": "missing_information",
+          "evidence": [],
+          "missing_information": "稿件未提供使用with的原因。"
+        },
+        {
+          "point": 3,
+          "answer_text": "missing_information",
+          "evidence": [],
+          "missing_information": "稿件未提供readline返回空串与仅换行的含义。"
+        },
+        {
+          "point": 4,
+          "answer_text": "missing_information",
+          "evidence": [],
+          "missing_information": "稿件未提供大文件逐行读取方案及与read()无size的差别。"
+        },
+        {
+          "point": 5,
+          "answer_text": "missing_information",
+          "evidence": [],
+          "missing_information": "稿件未提供复制JPEG的模式、读写对象类型及encoding参数限制。"
+        }
+      ],
+      "perceived_difficulty_1_to_5": null,
+      "open_feedback": "文件可读，但稿件仅提供一般介绍，未提供题目所需细节。"
+    }
+  ]
+}

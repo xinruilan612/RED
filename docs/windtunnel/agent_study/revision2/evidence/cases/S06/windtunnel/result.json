@@ -1,0 +1,620 @@
+{
+  "sample_id": "S06",
+  "method": "windtunnel",
+  "participant_type": "codex_proxy",
+  "revision": "v2",
+  "source_url": "https://docs.python.org/3.12/tutorial/inputoutput.html#reading-and-writing-files",
+  "original_sha256": "e875cb0dface6cf1ed20c0c5c4815d684aff35321bb80bb955a771c3424226c7",
+  "material_sha256": "e875cb0dface6cf1ed20c0c5c4815d684aff35321bb80bb955a771c3424226c7",
+  "outcome": "completed",
+  "error": null,
+  "automatic_adoption": true,
+  "human_author": false,
+  "initial_report": {
+    "id": "fd8267cf-bdf9-47f3-8796-45e4286c0205",
+    "batch_id": "97f01b27-926a-4ba9-bdf5-127a14096946",
+    "draft_id": "41907ab9-ba2b-4548-92b5-5cfe432f64c6",
+    "draft_hash": "a6e8a2e340fefe717ac192074d39b9bf885430d3cfd83d87e66a4cb2b184de34",
+    "condition_set_id": "f20b3084-39ad-44c7-9177-a1a8be20046f",
+    "condition_hash": "cf70cf1740d4c90198fb975411d6c36f76c683d93b71cfcf15cbb2a20ca045a6",
+    "material_hash": "c4d3e5289e98f116d4bf551bc603b86604732274b2f08f8cf2fc6ca0892c0a3c",
+    "results": [
+      {
+        "condition_id": "ff484c34-774b-4969-af63-349d28b54a75",
+        "status": "pass",
+        "reason": "阅读答案与材料一致：'a' 模式用于追加并自动加到末尾；'w' 打开仅用于写入且会清空已有同名文件；推荐 encoding=\"utf-8\"。",
+        "citations": [
+          {
+            "source_id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+            "quote": "'a' opens the file for appending; any data written to the file is\nautomatically added to the end."
+          },
+          {
+            "source_id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+            "quote": "'w'\nfor only writing (an existing file with the same name will be erased)"
+          },
+          {
+            "source_id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+            "quote": "encoding=\"utf-8\" is\nrecommended unless you know that you need to use a different encoding."
+          }
+        ],
+        "reading": {
+          "condition_id": "ff484c34-774b-4969-af63-349d28b54a75",
+          "status": "pass",
+          "answer": "追加模式为 'a'，UTF-8 写法为 encoding=\"utf-8\"；与 'w' 模式的差异是 'w' 会清空已有同名文件，而 'a' 在文件末尾追加数据。",
+          "excerpt": "'a' opens the file for appending; any data written to the file is\nautomatically added to the end.",
+          "reason": "稿件明确说明 'a' 为追加模式、在末尾自动添加数据，并说明 'w' 会清空已有文件，且推荐 encoding=\"utf-8\"。"
+        }
+      },
+      {
+        "condition_id": "4d6f87de-d597-4550-bdd1-4386564efe00",
+        "status": "pass",
+        "reason": "阅读答案与材料一致：with 确保套件结束后正确关闭文件，即使抛出异常；也比 try-finally 更短。",
+        "citations": [
+          {
+            "source_id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+            "quote": "The advantage is that the file is properly closed\nafter its suite finishes, even if an exception is raised at some\npoint."
+          },
+          {
+            "source_id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+            "quote": "Using with is also much shorter than writing\nequivalent try-finally blocks:"
+          }
+        ],
+        "reading": {
+          "condition_id": "4d6f87de-d597-4550-bdd1-4386564efe00",
+          "status": "pass",
+          "answer": "使用 with 可确保文件在代码块结束后正确关闭，即使发生异常也会关闭；同时比写 try-finally 更简短。",
+          "excerpt": "It is good practice to use the with keyword when dealing\nwith file objects.  The advantage is that the file is properly closed\nafter its suite finishes, even if an exception is raised at some\npoint.",
+          "reason": "稿件明确指出使用 with 的优点：with 代码块结束后文件会被正确关闭，即使抛出异常；并说明比 try-finally 更短。"
+        }
+      },
+      {
+        "condition_id": "075c4e8b-a0b2-4697-87e6-be0920f9061e",
+        "status": "pass",
+        "reason": "阅读答案与材料一致：readline 返回空字符串表示到达文件末尾；仅换行用 '\\n' 表示空行。",
+        "citations": [
+          {
+            "source_id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+            "quote": "if f.readline() returns an empty string, the end of the file\nhas been reached, while a blank line is represented by '\\n', a string\ncontaining only a single newline."
+          }
+        ],
+        "reading": {
+          "condition_id": "075c4e8b-a0b2-4697-87e6-be0920f9061e",
+          "status": "pass",
+          "answer": "readline 返回空字符串表示已到达文件末尾；返回仅包含单个换行符的字符串 '\\n' 表示读取到的是空行。",
+          "excerpt": "if f.readline() returns an empty string, the end of the file\nhas been reached, while a blank line is represented by '\\n', a string\ncontaining only a single newline.",
+          "reason": "稿件明确区分了空字符串表示文件结束、'\\n' 表示空行。"
+        }
+      },
+      {
+        "condition_id": "0d5c220f-dae3-40ca-86e7-ed085f957642",
+        "status": "pass",
+        "reason": "阅读答案与材料一致：逐行读取大文件方案为对文件对象循环，内存高效；read() 无 size 会读取整个文件，文件过大由使用者负责。",
+        "citations": [
+          {
+            "source_id": "8963ea90-84e6-4a84-a562-25a724275c6c",
+            "quote": "For reading lines from a file, you can loop over the file object. This is memory\nefficient, fast, and leads to simple code:"
+          },
+          {
+            "source_id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+            "quote": "When size is omitted or negative, the\nentire contents of the file will be read and returned; it’s your problem if the\nfile is twice as large as your machine’s memory."
+          }
+        ],
+        "reading": {
+          "condition_id": "0d5c220f-dae3-40ca-86e7-ed085f957642",
+          "status": "pass",
+          "answer": "逐行读取大文件方案是直接对文件对象进行 for 循环；与 read() 无 size 的差别是 for 循环内存高效，而 read() 无 size 会读取并返回整个文件内容，文件过大时可能耗尽内存。",
+          "excerpt": "For reading lines from a file, you can loop over the file object. This is memory\nefficient, fast, and leads to simple code:",
+          "reason": "稿件明确写出对文件对象循环可内存高效地逐行读取；并说明 read() 省略 size 或为负时会读取整个文件，文件过大是使用者自己的问题。"
+        }
+      },
+      {
+        "condition_id": "5d058a5e-682c-4d55-97d9-ec1bd584532a",
+        "status": "pass",
+        "reason": "阅读答案与材料一致：JPEG 应使用二进制模式；二进制模式读写 bytes 对象；二进制模式打开时不能指定 encoding。",
+        "citations": [
+          {
+            "source_id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+            "quote": "Appending a 'b' to the mode opens the file in binary mode.\nBinary mode data is read and written as bytes objects.\nYou can not specify encoding when opening file in binary mode."
+          },
+          {
+            "source_id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+            "quote": "will corrupt binary data like that in\nJPEG or EXE files.  Be very careful to use binary mode when\nreading and writing such files."
+          }
+        ],
+        "reading": {
+          "condition_id": "5d058a5e-682c-4d55-97d9-ec1bd584532a",
+          "status": "pass",
+          "answer": "复制 JPEG 应使用二进制模式（在模式中加 'b'）；二进制模式下数据以 bytes 对象读写；二进制模式打开文件时不能指定 encoding。",
+          "excerpt": "Appending a 'b' to the mode opens the file in binary mode.\nBinary mode data is read and written as bytes objects.\nYou can not specify encoding when opening file in binary mode.",
+          "reason": "稿件明确说明二进制模式的写法、数据类型为 bytes，以及二进制模式下不能指定 encoding；并指出文本模式会损坏 JPEG 等二进制数据，应使用二进制模式。"
+        }
+      }
+    ],
+    "new_issues": [],
+    "mode": "live",
+    "created_at": 1791355325.49398,
+    "model_policy": {
+      "version": "56cb27ab6fbf778239c193adfb5bcc084ca534730fef852bc02b83a150695d18",
+      "routes": {
+        "wt_conditions": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_read": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_verify": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_patch": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        }
+      },
+      "prompt_version": "windtunnel.v1"
+    },
+    "sources": [
+      {
+        "id": "41907ab9-ba2b-4548-92b5-5cfe432f64c6",
+        "source_id": "41907ab9-ba2b-4548-92b5-5cfe432f64c6",
+        "kind": "draft",
+        "text": "7.2. Reading and Writing Files\n\nopen() returns a file object, and is most commonly used with\ntwo positional arguments and one keyword argument:\nopen(filename, mode, encoding=None)\n\n>>> f = open('workfile', 'w', encoding=\"utf-8\")\n\nThe first argument is a string containing the filename.  The second argument is\nanother string containing a few characters describing the way in which the file\nwill be used.  mode can be 'r' when the file will only be read, 'w'\nfor only writing (an existing file with the same name will be erased), and\n'a' opens the file for appending; any data written to the file is\nautomatically added to the end.  'r+' opens the file for both reading and\nwriting. The mode argument is optional; 'r' will be assumed if it’s\nomitted.\n\nNormally, files are opened in text mode, that means, you read and write\nstrings from and to the file, which are encoded in a specific encoding.\nIf encoding is not specified, the default is platform dependent\n(see open()).\nBecause UTF-8 is the modern de-facto standard, encoding=\"utf-8\" is\nrecommended unless you know that you need to use a different encoding.\nAppending a 'b' to the mode opens the file in binary mode.\nBinary mode data is read and written as bytes objects.\nYou can not specify encoding when opening file in binary mode.\n\nIn text mode, the default when reading is to convert platform-specific line\nendings (\\n on Unix, \\r\\n on Windows) to just \\n.  When writing in\ntext mode, the default is to convert occurrences of \\n back to\nplatform-specific line endings.  This behind-the-scenes modification\nto file data is fine for text files, but will corrupt binary data like that in\nJPEG or EXE files.  Be very careful to use binary mode when\nreading and writing such files.\n\nIt is good practice to use the with keyword when dealing\nwith file objects.  The advantage is that the file is properly closed\nafter its suite finishes, even if an exception is raised at some\npoint.  Using with is also much shorter than writing\nequivalent try-finally blocks:\n\n>>> with open('workfile', encoding=\"utf-8\") as f:\n...     read_data = f.read()\n\n>>> # We can check that the file has been automatically closed.\n>>> f.closed\nTrue\n\nIf you’re not using the with keyword, then you should call\nf.close() to close the file and immediately free up any system\nresources used by it.\n\nWarning\n\nCalling f.write() without using the with keyword or calling\nf.close() might result in the arguments\nof f.write() not being completely written to the disk, even if the\nprogram exits successfully.\n\nAfter a file object is closed, either by a with statement\nor by calling f.close(), attempts to use the file object will\nautomatically fail.\n\n>>> f.close()\n>>> f.read()\nTraceback (most recent call last):\n  File \"<stdin>\", line 1, in <module>\nValueError: I/O operation on closed file.\n\n7.2.1. Methods of File Objects\n\nThe rest of the examples in this section will assume that a file object called\nf has already been created.\n\nTo read a file’s contents, call f.read(size), which reads some quantity of\ndata and returns it as a string (in text mode) or bytes object (in binary mode).\nsize is an optional numeric argument.  When size is omitted or negative, the\nentire contents of the file will be read and returned; it’s your problem if the\nfile is twice as large as your machine’s memory. Otherwise, at most size\ncharacters (in text mode) or size bytes (in binary mode) are read and returned.\nIf the end of the file has been reached, f.read() will return an empty\nstring ('').\n\n>>> f.read()\n'This is the entire file.\\n'\n>>> f.read()\n''\n\nf.readline() reads a single line from the file; a newline character (\\n)\nis left at the end of the string, and is only omitted on the last line of the\nfile if the file doesn’t end in a newline.  This makes the return value\nunambiguous; if f.readline() returns an empty string, the end of the file\nhas been reached, while a blank line is represented by '\\n', a string\ncontaining only a single newline.\n\n>>> f.readline()\n'This is the first line of the file.\\n'\n>>> f.readline()\n'Second line of the file\\n'\n>>> f.readline()\n''\n\nFor reading lines from a file, you can loop over the file object. This is memory\nefficient, fast, and leads to simple code:\n\n>>> for line in f:\n...     print(line, end='')\n...\nThis is the first line of the file.\nSecond line of the file\n\nIf you want to read all the lines of a file in a list you can also use\nlist(f) or f.readlines().\n\nf.write(string) writes the contents of string to the file, returning\nthe number of characters written.\n\n>>> f.write('This is a test\\n')\n15\n\nOther types of objects need to be converted – either to a string (in text mode)\nor a bytes object (in binary mode) – before writing them:\n\n>>> value = ('the answer', 42)\n>>> s = str(value)  # convert the tuple to string\n>>> f.write(s)\n18\n\nf.tell() returns an integer giving the file object’s current position in the file\nrepresented as number of bytes from the beginning of the file when in binary mode and\nan opaque number when in text mode.\n\nTo change the file object’s position, use f.seek(offset, whence).  The position is computed\nfrom adding offset to a reference point; the reference point is selected by\nthe whence argument.  A whence value of 0 measures from the beginning\nof the file, 1 uses the current file position, and 2 uses the end of the file as\nthe reference point.  whence can be omitted and defaults to 0, using the\nbeginning of the file as the reference point.\n\n>>> f = open('workfile', 'rb+')\n>>> f.write(b'0123456789abcdef')\n16\n>>> f.seek(5)      # Go to the 6th byte in the file\n5\n>>> f.read(1)\nb'5'\n>>> f.seek(-3, 2)  # Go to the 3rd byte before the end\n13\n>>> f.read(1)\nb'd'\n\nIn text files (those opened without a b in the mode string), only seeks\nrelative to the beginning of the file are allowed (the exception being seeking\nto the very file end with seek(0, 2)) and the only valid offset values are\nthose returned from the f.tell(), or zero. Any other offset value produces\nundefined behaviour.\n\nFile objects have some additional methods, such as isatty() and\ntruncate() which are less frequently used; consult the Library\nReference for a complete guide to file objects.\n\n7.2.2. Saving structured data with json\n\nStrings can easily be written to and read from a file.  Numbers take a bit more\neffort, since the read() method only returns strings, which will have to\nbe passed to a function like int(), which takes a string like '123'\nand returns its numeric value 123.  When you want to save more complex data\ntypes like nested lists and dictionaries, parsing and serializing by hand\nbecomes complicated.\n\nRather than having users constantly writing and debugging code to save\ncomplicated data types to files, Python allows you to use the popular data\ninterchange format called JSON (JavaScript Object Notation).  The standard module called json can take Python\ndata hierarchies, and convert them to string representations; this process is\ncalled serializing.  Reconstructing the data from the string representation\nis called deserializing.  Between serializing and deserializing, the\nstring representing the object may have been stored in a file or data, or\nsent over a network connection to some distant machine.\n\nNote\n\nThe JSON format is commonly used by modern applications to allow for data\nexchange.  Many programmers are already familiar with it, which makes\nit a good choice for interoperability.\n\nIf you have an object x, you can view its JSON string representation with a\nsimple line of code:\n\n>>> import json\n>>> x = [1, 'simple', 'list']\n>>> json.dumps(x)\n'[1, \"simple\", \"list\"]'\n\nAnother variant of the dumps() function, called dump(),\nsimply serializes the object to a text file.  So if f is a\ntext file object opened for writing, we can do this:\n\njson.dump(x, f)\n\nTo decode the object again, if f is a binary file or\ntext file object which has been opened for reading:\n\nx = json.load(f)\n\nNote\n\nJSON files must be encoded in UTF-8. Use encoding=\"utf-8\" when opening\nJSON file as a text file for both of reading and writing.\n\nThis simple serialization technique can handle lists and dictionaries, but\nserializing arbitrary class instances in JSON requires a bit of extra effort.\nThe reference for the json module contains an explanation of this.\n\nSee also\n\npickle - the pickle module\n\nContrary to JSON, pickle is a protocol which allows\nthe serialization of arbitrarily complex Python objects.  As such, it is\nspecific to Python and cannot be used to communicate with applications\nwritten in other languages.  It is also insecure by default:\ndeserializing pickle data coming from an untrusted source can execute\narbitrary code, if the data was crafted by a skilled attacker.",
+        "hash": "a6e8a2e340fefe717ac192074d39b9bf885430d3cfd83d87e66a4cb2b184de34"
+      },
+      {
+        "id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+        "kind": "material",
+        "text": "7.2. Reading and Writing Files\n\nopen() returns a file object, and is most commonly used with\ntwo positional arguments and one keyword argument:\nopen(filename, mode, encoding=None)\n\n>>> f = open('workfile', 'w', encoding=\"utf-8\")\n\nThe first argument is a string containing the filename.  The second argument is\nanother string containing a few characters describing the way in which the file\nwill be used.  mode can be 'r' when the file will only be read, 'w'\nfor only writing (an existing file with the same name will be erased), and\n'a' opens the file for appending; any data written to the file is\nautomatically added to the end.  'r+' opens the file for both reading and\nwriting. The mode argument is optional; 'r' will be assumed if it’s\nomitted.\n\nNormally, files are opened in text mode, that means, you read and write\nstrings from and to the file, which are encoded in a specific encoding.\nIf encoding is not specified, the default is platform dependent\n(see open()).\nBecause UTF-8 is the modern de-facto standard, encoding=\"utf-8\" is\nrecommended unless you know that you need to use a different encoding.\nAppending a 'b' to the mode opens the file in binary mode.\nBinary mode data is read and written as bytes objects.\nYou can not specify encoding when opening file in binary mode.\n\nIn text mode, the default when reading is to convert platform-specific line\nendings (\\n on Unix, \\r\\n on Windows) to just \\n.  When writing in\ntext mode, the default is to convert occurrences of \\n back to\nplatform-specific line endings.  This behind-the-scenes modification\nto file data is fine for text files, but will corrupt binary data like that in\nJPEG or EXE files.  Be very careful to use binary mode when\nreading and writing such files.\n\nIt is good practice to use the with keyword when dealing\nwith file objects.  The advantage is that the file is properly closed\nafter its suite finishes, even if an exception is raised at some\npoint.  Using with is also much shorter than writing\nequivalent try-finally blocks:\n\n>>> with open('workfile', encoding=\"utf-8\") as f:\n...     read_data = f.read()\n\n>>> # We can check that the file has been automatically closed.\n>>> f.closed\nTrue\n\nIf you’re not using the with keyword, then you should call\nf.close() to close the file and immediately free up any system\nresources used by it.\n\nWarning\n\nCalling f.write() without using the with keyword or calling\nf.close() might result in the arguments\nof f.write() not being completely written to the disk, even if the\nprogram exits successfully.\n\nAfter a file object is closed, either by a with statement\nor by calling f.close(), attempts to use the file object will\nautomatically fail.\n\n>>> f.close()\n>>> f.read()\nTraceback (most recent call last):\n  File \"<stdin>\", line 1, in <module>\nValueError: I/O operation on closed file.\n\n7.2.1. Methods of File Objects\n\nThe rest of the examples in this section will assume that a file object called\nf has already been created.\n\nTo read a file’s contents, call f.read(size), which reads some quantity of\ndata and returns it as a string (in text mode) or bytes object (in binary mode).\nsize is an optional numeric argument.  When size is omitted or negative, the\nentire contents of the file will be read and returned; it’s your problem if the\nfile is twice as large as your machine’s memory. Otherwise, at most size\ncharacters (in text mode) or size bytes (in binary mode) are read and returned.\nIf the end of the file has been reached, f.read() will return an empty\nstring ('').\n\n>>> f.read()\n'This is the entire file.\\n'\n>>> f.read()\n''\n\nf.readline() reads a single line from the file; a newline character (\\n)\nis left at the end of the string, and is only omitted on the last line of the\nfile if the file doesn’t end in a newline.  This makes the return value\nunambiguous; if f.readline() returns an empty string, the end of the file\nhas been reached, while a blank line is represented by '\\n', a string\ncontaining only a single newline.\n\n>>> f.readline()\n'This is the first li",
+        "title": "文本文件读写",
+        "origin": "https://docs.python.org/3.12/tutorial/inputoutput.html#reading-and-writing-files",
+        "provenance": "author_material",
+        "permission": false,
+        "version": 1,
+        "hash": "6cad27a2c66c57779e29d3e8ecfea14954a12b2a99ca54c6d84928cf3047bb19",
+        "collected_at": 1791355315.740798
+      },
+      {
+        "id": "8963ea90-84e6-4a84-a562-25a724275c6c",
+        "kind": "material",
+        "text": "ne of the file.\\n'\n>>> f.readline()\n'Second line of the file\\n'\n>>> f.readline()\n''\n\nFor reading lines from a file, you can loop over the file object. This is memory\nefficient, fast, and leads to simple code:\n\n>>> for line in f:\n...     print(line, end='')\n...\nThis is the first line of the file.\nSecond line of the file\n\nIf you want to read all the lines of a file in a list you can also use\nlist(f) or f.readlines().\n\nf.write(string) writes the contents of string to the file, returning\nthe number of characters written.\n\n>>> f.write('This is a test\\n')\n15\n\nOther types of objects need to be converted – either to a string (in text mode)\nor a bytes object (in binary mode) – before writing them:\n\n>>> value = ('the answer', 42)\n>>> s = str(value)  # convert the tuple to string\n>>> f.write(s)\n18\n\nf.tell() returns an integer giving the file object’s current position in the file\nrepresented as number of bytes from the beginning of the file when in binary mode and\nan opaque number when in text mode.\n\nTo change the file object’s position, use f.seek(offset, whence).  The position is computed\nfrom adding offset to a reference point; the reference point is selected by\nthe whence argument.  A whence value of 0 measures from the beginning\nof the file, 1 uses the current file position, and 2 uses the end of the file as\nthe reference point.  whence can be omitted and defaults to 0, using the\nbeginning of the file as the reference point.\n\n>>> f = open('workfile', 'rb+')\n>>> f.write(b'0123456789abcdef')\n16\n>>> f.seek(5)      # Go to the 6th byte in the file\n5\n>>> f.read(1)\nb'5'\n>>> f.seek(-3, 2)  # Go to the 3rd byte before the end\n13\n>>> f.read(1)\nb'd'\n\nIn text files (those opened without a b in the mode string), only seeks\nrelative to the beginning of the file are allowed (the exception being seeking\nto the very file end with seek(0, 2)) and the only valid offset values are\nthose returned from the f.tell(), or zero. Any other offset value produces\nundefined behaviour.\n\nFile objects have some additional methods, such as isatty() and\ntruncate() which are less frequently used; consult the Library\nReference for a complete guide to file objects.\n\n7.2.2. Saving structured data with json\n\nStrings can easily be written to and read from a file.  Numbers take a bit more\neffort, since the read() method only returns strings, which will have to\nbe passed to a function like int(), which takes a string like '123'\nand returns its numeric value 123.  When you want to save more complex data\ntypes like nested lists and dictionaries, parsing and serializing by hand\nbecomes complicated.\n\nRather than having users constantly writing and debugging code to save\ncomplicated data types to files, Python allows you to use the popular data\ninterchange format called JSON (JavaScript Object Notation).  The standard module called json can take Python\ndata hierarchies, and convert them to string representations; this process is\ncalled serializing.  Reconstructing the data from the string representation\nis called deserializing.  Between serializing and deserializing, the\nstring representing the object may have been stored in a file or data, or\nsent over a network connection to some distant machine.\n\nNote\n\nThe JSON format is commonly used by modern applications to allow for data\nexchange.  Many programmers are already familiar with it, which makes\nit a good choice for interoperability.\n\nIf you have an object x, you can view its JSON string representation with a\nsimple line of code:\n\n>>> import json\n>>> x = [1, 'simple', 'list']\n>>> json.dumps(x)\n'[1, \"simple\", \"list\"]'\n\nAnother variant of the dumps() function, called dump(),\nsimply serializes the object to a text file.  So if f is a\ntext file object opened for writing, we can do this:\n\njson.dump(x, f)\n\nTo decode the object again, if f is a binary file or\ntext file object which has been opened for reading:\n\nx = json.load(f)\n\nNote\n\nJSON files must be encoded in UTF-8. Use encoding=\"utf-8\" when opening\nJSON file as a text file for bo",
+        "title": "文本文件读写",
+        "origin": "https://docs.python.org/3.12/tutorial/inputoutput.html#reading-and-writing-files",
+        "provenance": "author_material",
+        "permission": false,
+        "version": 1,
+        "hash": "cd6865ad6f046c8948f76890029dc0a3c248806227ea75233d7275fdb86fd425",
+        "collected_at": 1791355315.7408261
+      },
+      {
+        "id": "9d17d9a4-b90a-46b6-8eee-bf765fa79e7f",
+        "kind": "material",
+        "text": "th of reading and writing.\n\nThis simple serialization technique can handle lists and dictionaries, but\nserializing arbitrary class instances in JSON requires a bit of extra effort.\nThe reference for the json module contains an explanation of this.\n\nSee also\n\npickle - the pickle module\n\nContrary to JSON, pickle is a protocol which allows\nthe serialization of arbitrarily complex Python objects.  As such, it is\nspecific to Python and cannot be used to communicate with applications\nwritten in other languages.  It is also insecure by default:\ndeserializing pickle data coming from an untrusted source can execute\narbitrary code, if the data was crafted by a skilled attacker.",
+        "title": "文本文件读写",
+        "origin": "https://docs.python.org/3.12/tutorial/inputoutput.html#reading-and-writing-files",
+        "provenance": "author_material",
+        "permission": false,
+        "version": 1,
+        "hash": "60393349a79a5c2584dc75e169a0b21de3a930b186f079bdfdcd0848ca2c559a",
+        "collected_at": 1791355315.740837
+      }
+    ]
+  },
+  "final_report": {
+    "id": "fd8267cf-bdf9-47f3-8796-45e4286c0205",
+    "batch_id": "97f01b27-926a-4ba9-bdf5-127a14096946",
+    "draft_id": "41907ab9-ba2b-4548-92b5-5cfe432f64c6",
+    "draft_hash": "a6e8a2e340fefe717ac192074d39b9bf885430d3cfd83d87e66a4cb2b184de34",
+    "condition_set_id": "f20b3084-39ad-44c7-9177-a1a8be20046f",
+    "condition_hash": "cf70cf1740d4c90198fb975411d6c36f76c683d93b71cfcf15cbb2a20ca045a6",
+    "material_hash": "c4d3e5289e98f116d4bf551bc603b86604732274b2f08f8cf2fc6ca0892c0a3c",
+    "results": [
+      {
+        "condition_id": "ff484c34-774b-4969-af63-349d28b54a75",
+        "status": "pass",
+        "reason": "阅读答案与材料一致：'a' 模式用于追加并自动加到末尾；'w' 打开仅用于写入且会清空已有同名文件；推荐 encoding=\"utf-8\"。",
+        "citations": [
+          {
+            "source_id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+            "quote": "'a' opens the file for appending; any data written to the file is\nautomatically added to the end."
+          },
+          {
+            "source_id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+            "quote": "'w'\nfor only writing (an existing file with the same name will be erased)"
+          },
+          {
+            "source_id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+            "quote": "encoding=\"utf-8\" is\nrecommended unless you know that you need to use a different encoding."
+          }
+        ],
+        "reading": {
+          "condition_id": "ff484c34-774b-4969-af63-349d28b54a75",
+          "status": "pass",
+          "answer": "追加模式为 'a'，UTF-8 写法为 encoding=\"utf-8\"；与 'w' 模式的差异是 'w' 会清空已有同名文件，而 'a' 在文件末尾追加数据。",
+          "excerpt": "'a' opens the file for appending; any data written to the file is\nautomatically added to the end.",
+          "reason": "稿件明确说明 'a' 为追加模式、在末尾自动添加数据，并说明 'w' 会清空已有文件，且推荐 encoding=\"utf-8\"。"
+        }
+      },
+      {
+        "condition_id": "4d6f87de-d597-4550-bdd1-4386564efe00",
+        "status": "pass",
+        "reason": "阅读答案与材料一致：with 确保套件结束后正确关闭文件，即使抛出异常；也比 try-finally 更短。",
+        "citations": [
+          {
+            "source_id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+            "quote": "The advantage is that the file is properly closed\nafter its suite finishes, even if an exception is raised at some\npoint."
+          },
+          {
+            "source_id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+            "quote": "Using with is also much shorter than writing\nequivalent try-finally blocks:"
+          }
+        ],
+        "reading": {
+          "condition_id": "4d6f87de-d597-4550-bdd1-4386564efe00",
+          "status": "pass",
+          "answer": "使用 with 可确保文件在代码块结束后正确关闭，即使发生异常也会关闭；同时比写 try-finally 更简短。",
+          "excerpt": "It is good practice to use the with keyword when dealing\nwith file objects.  The advantage is that the file is properly closed\nafter its suite finishes, even if an exception is raised at some\npoint.",
+          "reason": "稿件明确指出使用 with 的优点：with 代码块结束后文件会被正确关闭，即使抛出异常；并说明比 try-finally 更短。"
+        }
+      },
+      {
+        "condition_id": "075c4e8b-a0b2-4697-87e6-be0920f9061e",
+        "status": "pass",
+        "reason": "阅读答案与材料一致：readline 返回空字符串表示到达文件末尾；仅换行用 '\\n' 表示空行。",
+        "citations": [
+          {
+            "source_id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+            "quote": "if f.readline() returns an empty string, the end of the file\nhas been reached, while a blank line is represented by '\\n', a string\ncontaining only a single newline."
+          }
+        ],
+        "reading": {
+          "condition_id": "075c4e8b-a0b2-4697-87e6-be0920f9061e",
+          "status": "pass",
+          "answer": "readline 返回空字符串表示已到达文件末尾；返回仅包含单个换行符的字符串 '\\n' 表示读取到的是空行。",
+          "excerpt": "if f.readline() returns an empty string, the end of the file\nhas been reached, while a blank line is represented by '\\n', a string\ncontaining only a single newline.",
+          "reason": "稿件明确区分了空字符串表示文件结束、'\\n' 表示空行。"
+        }
+      },
+      {
+        "condition_id": "0d5c220f-dae3-40ca-86e7-ed085f957642",
+        "status": "pass",
+        "reason": "阅读答案与材料一致：逐行读取大文件方案为对文件对象循环，内存高效；read() 无 size 会读取整个文件，文件过大由使用者负责。",
+        "citations": [
+          {
+            "source_id": "8963ea90-84e6-4a84-a562-25a724275c6c",
+            "quote": "For reading lines from a file, you can loop over the file object. This is memory\nefficient, fast, and leads to simple code:"
+          },
+          {
+            "source_id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+            "quote": "When size is omitted or negative, the\nentire contents of the file will be read and returned; it’s your problem if the\nfile is twice as large as your machine’s memory."
+          }
+        ],
+        "reading": {
+          "condition_id": "0d5c220f-dae3-40ca-86e7-ed085f957642",
+          "status": "pass",
+          "answer": "逐行读取大文件方案是直接对文件对象进行 for 循环；与 read() 无 size 的差别是 for 循环内存高效，而 read() 无 size 会读取并返回整个文件内容，文件过大时可能耗尽内存。",
+          "excerpt": "For reading lines from a file, you can loop over the file object. This is memory\nefficient, fast, and leads to simple code:",
+          "reason": "稿件明确写出对文件对象循环可内存高效地逐行读取；并说明 read() 省略 size 或为负时会读取整个文件，文件过大是使用者自己的问题。"
+        }
+      },
+      {
+        "condition_id": "5d058a5e-682c-4d55-97d9-ec1bd584532a",
+        "status": "pass",
+        "reason": "阅读答案与材料一致：JPEG 应使用二进制模式；二进制模式读写 bytes 对象；二进制模式打开时不能指定 encoding。",
+        "citations": [
+          {
+            "source_id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+            "quote": "Appending a 'b' to the mode opens the file in binary mode.\nBinary mode data is read and written as bytes objects.\nYou can not specify encoding when opening file in binary mode."
+          },
+          {
+            "source_id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+            "quote": "will corrupt binary data like that in\nJPEG or EXE files.  Be very careful to use binary mode when\nreading and writing such files."
+          }
+        ],
+        "reading": {
+          "condition_id": "5d058a5e-682c-4d55-97d9-ec1bd584532a",
+          "status": "pass",
+          "answer": "复制 JPEG 应使用二进制模式（在模式中加 'b'）；二进制模式下数据以 bytes 对象读写；二进制模式打开文件时不能指定 encoding。",
+          "excerpt": "Appending a 'b' to the mode opens the file in binary mode.\nBinary mode data is read and written as bytes objects.\nYou can not specify encoding when opening file in binary mode.",
+          "reason": "稿件明确说明二进制模式的写法、数据类型为 bytes，以及二进制模式下不能指定 encoding；并指出文本模式会损坏 JPEG 等二进制数据，应使用二进制模式。"
+        }
+      }
+    ],
+    "new_issues": [],
+    "mode": "live",
+    "created_at": 1791355325.49398,
+    "model_policy": {
+      "version": "56cb27ab6fbf778239c193adfb5bcc084ca534730fef852bc02b83a150695d18",
+      "routes": {
+        "wt_conditions": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_read": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_verify": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_patch": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        }
+      },
+      "prompt_version": "windtunnel.v1"
+    },
+    "sources": [
+      {
+        "id": "41907ab9-ba2b-4548-92b5-5cfe432f64c6",
+        "source_id": "41907ab9-ba2b-4548-92b5-5cfe432f64c6",
+        "kind": "draft",
+        "text": "7.2. Reading and Writing Files\n\nopen() returns a file object, and is most commonly used with\ntwo positional arguments and one keyword argument:\nopen(filename, mode, encoding=None)\n\n>>> f = open('workfile', 'w', encoding=\"utf-8\")\n\nThe first argument is a string containing the filename.  The second argument is\nanother string containing a few characters describing the way in which the file\nwill be used.  mode can be 'r' when the file will only be read, 'w'\nfor only writing (an existing file with the same name will be erased), and\n'a' opens the file for appending; any data written to the file is\nautomatically added to the end.  'r+' opens the file for both reading and\nwriting. The mode argument is optional; 'r' will be assumed if it’s\nomitted.\n\nNormally, files are opened in text mode, that means, you read and write\nstrings from and to the file, which are encoded in a specific encoding.\nIf encoding is not specified, the default is platform dependent\n(see open()).\nBecause UTF-8 is the modern de-facto standard, encoding=\"utf-8\" is\nrecommended unless you know that you need to use a different encoding.\nAppending a 'b' to the mode opens the file in binary mode.\nBinary mode data is read and written as bytes objects.\nYou can not specify encoding when opening file in binary mode.\n\nIn text mode, the default when reading is to convert platform-specific line\nendings (\\n on Unix, \\r\\n on Windows) to just \\n.  When writing in\ntext mode, the default is to convert occurrences of \\n back to\nplatform-specific line endings.  This behind-the-scenes modification\nto file data is fine for text files, but will corrupt binary data like that in\nJPEG or EXE files.  Be very careful to use binary mode when\nreading and writing such files.\n\nIt is good practice to use the with keyword when dealing\nwith file objects.  The advantage is that the file is properly closed\nafter its suite finishes, even if an exception is raised at some\npoint.  Using with is also much shorter than writing\nequivalent try-finally blocks:\n\n>>> with open('workfile', encoding=\"utf-8\") as f:\n...     read_data = f.read()\n\n>>> # We can check that the file has been automatically closed.\n>>> f.closed\nTrue\n\nIf you’re not using the with keyword, then you should call\nf.close() to close the file and immediately free up any system\nresources used by it.\n\nWarning\n\nCalling f.write() without using the with keyword or calling\nf.close() might result in the arguments\nof f.write() not being completely written to the disk, even if the\nprogram exits successfully.\n\nAfter a file object is closed, either by a with statement\nor by calling f.close(), attempts to use the file object will\nautomatically fail.\n\n>>> f.close()\n>>> f.read()\nTraceback (most recent call last):\n  File \"<stdin>\", line 1, in <module>\nValueError: I/O operation on closed file.\n\n7.2.1. Methods of File Objects\n\nThe rest of the examples in this section will assume that a file object called\nf has already been created.\n\nTo read a file’s contents, call f.read(size), which reads some quantity of\ndata and returns it as a string (in text mode) or bytes object (in binary mode).\nsize is an optional numeric argument.  When size is omitted or negative, the\nentire contents of the file will be read and returned; it’s your problem if the\nfile is twice as large as your machine’s memory. Otherwise, at most size\ncharacters (in text mode) or size bytes (in binary mode) are read and returned.\nIf the end of the file has been reached, f.read() will return an empty\nstring ('').\n\n>>> f.read()\n'This is the entire file.\\n'\n>>> f.read()\n''\n\nf.readline() reads a single line from the file; a newline character (\\n)\nis left at the end of the string, and is only omitted on the last line of the\nfile if the file doesn’t end in a newline.  This makes the return value\nunambiguous; if f.readline() returns an empty string, the end of the file\nhas been reached, while a blank line is represented by '\\n', a string\ncontaining only a single newline.\n\n>>> f.readline()\n'This is the first line of the file.\\n'\n>>> f.readline()\n'Second line of the file\\n'\n>>> f.readline()\n''\n\nFor reading lines from a file, you can loop over the file object. This is memory\nefficient, fast, and leads to simple code:\n\n>>> for line in f:\n...     print(line, end='')\n...\nThis is the first line of the file.\nSecond line of the file\n\nIf you want to read all the lines of a file in a list you can also use\nlist(f) or f.readlines().\n\nf.write(string) writes the contents of string to the file, returning\nthe number of characters written.\n\n>>> f.write('This is a test\\n')\n15\n\nOther types of objects need to be converted – either to a string (in text mode)\nor a bytes object (in binary mode) – before writing them:\n\n>>> value = ('the answer', 42)\n>>> s = str(value)  # convert the tuple to string\n>>> f.write(s)\n18\n\nf.tell() returns an integer giving the file object’s current position in the file\nrepresented as number of bytes from the beginning of the file when in binary mode and\nan opaque number when in text mode.\n\nTo change the file object’s position, use f.seek(offset, whence).  The position is computed\nfrom adding offset to a reference point; the reference point is selected by\nthe whence argument.  A whence value of 0 measures from the beginning\nof the file, 1 uses the current file position, and 2 uses the end of the file as\nthe reference point.  whence can be omitted and defaults to 0, using the\nbeginning of the file as the reference point.\n\n>>> f = open('workfile', 'rb+')\n>>> f.write(b'0123456789abcdef')\n16\n>>> f.seek(5)      # Go to the 6th byte in the file\n5\n>>> f.read(1)\nb'5'\n>>> f.seek(-3, 2)  # Go to the 3rd byte before the end\n13\n>>> f.read(1)\nb'd'\n\nIn text files (those opened without a b in the mode string), only seeks\nrelative to the beginning of the file are allowed (the exception being seeking\nto the very file end with seek(0, 2)) and the only valid offset values are\nthose returned from the f.tell(), or zero. Any other offset value produces\nundefined behaviour.\n\nFile objects have some additional methods, such as isatty() and\ntruncate() which are less frequently used; consult the Library\nReference for a complete guide to file objects.\n\n7.2.2. Saving structured data with json\n\nStrings can easily be written to and read from a file.  Numbers take a bit more\neffort, since the read() method only returns strings, which will have to\nbe passed to a function like int(), which takes a string like '123'\nand returns its numeric value 123.  When you want to save more complex data\ntypes like nested lists and dictionaries, parsing and serializing by hand\nbecomes complicated.\n\nRather than having users constantly writing and debugging code to save\ncomplicated data types to files, Python allows you to use the popular data\ninterchange format called JSON (JavaScript Object Notation).  The standard module called json can take Python\ndata hierarchies, and convert them to string representations; this process is\ncalled serializing.  Reconstructing the data from the string representation\nis called deserializing.  Between serializing and deserializing, the\nstring representing the object may have been stored in a file or data, or\nsent over a network connection to some distant machine.\n\nNote\n\nThe JSON format is commonly used by modern applications to allow for data\nexchange.  Many programmers are already familiar with it, which makes\nit a good choice for interoperability.\n\nIf you have an object x, you can view its JSON string representation with a\nsimple line of code:\n\n>>> import json\n>>> x = [1, 'simple', 'list']\n>>> json.dumps(x)\n'[1, \"simple\", \"list\"]'\n\nAnother variant of the dumps() function, called dump(),\nsimply serializes the object to a text file.  So if f is a\ntext file object opened for writing, we can do this:\n\njson.dump(x, f)\n\nTo decode the object again, if f is a binary file or\ntext file object which has been opened for reading:\n\nx = json.load(f)\n\nNote\n\nJSON files must be encoded in UTF-8. Use encoding=\"utf-8\" when opening\nJSON file as a text file for both of reading and writing.\n\nThis simple serialization technique can handle lists and dictionaries, but\nserializing arbitrary class instances in JSON requires a bit of extra effort.\nThe reference for the json module contains an explanation of this.\n\nSee also\n\npickle - the pickle module\n\nContrary to JSON, pickle is a protocol which allows\nthe serialization of arbitrarily complex Python objects.  As such, it is\nspecific to Python and cannot be used to communicate with applications\nwritten in other languages.  It is also insecure by default:\ndeserializing pickle data coming from an untrusted source can execute\narbitrary code, if the data was crafted by a skilled attacker.",
+        "hash": "a6e8a2e340fefe717ac192074d39b9bf885430d3cfd83d87e66a4cb2b184de34"
+      },
+      {
+        "id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+        "kind": "material",
+        "text": "7.2. Reading and Writing Files\n\nopen() returns a file object, and is most commonly used with\ntwo positional arguments and one keyword argument:\nopen(filename, mode, encoding=None)\n\n>>> f = open('workfile', 'w', encoding=\"utf-8\")\n\nThe first argument is a string containing the filename.  The second argument is\nanother string containing a few characters describing the way in which the file\nwill be used.  mode can be 'r' when the file will only be read, 'w'\nfor only writing (an existing file with the same name will be erased), and\n'a' opens the file for appending; any data written to the file is\nautomatically added to the end.  'r+' opens the file for both reading and\nwriting. The mode argument is optional; 'r' will be assumed if it’s\nomitted.\n\nNormally, files are opened in text mode, that means, you read and write\nstrings from and to the file, which are encoded in a specific encoding.\nIf encoding is not specified, the default is platform dependent\n(see open()).\nBecause UTF-8 is the modern de-facto standard, encoding=\"utf-8\" is\nrecommended unless you know that you need to use a different encoding.\nAppending a 'b' to the mode opens the file in binary mode.\nBinary mode data is read and written as bytes objects.\nYou can not specify encoding when opening file in binary mode.\n\nIn text mode, the default when reading is to convert platform-specific line\nendings (\\n on Unix, \\r\\n on Windows) to just \\n.  When writing in\ntext mode, the default is to convert occurrences of \\n back to\nplatform-specific line endings.  This behind-the-scenes modification\nto file data is fine for text files, but will corrupt binary data like that in\nJPEG or EXE files.  Be very careful to use binary mode when\nreading and writing such files.\n\nIt is good practice to use the with keyword when dealing\nwith file objects.  The advantage is that the file is properly closed\nafter its suite finishes, even if an exception is raised at some\npoint.  Using with is also much shorter than writing\nequivalent try-finally blocks:\n\n>>> with open('workfile', encoding=\"utf-8\") as f:\n...     read_data = f.read()\n\n>>> # We can check that the file has been automatically closed.\n>>> f.closed\nTrue\n\nIf you’re not using the with keyword, then you should call\nf.close() to close the file and immediately free up any system\nresources used by it.\n\nWarning\n\nCalling f.write() without using the with keyword or calling\nf.close() might result in the arguments\nof f.write() not being completely written to the disk, even if the\nprogram exits successfully.\n\nAfter a file object is closed, either by a with statement\nor by calling f.close(), attempts to use the file object will\nautomatically fail.\n\n>>> f.close()\n>>> f.read()\nTraceback (most recent call last):\n  File \"<stdin>\", line 1, in <module>\nValueError: I/O operation on closed file.\n\n7.2.1. Methods of File Objects\n\nThe rest of the examples in this section will assume that a file object called\nf has already been created.\n\nTo read a file’s contents, call f.read(size), which reads some quantity of\ndata and returns it as a string (in text mode) or bytes object (in binary mode).\nsize is an optional numeric argument.  When size is omitted or negative, the\nentire contents of the file will be read and returned; it’s your problem if the\nfile is twice as large as your machine’s memory. Otherwise, at most size\ncharacters (in text mode) or size bytes (in binary mode) are read and returned.\nIf the end of the file has been reached, f.read() will return an empty\nstring ('').\n\n>>> f.read()\n'This is the entire file.\\n'\n>>> f.read()\n''\n\nf.readline() reads a single line from the file; a newline character (\\n)\nis left at the end of the string, and is only omitted on the last line of the\nfile if the file doesn’t end in a newline.  This makes the return value\nunambiguous; if f.readline() returns an empty string, the end of the file\nhas been reached, while a blank line is represented by '\\n', a string\ncontaining only a single newline.\n\n>>> f.readline()\n'This is the first li",
+        "title": "文本文件读写",
+        "origin": "https://docs.python.org/3.12/tutorial/inputoutput.html#reading-and-writing-files",
+        "provenance": "author_material",
+        "permission": false,
+        "version": 1,
+        "hash": "6cad27a2c66c57779e29d3e8ecfea14954a12b2a99ca54c6d84928cf3047bb19",
+        "collected_at": 1791355315.740798
+      },
+      {
+        "id": "8963ea90-84e6-4a84-a562-25a724275c6c",
+        "kind": "material",
+        "text": "ne of the file.\\n'\n>>> f.readline()\n'Second line of the file\\n'\n>>> f.readline()\n''\n\nFor reading lines from a file, you can loop over the file object. This is memory\nefficient, fast, and leads to simple code:\n\n>>> for line in f:\n...     print(line, end='')\n...\nThis is the first line of the file.\nSecond line of the file\n\nIf you want to read all the lines of a file in a list you can also use\nlist(f) or f.readlines().\n\nf.write(string) writes the contents of string to the file, returning\nthe number of characters written.\n\n>>> f.write('This is a test\\n')\n15\n\nOther types of objects need to be converted – either to a string (in text mode)\nor a bytes object (in binary mode) – before writing them:\n\n>>> value = ('the answer', 42)\n>>> s = str(value)  # convert the tuple to string\n>>> f.write(s)\n18\n\nf.tell() returns an integer giving the file object’s current position in the file\nrepresented as number of bytes from the beginning of the file when in binary mode and\nan opaque number when in text mode.\n\nTo change the file object’s position, use f.seek(offset, whence).  The position is computed\nfrom adding offset to a reference point; the reference point is selected by\nthe whence argument.  A whence value of 0 measures from the beginning\nof the file, 1 uses the current file position, and 2 uses the end of the file as\nthe reference point.  whence can be omitted and defaults to 0, using the\nbeginning of the file as the reference point.\n\n>>> f = open('workfile', 'rb+')\n>>> f.write(b'0123456789abcdef')\n16\n>>> f.seek(5)      # Go to the 6th byte in the file\n5\n>>> f.read(1)\nb'5'\n>>> f.seek(-3, 2)  # Go to the 3rd byte before the end\n13\n>>> f.read(1)\nb'd'\n\nIn text files (those opened without a b in the mode string), only seeks\nrelative to the beginning of the file are allowed (the exception being seeking\nto the very file end with seek(0, 2)) and the only valid offset values are\nthose returned from the f.tell(), or zero. Any other offset value produces\nundefined behaviour.\n\nFile objects have some additional methods, such as isatty() and\ntruncate() which are less frequently used; consult the Library\nReference for a complete guide to file objects.\n\n7.2.2. Saving structured data with json\n\nStrings can easily be written to and read from a file.  Numbers take a bit more\neffort, since the read() method only returns strings, which will have to\nbe passed to a function like int(), which takes a string like '123'\nand returns its numeric value 123.  When you want to save more complex data\ntypes like nested lists and dictionaries, parsing and serializing by hand\nbecomes complicated.\n\nRather than having users constantly writing and debugging code to save\ncomplicated data types to files, Python allows you to use the popular data\ninterchange format called JSON (JavaScript Object Notation).  The standard module called json can take Python\ndata hierarchies, and convert them to string representations; this process is\ncalled serializing.  Reconstructing the data from the string representation\nis called deserializing.  Between serializing and deserializing, the\nstring representing the object may have been stored in a file or data, or\nsent over a network connection to some distant machine.\n\nNote\n\nThe JSON format is commonly used by modern applications to allow for data\nexchange.  Many programmers are already familiar with it, which makes\nit a good choice for interoperability.\n\nIf you have an object x, you can view its JSON string representation with a\nsimple line of code:\n\n>>> import json\n>>> x = [1, 'simple', 'list']\n>>> json.dumps(x)\n'[1, \"simple\", \"list\"]'\n\nAnother variant of the dumps() function, called dump(),\nsimply serializes the object to a text file.  So if f is a\ntext file object opened for writing, we can do this:\n\njson.dump(x, f)\n\nTo decode the object again, if f is a binary file or\ntext file object which has been opened for reading:\n\nx = json.load(f)\n\nNote\n\nJSON files must be encoded in UTF-8. Use encoding=\"utf-8\" when opening\nJSON file as a text file for bo",
+        "title": "文本文件读写",
+        "origin": "https://docs.python.org/3.12/tutorial/inputoutput.html#reading-and-writing-files",
+        "provenance": "author_material",
+        "permission": false,
+        "version": 1,
+        "hash": "cd6865ad6f046c8948f76890029dc0a3c248806227ea75233d7275fdb86fd425",
+        "collected_at": 1791355315.7408261
+      },
+      {
+        "id": "9d17d9a4-b90a-46b6-8eee-bf765fa79e7f",
+        "kind": "material",
+        "text": "th of reading and writing.\n\nThis simple serialization technique can handle lists and dictionaries, but\nserializing arbitrary class instances in JSON requires a bit of extra effort.\nThe reference for the json module contains an explanation of this.\n\nSee also\n\npickle - the pickle module\n\nContrary to JSON, pickle is a protocol which allows\nthe serialization of arbitrarily complex Python objects.  As such, it is\nspecific to Python and cannot be used to communicate with applications\nwritten in other languages.  It is also insecure by default:\ndeserializing pickle data coming from an untrusted source can execute\narbitrary code, if the data was crafted by a skilled attacker.",
+        "title": "文本文件读写",
+        "origin": "https://docs.python.org/3.12/tutorial/inputoutput.html#reading-and-writing-files",
+        "provenance": "author_material",
+        "permission": false,
+        "version": 1,
+        "hash": "60393349a79a5c2584dc75e169a0b21de3a930b186f079bdfdcd0848ca2c559a",
+        "collected_at": 1791355315.740837
+      }
+    ]
+  },
+  "unresolved_conditions": [],
+  "effective_repair_confirmed": false,
+  "run_id": "9d4ddbd3-6198-43dd-8b9d-b12665c2da87",
+  "wall_seconds": 9.767,
+  "final_sha256": "e875cb0dface6cf1ed20c0c5c4815d684aff35321bb80bb955a771c3424226c7",
+  "changed": false,
+  "calls": [
+    {
+      "stage": "wt_conditions",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 256,
+      "output_tokens": 408,
+      "total_tokens": 664,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "conditions": [
+          {
+            "question": "稿件中用于说明“在保留原内容的基础上于末尾追加”的日志写入模式是哪一个，UTF-8编码在该模式中应如何书写？",
+            "scene": "日志文件读写方案：选择追加模式及UTF-8写法",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "稿件如何解释追加模式与 w 模式的差异，尤其是对原有文件内容的影响？",
+            "scene": "日志文件读写方案：比较追加模式与 w 模式",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "稿件中给出的使用 with 的理由是什么，为什么它适合日志文件读写场景？",
+            "scene": "日志文件读写方案：说明 with 语句的作用",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "稿件如何区分 readline 返回空串与仅返回换行符的含义，这两种情况分别代表什么？",
+            "scene": "日志文件读取：解释 readline 返回值语义",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "稿件中逐行读取大文件的方案是什么，它与不使用 size 参数的 read() 在内存占用或行为上有何差别？",
+            "scene": "大文件读取：逐行方案与 read() 对比",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "稿件说明复制 JPEG 时应使用什么文件模式、读写对象类型是什么，以及 encoding 参数在此场景下有什么限制？",
+            "scene": "二进制文件复制：模式、对象类型与 encoding 限制",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "稿件中每项说明分别位于哪些章节、示例或段落，以便同事按证据核对？",
+            "scene": "整体方案：为每项结论附稿内证据位置",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "如果同事需要在不执行代码的情况下制定该方案，稿件是否足以支撑上述每项选择与差异说明？",
+            "scene": "方案可行性：确认稿件证据是否充分",
+            "source_ids": [],
+            "origin": "author"
+          }
+        ]
+      }
+    },
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 2953,
+      "output_tokens": 843,
+      "total_tokens": 3796,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "results": [
+          {
+            "condition_id": "ff484c34-774b-4969-af63-349d28b54a75",
+            "status": "pass",
+            "answer": "追加模式为 'a'，UTF-8 写法为 encoding=\"utf-8\"；与 'w' 模式的差异是 'w' 会清空已有同名文件，而 'a' 在文件末尾追加数据。",
+            "excerpt": "'a' opens the file for appending; any data written to the file is\nautomatically added to the end.",
+            "reason": "稿件明确说明 'a' 为追加模式、在末尾自动添加数据，并说明 'w' 会清空已有文件，且推荐 encoding=\"utf-8\"。"
+          },
+          {
+            "condition_id": "4d6f87de-d597-4550-bdd1-4386564efe00",
+            "status": "pass",
+            "answer": "使用 with 可确保文件在代码块结束后正确关闭，即使发生异常也会关闭；同时比写 try-finally 更简短。",
+            "excerpt": "It is good practice to use the with keyword when dealing\nwith file objects.  The advantage is that the file is properly closed\nafter its suite finishes, even if an exception is raised at some\npoint.",
+            "reason": "稿件明确指出使用 with 的优点：with 代码块结束后文件会被正确关闭，即使抛出异常；并说明比 try-finally 更短。"
+          },
+          {
+            "condition_id": "075c4e8b-a0b2-4697-87e6-be0920f9061e",
+            "status": "pass",
+            "answer": "readline 返回空字符串表示已到达文件末尾；返回仅包含单个换行符的字符串 '\\n' 表示读取到的是空行。",
+            "excerpt": "if f.readline() returns an empty string, the end of the file\nhas been reached, while a blank line is represented by '\\n', a string\ncontaining only a single newline.",
+            "reason": "稿件明确区分了空字符串表示文件结束、'\\n' 表示空行。"
+          },
+          {
+            "condition_id": "0d5c220f-dae3-40ca-86e7-ed085f957642",
+            "status": "pass",
+            "answer": "逐行读取大文件方案是直接对文件对象进行 for 循环；与 read() 无 size 的差别是 for 循环内存高效，而 read() 无 size 会读取并返回整个文件内容，文件过大时可能耗尽内存。",
+            "excerpt": "For reading lines from a file, you can loop over the file object. This is memory\nefficient, fast, and leads to simple code:",
+            "reason": "稿件明确写出对文件对象循环可内存高效地逐行读取；并说明 read() 省略 size 或为负时会读取整个文件，文件过大是使用者自己的问题。"
+          },
+          {
+            "condition_id": "5d058a5e-682c-4d55-97d9-ec1bd584532a",
+            "status": "pass",
+            "answer": "复制 JPEG 应使用二进制模式（在模式中加 'b'）；二进制模式下数据以 bytes 对象读写；二进制模式打开文件时不能指定 encoding。",
+            "excerpt": "Appending a 'b' to the mode opens the file in binary mode.\nBinary mode data is read and written as bytes objects.\nYou can not specify encoding when opening file in binary mode.",
+            "reason": "稿件明确说明二进制模式的写法、数据类型为 bytes，以及二进制模式下不能指定 encoding；并指出文本模式会损坏 JPEG 等二进制数据，应使用二进制模式。"
+          }
+        ]
+      }
+    },
+    {
+      "stage": "wt_verify",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 6564,
+      "output_tokens": 1147,
+      "total_tokens": 7711,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "results": [
+          {
+            "condition_id": "ff484c34-774b-4969-af63-349d28b54a75",
+            "status": "pass",
+            "reason": "阅读答案与材料一致：'a' 模式用于追加并自动加到末尾；'w' 打开仅用于写入且会清空已有同名文件；推荐 encoding=\"utf-8\"。",
+            "citations": [
+              {
+                "source_id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+                "quote": "'a' opens the file for appending; any data written to the file is\nautomatically added to the end."
+              },
+              {
+                "source_id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+                "quote": "'w'\nfor only writing (an existing file with the same name will be erased)"
+              },
+              {
+                "source_id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+                "quote": "encoding=\"utf-8\" is\nrecommended unless you know that you need to use a different encoding."
+              }
+            ]
+          },
+          {
+            "condition_id": "4d6f87de-d597-4550-bdd1-4386564efe00",
+            "status": "pass",
+            "reason": "阅读答案与材料一致：with 确保套件结束后正确关闭文件，即使抛出异常；也比 try-finally 更短。",
+            "citations": [
+              {
+                "source_id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+                "quote": "The advantage is that the file is properly closed\nafter its suite finishes, even if an exception is raised at some\npoint."
+              },
+              {
+                "source_id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+                "quote": "Using with is also much shorter than writing\nequivalent try-finally blocks:"
+              }
+            ]
+          },
+          {
+            "condition_id": "075c4e8b-a0b2-4697-87e6-be0920f9061e",
+            "status": "pass",
+            "reason": "阅读答案与材料一致：readline 返回空字符串表示到达文件末尾；仅换行用 '\\n' 表示空行。",
+            "citations": [
+              {
+                "source_id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+                "quote": "if f.readline() returns an empty string, the end of the file\nhas been reached, while a blank line is represented by '\\n', a string\ncontaining only a single newline."
+              }
+            ]
+          },
+          {
+            "condition_id": "0d5c220f-dae3-40ca-86e7-ed085f957642",
+            "status": "pass",
+            "reason": "阅读答案与材料一致：逐行读取大文件方案为对文件对象循环，内存高效；read() 无 size 会读取整个文件，文件过大由使用者负责。",
+            "citations": [
+              {
+                "source_id": "8963ea90-84e6-4a84-a562-25a724275c6c",
+                "quote": "For reading lines from a file, you can loop over the file object. This is memory\nefficient, fast, and leads to simple code:"
+              },
+              {
+                "source_id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+                "quote": "When size is omitted or negative, the\nentire contents of the file will be read and returned; it’s your problem if the\nfile is twice as large as your machine’s memory."
+              }
+            ]
+          },
+          {
+            "condition_id": "5d058a5e-682c-4d55-97d9-ec1bd584532a",
+            "status": "pass",
+            "reason": "阅读答案与材料一致：JPEG 应使用二进制模式；二进制模式读写 bytes 对象；二进制模式打开时不能指定 encoding。",
+            "citations": [
+              {
+                "source_id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+                "quote": "Appending a 'b' to the mode opens the file in binary mode.\nBinary mode data is read and written as bytes objects.\nYou can not specify encoding when opening file in binary mode."
+              },
+              {
+                "source_id": "44577e3c-df56-4d74-8bb6-d0a03a67da84",
+                "quote": "will corrupt binary data like that in\nJPEG or EXE files.  Be very careful to use binary mode when\nreading and writing such files."
+              }
+            ]
+          }
+        ],
+        "new_issues": []
+      }
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 0.41024,
+    "reserved_unknown_cny": 0.04281,
+    "committed_upper_cny": 0.45305,
+    "calls": 39,
+    "unknown_calls": 1
+  }
+}

@@ -46,18 +46,37 @@ def section(path):
 
 
 class StudyRunner:
-    def __init__(self, workspace, config=None, adapter=None):
+    def __init__(self, workspace, config=None, adapter=None, *, budget_ledger=None,
+                 continue_after_unknown=False, atomic_conditions=False, revision='v1'):
         self.workspace = Path(workspace)
         self.workspace.mkdir(parents=True, exist_ok=True)
         self.config = replace(config or load_config(), run_budget_usd=1, day_budget_usd=2, routes={})
         if not self.config.ready:
             raise DomainError("KEY_REQUIRED", "真实测试需要已经配置的模型密钥")
-        self.client = BudgetedClient(adapter or DeepSeek(self.config), self.workspace / "budget.sqlite", 5)
+        if self.config.model != 'deepseek-flash':
+            raise DomainError('STUDY_BUDGET_INVALID', '研究费率仅适用于deepseek-flash')
+        self.atomic_conditions = atomic_conditions
+        self.revision = revision
+        self.continue_after_unknown = continue_after_unknown
+        self.client = BudgetedClient(adapter or DeepSeek(self.config),
+                                     budget_ledger or self.workspace / "budget.sqlite", 5,
+                                     continue_after_unknown=continue_after_unknown)
         self.store = Store(self.workspace / "study.sqlite")
         self.service = Service(self.store, self.config, allow_windtunnel_live=True)
         self.service.executor.router.adapters[("deepseek", "deepseek-flash")] = self.client
         self.tasks = {t["sample_id"]: t for t in json.loads((ROOT / "docs/windtunnel/agent_study/task_rubrics_candidate.json").read_text())["tasks"]}
         self.samples = {s["sample_id"]: s for s in json.loads((ROOT / "docs/windtunnel/public_samples/manifest.json").read_text())["samples"]}
+
+    def questions(self, task):
+        if not self.atomic_conditions:
+            return [task['task_prompt']]
+        # Split author tasks, never expose expected_answer to either editor.
+        parts = task['task_prompt'].split('；')
+        if len(parts) != 5:
+            raise ValueError('Atomic study requires five author task parts')
+        context = task['task_prompt'].split('：', 1)[0]
+        return [(part if index == 0 else context + '：' + part).split('。每项附稿内证据', 1)[0]
+                for index, part in enumerate(parts)]
 
     def persist(self, run):
         with self.store.connect() as db:
@@ -96,7 +115,9 @@ class StudyRunner:
         account = self.service.operations.read(owner)["accounts"][0]["id"]
         scene = "Python 3.12 beginner tutorial; manuscript remains English. Goal: " + task["task_prompt"]
         started, run_id = time.monotonic(), None
-        result = dict(sample_id=sample_id, method=method, participant_type="codex_proxy",
+        result = dict(sample_id=sample_id, method=method, participant_type="codex_proxy", revision=self.revision,
+                      draft_kind=sample.get('draft_kind', 'official_public_section'),
+                      adaptation=sample.get('adaptation'), deletion_design=sample.get('deletion_design'),
                       source_url=sample["source_url"], original_sha256=sha(original), material_sha256=sha(material),
                       outcome="not_started", error=None, automatic_adoption=True, human_author=False)
         final = original
@@ -126,7 +147,7 @@ class StudyRunner:
                 run = self.work(owner, run_id)
                 if run.wait_reason != "wt_confirm_conditions":
                     raise DomainError("STUDY_WORKFLOW_BLOCKED", "候选条件未完成")
-                self.action(owner, run_id, "edit_conditions", dict(conditions=[dict(question=task["task_prompt"], scene="Python tutorial; retain English manuscript", source_ids=[], origin="author")]))
+                self.action(owner, run_id, "edit_conditions", dict(conditions=[dict(question=q, scene="Python tutorial; retain English manuscript", source_ids=[], origin="author") for q in self.questions(task)]))
                 cs = wt.conditions(self.store.get(run_id, owner))
                 self.action(owner, run_id, "confirm_conditions", dict(condition_set_id=cs["id"], condition_hash=cs["hash"]))
                 run = self.work(owner, run_id)
@@ -144,6 +165,9 @@ class StudyRunner:
                         run = self.work(owner, run_id)
                     result["patch_count"] = len(items)
                 result["final_report"] = wt.current_report(run)
+                result['unresolved_conditions'] = [r['condition_id'] for r in result['final_report']['results'] if r['status'] != 'pass']
+                result['effective_repair_confirmed'] = bool(result.get('patch_count') and not result['unresolved_conditions']
+                                                          and not result['final_report']['new_issues'])
                 final = wt.draft(run)["text"]
                 self.action(owner, run_id, "finish")
                 (folder / "report.md").write_text(self.service.export(owner, run_id), encoding="utf-8")
@@ -167,22 +191,28 @@ class StudyRunner:
         for sample in ids:
             for method in ("baseline", "windtunnel"):
                 results.append(self.run_case(sample, method))
-                if self.client.summary()["unknown_calls"]:
+                if self.client.summary()["unknown_calls"] and not self.continue_after_unknown:
                     return results
         return results
 
     def freeze(self):
         target = self.workspace / "freeze.json"
-        value = dict(participant_type="codex_proxy", model=self.config.model, thinking="disabled", output_tokens_max=3000,
+        value = dict(participant_type="codex_proxy", revision=self.revision, atomic_conditions=self.atomic_conditions,
+                     continue_after_unknown=self.continue_after_unknown,
+                     model=self.config.model, thinking="disabled", output_tokens_max=3000,
                      maximum_budget_cny=5, pricing_upper_cny_per_million=dict(input=2, output=8), frozen_at=time.time(),
-                     baseline_prompt_sha256=sha(BASELINE_PROMPT), code_hashes={p:sha((ROOT/p).read_bytes()) for p in ("backend/windtunnel.py", "backend/windtunnel_runtime.py", "scripts/run_windtunnel_agent_study.py", "scripts/study_budget.py")},
+                     baseline_prompt_sha256=sha(BASELINE_PROMPT), code_hashes={p:sha((ROOT/p).read_bytes()) for p in ("backend/windtunnel.py", "backend/windtunnel_runtime.py", 'backend/provider.py', "scripts/run_windtunnel_agent_study.py", "scripts/study_budget.py")},
+                     effective_tasks_sha256=sha(json.dumps(self.tasks, ensure_ascii=False, sort_keys=True)),
+                     effective_samples_sha256=sha(json.dumps(self.samples, ensure_ascii=False, sort_keys=True)),
                      task_rubrics_sha256=sha((ROOT/"docs/windtunnel/agent_study/task_rubrics_candidate.json").read_bytes()),
                      candidate_manifest_sha256=sha((ROOT/"docs/windtunnel/public_samples/manifest.json").read_bytes()),
                      input_file_hashes={s[k]:sha((ROOT/"docs/windtunnel/public_samples"/s[k]).read_bytes()) for s in self.samples.values() for k in ("draft_path", "support_path")},
                      adoption_policy="accept all program-valid baseline manuscript / windtunnel patches; failed run preserves latest draft; no human author", human_readers=0)
+        if self.revision.endswith('.controlled'):
+            value['code_hashes']['scripts/run_windtunnel_repair_probe.py'] = sha((ROOT/'scripts/run_windtunnel_repair_probe.py').read_bytes())
         if target.exists():
             old = json.loads(target.read_text())
-            if any(old[k] != value[k] for k in ("code_hashes", "baseline_prompt_sha256", "task_rubrics_sha256", "candidate_manifest_sha256", "input_file_hashes")):
+            if any(old.get(k) != value[k] for k in ("code_hashes", "baseline_prompt_sha256", "task_rubrics_sha256", "candidate_manifest_sha256", "input_file_hashes", 'revision', 'atomic_conditions', 'continue_after_unknown', 'model', 'thinking', 'output_tokens_max', 'effective_tasks_sha256', 'effective_samples_sha256')):
                 raise ValueError("Frozen inputs changed; refusing holdout continuation")
         else:
             write_json(target, value)
@@ -226,10 +256,16 @@ def main():
     parser.add_argument("--workspace", required=True, type=Path)
     parser.add_argument("--phase", choices=("explore", "holdout", "packets"), required=True)
     parser.add_argument("--authorize-live", action="store_true")
+    parser.add_argument('--budget-ledger', type=Path, help='Reuse original cumulative budget; never reset it')
+    parser.add_argument('--continue-after-unknown', action='store_true', help='Explicitly authorize bounded unknown reservation policy')
+    parser.add_argument('--atomic-conditions', action='store_true')
+    parser.add_argument('--revision', default='v1')
     args = parser.parse_args()
     if not args.authorize_live:
         parser.error("explicit live authorization required; maximum budget 5 CNY")
-    runner = StudyRunner(args.workspace)
+    runner = StudyRunner(args.workspace, budget_ledger=args.budget_ledger,
+                         continue_after_unknown=args.continue_after_unknown,
+                         atomic_conditions=args.atomic_conditions, revision=args.revision)
     if args.phase == "explore":
         runner.run_subset(["S01", "S02", "S03"])
     elif args.phase == "holdout":

@@ -1,0 +1,57 @@
+Basic use
+
+Importing the main class:
+
+>>> from pathlib import Path
+
+Representing the current directory:
+
+>>> p = Path('.')
+
+Here p represents the current working directory.
+
+Listing subdirectories:
+
+>>> p = Path('.')
+>>> [x for x in p.iterdir() if x.is_dir()]
+[PosixPath('.hg'), PosixPath('docs'), PosixPath('dist'),
+ PosixPath('__pycache__'), PosixPath('build')]
+
+The iterdir() call yields the directory entries; the list comprehension keeps only those entries for which is_dir() is true, so the result is the subdirectories of the current directory.
+
+Listing Python source files in this directory tree:
+
+>>> list(p.glob('**/*.py'))
+[PosixPath('test_pathlib.py'), PosixPath('setup.py'),
+ PosixPath('pathlib.py'), PosixPath('docs/conf.py'),
+ PosixPath('build/lib/pathlib.py')]
+
+The pattern '**/*.py' recursively collects .py files from the directory tree, and list() turns the generator into a list.
+
+Navigating inside a directory tree:
+
+>>> p = Path('/etc')
+>>> q = p / 'init.d' / 'reboot'
+>>> q
+PosixPath('/etc/init.d/reboot')
+>>> q.resolve()
+PosixPath('/etc/rc.d/init.d/halt')
+
+Joining paths with / builds q as the path /etc/init.d/reboot. Calling q.resolve() in this example gives /etc/rc.d/init.d/halt; that resolved result depends on the machine and filesystem setup, so do not assume it is the same on every computer.
+
+Querying path properties:
+
+>>> q.exists()
+True
+>>> q.is_dir()
+False
+
+For the example path q, exists() returns True because the path exists, and is_dir() returns False because q is not a directory.
+
+Opening a file:
+
+>>> with q.open() as f: f.readline()
+...
+'#!/bin/bash\n'
+
+Using q.open() opens the file at q, and f.readline() reads its first line; in this example the first line is '#!/bin/bash\n'.

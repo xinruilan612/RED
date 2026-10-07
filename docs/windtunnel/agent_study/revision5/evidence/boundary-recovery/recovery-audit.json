@@ -1,0 +1,14 @@
+{
+  "source_case_sha256": "e1b1a0bb3f5f45523f127a012c16110611a07d3949f658f25d7e22f80e97eda1",
+  "source_run_id": "928612b3-b42a-498a-9d05-f429cb0d393e",
+  "known_patch_reused_without_new_request": true,
+  "patch_calls_in_original": 1,
+  "patch_calls_after": 1,
+  "new_recheck_requests": 2,
+  "unchanged_cases": [
+    "S06",
+    "S10"
+  ],
+  "model_router_sha256": "0ae6da2f27e98801fc0d744f46103903f157651bbc146aab441010507c07f2e7",
+  "recovery_script_sha256": "96fbb164d3954c403517df09e84b08235e82eea0b6ef28e18ecac1d97e9cf64e"
+}

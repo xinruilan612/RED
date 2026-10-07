@@ -1,0 +1,581 @@
+{
+  "sample_id": "S10",
+  "method": "windtunnel",
+  "participant_type": "codex_proxy",
+  "revision": "v5",
+  "draft_kind": "public_official_tutorial_excerpt",
+  "adaptation": "layout and attribution only; original English text",
+  "deletion_design": null,
+  "source_url": "https://docs.python.org/3.12/howto/argparse.html#introducing-optional-arguments",
+  "original_sha256": "097a75cb3cc6e2bbe535cba19ca4f53a63d7283298cae24749c47145dac0915f",
+  "material_sha256": "097a75cb3cc6e2bbe535cba19ca4f53a63d7283298cae24749c47145dac0915f",
+  "outcome": "completed",
+  "error": null,
+  "automatic_adoption": true,
+  "human_author": false,
+  "initial_report": {
+    "id": "4cadb73c-dd0d-446c-8afd-c18f23d88821",
+    "batch_id": "31a2899e-9418-4078-bbf3-1319f43f0f2b",
+    "draft_id": "cd6e1336-42e1-4c0d-8f27-a5e77311ddd4",
+    "draft_hash": "9fce662765ed9a4e4219d8bd54b3ac7efe964cd97f2c4957af37b47b5709f710",
+    "condition_set_id": "9a45e51b-946e-4f03-8f93-68784d531aaa",
+    "condition_hash": "f2e9e449c9b6fca2b4a9cdb4bcab9b525331d32068be0cdfa2210e89d0c303bf",
+    "material_hash": "8cfa4d348e950dcf50ce24cd92aadb08326a6b4806a53c71a93d7bd5fb86bf61",
+    "results": [
+      {
+        "condition_id": "4f33c779-0fdf-45ff-945e-728e8eb0db44",
+        "status": "pass",
+        "reason": "稿件明确说明未使用可选参数时 args.verbosity 默认值为 None，并因此使 if 的真值测试失败；同时给出了不带参数运行时不报错且不输出的结果。",
+        "citations": [
+          {
+            "source_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16",
+            "quote": "To show that the option is actually optional, there is no error when running\nthe program without it. Note that by default, if an optional argument isn’t\nused, the relevant variable, in this case args.verbosity, is\ngiven None as a value, which is the reason it fails the truth\ntest of the if statement."
+          },
+          {
+            "source_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16",
+            "quote": "The program is written so as to display something when --verbosity is\nspecified and display nothing when not."
+          }
+        ],
+        "reading": {
+          "condition_id": "4f33c779-0fdf-45ff-945e-728e8eb0db44",
+          "status": "pass",
+          "answer": "最初 --verbosity 在缺省（未使用）时，args.verbosity 的值为 None；因为没有指定该可选参数时运行程序没有报错，而该变量为 None，所以 if args.verbosity 的真值测试失败，程序不输出任何内容。",
+          "reason": "稿件明确说明 optional argument 未使用时的默认值为 None 并导致 if 真值测试失败，且运行时不报错、不显示内容。",
+          "excerpt": "To show that the option is actually optional, there is no error when running\nthe program without it. Note that by default, if an optional argument isn’t\nused, the relevant variable, in this case args.verbosity, is\ngiven None as a value, which is the reason it fails the truth\ntest of the if statement."
+        }
+      },
+      {
+        "condition_id": "fe8c9d90-b359-498c-99fd-97bad1e28a4c",
+        "status": "pass",
+        "reason": "稿件说明使用 --verbosity 时必须指定某个值，并给出仅写 --verbosity 时的报错输出 expected one argument。",
+        "citations": [
+          {
+            "source_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16",
+            "quote": "When using the --verbosity option, one must also specify some value,\nany value."
+          },
+          {
+            "source_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16",
+            "quote": "options:\n  -h, --help            show this help message and exit\n  --verbosity VERBOSITY\n                        increase output verbosity\n$ python prog.py --verbosity\nusage: prog.py [-h] [--verbosity VERBOSITY]\nprog.py: error: argument --verbosity: expected one argument"
+          }
+        ],
+        "reading": {
+          "condition_id": "fe8c9d90-b359-498c-99fd-97bad1e28a4c",
+          "status": "pass",
+          "answer": "仅写 --verbosity 会报错，因为使用 --verbosity 选项时还必须指定某个值；稿件输出显示 prog.py: error: argument --verbosity: expected one argument。",
+          "reason": "原稿同时给出 --verbosity 缺少参数时的具体报错输出，可支持解释。",
+          "excerpt": "options:\n  -h, --help            show this help message and exit\n  --verbosity VERBOSITY\n                        increase output verbosity\n$ python prog.py --verbosity\nusage: prog.py [-h] [--verbosity VERBOSITY]\nprog.py: error: argument --verbosity: expected one argument"
+        }
+      },
+      {
+        "condition_id": "d64f49bf-3a05-4d9f-9712-656dd7f8f2c1",
+        "status": "pass",
+        "reason": "稿件给出带 action=\"store_true\" 的 add_argument，并说明指定选项时 args.verbose 为 True，未指定时隐含为 False。",
+        "citations": [
+          {
+            "source_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16",
+            "quote": "import argparse\nparser = argparse.ArgumentParser()\nparser.add_argument(\"--verbose\", help=\"increase output verbosity\",\n                    action=\"store_true\")\nargs = parser.parse_args()\nif args.verbose:\n    print(\"verbosity turned on\")"
+          },
+          {
+            "source_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16",
+            "quote": "The option is now more of a flag than something that requires a value.\nWe even changed the name of the option to match that idea.\nNote that we now specify a new keyword, action, and give it the value\n\"store_true\". This means that, if the option is specified,\nassign the value True to args.verbose.\nNot specifying it implies False."
+          }
+        ],
+        "reading": {
+          "condition_id": "d64f49bf-3a05-4d9f-9712-656dd7f8f2c1",
+          "status": "pass",
+          "answer": "改为无需值的 --verbose 时，可用：parser.add_argument(\"--verbose\", help=\"increase output verbosity\", action=\"store_true\")；指定该选项时把 args.verbose 赋值为 True，不指定时隐含为 False。",
+          "reason": "稿件明确给出 action=\"store_true\" 及指定/未指定时 args.verbose 分别为 True/False 的规则。",
+          "excerpt": "The option is now more of a flag than something that requires a value.\nWe even changed the name of the option to match that idea.\nNote that we now specify a new keyword, action, and give it the value\n\"store_true\". This means that, if the option is specified,\nassign the value True to args.verbose.\nNot specifying it implies False."
+        }
+      },
+      {
+        "condition_id": "15a566a9-e30d-451f-998b-00ab6df099e8",
+        "status": "pass",
+        "reason": "稿件说明指定值时会出现抱怨，并给出 --verbose 1 的报错输出 unrecognized arguments: 1。",
+        "citations": [
+          {
+            "source_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16",
+            "quote": "It complains when you specify a value, in true spirit of what flags\nactually are."
+          },
+          {
+            "source_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16",
+            "quote": "$ python prog.py --verbose\nverbosity turned on\n$ python prog.py --verbose 1\nusage: prog.py [-h] [--verbose]\nprog.py: error: unrecognized arguments: 1\n$ python prog.py --help\nusage: prog.py [-h] [--verbose]"
+          }
+        ],
+        "reading": {
+          "condition_id": "15a566a9-e30d-451f-998b-00ab6df099e8",
+          "status": "pass",
+          "answer": "--verbose 1 会报错，因为在改为 --verbose 并设置 action=\"store_true\" 后，它更像一个不需要值的 flag；指定值时会抱怨，稿件输出为 prog.py: error: unrecognized arguments: 1。",
+          "reason": "原稿明确说明指定值时会抱怨，并可由该段与输出中的 unrecognized arguments: 1 支持。",
+          "excerpt": "It complains when you specify a value, in true spirit of what flags\nactually are."
+        }
+      },
+      {
+        "condition_id": "662a060d-b54e-4d8f-a5de-281c4366f5c9",
+        "status": "pass",
+        "reason": "稿件给出带 -v 别名的 add_argument、运行 -v 时输出 verbosity turned on，并明确说明新能力也反映在 help 文本中，help 显示 -v, --verbose。",
+        "citations": [
+          {
+            "source_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16",
+            "quote": "import argparse\nparser = argparse.ArgumentParser()\nparser.add_argument(\"-v\", \"--verbose\", help=\"increase output verbosity\",\n                    action=\"store_true\")\nargs = parser.parse_args()\nif args.verbose:\n    print(\"verbosity turned on\")"
+          },
+          {
+            "source_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16",
+            "quote": "$ python prog.py -v\nverbosity turned on\n$ python prog.py --help\nusage: prog.py [-h] [-v]"
+          },
+          {
+            "source_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16",
+            "quote": "options:\n  -h, --help     show this help message and exit\n  -v, --verbose  increase output verbosity"
+          },
+          {
+            "source_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16",
+            "quote": "Note that the new ability is also reflected in the help text."
+          }
+        ],
+        "reading": {
+          "condition_id": "662a060d-b54e-4d8f-a5de-281c4366f5c9",
+          "status": "pass",
+          "answer": "增加 -v 别名可用：parser.add_argument(\"-v\", \"--verbose\", help=\"increase output verbosity\", action=\"store_true\")；运行 python prog.py -v 的输出为 verbosity turned on；help 文本反映了这个新能力，显示 -v, --verbose  increase output verbosity。",
+          "reason": "稿件给出带 -v 的 add_argument、其输出以及 help 文本中新增能力被反映的说明。",
+          "excerpt": "Note that the new ability is also reflected in the help text."
+        }
+      }
+    ],
+    "new_issues": [],
+    "mode": "live",
+    "created_at": 1791356692.8916821,
+    "model_policy": {
+      "version": "56cb27ab6fbf778239c193adfb5bcc084ca534730fef852bc02b83a150695d18",
+      "routes": {
+        "wt_conditions": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_read": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_verify": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_patch": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        }
+      },
+      "prompt_version": "windtunnel.v1"
+    },
+    "sources": [
+      {
+        "id": "cd6e1336-42e1-4c0d-8f27-a5e77311ddd4",
+        "source_id": "cd6e1336-42e1-4c0d-8f27-a5e77311ddd4",
+        "kind": "draft",
+        "text": "Introducing Optional arguments\n\nSo far we have been playing with positional arguments. Let us\nhave a look on how to add optional ones:\n\nimport argparse\nparser = argparse.ArgumentParser()\nparser.add_argument(\"--verbosity\", help=\"increase output verbosity\")\nargs = parser.parse_args()\nif args.verbosity:\n    print(\"verbosity turned on\")\n\nAnd the output:\n\n$ python prog.py --verbosity 1\nverbosity turned on\n$ python prog.py\n$ python prog.py --help\nusage: prog.py [-h] [--verbosity VERBOSITY]\n\noptions:\n  -h, --help            show this help message and exit\n  --verbosity VERBOSITY\n                        increase output verbosity\n$ python prog.py --verbosity\nusage: prog.py [-h] [--verbosity VERBOSITY]\nprog.py: error: argument --verbosity: expected one argument\n\nHere is what is happening:\n\nThe program is written so as to display something when --verbosity is\nspecified and display nothing when not.\n\nTo show that the option is actually optional, there is no error when running\nthe program without it. Note that by default, if an optional argument isn’t\nused, the relevant variable, in this case args.verbosity, is\ngiven None as a value, which is the reason it fails the truth\ntest of the if statement.\n\nThe help message is a bit different.\n\nWhen using the --verbosity option, one must also specify some value,\nany value.\n\nThe above example accepts arbitrary integer values for --verbosity, but for\nour simple program, only two values are actually useful, True or False.\nLet’s modify the code accordingly:\n\nimport argparse\nparser = argparse.ArgumentParser()\nparser.add_argument(\"--verbose\", help=\"increase output verbosity\",\n                    action=\"store_true\")\nargs = parser.parse_args()\nif args.verbose:\n    print(\"verbosity turned on\")\n\nAnd the output:\n\n$ python prog.py --verbose\nverbosity turned on\n$ python prog.py --verbose 1\nusage: prog.py [-h] [--verbose]\nprog.py: error: unrecognized arguments: 1\n$ python prog.py --help\nusage: prog.py [-h] [--verbose]\n\noptions:\n  -h, --help  show this help message and exit\n  --verbose   increase output verbosity\n\nHere is what is happening:\n\nThe option is now more of a flag than something that requires a value.\nWe even changed the name of the option to match that idea.\nNote that we now specify a new keyword, action, and give it the value\n\"store_true\". This means that, if the option is specified,\nassign the value True to args.verbose.\nNot specifying it implies False.\n\nIt complains when you specify a value, in true spirit of what flags\nactually are.\n\nNotice the different help text.\n\nShort options\n\nIf you are familiar with command line usage,\nyou will notice that I haven’t yet touched on the topic of short\nversions of the options. It’s quite simple:\n\nimport argparse\nparser = argparse.ArgumentParser()\nparser.add_argument(\"-v\", \"--verbose\", help=\"increase output verbosity\",\n                    action=\"store_true\")\nargs = parser.parse_args()\nif args.verbose:\n    print(\"verbosity turned on\")\n\nAnd here goes:\n\n$ python prog.py -v\nverbosity turned on\n$ python prog.py --help\nusage: prog.py [-h] [-v]\n\noptions:\n  -h, --help     show this help message and exit\n  -v, --verbose  increase output verbosity\n\nNote that the new ability is also reflected in the help text.",
+        "hash": "9fce662765ed9a4e4219d8bd54b3ac7efe964cd97f2c4957af37b47b5709f710"
+      },
+      {
+        "id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16",
+        "kind": "material",
+        "text": "Introducing Optional arguments\n\nSo far we have been playing with positional arguments. Let us\nhave a look on how to add optional ones:\n\nimport argparse\nparser = argparse.ArgumentParser()\nparser.add_argument(\"--verbosity\", help=\"increase output verbosity\")\nargs = parser.parse_args()\nif args.verbosity:\n    print(\"verbosity turned on\")\n\nAnd the output:\n\n$ python prog.py --verbosity 1\nverbosity turned on\n$ python prog.py\n$ python prog.py --help\nusage: prog.py [-h] [--verbosity VERBOSITY]\n\noptions:\n  -h, --help            show this help message and exit\n  --verbosity VERBOSITY\n                        increase output verbosity\n$ python prog.py --verbosity\nusage: prog.py [-h] [--verbosity VERBOSITY]\nprog.py: error: argument --verbosity: expected one argument\n\nHere is what is happening:\n\nThe program is written so as to display something when --verbosity is\nspecified and display nothing when not.\n\nTo show that the option is actually optional, there is no error when running\nthe program without it. Note that by default, if an optional argument isn’t\nused, the relevant variable, in this case args.verbosity, is\ngiven None as a value, which is the reason it fails the truth\ntest of the if statement.\n\nThe help message is a bit different.\n\nWhen using the --verbosity option, one must also specify some value,\nany value.\n\nThe above example accepts arbitrary integer values for --verbosity, but for\nour simple program, only two values are actually useful, True or False.\nLet’s modify the code accordingly:\n\nimport argparse\nparser = argparse.ArgumentParser()\nparser.add_argument(\"--verbose\", help=\"increase output verbosity\",\n                    action=\"store_true\")\nargs = parser.parse_args()\nif args.verbose:\n    print(\"verbosity turned on\")\n\nAnd the output:\n\n$ python prog.py --verbose\nverbosity turned on\n$ python prog.py --verbose 1\nusage: prog.py [-h] [--verbose]\nprog.py: error: unrecognized arguments: 1\n$ python prog.py --help\nusage: prog.py [-h] [--verbose]\n\noptions:\n  -h, --help  show this help message and exit\n  --verbose   increase output verbosity\n\nHere is what is happening:\n\nThe option is now more of a flag than something that requires a value.\nWe even changed the name of the option to match that idea.\nNote that we now specify a new keyword, action, and give it the value\n\"store_true\". This means that, if the option is specified,\nassign the value True to args.verbose.\nNot specifying it implies False.\n\nIt complains when you specify a value, in true spirit of what flags\nactually are.\n\nNotice the different help text.\n\nShort options\n\nIf you are familiar with command line usage,\nyou will notice that I haven’t yet touched on the topic of short\nversions of the options. It’s quite simple:\n\nimport argparse\nparser = argparse.ArgumentParser()\nparser.add_argument(\"-v\", \"--verbose\", help=\"increase output verbosity\",\n                    action=\"store_true\")\nargs = parser.parse_args()\nif args.verbose:\n    print(\"verbosity turned on\")\n\nAnd here goes:\n\n$ python prog.py -v\nverbosity turned on\n$ python prog.py --help\nusage: prog.py [-h] [-v]\n\noptions:\n  -h, --help     show this help message and exit\n  -v, --verbose  increase output verbosity\n\nNote that the new ability is also reflected in the help text.",
+        "title": "argparse可选参数",
+        "origin": "https://docs.python.org/3.12/howto/argparse.html#introducing-optional-arguments",
+        "provenance": "author_material",
+        "permission": false,
+        "version": 1,
+        "hash": "b731823d33074938b8de9cff8aae58c673b23da88e181429f554a68e58587c2b",
+        "collected_at": 1791356680.868793
+      }
+    ]
+  },
+  "final_report": {
+    "id": "4cadb73c-dd0d-446c-8afd-c18f23d88821",
+    "batch_id": "31a2899e-9418-4078-bbf3-1319f43f0f2b",
+    "draft_id": "cd6e1336-42e1-4c0d-8f27-a5e77311ddd4",
+    "draft_hash": "9fce662765ed9a4e4219d8bd54b3ac7efe964cd97f2c4957af37b47b5709f710",
+    "condition_set_id": "9a45e51b-946e-4f03-8f93-68784d531aaa",
+    "condition_hash": "f2e9e449c9b6fca2b4a9cdb4bcab9b525331d32068be0cdfa2210e89d0c303bf",
+    "material_hash": "8cfa4d348e950dcf50ce24cd92aadb08326a6b4806a53c71a93d7bd5fb86bf61",
+    "results": [
+      {
+        "condition_id": "4f33c779-0fdf-45ff-945e-728e8eb0db44",
+        "status": "pass",
+        "reason": "稿件明确说明未使用可选参数时 args.verbosity 默认值为 None，并因此使 if 的真值测试失败；同时给出了不带参数运行时不报错且不输出的结果。",
+        "citations": [
+          {
+            "source_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16",
+            "quote": "To show that the option is actually optional, there is no error when running\nthe program without it. Note that by default, if an optional argument isn’t\nused, the relevant variable, in this case args.verbosity, is\ngiven None as a value, which is the reason it fails the truth\ntest of the if statement."
+          },
+          {
+            "source_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16",
+            "quote": "The program is written so as to display something when --verbosity is\nspecified and display nothing when not."
+          }
+        ],
+        "reading": {
+          "condition_id": "4f33c779-0fdf-45ff-945e-728e8eb0db44",
+          "status": "pass",
+          "answer": "最初 --verbosity 在缺省（未使用）时，args.verbosity 的值为 None；因为没有指定该可选参数时运行程序没有报错，而该变量为 None，所以 if args.verbosity 的真值测试失败，程序不输出任何内容。",
+          "reason": "稿件明确说明 optional argument 未使用时的默认值为 None 并导致 if 真值测试失败，且运行时不报错、不显示内容。",
+          "excerpt": "To show that the option is actually optional, there is no error when running\nthe program without it. Note that by default, if an optional argument isn’t\nused, the relevant variable, in this case args.verbosity, is\ngiven None as a value, which is the reason it fails the truth\ntest of the if statement."
+        }
+      },
+      {
+        "condition_id": "fe8c9d90-b359-498c-99fd-97bad1e28a4c",
+        "status": "pass",
+        "reason": "稿件说明使用 --verbosity 时必须指定某个值，并给出仅写 --verbosity 时的报错输出 expected one argument。",
+        "citations": [
+          {
+            "source_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16",
+            "quote": "When using the --verbosity option, one must also specify some value,\nany value."
+          },
+          {
+            "source_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16",
+            "quote": "options:\n  -h, --help            show this help message and exit\n  --verbosity VERBOSITY\n                        increase output verbosity\n$ python prog.py --verbosity\nusage: prog.py [-h] [--verbosity VERBOSITY]\nprog.py: error: argument --verbosity: expected one argument"
+          }
+        ],
+        "reading": {
+          "condition_id": "fe8c9d90-b359-498c-99fd-97bad1e28a4c",
+          "status": "pass",
+          "answer": "仅写 --verbosity 会报错，因为使用 --verbosity 选项时还必须指定某个值；稿件输出显示 prog.py: error: argument --verbosity: expected one argument。",
+          "reason": "原稿同时给出 --verbosity 缺少参数时的具体报错输出，可支持解释。",
+          "excerpt": "options:\n  -h, --help            show this help message and exit\n  --verbosity VERBOSITY\n                        increase output verbosity\n$ python prog.py --verbosity\nusage: prog.py [-h] [--verbosity VERBOSITY]\nprog.py: error: argument --verbosity: expected one argument"
+        }
+      },
+      {
+        "condition_id": "d64f49bf-3a05-4d9f-9712-656dd7f8f2c1",
+        "status": "pass",
+        "reason": "稿件给出带 action=\"store_true\" 的 add_argument，并说明指定选项时 args.verbose 为 True，未指定时隐含为 False。",
+        "citations": [
+          {
+            "source_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16",
+            "quote": "import argparse\nparser = argparse.ArgumentParser()\nparser.add_argument(\"--verbose\", help=\"increase output verbosity\",\n                    action=\"store_true\")\nargs = parser.parse_args()\nif args.verbose:\n    print(\"verbosity turned on\")"
+          },
+          {
+            "source_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16",
+            "quote": "The option is now more of a flag than something that requires a value.\nWe even changed the name of the option to match that idea.\nNote that we now specify a new keyword, action, and give it the value\n\"store_true\". This means that, if the option is specified,\nassign the value True to args.verbose.\nNot specifying it implies False."
+          }
+        ],
+        "reading": {
+          "condition_id": "d64f49bf-3a05-4d9f-9712-656dd7f8f2c1",
+          "status": "pass",
+          "answer": "改为无需值的 --verbose 时，可用：parser.add_argument(\"--verbose\", help=\"increase output verbosity\", action=\"store_true\")；指定该选项时把 args.verbose 赋值为 True，不指定时隐含为 False。",
+          "reason": "稿件明确给出 action=\"store_true\" 及指定/未指定时 args.verbose 分别为 True/False 的规则。",
+          "excerpt": "The option is now more of a flag than something that requires a value.\nWe even changed the name of the option to match that idea.\nNote that we now specify a new keyword, action, and give it the value\n\"store_true\". This means that, if the option is specified,\nassign the value True to args.verbose.\nNot specifying it implies False."
+        }
+      },
+      {
+        "condition_id": "15a566a9-e30d-451f-998b-00ab6df099e8",
+        "status": "pass",
+        "reason": "稿件说明指定值时会出现抱怨，并给出 --verbose 1 的报错输出 unrecognized arguments: 1。",
+        "citations": [
+          {
+            "source_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16",
+            "quote": "It complains when you specify a value, in true spirit of what flags\nactually are."
+          },
+          {
+            "source_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16",
+            "quote": "$ python prog.py --verbose\nverbosity turned on\n$ python prog.py --verbose 1\nusage: prog.py [-h] [--verbose]\nprog.py: error: unrecognized arguments: 1\n$ python prog.py --help\nusage: prog.py [-h] [--verbose]"
+          }
+        ],
+        "reading": {
+          "condition_id": "15a566a9-e30d-451f-998b-00ab6df099e8",
+          "status": "pass",
+          "answer": "--verbose 1 会报错，因为在改为 --verbose 并设置 action=\"store_true\" 后，它更像一个不需要值的 flag；指定值时会抱怨，稿件输出为 prog.py: error: unrecognized arguments: 1。",
+          "reason": "原稿明确说明指定值时会抱怨，并可由该段与输出中的 unrecognized arguments: 1 支持。",
+          "excerpt": "It complains when you specify a value, in true spirit of what flags\nactually are."
+        }
+      },
+      {
+        "condition_id": "662a060d-b54e-4d8f-a5de-281c4366f5c9",
+        "status": "pass",
+        "reason": "稿件给出带 -v 别名的 add_argument、运行 -v 时输出 verbosity turned on，并明确说明新能力也反映在 help 文本中，help 显示 -v, --verbose。",
+        "citations": [
+          {
+            "source_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16",
+            "quote": "import argparse\nparser = argparse.ArgumentParser()\nparser.add_argument(\"-v\", \"--verbose\", help=\"increase output verbosity\",\n                    action=\"store_true\")\nargs = parser.parse_args()\nif args.verbose:\n    print(\"verbosity turned on\")"
+          },
+          {
+            "source_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16",
+            "quote": "$ python prog.py -v\nverbosity turned on\n$ python prog.py --help\nusage: prog.py [-h] [-v]"
+          },
+          {
+            "source_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16",
+            "quote": "options:\n  -h, --help     show this help message and exit\n  -v, --verbose  increase output verbosity"
+          },
+          {
+            "source_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16",
+            "quote": "Note that the new ability is also reflected in the help text."
+          }
+        ],
+        "reading": {
+          "condition_id": "662a060d-b54e-4d8f-a5de-281c4366f5c9",
+          "status": "pass",
+          "answer": "增加 -v 别名可用：parser.add_argument(\"-v\", \"--verbose\", help=\"increase output verbosity\", action=\"store_true\")；运行 python prog.py -v 的输出为 verbosity turned on；help 文本反映了这个新能力，显示 -v, --verbose  increase output verbosity。",
+          "reason": "稿件给出带 -v 的 add_argument、其输出以及 help 文本中新增能力被反映的说明。",
+          "excerpt": "Note that the new ability is also reflected in the help text."
+        }
+      }
+    ],
+    "new_issues": [],
+    "mode": "live",
+    "created_at": 1791356692.8916821,
+    "model_policy": {
+      "version": "56cb27ab6fbf778239c193adfb5bcc084ca534730fef852bc02b83a150695d18",
+      "routes": {
+        "wt_conditions": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_read": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_verify": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_patch": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        }
+      },
+      "prompt_version": "windtunnel.v1"
+    },
+    "sources": [
+      {
+        "id": "cd6e1336-42e1-4c0d-8f27-a5e77311ddd4",
+        "source_id": "cd6e1336-42e1-4c0d-8f27-a5e77311ddd4",
+        "kind": "draft",
+        "text": "Introducing Optional arguments\n\nSo far we have been playing with positional arguments. Let us\nhave a look on how to add optional ones:\n\nimport argparse\nparser = argparse.ArgumentParser()\nparser.add_argument(\"--verbosity\", help=\"increase output verbosity\")\nargs = parser.parse_args()\nif args.verbosity:\n    print(\"verbosity turned on\")\n\nAnd the output:\n\n$ python prog.py --verbosity 1\nverbosity turned on\n$ python prog.py\n$ python prog.py --help\nusage: prog.py [-h] [--verbosity VERBOSITY]\n\noptions:\n  -h, --help            show this help message and exit\n  --verbosity VERBOSITY\n                        increase output verbosity\n$ python prog.py --verbosity\nusage: prog.py [-h] [--verbosity VERBOSITY]\nprog.py: error: argument --verbosity: expected one argument\n\nHere is what is happening:\n\nThe program is written so as to display something when --verbosity is\nspecified and display nothing when not.\n\nTo show that the option is actually optional, there is no error when running\nthe program without it. Note that by default, if an optional argument isn’t\nused, the relevant variable, in this case args.verbosity, is\ngiven None as a value, which is the reason it fails the truth\ntest of the if statement.\n\nThe help message is a bit different.\n\nWhen using the --verbosity option, one must also specify some value,\nany value.\n\nThe above example accepts arbitrary integer values for --verbosity, but for\nour simple program, only two values are actually useful, True or False.\nLet’s modify the code accordingly:\n\nimport argparse\nparser = argparse.ArgumentParser()\nparser.add_argument(\"--verbose\", help=\"increase output verbosity\",\n                    action=\"store_true\")\nargs = parser.parse_args()\nif args.verbose:\n    print(\"verbosity turned on\")\n\nAnd the output:\n\n$ python prog.py --verbose\nverbosity turned on\n$ python prog.py --verbose 1\nusage: prog.py [-h] [--verbose]\nprog.py: error: unrecognized arguments: 1\n$ python prog.py --help\nusage: prog.py [-h] [--verbose]\n\noptions:\n  -h, --help  show this help message and exit\n  --verbose   increase output verbosity\n\nHere is what is happening:\n\nThe option is now more of a flag than something that requires a value.\nWe even changed the name of the option to match that idea.\nNote that we now specify a new keyword, action, and give it the value\n\"store_true\". This means that, if the option is specified,\nassign the value True to args.verbose.\nNot specifying it implies False.\n\nIt complains when you specify a value, in true spirit of what flags\nactually are.\n\nNotice the different help text.\n\nShort options\n\nIf you are familiar with command line usage,\nyou will notice that I haven’t yet touched on the topic of short\nversions of the options. It’s quite simple:\n\nimport argparse\nparser = argparse.ArgumentParser()\nparser.add_argument(\"-v\", \"--verbose\", help=\"increase output verbosity\",\n                    action=\"store_true\")\nargs = parser.parse_args()\nif args.verbose:\n    print(\"verbosity turned on\")\n\nAnd here goes:\n\n$ python prog.py -v\nverbosity turned on\n$ python prog.py --help\nusage: prog.py [-h] [-v]\n\noptions:\n  -h, --help     show this help message and exit\n  -v, --verbose  increase output verbosity\n\nNote that the new ability is also reflected in the help text.",
+        "hash": "9fce662765ed9a4e4219d8bd54b3ac7efe964cd97f2c4957af37b47b5709f710"
+      },
+      {
+        "id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16",
+        "kind": "material",
+        "text": "Introducing Optional arguments\n\nSo far we have been playing with positional arguments. Let us\nhave a look on how to add optional ones:\n\nimport argparse\nparser = argparse.ArgumentParser()\nparser.add_argument(\"--verbosity\", help=\"increase output verbosity\")\nargs = parser.parse_args()\nif args.verbosity:\n    print(\"verbosity turned on\")\n\nAnd the output:\n\n$ python prog.py --verbosity 1\nverbosity turned on\n$ python prog.py\n$ python prog.py --help\nusage: prog.py [-h] [--verbosity VERBOSITY]\n\noptions:\n  -h, --help            show this help message and exit\n  --verbosity VERBOSITY\n                        increase output verbosity\n$ python prog.py --verbosity\nusage: prog.py [-h] [--verbosity VERBOSITY]\nprog.py: error: argument --verbosity: expected one argument\n\nHere is what is happening:\n\nThe program is written so as to display something when --verbosity is\nspecified and display nothing when not.\n\nTo show that the option is actually optional, there is no error when running\nthe program without it. Note that by default, if an optional argument isn’t\nused, the relevant variable, in this case args.verbosity, is\ngiven None as a value, which is the reason it fails the truth\ntest of the if statement.\n\nThe help message is a bit different.\n\nWhen using the --verbosity option, one must also specify some value,\nany value.\n\nThe above example accepts arbitrary integer values for --verbosity, but for\nour simple program, only two values are actually useful, True or False.\nLet’s modify the code accordingly:\n\nimport argparse\nparser = argparse.ArgumentParser()\nparser.add_argument(\"--verbose\", help=\"increase output verbosity\",\n                    action=\"store_true\")\nargs = parser.parse_args()\nif args.verbose:\n    print(\"verbosity turned on\")\n\nAnd the output:\n\n$ python prog.py --verbose\nverbosity turned on\n$ python prog.py --verbose 1\nusage: prog.py [-h] [--verbose]\nprog.py: error: unrecognized arguments: 1\n$ python prog.py --help\nusage: prog.py [-h] [--verbose]\n\noptions:\n  -h, --help  show this help message and exit\n  --verbose   increase output verbosity\n\nHere is what is happening:\n\nThe option is now more of a flag than something that requires a value.\nWe even changed the name of the option to match that idea.\nNote that we now specify a new keyword, action, and give it the value\n\"store_true\". This means that, if the option is specified,\nassign the value True to args.verbose.\nNot specifying it implies False.\n\nIt complains when you specify a value, in true spirit of what flags\nactually are.\n\nNotice the different help text.\n\nShort options\n\nIf you are familiar with command line usage,\nyou will notice that I haven’t yet touched on the topic of short\nversions of the options. It’s quite simple:\n\nimport argparse\nparser = argparse.ArgumentParser()\nparser.add_argument(\"-v\", \"--verbose\", help=\"increase output verbosity\",\n                    action=\"store_true\")\nargs = parser.parse_args()\nif args.verbose:\n    print(\"verbosity turned on\")\n\nAnd here goes:\n\n$ python prog.py -v\nverbosity turned on\n$ python prog.py --help\nusage: prog.py [-h] [-v]\n\noptions:\n  -h, --help     show this help message and exit\n  -v, --verbose  increase output verbosity\n\nNote that the new ability is also reflected in the help text.",
+        "title": "argparse可选参数",
+        "origin": "https://docs.python.org/3.12/howto/argparse.html#introducing-optional-arguments",
+        "provenance": "author_material",
+        "permission": false,
+        "version": 1,
+        "hash": "b731823d33074938b8de9cff8aae58c673b23da88e181429f554a68e58587c2b",
+        "collected_at": 1791356680.868793
+      }
+    ]
+  },
+  "unresolved_conditions": [],
+  "effective_repair_confirmed": false,
+  "run_id": "c30f86c6-555f-4c64-ae36-84866a81be79",
+  "wall_seconds": 12.043,
+  "final_sha256": "097a75cb3cc6e2bbe535cba19ca4f53a63d7283298cae24749c47145dac0915f",
+  "changed": false,
+  "calls": [
+    {
+      "stage": "wt_conditions",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 248,
+      "output_tokens": 464,
+      "total_tokens": 712,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "conditions": [
+          {
+            "question": "在最初的设计里，当命令行完全没有提供 --verbosity 选项时，程序应当采用什么缺省值？这个缺省值下应当输出哪些内容？",
+            "scene": "解释最初 --verbosity 缺省时的值及输出",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "在最初的设计里，为什么只写 --verbosity（后面不跟任何值）会报错？作者需要读者从参数解析规则角度理解哪一点？",
+            "scene": "解释仅写 --verbosity 为什么报错",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "改成无需值的 --verbose 后，add_argument 应当怎么写？启用时输出什么，缺省时又输出什么？",
+            "scene": "给出无需值 --verbose 的 add_argument 及启用/缺省值说明",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "为什么写成 --verbose 1 会报错？这里的 1 会被解析器当成什么，从而与无需值的 --verbose 设计冲突？",
+            "scene": "说明 --verbose 1 为何报错",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "增加 -v 作为 --verbose 的别名时，add_argument 应当怎么写？-v 启用后输出什么，help 文本中应当反映出什么信息？",
+            "scene": "增加 -v 别名并给出 add_argument、-v 的输出及 help 反映内容",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "每一项关于缺省值、报错原因、add_argument 写法、输出行为和 help 文本的说明，分别应当引用稿件中的哪一段作为证据？",
+            "scene": "为每项说明附稿内证据",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "作者希望读者在不用实际执行代码的情况下，仅通过稿件文字就能复述 --verbosity 与 --verbose 两种设计在取值方式上的根本区别吗？",
+            "scene": "比较两种参数设计并避免执行代码",
+            "source_ids": [],
+            "origin": "author"
+          }
+        ]
+      }
+    },
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 4164,
+      "output_tokens": 922,
+      "total_tokens": 5086,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "results": [
+          {
+            "condition_id": "4f33c779-0fdf-45ff-945e-728e8eb0db44",
+            "status": "pass",
+            "answer": "最初 --verbosity 在缺省（未使用）时，args.verbosity 的值为 None；因为没有指定该可选参数时运行程序没有报错，而该变量为 None，所以 if args.verbosity 的真值测试失败，程序不输出任何内容。",
+            "excerpt_id": "reading:9fce662765ed9a4e4219d8bd54b3ac7efe964cd97f2c4957af37b47b5709f710:P9",
+            "reason": "稿件明确说明 optional argument 未使用时的默认值为 None 并导致 if 真值测试失败，且运行时不报错、不显示内容。"
+          },
+          {
+            "condition_id": "fe8c9d90-b359-498c-99fd-97bad1e28a4c",
+            "status": "pass",
+            "answer": "仅写 --verbosity 会报错，因为使用 --verbosity 选项时还必须指定某个值；稿件输出显示 prog.py: error: argument --verbosity: expected one argument。",
+            "excerpt_id": "reading:9fce662765ed9a4e4219d8bd54b3ac7efe964cd97f2c4957af37b47b5709f710:P6",
+            "reason": "原稿同时给出 --verbosity 缺少参数时的具体报错输出，可支持解释。"
+          },
+          {
+            "condition_id": "d64f49bf-3a05-4d9f-9712-656dd7f8f2c1",
+            "status": "pass",
+            "answer": "改为无需值的 --verbose 时，可用：parser.add_argument(\"--verbose\", help=\"increase output verbosity\", action=\"store_true\")；指定该选项时把 args.verbose 赋值为 True，不指定时隐含为 False。",
+            "excerpt_id": "reading:9fce662765ed9a4e4219d8bd54b3ac7efe964cd97f2c4957af37b47b5709f710:P18",
+            "reason": "稿件明确给出 action=\"store_true\" 及指定/未指定时 args.verbose 分别为 True/False 的规则。"
+          },
+          {
+            "condition_id": "15a566a9-e30d-451f-998b-00ab6df099e8",
+            "status": "pass",
+            "answer": "--verbose 1 会报错，因为在改为 --verbose 并设置 action=\"store_true\" 后，它更像一个不需要值的 flag；指定值时会抱怨，稿件输出为 prog.py: error: unrecognized arguments: 1。",
+            "excerpt_id": "reading:9fce662765ed9a4e4219d8bd54b3ac7efe964cd97f2c4957af37b47b5709f710:P19",
+            "reason": "原稿明确说明指定值时会抱怨，并可由该段与输出中的 unrecognized arguments: 1 支持。"
+          },
+          {
+            "condition_id": "662a060d-b54e-4d8f-a5de-281c4366f5c9",
+            "status": "pass",
+            "answer": "增加 -v 别名可用：parser.add_argument(\"-v\", \"--verbose\", help=\"increase output verbosity\", action=\"store_true\")；运行 python prog.py -v 的输出为 verbosity turned on；help 文本反映了这个新能力，显示 -v, --verbose  increase output verbosity。",
+            "excerpt_id": "reading:9fce662765ed9a4e4219d8bd54b3ac7efe964cd97f2c4957af37b47b5709f710:P27",
+            "reason": "稿件给出带 -v 的 add_argument、其输出以及 help 文本中新增能力被反映的说明。"
+          }
+        ]
+      }
+    },
+    {
+      "stage": "wt_verify",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 7205,
+      "output_tokens": 1236,
+      "total_tokens": 8441,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "results": [
+          {
+            "condition_id": "4f33c779-0fdf-45ff-945e-728e8eb0db44",
+            "status": "pass",
+            "reason": "稿件明确说明未使用可选参数时 args.verbosity 默认值为 None，并因此使 if 的真值测试失败；同时给出了不带参数运行时不报错且不输出的结果。",
+            "citations": [
+              {
+                "evidence_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16:b731823d33074938b8de9cff8aae58c673b23da88e181429f554a68e58587c2b:P9"
+              },
+              {
+                "evidence_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16:b731823d33074938b8de9cff8aae58c673b23da88e181429f554a68e58587c2b:P8"
+              }
+            ]
+          },
+          {
+            "condition_id": "fe8c9d90-b359-498c-99fd-97bad1e28a4c",
+            "status": "pass",
+            "reason": "稿件说明使用 --verbosity 时必须指定某个值，并给出仅写 --verbosity 时的报错输出 expected one argument。",
+            "citations": [
+              {
+                "evidence_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16:b731823d33074938b8de9cff8aae58c673b23da88e181429f554a68e58587c2b:P11"
+              },
+              {
+                "evidence_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16:b731823d33074938b8de9cff8aae58c673b23da88e181429f554a68e58587c2b:P6"
+              }
+            ]
+          },
+          {
+            "condition_id": "d64f49bf-3a05-4d9f-9712-656dd7f8f2c1",
+            "status": "pass",
+            "reason": "稿件给出带 action=\"store_true\" 的 add_argument，并说明指定选项时 args.verbose 为 True，未指定时隐含为 False。",
+            "citations": [
+              {
+                "evidence_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16:b731823d33074938b8de9cff8aae58c673b23da88e181429f554a68e58587c2b:P13"
+              },
+              {
+                "evidence_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16:b731823d33074938b8de9cff8aae58c673b23da88e181429f554a68e58587c2b:P18"
+              }
+            ]
+          },
+          {
+            "condition_id": "15a566a9-e30d-451f-998b-00ab6df099e8",
+            "status": "pass",
+            "reason": "稿件说明指定值时会出现抱怨，并给出 --verbose 1 的报错输出 unrecognized arguments: 1。",
+            "citations": [
+              {
+                "evidence_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16:b731823d33074938b8de9cff8aae58c673b23da88e181429f554a68e58587c2b:P19"
+              },
+              {
+                "evidence_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16:b731823d33074938b8de9cff8aae58c673b23da88e181429f554a68e58587c2b:P15"
+              }
+            ]
+          },
+          {
+            "condition_id": "662a060d-b54e-4d8f-a5de-281c4366f5c9",
+            "status": "pass",
+            "reason": "稿件给出带 -v 别名的 add_argument、运行 -v 时输出 verbosity turned on，并明确说明新能力也反映在 help 文本中，help 显示 -v, --verbose。",
+            "citations": [
+              {
+                "evidence_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16:b731823d33074938b8de9cff8aae58c673b23da88e181429f554a68e58587c2b:P23"
+              },
+              {
+                "evidence_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16:b731823d33074938b8de9cff8aae58c673b23da88e181429f554a68e58587c2b:P25"
+              },
+              {
+                "evidence_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16:b731823d33074938b8de9cff8aae58c673b23da88e181429f554a68e58587c2b:P26"
+              },
+              {
+                "evidence_id": "98ca36ed-87a2-4d54-93f6-8455af7ebf16:b731823d33074938b8de9cff8aae58c673b23da88e181429f554a68e58587c2b:P27"
+              }
+            ]
+          }
+        ],
+        "new_issues": []
+      }
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 1.798118,
+    "reserved_unknown_cny": 0.04281,
+    "committed_upper_cny": 1.840928,
+    "calls": 141,
+    "unknown_calls": 1
+  }
+}

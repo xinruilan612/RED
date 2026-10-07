@@ -1,0 +1,118 @@
+{
+  "reader_id": "R03",
+  "participant_type": "codex_proxy",
+  "human_reading_seconds": null,
+  "responses": [
+    {
+      "blind_id": "Beb3e2e22daeac1f4f4d882af026af656",
+      "points": [
+        {
+          "point": 1,
+          "answer_text": "使用追加模式 a 和 UTF-8：open('app.log', 'a', encoding='utf-8')。a 保留现有内容并在末尾追加；w 只写并清空同名既有文件。",
+          "evidence": ["open('app.log', 'a', encoding='utf-8')", "'w' is for only writing, and an existing file with the same name will be erased; 'a' preserves the existing content and appends to the end."],
+          "missing_information": ""
+        },
+        {
+          "point": 2,
+          "answer_text": "使用 with 可在代码块结束后自动正确关闭文件，即使发生异常也会关闭；不使用 with 时应调用 f.close()。否则写入可能未完整落盘。",
+          "evidence": ["the file is properly closed after the suite finishes, even if an exception is raised.", "Calling `f.write()` without using `with` or calling `f.close()` might result in the arguments of `f.write()` not being completely written to the disk"],
+          "missing_information": ""
+        },
+        {
+          "point": 3,
+          "answer_text": "readline 返回空字符串表示已到文件末尾；返回仅含换行的字符串表示一个空白行。",
+          "evidence": ["if `f.readline()` returns an empty string, the end of the file has been reached, while a blank line is represented by `'\\n'`, a string containing only a single newline."],
+          "missing_information": ""
+        },
+        {
+          "point": 4,
+          "answer_text": "用 for line in f: print(line, end='') 逐行遍历文件对象，稿件称其节省内存且快速。read() 不提供 size 时会读取并返回全部文件内容，文件过大可能超过机器内存。",
+          "evidence": ["This is memory efficient, fast, and leads to simple code, for example `for line in f: print(line, end='')`.", "When `size` is omitted or negative, the entire contents of the file will be read and returned; it is your problem if the file is twice as large as your machine's memory."],
+          "missing_information": ""
+        },
+        {
+          "point": 5,
+          "answer_text": "JPEG 复制必须使用二进制模式，在读写模式后追加 b，读写对象为 bytes；二进制打开不能指定 encoding。文本模式自动转换换行会损坏 JPEG 等二进制数据。",
+          "evidence": ["Appending a `'b'` to the mode opens the file in binary mode, and binary mode data is read and written as bytes objects.", "will corrupt binary data like that in JPEG or EXE files.", "you cannot specify `encoding` when opening a file in binary mode."],
+          "missing_information": ""
+        }
+      ],
+      "perceived_difficulty_1_to_5": null,
+      "open_feedback": ""
+    },
+    {
+      "blind_id": "B250c2dcc69158640e8413e2b11c54fa0",
+      "points": [
+        {
+          "point": 1,
+          "answer_text": "最初不传 --verbosity 时 args.verbosity 为 None，if 的真假判断不成立，程序不输出内容且不会报错。",
+          "evidence": ["display nothing when not.", "args.verbosity, is given None as a value, which is the reason it fails the truth test of the if statement."],
+          "missing_information": ""
+        },
+        {
+          "point": 2,
+          "answer_text": "--verbosity 需要一个参数值；仅写选项而不提供值会报 expected one argument。",
+          "evidence": ["prog.py: error: argument --verbosity: expected one argument", "When using the --verbosity option, one must also specify some value, any value."],
+          "missing_information": ""
+        },
+        {
+          "point": 3,
+          "answer_text": "改用 parser.add_argument(\"--verbose\", help=\"increase output verbosity\", action=\"store_true\")。指定 --verbose 时 args.verbose 为 True；缺省为 False，选项无需参数值。",
+          "evidence": ["parser.add_argument(\"--verbose\", help=\"increase output verbosity\",\n                    action=\"store_true\")", "if the option is specified, assign the value True to args.verbose. Not specifying it implies False."],
+          "missing_information": ""
+        },
+        {
+          "point": 4,
+          "answer_text": "--verbose 是无需值的标志，额外的 1 不被识别，报 unrecognized arguments: 1。",
+          "evidence": ["prog.py: error: unrecognized arguments: 1", "The option is now more of a flag than something that requires a value."],
+          "missing_information": ""
+        },
+        {
+          "point": 5,
+          "answer_text": "增加别名使用 parser.add_argument(\"-v\", \"--verbose\", help=\"increase output verbosity\", action=\"store_true\")。传 -v 输出 verbosity turned on；help 展示 -v 与 --verbose 两种写法，并在 usage 中展示 [-v]。",
+          "evidence": ["parser.add_argument(\"-v\", \"--verbose\", help=\"increase output verbosity\",\n                    action=\"store_true\")", "$ python prog.py -v\nverbosity turned on", "usage: prog.py [-h] [-v]", "-v, --verbose  increase output verbosity"],
+          "missing_information": ""
+        }
+      ],
+      "perceived_difficulty_1_to_5": null,
+      "open_feedback": ""
+    },
+    {
+      "blind_id": "Bba9786280b362c8ffecd6546da96bce4",
+      "points": [
+        {
+          "point": 1,
+          "answer_text": "",
+          "evidence": [],
+          "missing_information": "稿件未提供字符串转换及反向重建的名称。"
+        },
+        {
+          "point": 2,
+          "answer_text": "",
+          "evidence": [],
+          "missing_information": "稿件未提供产生 JSON 字符串的函数，也未提供 x=[1,'simple','list'] 的转换结果。"
+        },
+        {
+          "point": 3,
+          "answer_text": "",
+          "evidence": [],
+          "missing_information": "稿件未提供对已打开文本文件对象 f 写入或读取的函数。"
+        },
+        {
+          "point": 4,
+          "answer_text": "",
+          "evidence": [],
+          "missing_information": "稿件未提供文本 JSON 文件的 encoding 要求。"
+        },
+        {
+          "point": 5,
+          "answer_text": "",
+          "evidence": [],
+          "missing_information": "稿件未提供不可信 pickle 的风险，也未提供 JSON 对任意类实例的限制。"
+        }
+      ],
+      "perceived_difficulty_1_to_5": null,
+      "open_feedback": "稿件仅介绍 JSON 是存储结构化数据的格式，以及 Python 包含 json 模块；五项所需具体信息均未提供。"
+    }
+  ]
+}

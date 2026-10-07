@@ -1,0 +1,416 @@
+[
+  {
+    "reader_id": "R01",
+    "blind_id": "Bb7b1e9733a61b0c5eadc22bb891395dc",
+    "points": [
+      0,
+      1,
+      1,
+      1,
+      1
+    ],
+    "score": 4,
+    "correct": false,
+    "contradiction": false,
+    "reasons": [
+      "回答包含None、无输出及无错误，但两条逐字引用仅支持None和无输出，未提供无错误的引用证据。",
+      "回答说明必须带值及expected one argument，两条非空逐字引用分别支持原因与报错。",
+      "给出完整等价add_argument写法及True/False，两条逐字引用支持全部必需条件。",
+      "说明无值flag及额外1未识别，逐字引用支持flag性质和unrecognized arguments: 1。",
+      "别名代码、-v输出及help两种名称均完整，四条逐字引用支持所需条件。"
+    ],
+    "sample_id": "S10",
+    "variant": "windtunnel_final"
+  },
+  {
+    "reader_id": "R01",
+    "blind_id": "B4b1b082ac65da65d050aea9a50714507",
+    "points": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "score": 0,
+    "correct": false,
+    "contradiction": false,
+    "reasons": [
+      "缺失追加模式、UTF-8写法和w差异，回答及证据为空。",
+      "缺失with关闭及未完整写盘说明，回答及证据为空。",
+      "缺失EOF与空白行区别，回答及证据为空。",
+      "缺失逐行方案及无size的read行为，回答及证据为空。",
+      "缺失JPEG模式、bytes及encoding限制，回答及证据为空。"
+    ],
+    "sample_id": "S06",
+    "variant": "abbreviated_control"
+  },
+  {
+    "reader_id": "R01",
+    "blind_id": "Bfceded5a887ce0e09cf371b0a80b53bb",
+    "points": [
+      1,
+      1,
+      1,
+      1,
+      0
+    ],
+    "score": 4,
+    "correct": false,
+    "contradiction": false,
+    "reasons": [
+      "正确给出两个过程名称，逐字引用及其稿内指代支持序列化与反序列化。",
+      "给出json.dumps(x)及完整结果，非空逐字引用直接支持。",
+      "给出写入dump及读取load和文件模式，两条逐字引用完整支持。",
+      "说明文本JSON读写均用UTF-8，逐字引用完整支持。",
+      "说明任意代码风险及JSON列表、字典、类实例限制，但遗漏标准要求的pickle特定于Python，稿件及引用也未提供该条件。"
+    ],
+    "sample_id": "S07",
+    "variant": "windtunnel_final"
+  },
+  {
+    "reader_id": "R02",
+    "blind_id": "Bb430d91adaf8e165eb552780af92edfb",
+    "points": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "score": 0,
+    "correct": false,
+    "contradiction": false,
+    "reasons": [
+      "标记missing_information，未回答缺省值及行为，证据为空。",
+      "标记missing_information，未回答需要值及报错，证据为空。",
+      "标记missing_information，未给代码及启用/缺省值，证据为空。",
+      "标记missing_information，未解释flag及额外1报错，证据为空。",
+      "标记missing_information，未给别名代码、输出及help，证据为空。"
+    ],
+    "sample_id": "S10",
+    "variant": "abbreviated_control"
+  },
+  {
+    "reader_id": "R02",
+    "blind_id": "Be1f92e481df1a665c9cd6a88aee52faf",
+    "points": [
+      1,
+      1,
+      1,
+      1,
+      0
+    ],
+    "score": 4,
+    "correct": false,
+    "contradiction": false,
+    "reasons": [
+      "正确给出两个过程名称，逐字引用及其稿内指代支持转换和重建。",
+      "给出json.dumps(x)及完整JSON字符串，逐字引用直接支持。",
+      "给出写入json.dump(x,f)及读模式恢复json.load(f)，两条逐字引用支持。",
+      "说明文本读写均指定UTF-8，逐字引用完整支持。",
+      "回答和引用支持任意代码风险及JSON类实例限制，但未回答pickle特定于Python，该标准子条件也无稿内证据。"
+    ],
+    "sample_id": "S07",
+    "variant": "windtunnel_final"
+  },
+  {
+    "reader_id": "R02",
+    "blind_id": "Baf19632e241d201055331acd1cc48574",
+    "points": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "score": 0,
+    "correct": false,
+    "contradiction": false,
+    "reasons": [
+      "标记missing_information，未给追加模式、UTF-8写法及w差异，证据为空。",
+      "标记missing_information，未说明with和写盘风险，证据为空。",
+      "标记missing_information，未说明EOF与空白行，证据为空。",
+      "标记missing_information，未给逐行方案和read差别，证据为空。",
+      "标记missing_information，未说明JPEG模式、类型和encoding，证据为空。"
+    ],
+    "sample_id": "S06",
+    "variant": "abbreviated_control"
+  },
+  {
+    "reader_id": "R03",
+    "blind_id": "Beb3e2e22daeac1f4f4d882af026af656",
+    "points": [
+      0,
+      1,
+      1,
+      1,
+      1
+    ],
+    "score": 4,
+    "correct": false,
+    "contradiction": false,
+    "reasons": [
+      "未给标准要求的with打开写法；第二条证据不是稿内连续逐字引用，去掉了w/a周围反引号，首条只能支持追加和编码，不能独立支持w差异。",
+      "回答包含块结束及异常时关闭和未完整落盘，两条非空逐字引用支持全部条件。",
+      "说明空串EOF与仅换行空白行，逐字引用完整支持。",
+      "给出逐行代码和内存效率，并说明无size读全文件及内存风险，两条逐字引用支持。",
+      "在读写模式后加b等价表达rb/wb，说明bytes及不能encoding，逐字引用支持这些条件及JPEG损坏风险。"
+    ],
+    "sample_id": "S06",
+    "variant": "windtunnel_final"
+  },
+  {
+    "reader_id": "R03",
+    "blind_id": "B250c2dcc69158640e8413e2b11c54fa0",
+    "points": [
+      0,
+      1,
+      1,
+      1,
+      1
+    ],
+    "score": 4,
+    "correct": false,
+    "contradiction": false,
+    "reasons": [
+      "回答包含None、无输出及无错误，但提供的逐字证据未覆盖不会报错这一必需子条件。",
+      "正确说明需要值和expected one argument，逐字引用分别支持。",
+      "给出完整等价代码及True/False，逐字代码和说明支持全部标准条件。",
+      "说明无值flag及1为未识别参数，逐字引用支持。",
+      "给出-v别名完整代码、输出及help两种名称，四条逐字引用完整支持。"
+    ],
+    "sample_id": "S10",
+    "variant": "windtunnel_final"
+  },
+  {
+    "reader_id": "R03",
+    "blind_id": "Bba9786280b362c8ffecd6546da96bce4",
+    "points": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "score": 0,
+    "correct": false,
+    "contradiction": false,
+    "reasons": [
+      "缺失序列化与反序列化名称，回答及证据为空。",
+      "缺失dumps函数与结果，回答及证据为空。",
+      "缺失dump/load读写方案，回答及证据为空。",
+      "缺失UTF-8要求，回答及证据为空。",
+      "缺失pickle风险与特定于Python及JSON限制，回答及证据为空。"
+    ],
+    "sample_id": "S07",
+    "variant": "abbreviated_control"
+  },
+  {
+    "reader_id": "R04",
+    "blind_id": "B2ef9fed0a601fb745a2a328056226c6f",
+    "points": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "score": 0,
+    "correct": false,
+    "contradiction": false,
+    "reasons": [
+      "标记missing_information，未回答追加模式、UTF-8写法与w差异，无证据。",
+      "标记missing_information，未回答with关闭和异常、写盘条件，无证据。",
+      "标记missing_information，未区分EOF与空白行，无证据。",
+      "标记missing_information，未提供逐行方案与read无size差别，无证据。",
+      "标记missing_information，未提供JPEG模式、类型和encoding限制，无证据。"
+    ],
+    "sample_id": "S06",
+    "variant": "abbreviated_control"
+  },
+  {
+    "reader_id": "R04",
+    "blind_id": "B0c31ac04e49ffc031947ab86e4663c2d",
+    "points": [
+      1,
+      1,
+      1,
+      1,
+      0
+    ],
+    "score": 4,
+    "correct": false,
+    "contradiction": false,
+    "reasons": [
+      "回答两种转换名称，逐字引文支持serializing与deserializing及其稿内所指过程。",
+      "json.dumps(x)及结果完整，逐字引文直接支持。",
+      "写入json.dump(x,f)与读取json.load(f)完整，逐字引文支持文件打开条件及调用。",
+      "明确文本JSON读写均用UTF-8，逐字引文直接支持。",
+      "任意代码风险、列表字典及任意类实例限制有证据，但缺少预期子条件pickle特定于Python；稿件及引文也未提供该条件。"
+    ],
+    "sample_id": "S07",
+    "variant": "windtunnel_final"
+  },
+  {
+    "reader_id": "R04",
+    "blind_id": "B8cba36ddf0db59d738741bf6342a7c8b",
+    "points": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "score": 0,
+    "correct": false,
+    "contradiction": false,
+    "reasons": [
+      "标记missing_information，缺省值及输出未回答，无证据。",
+      "标记missing_information，参数值要求及报错未回答，无证据。",
+      "标记missing_information，store_true定义及True/False未回答，无证据。",
+      "标记missing_information，额外1的错误未回答，无证据。",
+      "标记missing_information，别名定义、输出及help未回答，无证据。"
+    ],
+    "sample_id": "S10",
+    "variant": "abbreviated_control"
+  },
+  {
+    "reader_id": "R05",
+    "blind_id": "Bad75d14bd474d9afd7d3ed9fd4434c5e",
+    "points": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "score": 0,
+    "correct": false,
+    "contradiction": false,
+    "reasons": [
+      "标记missing_information，转换名称未回答，无证据。",
+      "标记missing_information，函数与字符串结果未回答，无证据。",
+      "标记missing_information，写文件和读取函数未回答，无证据。",
+      "标记missing_information，encoding要求未回答，无证据。",
+      "标记missing_information，pickle风险与特性、JSON实例限制未回答，无证据。"
+    ],
+    "sample_id": "S07",
+    "variant": "abbreviated_control"
+  },
+  {
+    "reader_id": "R05",
+    "blind_id": "B74497efca59032f8ec60f1927cd7e66b",
+    "points": [
+      0,
+      1,
+      1,
+      1,
+      1
+    ],
+    "score": 4,
+    "correct": false,
+    "contradiction": false,
+    "reasons": [
+      "答案包含None、无输出和不报错，但所附逐字引文仅支持None与无输出，没有支持不报错的引文。",
+      "说明必须带值，逐字引文给出值要求与expected one argument错误。",
+      "add_argument与store_true及启用True/缺省False完整，逐字引文支持。",
+      "说明flag无需值且1未识别，逐字引文支持flag定义与错误信息。",
+      "别名定义、-v输出和help两种名称完整，各有连续逐字引文。"
+    ],
+    "sample_id": "S10",
+    "variant": "windtunnel_final"
+  },
+  {
+    "reader_id": "R05",
+    "blind_id": "B7fe5ddc9bc85f62b7d952710b10c662a",
+    "points": [
+      0,
+      1,
+      1,
+      0,
+      0
+    ],
+    "score": 2,
+    "correct": false,
+    "contradiction": false,
+    "reasons": [
+      "追加模式、UTF-8、保留内容与w擦除有逐字证据，但未给预期的with open语句；单独open调用缺少该子条件。",
+      "块结束及异常时关闭、未关闭可能未完全写盘均回答，并有连续逐字引文支持。",
+      "空串为EOF、仅换行为空白行完整，并有逐字引文支持。",
+      "逐行方案、内存高效与无size读全文有逐字证据；可能超出内存的子条件虽回答，但所附引文未包含稿件关于文件超过机器内存的说明。",
+      "binary、bytes与encoding限制有逐字证据，但未明确给出读rb及写wb或等价完整读写模式，不能以外部知识补足。"
+    ],
+    "sample_id": "S06",
+    "variant": "windtunnel_final"
+  },
+  {
+    "reader_id": "R06",
+    "blind_id": "B5c840bee2d6f94d4489c2d9c964aedb7",
+    "points": [
+      0,
+      1,
+      1,
+      0,
+      0
+    ],
+    "score": 2,
+    "correct": false,
+    "contradiction": false,
+    "reasons": [
+      "未给预期with open语句；解释w/a的第二引文不是稿内精确连续子串，第一有效引文只支持追加调用与UTF-8，不能补足全部条件。",
+      "with在正常结束及异常时关闭、否则写盘不完整均回答，两个逐字引文支持。",
+      "EOF与空白行区分完整，连续逐字引文支持。",
+      "逐行代码、内存高效和无size读取全文均有逐字证据，但关于可能超过内存的子条件缺少所附引文支持。",
+      "答案给出rb/wb、bytes与encoding限制；r/w解释引文并非精确连续子串，其余有效引文仅说明加b与二进制性质，未支持具体r/w模式组成，不能补足全部条件。"
+    ],
+    "sample_id": "S06",
+    "variant": "windtunnel_final"
+  },
+  {
+    "reader_id": "R06",
+    "blind_id": "B9c826ed0697a6b8cb297415dce38c14a",
+    "points": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "score": 0,
+    "correct": false,
+    "contradiction": false,
+    "reasons": [
+      "答案为空且missing_information，缺省值和输出无证据。",
+      "答案为空且missing_information，值要求与错误无证据。",
+      "答案为空且missing_information，add_argument和True/False无证据。",
+      "答案为空且missing_information，额外1报错原因无证据。",
+      "答案为空且missing_information，别名、输出和help无证据。"
+    ],
+    "sample_id": "S10",
+    "variant": "abbreviated_control"
+  },
+  {
+    "reader_id": "R06",
+    "blind_id": "B485a1c19bfb16122405470999c770735",
+    "points": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "score": 0,
+    "correct": false,
+    "contradiction": false,
+    "reasons": [
+      "答案为空且missing_information，转换名称无证据。",
+      "答案为空且missing_information，dumps函数及结果无证据。",
+      "答案为空且missing_information，dump/load读写无证据。",
+      "答案为空且missing_information，UTF-8要求无证据。",
+      "答案为空且missing_information，pickle风险与特性、JSON实例限制无证据。"
+    ],
+    "sample_id": "S07",
+    "variant": "abbreviated_control"
+  }
+]

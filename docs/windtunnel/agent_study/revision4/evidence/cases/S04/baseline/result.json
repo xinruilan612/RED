@@ -1,0 +1,71 @@
+{
+  "sample_id": "S04",
+  "method": "baseline",
+  "participant_type": "codex_proxy",
+  "revision": "v4",
+  "draft_kind": "public_official_tutorial_excerpt",
+  "adaptation": "layout and attribution only; original English text",
+  "deletion_design": null,
+  "source_url": "https://docs.python.org/3.12/tutorial/datastructures.html#list-comprehensions",
+  "original_sha256": "4d596ed29ac752a04a3f67cdb243e13bca35110b3e82b011680cb42d84f62992",
+  "material_sha256": "4d596ed29ac752a04a3f67cdb243e13bca35110b3e82b011680cb42d84f62992",
+  "outcome": "completed",
+  "error": null,
+  "automatic_adoption": true,
+  "human_author": false,
+  "issues": [
+    {
+      "explanation": "The draft contains the full official section. For the requested cheat sheet, the flattening example uses a different input list [[1,2,3],[4,5,6],[7,8,9]], not the requested [[1,2],[3,4]], so the answer needs a separate adapted expression and result while citing the pattern from the source.",
+      "evidence": "Draft flattening example: vec = [[1,2,3], [4,5,6], [7,8,9]]; [num for elem in vec for num in elem]. Reading task asks for [[1,2],[3,4]]."
+    },
+    {
+      "explanation": "The desired combined filter-and-double expression is not printed in the draft. The draft has separate examples for doubling and filtering, so the cheat sheet must derive the combined expression and result from those supported components.",
+      "evidence": "[x*2 for x in vec] and [x for x in vec if x >= 0] are separate examples; no combined [x*2 for x in vec if x >= 0] appears."
+    },
+    {
+      "explanation": "The draft gives a SyntaxError for unparenthesized tuple expressions, but the exact invalid line [x, x**2 for x in range(6)] is not itself a tuple expression; the source says if the expression is a tuple it must be parenthesized, and the expected valid form is [(x, x**2) for x in range(6)]. A beginner cheat sheet should clarify this without overstating the error example.",
+      "evidence": "Draft: 'If the expression is a tuple ... it must be parenthesized.' Then: [x, x**2 for x in range(6)] raises SyntaxError. Valid example: [(x, x**2) for x in range(6)]."
+    }
+  ],
+  "run_id": "1a641bfe-3cd4-4021-842e-7709ebc533eb",
+  "wall_seconds": 5.042,
+  "final_sha256": "6572e65f6ee6681bb4a8687fb21aafe12710cc54867e13281ca6f9cce47323ad",
+  "changed": true,
+  "calls": [
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 2579,
+      "output_tokens": 1453,
+      "total_tokens": 4032,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "issues": [
+          {
+            "explanation": "The draft contains the full official section. For the requested cheat sheet, the flattening example uses a different input list [[1,2,3],[4,5,6],[7,8,9]], not the requested [[1,2],[3,4]], so the answer needs a separate adapted expression and result while citing the pattern from the source.",
+            "evidence": "Draft flattening example: vec = [[1,2,3], [4,5,6], [7,8,9]]; [num for elem in vec for num in elem]. Reading task asks for [[1,2],[3,4]]."
+          },
+          {
+            "explanation": "The desired combined filter-and-double expression is not printed in the draft. The draft has separate examples for doubling and filtering, so the cheat sheet must derive the combined expression and result from those supported components.",
+            "evidence": "[x*2 for x in vec] and [x for x in vec if x >= 0] are separate examples; no combined [x*2 for x in vec if x >= 0] appears."
+          },
+          {
+            "explanation": "The draft gives a SyntaxError for unparenthesized tuple expressions, but the exact invalid line [x, x**2 for x in range(6)] is not itself a tuple expression; the source says if the expression is a tuple it must be parenthesized, and the expected valid form is [(x, x**2) for x in range(6)]. A beginner cheat sheet should clarify this without overstating the error example.",
+            "evidence": "Draft: 'If the expression is a tuple ... it must be parenthesized.' Then: [x, x**2 for x in range(6)] raises SyntaxError. Valid example: [(x, x**2) for x in range(6)]."
+          }
+        ],
+        "revised_text": "5.1.3. List Comprehensions\n\nList comprehensions provide a concise way to create lists. Common applications are to make new lists where each element is the result of some operations applied to each member of another sequence or iterable, or to create a subsequence of those elements that satisfy a certain condition.\n\nFor example, assume we want to create a list of squares, like:\n\n>>> squares = []\n>>> for x in range(10):\n...     squares.append(x**2)\n...\n>>> squares\n[0, 1, 4, 9, 16, 25, 36, 49, 64, 81]\n\nNote that this creates (or overwrites) a variable named x that still exists after the loop completes. We can calculate the list of squares without any side effects using:\n\nsquares = list(map(lambda x: x**2, range(10)))\n\nor, equivalently:\n\nsquares = [x**2 for x in range(10)]\n\nwhich is more concise and readable.\n\nA list comprehension consists of brackets containing an expression followed by a for clause, then zero or more for or if clauses. The result will be a new list resulting from evaluating the expression in the context of the for and if clauses which follow it. For example, this listcomp combines the elements of two lists if they are not equal:\n\n>>> [(x, y) for x in [1,2,3] for y in [3,1,4] if x != y]\n[(1, 3), (1, 4), (2, 3), (2, 1), (2, 4), (3, 1), (3, 4)]\n\nand it’s equivalent to:\n\n>>> combs = []\n>>> for x in [1,2,3]:\n...     for y in [3,1,4]:\n...         if x != y:\n...             combs.append((x, y))\n...\n>>> combs\n[(1, 3), (1, 4), (2, 3), (2, 1), (2, 4), (3, 1), (3, 4)]\n\nNote how the order of the for and if statements is the same in both these snippets.\n\nIf the expression is a tuple (e.g. the (x, y) in the previous example), it must be parenthesized.\n\n>>> vec = [-4, -2, 0, 2, 4]\n>>> # create a new list with the values doubled\n>>> [x*2 for x in vec]\n[-8, -4, 0, 4, 8]\n>>> # filter the list to exclude negative numbers\n>>> [x for x in vec if x >= 0]\n[0, 2, 4]\n>>> # apply a function to all the elements\n>>> [abs(x) for x in vec]\n[4, 2, 0, 2, 4]\n>>> # call a method on each element\n>>> freshfruit = ['  banana', '  loganberry ', 'passion fruit  ']\n>>> [weapon.strip() for weapon in freshfruit]\n['banana', 'loganberry', 'passion fruit']\n>>> # create a list of 2-tuples like (number, square)\n>>> [(x, x**2) for x in range(6)]\n[(0, 0), (1, 1), (2, 4), (3, 9), (4, 16), (5, 25)]\n>>> # the tuple must be parenthesized, otherwise an error is raised\n>>> [x, x**2 for x in range(6)]\n  File \"<stdin>\", line 1\n    [x, x**2 for x in range(6)]\n     ^^^^^^^\nSyntaxError: did you forget parentheses around the comprehension target?\n>>> # flatten a list using a listcomp with two 'for'\n>>> vec = [[1,2,3], [4,5,6], [7,8,9]]\n>>> [num for elem in vec for num in elem]\n[1, 2, 3, 4, 5, 6, 7, 8, 9]\n\nList comprehensions can contain complex expressions and nested functions:\n\n>>> from math import pi\n>>> [str(round(pi, i)) for i in range(1, 6)]\n['3.1', '3.14', '3.142', '3.1416', '3.14159']"
+      }
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 0.929702,
+    "reserved_unknown_cny": 0.04281,
+    "committed_upper_cny": 0.972512,
+    "calls": 84,
+    "unknown_calls": 1
+  }
+}

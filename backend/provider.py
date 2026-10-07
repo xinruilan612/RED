@@ -80,6 +80,8 @@ def decode_response(body):
 
 
 class DeepSeek:
+    THINKING_TYPE = 'disabled'
+    MAX_OUTPUT_TOKENS = 3000
     def __init__(self, config): self.config=config
 
     def complete(self, messages):
@@ -89,7 +91,7 @@ class DeepSeek:
     def complete_result(self, messages):
         require(self.config.ready,'KEY_REQUIRED','请先填写 .env 的 DEEPSEEK_API_KEY 并重启服务')
         body=json.dumps({'model':self.config.model,'messages':messages,'stream':False,
-                         'thinking':{'type':'disabled'},'max_tokens':3000,
+                         'thinking':{'type':self.THINKING_TYPE},'max_tokens':self.MAX_OUTPUT_TOKENS,
                          'response_format':{'type':'json_object'}},ensure_ascii=False).encode()
         request=Request('https://api.deepseek.com/chat/completions',body,
                         {'Content-Type':'application/json','Authorization':'Bearer '+self.config.api_key})

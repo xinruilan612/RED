@@ -1,0 +1,45 @@
+Basic use
+
+Importing the main class:
+
+>>> from pathlib import Path
+
+Representing the current directory with Path('.') and listing its subdirectories:
+
+>>> p = Path('.')
+>>> [x for x in p.iterdir() if x.is_dir()]
+[PosixPath('.hg'), PosixPath('docs'), PosixPath('dist'),
+ PosixPath('__pycache__'), PosixPath('build')]
+
+Listing Python source files recursively in this directory tree:
+
+>>> list(p.glob('**/*.py'))
+[PosixPath('test_pathlib.py'), PosixPath('setup.py'),
+ PosixPath('pathlib.py'), PosixPath('docs/conf.py'),
+ PosixPath('build/lib/pathlib.py')]
+
+Navigating inside a directory tree:
+
+>>> p = Path('/etc')
+>>> q = p / 'init.d' / 'reboot'
+>>> q
+PosixPath('/etc/init.d/reboot')
+>>> q.resolve()
+PosixPath('/etc/rc.d/init.d/halt')
+
+Here q is the joined path PosixPath('/etc/init.d/reboot'), while q.resolve() shows an example resolved result. This example machine path result should not be guaranteed to be the same on all computers.
+
+Querying path properties:
+
+>>> q.exists()
+True
+>>> q.is_dir()
+False
+
+In this example, q.exists() is True and q.is_dir() is False.
+
+Opening a file and reading the first line with q:
+
+>>> with q.open() as f: f.readline()
+...
+'#!/bin/bash\n'

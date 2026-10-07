@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "policy": "continue_bounded_unknown",
+    "call_id": null
+  },
+  {
+    "id": 2,
+    "policy": "legacy_native_bound_verified",
+    "call_id": "7480dc78-9c01-46a5-88a2-2dd4b0cfe204"
+  },
+  {
+    "id": 3,
+    "policy": "continue_bounded_unknown",
+    "call_id": null
+  },
+  {
+    "id": 4,
+    "policy": "continue_bounded_unknown",
+    "call_id": null
+  },
+  {
+    "id": 5,
+    "policy": "continue_bounded_unknown",
+    "call_id": null
+  },
+  {
+    "id": 6,
+    "policy": "continue_bounded_unknown",
+    "call_id": null
+  },
+  {
+    "id": 7,
+    "policy": "continue_bounded_unknown",
+    "call_id": null
+  },
+  {
+    "id": 8,
+    "policy": "continue_bounded_unknown",
+    "call_id": null
+  }
+]

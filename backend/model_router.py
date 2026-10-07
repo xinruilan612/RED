@@ -77,14 +77,19 @@ class Calls:
                 if old:
                     require(old[1] is not None and old[2] is not None,'USAGE_UNKNOWN','上次调用结果或用量未知；已停止，未重复收费调用')
                     if old[3] == 'invalid':
-                        from backend.citation_ids import repair
-                        from backend.live import material_records, normalize
                         raw=json.loads(old[1])
-                        _,repairs=repair(stage,raw,material_records(run.context))
-                        require(repairs,'MODEL_OUTPUT_INVALID','上次输出未通过校验，已停止重复调用；请查看被拒绝的模型响应')
-                        # Revalidate the complete response before allowing free
-                        # replay. Same input hash/snapshot; raw audit is unchanged.
-                        normalize(run,stage,raw)
+                        if getattr(run, 'workflow_type', 'creation') == 'windtunnel':
+                            from backend.windtunnel import STAGES, normalize
+                            require(stage in STAGES, 'MODEL_OUTPUT_INVALID', '无效风洞阶段不能复用')
+                            # Revalidate a received response under current strict
+                            # domain rules; never resend or rewrite the raw audit.
+                            normalize(run,stage,raw)
+                        else:
+                            from backend.citation_ids import repair
+                            from backend.live import material_records, normalize
+                            _,repairs=repair(stage,raw,material_records(run.context))
+                            require(repairs,'MODEL_OUTPUT_INVALID','上次输出未通过校验，已停止重复调用；请查看被拒绝的模型响应')
+                            normalize(run,stage,raw)
                     return json.loads(old[1]),old[2],old[0]
             db.execute('INSERT INTO live_lineage VALUES(?,?) ON CONFLICT(run_id) DO NOTHING',(run.run_id,run.run_id))
             root=db.execute('SELECT budget_id FROM live_lineage WHERE run_id=?',(run.run_id,)).fetchone()[0]

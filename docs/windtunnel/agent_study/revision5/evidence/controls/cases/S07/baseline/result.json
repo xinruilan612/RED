@@ -1,0 +1,55 @@
+{
+  "sample_id": "S07",
+  "method": "baseline",
+  "participant_type": "codex_proxy",
+  "revision": "v5.controlled",
+  "draft_kind": "researcher_abbreviated_gap_control",
+  "adaptation": "人为删节缺口控制，非真实创作者",
+  "deletion_design": "Omit serialization/deserialization names, json.dumps output example, dump/load file operations, UTF-8 text encoding, unsafe pickle warning, and arbitrary-instance JSON limitations needed by the five-point task.",
+  "source_url": "https://docs.python.org/3.12/tutorial/inputoutput.html#saving-structured-data-with-json",
+  "original_sha256": "7b18e39877414fd101d6ade276147c6b354796b751c8ca3c19ba19424445fe66",
+  "material_sha256": "31d7a8468f532da0abe60437c3b621135a6f9396bfd88fb4e62977a382e9fa29",
+  "outcome": "completed",
+  "error": null,
+  "automatic_adoption": true,
+  "human_author": false,
+  "issues": [
+    {
+      "explanation": "The draft is far too thin to meet the reading task. It introduces JSON and the json module but omits all requested specifics: serializing/deserializing terms, the json.dumps example, json.dump/json.load with an open text file, UTF-8 encoding requirement, pickle insecurity, and the limitation for arbitrary class instances. The materials support each of these points.",
+      "evidence": "Draft: 'JSON is a format for storing structured data. Python includes a json module for working with it.' Materials: 'serializing', 'deserializing', json.dumps(x) -> '[1, \"simple\", \"list\"]', json.dump(x, f), x = json.load(f), 'JSON files must be encoded in UTF-8. Use encoding=\"utf-8\"...', 'deserializing pickle data coming from an untrusted source can execute arbitrary code', 'serializing arbitrary class instances in JSON requires a bit of extra effort.'"
+    }
+  ],
+  "run_id": "a574c49b-5874-44ba-93f5-93aec01bc715",
+  "wall_seconds": 2.569,
+  "final_sha256": "ba7ff672b245ae99b30d718a1f05b4ed0ba9746d40b9934c599a034426736f77",
+  "changed": true,
+  "calls": [
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 1039,
+      "output_tokens": 584,
+      "total_tokens": 1623,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "issues": [
+          {
+            "explanation": "The draft is far too thin to meet the reading task. It introduces JSON and the json module but omits all requested specifics: serializing/deserializing terms, the json.dumps example, json.dump/json.load with an open text file, UTF-8 encoding requirement, pickle insecurity, and the limitation for arbitrary class instances. The materials support each of these points.",
+            "evidence": "Draft: 'JSON is a format for storing structured data. Python includes a json module for working with it.' Materials: 'serializing', 'deserializing', json.dumps(x) -> '[1, \"simple\", \"list\"]', json.dump(x, f), x = json.load(f), 'JSON files must be encoded in UTF-8. Use encoding=\"utf-8\"...', 'deserializing pickle data coming from an untrusted source can execute arbitrary code', 'serializing arbitrary class instances in JSON requires a bit of extra effort.'"
+          }
+        ],
+        "revised_text": "JSON is a format for storing structured data. Python includes a json module for working with it.\n\nIf you want to save a structured value such as x = [1, 'simple', 'list'] and later restore it, one supported approach is to use JSON. The standard json module can take Python data hierarchies and convert them to string representations. This conversion process is called serializing. Reconstructing the data from the string representation is called deserializing.\n\nTo view the JSON string representation of x, use json.dumps. For example:\n\n>>> import json\n>>> x = [1, 'simple', 'list']\n>>> json.dumps(x)\n'[1, \"simple\", \"list\"]'\n\nThe variant dump() serializes the object to a text file. If f is a text file object opened for writing, use:\n\njson.dump(x, f)\n\nTo decode the object again, if f is a binary file or text file object opened for reading, use:\n\nx = json.load(f)\n\nJSON files must be encoded in UTF-8. Use encoding=\"utf-8\" when opening a JSON file as a text file for both reading and writing.\n\nThis simple serialization technique can handle lists and dictionaries, but serializing arbitrary class instances in JSON requires a bit of extra effort.\n\nJSON should not casually be replaced with pickle for untrusted data. Contrary to JSON, pickle is a protocol which allows the serialization of arbitrarily complex Python objects. As such, it is specific to Python and cannot be used to communicate with applications written in other languages. It is also insecure by default: deserializing pickle data coming from an untrusted source can execute arbitrary code, if the data was crafted by a skilled attacker."
+      }
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 1.933484,
+    "reserved_unknown_cny": 0.04281,
+    "committed_upper_cny": 1.976294,
+    "calls": 149,
+    "unknown_calls": 1
+  }
+}

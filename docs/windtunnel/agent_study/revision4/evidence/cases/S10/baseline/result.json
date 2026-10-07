@@ -1,0 +1,87 @@
+{
+  "sample_id": "S10",
+  "method": "baseline",
+  "participant_type": "codex_proxy",
+  "revision": "v4",
+  "draft_kind": "public_official_tutorial_excerpt",
+  "adaptation": "layout and attribution only; original English text",
+  "deletion_design": null,
+  "source_url": "https://docs.python.org/3.12/howto/argparse.html#introducing-optional-arguments",
+  "original_sha256": "097a75cb3cc6e2bbe535cba19ca4f53a63d7283298cae24749c47145dac0915f",
+  "material_sha256": "097a75cb3cc6e2bbe535cba19ca4f53a63d7283298cae24749c47145dac0915f",
+  "outcome": "completed",
+  "error": null,
+  "automatic_adoption": true,
+  "human_author": false,
+  "issues": [
+    {
+      "explanation": "The draft's explanation of the initial --verbosity default is correct but could be more explicit that args.verbosity is None by default, which is falsy, so the if block is skipped and no output is printed. This matches the reading task to explain the default value and output.",
+      "evidence": "Draft: 'by default, if an optional argument isn’t used, the relevant variable, in this case args.verbosity, is given None as a value, which is the reason it fails the truth test of the if statement.'"
+    },
+    {
+      "explanation": "The draft explains why bare --verbosity errors, but it could be clearer that argparse expects one argument because --verbosity was defined without action='store_true' or nargs='?'; thus it requires a value.",
+      "evidence": "Draft: 'When using the --verbosity option, one must also specify some value, any value.'"
+    },
+    {
+      "explanation": "The draft gives the --verbose add_argument and explains store_true, but could more explicitly state that enabling --verbose gives args.verbose=True and omitting it gives False.",
+      "evidence": "Draft: 'This means that, if the option is specified, assign the value True to args.verbose. Not specifying it implies False.'"
+    },
+    {
+      "explanation": "The draft explains why --verbose 1 errors, but the wording could be sharper: because --verbose is a flag (store_true) and takes no value, the parser treats 1 as an unrecognized positional argument.",
+      "evidence": "Draft: 'It complains when you specify a value, in true spirit of what flags actually are.'"
+    },
+    {
+      "explanation": "The draft gives the -v/--verbose add_argument and shows -v output and help text, but could explicitly state that help now shows -v as the short form and that using -v sets args.verbose=True and prints the same message.",
+      "evidence": "Draft: 'Note that the new ability is also reflected in the help text.'"
+    }
+  ],
+  "run_id": "d376eccd-c61e-4879-b4ff-4096161909a6",
+  "wall_seconds": 5.786,
+  "final_sha256": "21f068f6891eae1e9f54ceaca8b811bee3e39058169a0cb73ad20c480b7d0b02",
+  "changed": true,
+  "calls": [
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 2124,
+      "output_tokens": 1509,
+      "total_tokens": 3633,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "issues": [
+          {
+            "explanation": "The draft's explanation of the initial --verbosity default is correct but could be more explicit that args.verbosity is None by default, which is falsy, so the if block is skipped and no output is printed. This matches the reading task to explain the default value and output.",
+            "evidence": "Draft: 'by default, if an optional argument isn’t used, the relevant variable, in this case args.verbosity, is given None as a value, which is the reason it fails the truth test of the if statement.'"
+          },
+          {
+            "explanation": "The draft explains why bare --verbosity errors, but it could be clearer that argparse expects one argument because --verbosity was defined without action='store_true' or nargs='?'; thus it requires a value.",
+            "evidence": "Draft: 'When using the --verbosity option, one must also specify some value, any value.'"
+          },
+          {
+            "explanation": "The draft gives the --verbose add_argument and explains store_true, but could more explicitly state that enabling --verbose gives args.verbose=True and omitting it gives False.",
+            "evidence": "Draft: 'This means that, if the option is specified, assign the value True to args.verbose. Not specifying it implies False.'"
+          },
+          {
+            "explanation": "The draft explains why --verbose 1 errors, but the wording could be sharper: because --verbose is a flag (store_true) and takes no value, the parser treats 1 as an unrecognized positional argument.",
+            "evidence": "Draft: 'It complains when you specify a value, in true spirit of what flags actually are.'"
+          },
+          {
+            "explanation": "The draft gives the -v/--verbose add_argument and shows -v output and help text, but could explicitly state that help now shows -v as the short form and that using -v sets args.verbose=True and prints the same message.",
+            "evidence": "Draft: 'Note that the new ability is also reflected in the help text.'"
+          }
+        ],
+        "revised_text": "Introducing Optional arguments\n\nSo far we have been playing with positional arguments. Let us\nhave a look on how to add optional ones:\n\nimport argparse\nparser = argparse.ArgumentParser()\nparser.add_argument(\"--verbosity\", help=\"increase output verbosity\")\nargs = parser.parse_args()\nif args.verbosity:\n    print(\"verbosity turned on\")\n\nAnd the output:\n\n$ python prog.py --verbosity 1\nverbosity turned on\n$ python prog.py\n$ python prog.py --help\nusage: prog.py [-h] [--verbosity VERBOSITY]\n\noptions:\n  -h, --help            show this help message and exit\n  --verbosity VERBOSITY\n                        increase output verbosity\n$ python prog.py --verbosity\nusage: prog.py [-h] [--verbosity VERBOSITY]\nprog.py: error: argument --verbosity: expected one argument\n\nHere is what is happening:\n\nThe program is written so as to display something when --verbosity is\nspecified and display nothing when not.\n\nTo show that the option is actually optional, there is no error when running\nthe program without it. Note that by default, if an optional argument isn’t\nused, the relevant variable, in this case args.verbosity, is\ngiven None as a value, which is the reason it fails the truth\ntest of the if statement. Since None is falsy, the if block is skipped and no\noutput is printed.\n\nThe help message is a bit different.\n\nWhen using the --verbosity option, one must also specify some value,\nany value. Because --verbosity was defined as a normal optional argument\nwithout action=\"store_true\" or nargs=\"?\", argparse expects one argument after\nit; writing only --verbosity leaves it missing its required value, so the\nparser errors with \"expected one argument\".\n\nThe above example accepts arbitrary integer values for --verbosity, but for\nour simple program, only two values are actually useful, True or False.\nLet’s modify the code accordingly:\n\nimport argparse\nparser = argparse.ArgumentParser()\nparser.add_argument(\"--verbose\", help=\"increase output verbosity\",\n                    action=\"store_true\")\nargs = parser.parse_args()\nif args.verbose:\n    print(\"verbosity turned on\")\n\nAnd the output:\n\n$ python prog.py --verbose\nverbosity turned on\n$ python prog.py --verbose 1\nusage: prog.py [-h] [--verbose]\nprog.py: error: unrecognized arguments: 1\n$ python prog.py --help\nusage: prog.py [-h] [--verbose]\n\noptions:\n  -h, --help  show this help message and exit\n  --verbose   increase output verbosity\n\nHere is what is happening:\n\nThe option is now more of a flag than something that requires a value.\nWe even changed the name of the option to match that idea.\nNote that we now specify a new keyword, action, and give it the value\n\"store_true\". This means that, if the option is specified,\nassign the value True to args.verbose.\nNot specifying it implies False. So enabling it with --verbose sets\nargs.verbose to True and prints \"verbosity turned on\"; omitting it leaves\nargs.verbose as False and prints nothing.\n\nIt complains when you specify a value, in true spirit of what flags\nactually are. Since --verbose is a flag using store_true, it takes no value;\nthe parser therefore treats the extra 1 as an unrecognized positional\nargument and reports \"unrecognized arguments: 1\".\n\nNotice the different help text.\n\nShort options\n\nIf you are familiar with command line usage,\nyou will notice that I haven’t yet touched on the topic of short\nversions of the options. It’s quite simple:\n\nimport argparse\nparser = argparse.ArgumentParser()\nparser.add_argument(\"-v\", \"--verbose\", help=\"increase output verbosity\",\n                    action=\"store_true\")\nargs = parser.parse_args()\nif args.verbose:\n    print(\"verbosity turned on\")\n\nAnd here goes:\n\n$ python prog.py -v\nverbosity turned on\n$ python prog.py --help\nusage: prog.py [-h] [-v]\n\noptions:\n  -h, --help     show this help message and exit\n  -v, --verbose  increase output verbosity\n\nNote that the new ability is also reflected in the help text: help now shows\n-v as the short form alongside --verbose. Using -v sets args.verbose to True\nand prints the same \"verbosity turned on\" message."
+      }
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 1.264928,
+    "reserved_unknown_cny": 0.04281,
+    "committed_upper_cny": 1.307738,
+    "calls": 108,
+    "unknown_calls": 1
+  }
+}

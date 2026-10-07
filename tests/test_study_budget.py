@@ -5,13 +5,15 @@ import tempfile
 import threading
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from backend.contracts import DomainError
 from scripts.study_budget import BudgetedClient
+from backend.provider import DeepSeek, Config
 
 
 MESSAGES = [{'role': 'user', 'content': '中文'}]
-RESERVE_MICRO = (len('中文'.encode('utf-8')) + 1024)*2 + 3000*8
+RESERVE_MICRO = (len(json.dumps(MESSAGES, ensure_ascii=False, sort_keys=True, separators=(',', ':')).encode('utf-8')) + 1024)*2 + 3000*8
 
 
 class Adapter:
@@ -122,6 +124,96 @@ class StudyBudgetTests(unittest.TestCase):
     def test_cap_validation(self):
         for cap in (0, -1, 5.000001, 'NaN', 'Infinity', .0000001):
             self.assert_code('STUDY_BUDGET_INVALID', lambda: BudgetedClient(Adapter(), self.path, cap))
+
+    def native_client(self, cap=5):
+        return BudgetedClient(DeepSeek(Config(api_key='test-placeholder')), self.path, cap,
+                              continue_after_unknown=True)
+
+    def test_explicit_continue_keeps_unknown_reserve_and_never_replays(self):
+        client = self.native_client()
+        with patch.object(client.adapter, 'complete_result', side_effect=RuntimeError('secret-api-key')) as call:
+            self.assert_code('STUDY_BUDGET_UNKNOWN', lambda: client.complete_result(MESSAGES))
+            self.assert_code('STUDY_BUDGET_UNKNOWN', lambda: client.complete_result(MESSAGES))
+            self.assertEqual(call.call_count, 1)
+        other_messages = [{'role': 'user', 'content': 'different task'}]
+        with patch.object(client.adapter, 'complete_result', side_effect=Adapter().complete_result):
+            client.complete_result(other_messages)
+        summary = client.summary()
+        self.assertEqual(summary['calls'], 2)
+        self.assertEqual(summary['unknown_calls'], 1)
+        self.assertEqual(summary['committed_upper_cny'], (RESERVE_MICRO + 120) / 1_000_000)
+        with sqlite3.connect(self.path) as db:
+            self.assertEqual(db.execute("SELECT failure_code,continuation_safe FROM study_calls WHERE state='unknown'").fetchone(), ('ADAPTER_EXCEPTION', 1))
+            self.assertIn(('continue_bounded_unknown',), db.execute('SELECT policy FROM study_budget_policy').fetchall())
+        self.assertNotIn(b'secret-api-key', self.path.read_bytes())
+
+    def test_continue_cap_includes_unknown_and_default_still_blocks(self):
+        client = self.native_client(RESERVE_MICRO / 1_000_000)
+        with patch.object(client.adapter, 'complete_result', side_effect=RuntimeError('private')):
+            self.assert_code('STUDY_BUDGET_UNKNOWN', lambda: client.complete_result(MESSAGES))
+        other = [{'role': 'user', 'content': 'next'}]
+        with patch.object(client.adapter, 'complete_result') as call:
+            self.assert_code('STUDY_BUDGET_EXCEEDED', lambda: client.complete_result(other))
+            call.assert_not_called()
+        default = BudgetedClient(Adapter(), self.path, RESERVE_MICRO / 1_000_000)
+        self.assert_code('STUDY_BUDGET_UNKNOWN', lambda: default.complete_result(other))
+
+    def test_continue_cannot_bypass_inflight_or_excess_usage(self):
+        client = self.native_client()
+        client._reserve(MESSAGES)
+        other = [{'role': 'user', 'content': 'next'}]
+        self.assert_code('STUDY_BUDGET_UNKNOWN', lambda: client.complete_result(other))
+        self.path.unlink()
+        client = self.native_client()
+        oversized = ({}, 3020, {'input_tokens': 19, 'output_tokens': 3001})
+        with patch.object(client.adapter, 'complete_result', return_value=oversized):
+            self.assert_code('STUDY_BUDGET_UNKNOWN', lambda: client.complete_result(MESSAGES))
+        self.assert_code('STUDY_BUDGET_UNKNOWN', lambda: client.complete_result(other))
+        with sqlite3.connect(self.path) as db:
+            self.assertEqual(db.execute('SELECT failure_code,continuation_safe FROM study_calls').fetchone(), ('USAGE_BOUND_EXCEEDED', 0))
+
+    def test_continuation_requires_native_verified_bounds_on_each_call(self):
+        self.assert_code('STUDY_BUDGET_POLICY_INVALID', lambda: BudgetedClient(Adapter(), self.path, continue_after_unknown=True))
+        self.assert_code('STUDY_BUDGET_POLICY_INVALID', lambda: BudgetedClient(DeepSeek(Config(model='other')), self.path, continue_after_unknown=True))
+        client = self.native_client()
+        for attribute, value in (('THINKING_TYPE', 'enabled'), ('MAX_OUTPUT_TOKENS', 3001)):
+            with patch.object(client.adapter, attribute, value):
+                self.assert_code('STUDY_BUDGET_POLICY_INVALID', lambda: client.complete_result(MESSAGES))
+        self.assertEqual(client.summary()['calls'], 0)
+
+    def test_legacy_unknown_requires_specific_audit_and_cannot_authorize_new_unsafe(self):
+        old = BudgetedClient(Adapter(error=RuntimeError('private')), self.path)
+        self.assert_code('STUDY_BUDGET_UNKNOWN', lambda: old.complete_result(MESSAGES))
+        # Emulate a genuinely old ledger before failure classification existed.
+        with sqlite3.connect(self.path) as db:
+            db.execute('UPDATE study_calls SET failure_code=NULL')
+            call_id = db.execute('SELECT id FROM study_calls').fetchone()[0]
+        client = self.native_client()
+        other = [{'role': 'user', 'content': 'new task'}]
+        self.assert_code('STUDY_BUDGET_UNKNOWN', lambda: client.complete_result(other))
+        client.authorize_legacy_unknown([call_id])
+        with patch.object(client.adapter, 'complete_result', side_effect=Adapter().complete_result):
+            client.complete_result(other)
+        self.assertEqual(client.summary()['calls'], 2)
+        self.assert_code('STUDY_BUDGET_POLICY_INVALID', lambda: client.authorize_legacy_unknown([call_id]))
+
+    def test_untrusted_exception_codes_and_text_not_retained(self):
+        client = self.native_client()
+        with patch.object(client.adapter, 'complete_result', side_effect=DomainError('secret-code', 'secret-message')):
+            self.assert_code('STUDY_BUDGET_UNKNOWN', lambda: client.complete_result(MESSAGES))
+        self.assertNotIn(b'secret-code', self.path.read_bytes())
+        self.assertNotIn(b'secret-message', self.path.read_bytes())
+
+    def test_unbounded_message_features_rejected_before_request(self):
+        client = self.native_client()
+        invalid_messages = ([{'role': 'user', 'content': 'x', 'tools': []}],
+                            [{'role': 'tool', 'content': 'x'}],
+                            [{'role': 'user', 'content': [{'image': 'x'}]}])
+        with patch.object(client.adapter, 'complete_result') as call:
+            for messages in invalid_messages:
+                self.assert_code('STUDY_BUDGET_INPUT_INVALID', lambda: client.complete_result(messages))
+            call.assert_not_called()
+        self.assertEqual(client.summary()['calls'], 0)
 
 
 if __name__ == '__main__':

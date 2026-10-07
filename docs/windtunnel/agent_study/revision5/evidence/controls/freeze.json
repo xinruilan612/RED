@@ -1,0 +1,38 @@
+{
+  "participant_type": "codex_proxy",
+  "revision": "v5.controlled",
+  "atomic_conditions": false,
+  "continue_after_unknown": true,
+  "model": "deepseek-flash",
+  "thinking": "disabled",
+  "output_tokens_max": 3000,
+  "maximum_budget_cny": 5,
+  "pricing_upper_cny_per_million": {
+    "input": 2,
+    "output": 8
+  },
+  "frozen_at": 1791356708.535349,
+  "baseline_prompt_sha256": "5c01f5c0961d1bbbaf4579945710d5641043787f32f491161ef4133024323c75",
+  "code_hashes": {
+    "backend/windtunnel.py": "0a08a4e22eccc4ccc5abeb44e7ad235aecea89111d4faf1c031f56fac7d19069",
+    "backend/windtunnel_runtime.py": "6fcdb1606c9e400c9d9bab42e18e084e98641e89353f8116accab4b3b639f0f2",
+    "backend/provider.py": "4a48dc4ccae91b86ad710c86257a5a5411402cdef7d81bac2c9f4a7a3e948640",
+    "scripts/run_windtunnel_agent_study.py": "79f042fef19e1eb3dfa877a619a43efc62e6d31495f8c4ccbfedc662de5519fd",
+    "scripts/study_budget.py": "6e01bbbca25ec350500389b42e026fc6d7cdb38637368ab964393c7f154da933",
+    "scripts/run_windtunnel_repair_probe.py": "1a7bd65cc3078f8ad7440bf6fd3ff05b0cdf09bcebc924f09d5d67f4087823c5"
+  },
+  "effective_tasks_sha256": "ac27716f937c0c9da60b38ea1000e72f206f69d5b7daaa3e64c101a80fe2ca61",
+  "effective_samples_sha256": "69e5c4c8ab3372ef86b210aa006ea08c44dd01214f1d22bf193cf56848dffdfe",
+  "task_rubrics_sha256": "d843382b95bf5b78dec90078975b2ee56d5fad1aca2b84af21a8ce3dd91bca31",
+  "candidate_manifest_sha256": "f47bdcb30e5ed2639dfb6ca335961653fe60f45ed0922d36c5e189a829f5a656",
+  "input_file_hashes": {
+    "../agent_study/revision3/probe_samples/S06.md": "4c611de9999eb4c604f07f90dac116fddecbe7a1e524a2317e9be93fa41855dd",
+    "S06/support.md": "6ab7935261aa7a0a6105d5917f226d9f546376ef93fd5c82239f5cc1554cac5b",
+    "../agent_study/revision3/probe_samples/S07.md": "096c0861d19d90722f0601f4f6c281da6ff9e19c563414bce43f7ab6173a86f7",
+    "S07/support.md": "07a1a6fdc72b6621d5bec055d81c30b997f94307e33dff441fbb34d14dbdc020",
+    "../agent_study/revision3/probe_samples/S10.md": "3aa59dfada441b21d0a8e71dd7b5b46a66867a2a09f8682dbfe270951f913ba7",
+    "S10/support.md": "ba277f0adc60667b308820b0f05ca08bb0165911162684634e33ab53825073fb"
+  },
+  "adoption_policy": "accept all program-valid baseline manuscript / windtunnel patches; failed run preserves latest draft; no human author",
+  "human_readers": 0
+}

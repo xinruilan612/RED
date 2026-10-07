@@ -1,0 +1,26 @@
+Python programs can open files to read or write data. File objects provide methods for handling their contents.
+
+To keep existing log content and add new lines at the end, open the file with mode 'a' and specify UTF-8:
+
+open('app.log', 'a', encoding='utf-8')
+
+The official section states that mode 'a' "opens the file for appending; any data written to the file is automatically added to the end." In contrast, mode 'w' is "for only writing (an existing file with the same name will be erased)." The materials also recommend UTF-8: "Because UTF-8 is the modern de-facto standard, encoding="utf-8" is recommended unless you know that you need to use a different encoding." By default, open() uses text mode, so string data is read and written; if encoding is not specified, "the default is platform dependent."
+
+Use a with statement when opening the log file:
+
+with open('app.log', 'a', encoding='utf-8') as f:
+    f.write('log message\n')
+
+The materials explain: "It is good practice to use the with keyword when dealing with file objects. The advantage is that the file is properly closed after its suite finishes, even if an exception is raised at some point." They also note that using with is shorter than writing equivalent try-finally blocks, and that without with you should call f.close() to "immediately free up any system resources used by it." The warning adds that calling f.write() without using with or calling f.close() "might result in the arguments of f.write() not being completely written to the disk, even if the program exits successfully."
+
+When reading a log line by line, distinguish two return values from f.readline(). The materials say that f.readline() returns a string with the trailing newline kept, and it is "only omitted on the last line of the file if the file doesn't end in a newline." Therefore, "if f.readline() returns an empty string, the end of the file has been reached, while a blank line is represented by '\n', a string containing only a single newline." An empty string does not mean a blank line; it means there is nothing more to read.
+
+For a large log file, loop over the file object line by line:
+
+with open('app.log', encoding='utf-8') as f:
+    for line in f:
+        print(line, end='')
+
+The materials state: "For reading lines from a file, you can loop over the file object. This is memory efficient, fast, and leads to simple code." In contrast, calling f.read() without size reads the whole file at once. The materials say that "when size is omitted or negative, the entire contents of the file will be read and returned; it's your problem if the file is twice as large as your machine's memory." The line-by-line loop avoids loading the entire file into memory at once.
+
+For copying a JPEG file, binary mode is required. The materials warn that text mode performs platform-specific newline conversion: "This behind-the-scenes modification to file data is fine for text files, but will corrupt binary data like that in JPEG or EXE files. Be very careful to use binary mode when reading and writing such files." Adding 'b' to the mode opens the file in binary mode. In binary mode, data is read and written as bytes objects: "Binary mode data is read and written as bytes objects." Also, you cannot specify encoding in binary mode: "You can not specify encoding when opening file in binary mode." So do not write encoding='utf-8' for a binary JPEG open; use a binary mode such as 'rb' or 'wb' and work with bytes.

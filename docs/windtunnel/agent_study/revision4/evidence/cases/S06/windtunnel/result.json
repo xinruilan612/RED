@@ -1,0 +1,169 @@
+{
+  "sample_id": "S06",
+  "method": "windtunnel",
+  "participant_type": "codex_proxy",
+  "revision": "v4",
+  "draft_kind": "public_official_tutorial_excerpt",
+  "adaptation": "layout and attribution only; original English text",
+  "deletion_design": null,
+  "source_url": "https://docs.python.org/3.12/tutorial/inputoutput.html#reading-and-writing-files",
+  "original_sha256": "e875cb0dface6cf1ed20c0c5c4815d684aff35321bb80bb955a771c3424226c7",
+  "material_sha256": "e875cb0dface6cf1ed20c0c5c4815d684aff35321bb80bb955a771c3424226c7",
+  "outcome": "failed",
+  "error": {
+    "code": "STUDY_WORKFLOW_BLOCKED",
+    "message": "阅读引文不在稿件中"
+  },
+  "automatic_adoption": true,
+  "human_author": false,
+  "fallback": "latest preserved draft; does not imply successful review",
+  "run_id": "87eaf59f-e364-4ae6-bd26-7136055f6223",
+  "wall_seconds": 7.523,
+  "final_sha256": "e875cb0dface6cf1ed20c0c5c4815d684aff35321bb80bb955a771c3424226c7",
+  "changed": false,
+  "calls": [
+    {
+      "stage": "wt_conditions",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 256,
+      "output_tokens": 560,
+      "total_tokens": 816,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "conditions": [
+          {
+            "question": "教程中是否包含关于日志文件追加写模式的完整示例，能明确展示用什么模式字符保留原内容并在末尾添加新记录？",
+            "scene": "日志文件读写方案",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "教程是否说明在Python 3.12中打开文本文件时如何指定UTF-8编码，并解释为什么追加日志时通常需要关注编码？",
+            "scene": "日志文件读写方案",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "教程是否对比过追加模式与w模式在文件内容处理上的根本差异，可以让读者据此判断哪些日志场景不能用w？",
+            "scene": "日志文件读写方案",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "教程是否解释with语句在文件读写中的作用，包括它如何管理资源以及不写with时可能带来什么后果？",
+            "scene": "日志文件读写方案",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "教程是否讨论readline返回空字符串与返回仅含换行符的字符串分别代表什么，并给出判断文件结束的示例？",
+            "scene": "日志文件读写方案",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "教程是否提供逐行读取大文件的方案，并说明这种方案与read()不传size参数在内存占用上的区别？",
+            "scene": "日志文件读写方案",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "教程是否涉及复制JPEG等二进制文件时应使用的模式，以及为什么这里不能使用encoding参数？",
+            "scene": "日志文件读写方案",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "教程是否明确区分文本文件和二进制文件读写时返回的对象类型，例如字符串与字节对象？",
+            "scene": "日志文件读写方案",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "教程中是否有足够证据让读者写出打开日志文件、写入UTF-8文本并确保原有内容不被覆盖的完整代码，而无需执行代码？",
+            "scene": "日志文件读写方案",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "教程是否解释在处理大日志文件时，逐行读取相比一次性read()为什么更安全，以及可能存在的性能取舍？",
+            "scene": "日志文件读写方案",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "教程是否说明二进制模式读取JPEG后得到的是什么类型的数据，以及如何将这些数据写入目标文件？",
+            "scene": "日志文件读写方案",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "教程是否提到在日志追加写时，多次打开和关闭文件可能带来的问题，并说明with如何帮助避免这些问题？",
+            "scene": "日志文件读写方案",
+            "source_ids": [],
+            "origin": "author"
+          }
+        ]
+      }
+    },
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 2994,
+      "output_tokens": 1003,
+      "total_tokens": 3997,
+      "outcome": "invalid",
+      "error": "阅读引文不在稿件中",
+      "response": {
+        "results": [
+          {
+            "condition_id": "9a659709-f8da-4cdf-98a8-2e180a661e79",
+            "status": "pass",
+            "answer": "追加模式选择 'a'，UTF-8 写法可写为 open(filename, 'a', encoding='utf-8')；稿件说明 'a' opens the file for appending; any data written to the file is automatically added to the end. 与 'w' 的差异是：'w' for only writing (an existing file with the same name will be erased)，即只写且同名已有文件会被擦除；而 'a' 不会擦除，写入自动追加到末尾。",
+            "excerpt": "mode can be 'r' when the file will only be read, 'w' for only writing (an existing file with the same name will be erased), and 'a' opens the file for appending; any data written to the file is automatically added to the end.",
+            "reason": "稿件明确给出 'a' 追加模式、'w' 会擦除已有文件，以及 UTF-8 推荐；可直接推导日志追加方案。"
+          },
+          {
+            "condition_id": "784850df-27da-4228-8b13-a33db2aba856",
+            "status": "pass",
+            "answer": "使用 with 是为了让文件对象在 suite 结束后被正确关闭，即使过程中抛出异常也会关闭；并且 with 比等价的 try-finally 块更短。",
+            "excerpt": "It is good practice to use the with keyword when dealing with file objects.  The advantage is that the file is properly closed after its suite finishes, even if an exception is raised at some point.  Using with is also much shorter than writing equivalent try-finally blocks:",
+            "reason": "稿件明确说明 with 的优点是自动正确关闭文件，即使异常也关闭，并比 try-finally 更短。"
+          },
+          {
+            "condition_id": "27e2b2f6-7499-4996-8da4-a61682cc1305",
+            "status": "pass",
+            "answer": "f.readline() 返回空字符串表示已经到达文件末尾；返回仅含一个换行符的字符串 '\\n' 表示这一行是空行，而不是文件结束。",
+            "excerpt": "This makes the return value unambiguous; if f.readline() returns an empty string, the end of the file has been reached, while a blank line is represented by '\\n', a string containing only a single newline.",
+            "reason": "稿件直接区分了 readline 返回空串与返回 '\\n' 的含义。"
+          },
+          {
+            "condition_id": "dbca0762-d49a-4fea-b75f-aff36a26481c",
+            "status": "pass",
+            "answer": "逐行读取大文件可直接循环文件对象，例如：for line in f: print(line, end='')。稿件说明这种读法 memory efficient, fast, and leads to simple code。与 f.read() 不带 size 的差别是：不带 size/负 size 的 read 会读取并返回整个文件内容，如果文件比内存大两倍会由用户自己承担问题；而逐行循环不会一次性读取整个文件，因此对大文件更节省内存。",
+            "excerpt": "For reading lines from a file, you can loop over the file object. This is memory efficient, fast, and leads to simple code:",
+            "reason": "稿件给出循环文件对象逐行读取且内存高效，并说明 f.read(size) 省略/负值时读取整个文件。"
+          },
+          {
+            "condition_id": "4ed6bc62-b2a9-4824-8812-48f92de44fd4",
+            "status": "pass",
+            "answer": "复制 JPEG 时必须使用二进制模式，即在模式中追加 'b'；二进制模式下读写的数据对象是 bytes 对象；并且不能在二进制模式下指定 encoding 参数。稿件指出文本模式会转换平台相关换行，这会破坏 JPEG 等二进制数据，因此读写这类文件要非常小心地使用二进制模式。",
+            "excerpt": "Appending a 'b' to the mode opens the file in binary mode. Binary mode data is read and written as bytes objects. You can not specify encoding when opening file in binary mode.",
+            "reason": "稿件明确二进制模式的数据对象是 bytes，且二进制模式不能指定 encoding；另有 JPEG 例证需用二进制模式避免破坏数据。"
+          }
+        ]
+      }
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 1.094642,
+    "reserved_unknown_cny": 0.04281,
+    "committed_upper_cny": 1.137452,
+    "calls": 95,
+    "unknown_calls": 1
+  }
+}

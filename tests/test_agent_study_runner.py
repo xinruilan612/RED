@@ -94,6 +94,38 @@ class AgentStudyRunnerTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'Frozen inputs changed'):
                 self.runner.freeze()
 
+    def test_atomic_questions_do_not_expose_reference_answers(self):
+        self.runner.atomic_conditions = True
+        task = dict(task_prompt='情境：问题1；问题2；问题3；问题4；问题5。每项附稿内证据。',
+                    expected_answer=['秘密参考答案'] * 5)
+        questions = self.runner.questions(task)
+        self.assertEqual(len(questions), 5)
+        self.assertEqual(questions[0], '情境：问题1')
+        self.assertNotIn('秘密参考答案', json.dumps(questions, ensure_ascii=False))
+        for question in questions:
+            self.assertIn('情境', question)
+        with self.assertRaises(ValueError):
+            self.runner.questions(dict(task_prompt='一个问题'))
+
+    def test_revision_policy_change_requires_new_freeze(self):
+        self.runner.freeze()
+        self.runner.atomic_conditions = True
+        with self.assertRaisesRegex(ValueError, 'Frozen inputs changed'):
+            self.runner.freeze()
+
+    def test_shared_ledger_keeps_existing_spend_between_revisions(self):
+        self.runner.run_case('S04', 'baseline')
+        revision = study.StudyRunner(self.workspace / 'revision2', Config('fixture'), FixtureAdapter(),
+                                    budget_ledger=self.workspace / 'budget.sqlite', revision='v2')
+        self.assertEqual(revision.client.summary(), self.runner.client.summary())
+        revision.run_case('S05', 'baseline')
+        self.assertEqual(revision.client.summary()['calls'], 2)
+
+    def test_unsupported_priced_model_rejected_before_calls(self):
+        with self.assertRaises(DomainError):
+            study.StudyRunner(self.workspace / 'other', Config('fixture', model='other'), self.adapter)
+        self.assertEqual(len(self.adapter.calls), 0)
+
     def test_failed_windtunnel_preserves_draft_and_resume(self):
         self.adapter.fail = True
         result = self.runner.run_case('S04', 'windtunnel')

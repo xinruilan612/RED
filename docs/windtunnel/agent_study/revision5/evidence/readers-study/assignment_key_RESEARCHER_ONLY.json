@@ -1,0 +1,131 @@
+{
+  "seed": 251778060825726695327157377397389266489,
+  "assignments": [
+    {
+      "reader_id": "R02",
+      "blind_id": "Baf19632e241d201055331acd1cc48574",
+      "sample_id": "S06",
+      "variant": "abbreviated_control",
+      "manuscript_sha256": "d35848c556c330670931972dbedb15647df1c8723b260aa56c3c64456b26cc22"
+    },
+    {
+      "reader_id": "R04",
+      "blind_id": "B2ef9fed0a601fb745a2a328056226c6f",
+      "sample_id": "S06",
+      "variant": "abbreviated_control",
+      "manuscript_sha256": "d35848c556c330670931972dbedb15647df1c8723b260aa56c3c64456b26cc22"
+    },
+    {
+      "reader_id": "R01",
+      "blind_id": "B4b1b082ac65da65d050aea9a50714507",
+      "sample_id": "S06",
+      "variant": "abbreviated_control",
+      "manuscript_sha256": "d35848c556c330670931972dbedb15647df1c8723b260aa56c3c64456b26cc22"
+    },
+    {
+      "reader_id": "R05",
+      "blind_id": "B7fe5ddc9bc85f62b7d952710b10c662a",
+      "sample_id": "S06",
+      "variant": "windtunnel_final",
+      "manuscript_sha256": "0c6ef15ff17fbcefdda4c6868533b5e1f321db3092f13725eb507d6cd23eeb4a"
+    },
+    {
+      "reader_id": "R06",
+      "blind_id": "B5c840bee2d6f94d4489c2d9c964aedb7",
+      "sample_id": "S06",
+      "variant": "windtunnel_final",
+      "manuscript_sha256": "0c6ef15ff17fbcefdda4c6868533b5e1f321db3092f13725eb507d6cd23eeb4a"
+    },
+    {
+      "reader_id": "R03",
+      "blind_id": "Beb3e2e22daeac1f4f4d882af026af656",
+      "sample_id": "S06",
+      "variant": "windtunnel_final",
+      "manuscript_sha256": "0c6ef15ff17fbcefdda4c6868533b5e1f321db3092f13725eb507d6cd23eeb4a"
+    },
+    {
+      "reader_id": "R03",
+      "blind_id": "Bba9786280b362c8ffecd6546da96bce4",
+      "sample_id": "S07",
+      "variant": "abbreviated_control",
+      "manuscript_sha256": "7b18e39877414fd101d6ade276147c6b354796b751c8ca3c19ba19424445fe66"
+    },
+    {
+      "reader_id": "R05",
+      "blind_id": "Bad75d14bd474d9afd7d3ed9fd4434c5e",
+      "sample_id": "S07",
+      "variant": "abbreviated_control",
+      "manuscript_sha256": "7b18e39877414fd101d6ade276147c6b354796b751c8ca3c19ba19424445fe66"
+    },
+    {
+      "reader_id": "R06",
+      "blind_id": "B485a1c19bfb16122405470999c770735",
+      "sample_id": "S07",
+      "variant": "abbreviated_control",
+      "manuscript_sha256": "7b18e39877414fd101d6ade276147c6b354796b751c8ca3c19ba19424445fe66"
+    },
+    {
+      "reader_id": "R01",
+      "blind_id": "Bfceded5a887ce0e09cf371b0a80b53bb",
+      "sample_id": "S07",
+      "variant": "windtunnel_final",
+      "manuscript_sha256": "0a383fade7fc5f56c63e6d85dfb17ca03021e943e2885ca6d18c59ebddf8e4c8"
+    },
+    {
+      "reader_id": "R02",
+      "blind_id": "Be1f92e481df1a665c9cd6a88aee52faf",
+      "sample_id": "S07",
+      "variant": "windtunnel_final",
+      "manuscript_sha256": "0a383fade7fc5f56c63e6d85dfb17ca03021e943e2885ca6d18c59ebddf8e4c8"
+    },
+    {
+      "reader_id": "R04",
+      "blind_id": "B0c31ac04e49ffc031947ab86e4663c2d",
+      "sample_id": "S07",
+      "variant": "windtunnel_final",
+      "manuscript_sha256": "0a383fade7fc5f56c63e6d85dfb17ca03021e943e2885ca6d18c59ebddf8e4c8"
+    },
+    {
+      "reader_id": "R04",
+      "blind_id": "B8cba36ddf0db59d738741bf6342a7c8b",
+      "sample_id": "S10",
+      "variant": "abbreviated_control",
+      "manuscript_sha256": "f23aa39adfb7b8a6366ae04d3c45567c24f019fb93f2c9490426bea8c6ba7a23"
+    },
+    {
+      "reader_id": "R02",
+      "blind_id": "Bb430d91adaf8e165eb552780af92edfb",
+      "sample_id": "S10",
+      "variant": "abbreviated_control",
+      "manuscript_sha256": "f23aa39adfb7b8a6366ae04d3c45567c24f019fb93f2c9490426bea8c6ba7a23"
+    },
+    {
+      "reader_id": "R06",
+      "blind_id": "B9c826ed0697a6b8cb297415dce38c14a",
+      "sample_id": "S10",
+      "variant": "abbreviated_control",
+      "manuscript_sha256": "f23aa39adfb7b8a6366ae04d3c45567c24f019fb93f2c9490426bea8c6ba7a23"
+    },
+    {
+      "reader_id": "R05",
+      "blind_id": "B74497efca59032f8ec60f1927cd7e66b",
+      "sample_id": "S10",
+      "variant": "windtunnel_final",
+      "manuscript_sha256": "a15a9b1d6df13c4d7d2bf5f63aa0632bb93b3b5e628ce34ebbe891077c96f0df"
+    },
+    {
+      "reader_id": "R03",
+      "blind_id": "B250c2dcc69158640e8413e2b11c54fa0",
+      "sample_id": "S10",
+      "variant": "windtunnel_final",
+      "manuscript_sha256": "a15a9b1d6df13c4d7d2bf5f63aa0632bb93b3b5e628ce34ebbe891077c96f0df"
+    },
+    {
+      "reader_id": "R01",
+      "blind_id": "Bb7b1e9733a61b0c5eadc22bb891395dc",
+      "sample_id": "S10",
+      "variant": "windtunnel_final",
+      "manuscript_sha256": "a15a9b1d6df13c4d7d2bf5f63aa0632bb93b3b5e628ce34ebbe891077c96f0df"
+    }
+  ]
+}

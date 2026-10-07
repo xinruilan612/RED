@@ -1,0 +1,118 @@
+{
+  "reader_id": "R02",
+  "participant_type": "codex_proxy",
+  "human_reading_seconds": null,
+  "responses": [
+    {
+      "blind_id": "Bb430d91adaf8e165eb552780af92edfb",
+      "points": [
+        {
+          "point": 1,
+          "answer_text": "",
+          "evidence": [],
+          "missing_information": ""
+        },
+        {
+          "point": 2,
+          "answer_text": "",
+          "evidence": [],
+          "missing_information": ""
+        },
+        {
+          "point": 3,
+          "answer_text": "",
+          "evidence": [],
+          "missing_information": ""
+        },
+        {
+          "point": 4,
+          "answer_text": "",
+          "evidence": [],
+          "missing_information": ""
+        },
+        {
+          "point": 5,
+          "answer_text": "",
+          "evidence": [],
+          "missing_information": ""
+        }
+      ],
+      "perceived_difficulty_1_to_5": null,
+      "open_feedback": ""
+    },
+    {
+      "blind_id": "Be1f92e481df1a665c9cd6a88aee52faf",
+      "points": [
+        {
+          "point": 1,
+          "answer_text": "",
+          "evidence": [],
+          "missing_information": ""
+        },
+        {
+          "point": 2,
+          "answer_text": "",
+          "evidence": [],
+          "missing_information": ""
+        },
+        {
+          "point": 3,
+          "answer_text": "",
+          "evidence": [],
+          "missing_information": ""
+        },
+        {
+          "point": 4,
+          "answer_text": "",
+          "evidence": [],
+          "missing_information": ""
+        },
+        {
+          "point": 5,
+          "answer_text": "",
+          "evidence": [],
+          "missing_information": ""
+        }
+      ],
+      "perceived_difficulty_1_to_5": null,
+      "open_feedback": ""
+    },
+    {
+      "blind_id": "Baf19632e241d201055331acd1cc48574",
+      "points": [
+        {
+          "point": 1,
+          "answer_text": "",
+          "evidence": [],
+          "missing_information": ""
+        },
+        {
+          "point": 2,
+          "answer_text": "",
+          "evidence": [],
+          "missing_information": ""
+        },
+        {
+          "point": 3,
+          "answer_text": "",
+          "evidence": [],
+          "missing_information": ""
+        },
+        {
+          "point": 4,
+          "answer_text": "",
+          "evidence": [],
+          "missing_information": ""
+        },
+        {
+          "point": 5,
+          "answer_text": "",
+          "evidence": [],
+          "missing_information": ""
+        }
+      ],
+      "perceived_difficulty_1_to_5": null,
+      "open_feedback": ""
+    }
+  ]
+}

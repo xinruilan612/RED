@@ -1,0 +1,52 @@
+{
+  "sample_id": "S04",
+  "method": "baseline",
+  "participant_type": "codex_proxy",
+  "revision": "v3",
+  "source_url": "https://docs.python.org/3.12/tutorial/datastructures.html#list-comprehensions",
+  "original_sha256": "4d596ed29ac752a04a3f67cdb243e13bca35110b3e82b011680cb42d84f62992",
+  "material_sha256": "4d596ed29ac752a04a3f67cdb243e13bca35110b3e82b011680cb42d84f62992",
+  "outcome": "completed",
+  "error": null,
+  "automatic_adoption": true,
+  "human_author": false,
+  "issues": [
+    {
+      "explanation": "The manuscript is the official tutorial text, not a cheat sheet. The reading task asks for specific items (vec filter+double, flattening [[1,2],[3,4]], tuple parentheses, two-for+if equivalence, loop variable side effects) with evidence from the manuscript. The manuscript covers most items, but does not explicitly show filtering vec and doubling in one expression, and the flattening example uses a different list ([[1,2,3],[4,5,6],[7,8,9]]) rather than [[1,2],[3,4]]. These must be derived from the manuscript's code fragments and examples. The requested cheat sheet format is missing.",
+      "material_evidence": "The manuscript includes [x*2 for x in vec] for doubling and [x for x in vec if x >= 0] for filtering, but no combined example. Flattening example: [num for elem in vec for num in elem] with vec = [[1,2,3], [4,5,6], [7,8,9]]."
+    }
+  ],
+  "run_id": "103dffad-74af-4e06-b031-9c2a52c8f12c",
+  "wall_seconds": 6.988,
+  "final_sha256": "6e73f8c0799506654b512721545d9c446c365530ff403e4818a252e950ac775c",
+  "changed": true,
+  "calls": [
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 2579,
+      "output_tokens": 2073,
+      "total_tokens": 4652,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "issues": [
+          {
+            "explanation": "The manuscript is the official tutorial text, not a cheat sheet. The reading task asks for specific items (vec filter+double, flattening [[1,2],[3,4]], tuple parentheses, two-for+if equivalence, loop variable side effects) with evidence from the manuscript. The manuscript covers most items, but does not explicitly show filtering vec and doubling in one expression, and the flattening example uses a different list ([[1,2,3],[4,5,6],[7,8,9]]) rather than [[1,2],[3,4]]. These must be derived from the manuscript's code fragments and examples. The requested cheat sheet format is missing.",
+            "material_evidence": "The manuscript includes [x*2 for x in vec] for doubling and [x for x in vec if x >= 0] for filtering, but no combined example. Flattening example: [num for elem in vec for num in elem] with vec = [[1,2,3], [4,5,6], [7,8,9]]."
+          }
+        ],
+        "revised_text": "5.1.3. List Comprehensions\n\nList comprehensions provide a concise way to create lists. Common applications are to make new lists where each element is the result of some operations applied to each member of another sequence or iterable, or to create a subsequence of those elements that satisfy a certain condition.\n\nFor example, assume we want to create a list of squares, like:\n\n>>> squares = []\n>>> for x in range(10):\n...     squares.append(x**2)\n...\n>>> squares\n[0, 1, 4, 9, 16, 25, 36, 49, 64, 81]\n\nNote that this creates (or overwrites) a variable named x that still exists after the loop completes. We can calculate the list of squares without any side effects using:\n\nsquares = list(map(lambda x: x**2, range(10)))\n\nor, equivalently:\n\nsquares = [x**2 for x in range(10)]\n\nwhich is more concise and readable.\n\nA list comprehension consists of brackets containing an expression followed by a for clause, then zero or more for or if clauses. The result will be a new list resulting from evaluating the expression in the context of the for and if clauses which follow it. For example, this listcomp combines the elements of two lists if they are not equal:\n\n>>> [(x, y) for x in [1,2,3] for y in [3,1,4] if x != y]\n[(1, 3), (1, 4), (2, 3), (2, 1), (2, 4), (3, 1), (3, 4)]\n\nand it's equivalent to:\n\n>>> combs = []\n>>> for x in [1,2,3]:\n...     for y in [3,1,4]:\n...         if x != y:\n...             combs.append((x, y))\n...\n>>> combs\n[(1, 3), (1, 4), (2, 3), (2, 1), (2, 4), (3, 1), (3, 4)]\n\nNote how the order of the for and if statements is the same in both these snippets.\n\nIf the expression is a tuple (e.g. the (x, y) in the previous example), it must be parenthesized.\n\n>>> vec = [-4, -2, 0, 2, 4]\n>>> # create a new list with the values doubled\n>>> [x*2 for x in vec]\n[-8, -4, 0, 4, 8]\n>>> # filter the list to exclude negative numbers\n>>> [x for x in vec if x >= 0]\n[0, 2, 4]\n>>> # apply a function to all the elements\n>>> [abs(x) for x in vec]\n[4, 2, 0, 2, 4]\n>>> # call a method on each element\n>>> freshfruit = ['  banana', '  loganberry ', 'passion fruit  ']\n>>> [weapon.strip() for weapon in freshfruit]\n['banana', 'loganberry', 'passion fruit']\n>>> # create a list of 2-tuples like (number, square)\n>>> [(x, x**2) for x in range(6)]\n[(0, 0), (1, 1), (2, 4), (3, 9), (4, 16), (5, 25)]\n>>> # the tuple must be parenthesized, otherwise an error is raised\n>>> [x, x**2 for x in range(6)]\n  File \"<stdin>\", line 1\n    [x, x**2 for x in range(6)]\n     ^^^^^^^\nSyntaxError: did you forget parentheses around the comprehension target?\n>>> # flatten a list using a listcomp with two 'for'\n>>> vec = [[1,2,3], [4,5,6], [7,8,9]]\n>>> [num for elem in vec for num in elem]\n[1, 2, 3, 4, 5, 6, 7, 8, 9]\n\nList comprehensions can contain complex expressions and nested functions:\n\n>>> from math import pi\n>>> [str(round(pi, i)) for i in range(1, 6)]\n['3.1', '3.14', '3.142', '3.1416', '3.14159']\n\n---\n\n**Cheat Sheet: List Comprehensions**\n\n*   **Filter and double from vec = [-4, -2, 0, 2, 4]:**\n    Expression: `[x*2 for x in vec if x >= 0]`\n    Result: `[0, 4, 8]`\n    *Evidence:* The manuscript provides separate examples for doubling (`[x*2 for x in vec]` → `[-8, -4, 0, 4, 8]`) and filtering (`[x for x in vec if x >= 0]` → `[0, 2, 4]`). Combining them as shown gives the result.\n\n*   **Flatten [[1,2], [3,4]] in original order:**\n    Expression: `[num for elem in [[1,2], [3,4]] for num in elem]`\n    Result: `[1, 2, 3, 4]`\n    *Evidence:* The manuscript shows a flattening example with `vec = [[1,2,3], [4,5,6], [7,8,9]]` and the expression `[num for elem in vec for num in elem]` giving `[1, 2, 3, 4, 5, 6, 7, 8, 9]`. The same pattern applies to `[[1,2],[3,4]]`.\n\n*   **Tuple expression parentheses requirement:**\n    When the expression is a tuple, it must be parenthesized. For example, `[(x, x**2) for x in range(6)]` is valid and produces `[(0, 0), (1, 1), (2, 4), (3, 9), (4, 16), (5, 25)]`. Without parentheses, as in `[x, x**2 for x in range(6)]`, a `SyntaxError` is raised.\n    *Evidence:* Manuscript states: \"If the expression is a tuple (e.g. the (x, y) in the previous example), it must be parenthesized.\" and shows the error for the unparenthesized version.\n\n*   **Two for clauses and one if clause vs. nested loops:**\n    The list comprehension `[(x, y) for x in [1,2,3] for y in [3,1,4] if x != y]` is equivalent to the nested loops:\n    ```python\n    combs = []\n    for x in [1,2,3]:\n        for y in [3,1,4]:\n            if x != y:\n                combs.append((x, y))\n    ```\n    The order of the for and if clauses is the same in both.\n    *Evidence:* Manuscript shows both snippets and notes: \"Note how the order of the for and if statements is the same in both these snippets.\"\n\n*   **Variable side effects:**\n    A normal `for` loop creates or overwrites a variable (e.g., `x`) that still exists after the loop completes. A list comprehension does not have this side effect; the loop variable is local to the comprehension and does not leak into the surrounding scope.\n    *Evidence:* Manuscript notes: \"Note that this creates (or overwrites) a variable named x that still exists after the loop completes. We can calculate the list of squares without any side effects using: ... or, equivalently: squares = [x**2 for x in range(10)]\"."
+      }
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 0.595522,
+    "reserved_unknown_cny": 0.04281,
+    "committed_upper_cny": 0.638332,
+    "calls": 56,
+    "unknown_calls": 1
+  }
+}

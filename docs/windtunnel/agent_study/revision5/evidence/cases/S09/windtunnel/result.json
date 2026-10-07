@@ -1,0 +1,544 @@
+{
+  "sample_id": "S09",
+  "method": "windtunnel",
+  "participant_type": "codex_proxy",
+  "revision": "v5",
+  "draft_kind": "public_official_tutorial_excerpt",
+  "adaptation": "layout and attribution only; original English text",
+  "deletion_design": null,
+  "source_url": "https://docs.python.org/3.12/library/pathlib.html#basic-use",
+  "original_sha256": "b4dfe1cd9baa87502b359f768740521404d3336d95a4c3f9bc7fbb407875ae6c",
+  "material_sha256": "b4dfe1cd9baa87502b359f768740521404d3336d95a4c3f9bc7fbb407875ae6c",
+  "outcome": "completed",
+  "error": null,
+  "automatic_adoption": true,
+  "human_author": false,
+  "initial_report": {
+    "id": "b597b8e2-67ff-403c-a4ef-fe7c74783d61",
+    "batch_id": "b918fdfa-7720-42bc-8c0d-e98399cc0b02",
+    "draft_id": "5038f1c9-c451-49c1-805a-0dda92757004",
+    "draft_hash": "25fb3d194c680805231f01ee82df3df423c8645840d7b6d2593e1b8f72ef0f09",
+    "condition_set_id": "44c91a9e-5ba7-4c62-a67a-96b99de0c561",
+    "condition_hash": "1d06ad45b7afded61b4824e2ec5781a55c02e7e2b755f635518350ce475c57f1",
+    "material_hash": "47cd0d46a63b04c4a54092fc4363a8fcd5570849b9d889c6ec757661c5d6486b",
+    "results": [
+      {
+        "condition_id": "8d92a745-e9ba-40ed-8969-dc7fa01affdd",
+        "status": "pass",
+        "reason": "材料中有导入 Path 的原文，且 Path('.') 在列出子目录段落中用于代表当前目录。",
+        "citations": [
+          {
+            "source_id": "4d7e7f71-9ef4-4987-97b4-73d8d7233d23",
+            "quote": ">>> from pathlib import Path"
+          },
+          {
+            "source_id": "4d7e7f71-9ef4-4987-97b4-73d8d7233d23",
+            "quote": ">>> p = Path('.')\n>>> [x for x in p.iterdir() if x.is_dir()]\n[PosixPath('.hg'), PosixPath('docs'), PosixPath('dist'),\n PosixPath('__pycache__'), PosixPath('build')]"
+          }
+        ],
+        "reading": {
+          "condition_id": "8d92a745-e9ba-40ed-8969-dc7fa01affdd",
+          "status": "pass",
+          "answer": "导入 Path 用 `from pathlib import Path`；用 `p = Path('.')` 让 p 代表当前目录。",
+          "reason": "稿内有导入 Path 的原文；表示当前目录的 `Path('.')` 在列出子目录段落中给出。",
+          "excerpt": ">>> from pathlib import Path"
+        }
+      },
+      {
+        "condition_id": "d3d626a0-d36c-4e79-bfc7-f87c9a9f9cb9",
+        "status": "pass",
+        "reason": "材料中直接给出 p = Path('.') 以及用 iterdir 和 is_dir 过滤列出子目录的列表推导和示例输出。",
+        "citations": [
+          {
+            "source_id": "4d7e7f71-9ef4-4987-97b4-73d8d7233d23",
+            "quote": ">>> p = Path('.')\n>>> [x for x in p.iterdir() if x.is_dir()]\n[PosixPath('.hg'), PosixPath('docs'), PosixPath('dist'),\n PosixPath('__pycache__'), PosixPath('build')]"
+          }
+        ],
+        "reading": {
+          "condition_id": "d3d626a0-d36c-4e79-bfc7-f87c9a9f9cb9",
+          "status": "pass",
+          "answer": "先让 p 表示当前目录：`p = Path('.')`；列出子目录：`[x for x in p.iterdir() if x.is_dir()]`。稿内示例输出为 `[PosixPath('.hg'), PosixPath('docs'), PosixPath('dist'), PosixPath('__pycache__'), PosixPath('build')]`。",
+          "reason": "该原稿段落直接给出当前目录 p 的 iterdir 加 is_dir 过滤列表推导及示例结果。",
+          "excerpt": ">>> p = Path('.')\n>>> [x for x in p.iterdir() if x.is_dir()]\n[PosixPath('.hg'), PosixPath('docs'), PosixPath('dist'),\n PosixPath('__pycache__'), PosixPath('build')]"
+        }
+      },
+      {
+        "condition_id": "28c3e2e6-6f5d-424b-8e67-5afe3d76b84a",
+        "status": "pass",
+        "reason": "材料中直接给出递归列出目录树中 .py 文件的 glob 表达式和示例输出。",
+        "citations": [
+          {
+            "source_id": "4d7e7f71-9ef4-4987-97b4-73d8d7233d23",
+            "quote": ">>> list(p.glob('**/*.py'))\n[PosixPath('test_pathlib.py'), PosixPath('setup.py'),\n PosixPath('pathlib.py'), PosixPath('docs/conf.py'),\n PosixPath('build/lib/pathlib.py')]"
+          }
+        ],
+        "reading": {
+          "condition_id": "28c3e2e6-6f5d-424b-8e67-5afe3d76b84a",
+          "status": "pass",
+          "answer": "在表示当前目录的 p 上使用：`list(p.glob('**/*.py'))`。稿内示例输出为 `[PosixPath('test_pathlib.py'), PosixPath('setup.py'), PosixPath('pathlib.py'), PosixPath('docs/conf.py'), PosixPath('build/lib/pathlib.py')]`。",
+          "reason": "该原稿段落直接给出递归列出目录树中 Python 源文件的 glob 示例及输出。",
+          "excerpt": ">>> list(p.glob('**/*.py'))\n[PosixPath('test_pathlib.py'), PosixPath('setup.py'),\n PosixPath('pathlib.py'), PosixPath('docs/conf.py'),\n PosixPath('build/lib/pathlib.py')]"
+        }
+      },
+      {
+        "condition_id": "9c57c60c-83b2-4277-ad07-3737593f6024",
+        "status": "pass",
+        "reason": "材料中直接给出 p = Path('/etc')、q = p / 'init.d' / 'reboot'、q 显示为 PosixPath('/etc/init.d/reboot') 以及 q.resolve() 显示为 PosixPath('/etc/rc.d/init.d/halt')，两者不同，且示例机器路径不保证所有电脑相同。",
+        "citations": [
+          {
+            "source_id": "4d7e7f71-9ef4-4987-97b4-73d8d7233d23",
+            "quote": ">>> p = Path('/etc')\n>>> q = p / 'init.d' / 'reboot'\n>>> q\nPosixPath('/etc/init.d/reboot')\n>>> q.resolve()\nPosixPath('/etc/rc.d/init.d/halt')"
+          }
+        ],
+        "reading": {
+          "condition_id": "9c57c60c-83b2-4277-ad07-3737593f6024",
+          "status": "pass",
+          "answer": "稿内示例先 `p = Path('/etc')`，再 `q = p / 'init.d' / 'reboot'`，拼接路径 q 显示为 `PosixPath('/etc/init.d/reboot')`；`q.resolve()` 的示例结果显示为 `PosixPath('/etc/rc.d/init.d/halt')`。因此拼接路径与 resolve 示例结果不同，且 resolve 的示例机器路径结果不应保证所有电脑都相同。",
+          "reason": "该原稿段落完整展示 /etc/init.d/reboot 的拼接表达、q 显示结果以及 q.resolve() 示例结果。",
+          "excerpt": ">>> p = Path('/etc')\n>>> q = p / 'init.d' / 'reboot'\n>>> q\nPosixPath('/etc/init.d/reboot')\n>>> q.resolve()\nPosixPath('/etc/rc.d/init.d/halt')"
+        }
+      },
+      {
+        "condition_id": "2b232c59-7498-419c-94f0-bb27cac257b5",
+        "status": "pass",
+        "reason": "材料中直接给出 q.exists() 为 True、q.is_dir() 为 False，以及用 with q.open() as f: f.readline() 读取首行并输出 '#!/bin/bash\\n'，这些是示例机器结果，不应保证所有电脑相同。",
+        "citations": [
+          {
+            "source_id": "4d7e7f71-9ef4-4987-97b4-73d8d7233d23",
+            "quote": ">>> q.exists()\nTrue\n>>> q.is_dir()\nFalse"
+          },
+          {
+            "source_id": "4d7e7f71-9ef4-4987-97b4-73d8d7233d23",
+            "quote": ">>> with q.open() as f: f.readline()\n...\n'#!/bin/bash\\n'"
+          }
+        ],
+        "reading": {
+          "condition_id": "2b232c59-7498-419c-94f0-bb27cac257b5",
+          "status": "pass",
+          "answer": "在稿内示例中，q 为 `/etc/init.d/reboot` 的拼接路径；`q.exists()` 结果为 `True`，`q.is_dir()` 结果为 `False`。用 q 读取首行的方式是：`with q.open() as f: f.readline()`，稿内示例结果为 `'#!/bin/bash\\n'`。这些是示例机器上的结果，不应保证所有电脑相同。",
+          "reason": "该原稿段落直接给出 q.exists() 的 True 和 q.is_dir() 的 False；读取首行方式在相邻原稿段落中给出。",
+          "excerpt": ">>> q.exists()\nTrue\n>>> q.is_dir()\nFalse"
+        }
+      }
+    ],
+    "new_issues": [],
+    "mode": "live",
+    "created_at": 1791356674.7448719,
+    "model_policy": {
+      "version": "56cb27ab6fbf778239c193adfb5bcc084ca534730fef852bc02b83a150695d18",
+      "routes": {
+        "wt_conditions": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_read": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_verify": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_patch": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        }
+      },
+      "prompt_version": "windtunnel.v1"
+    },
+    "sources": [
+      {
+        "id": "5038f1c9-c451-49c1-805a-0dda92757004",
+        "source_id": "5038f1c9-c451-49c1-805a-0dda92757004",
+        "kind": "draft",
+        "text": "Basic use\n\nImporting the main class:\n\n>>> from pathlib import Path\n\nListing subdirectories:\n\n>>> p = Path('.')\n>>> [x for x in p.iterdir() if x.is_dir()]\n[PosixPath('.hg'), PosixPath('docs'), PosixPath('dist'),\n PosixPath('__pycache__'), PosixPath('build')]\n\nListing Python source files in this directory tree:\n\n>>> list(p.glob('**/*.py'))\n[PosixPath('test_pathlib.py'), PosixPath('setup.py'),\n PosixPath('pathlib.py'), PosixPath('docs/conf.py'),\n PosixPath('build/lib/pathlib.py')]\n\nNavigating inside a directory tree:\n\n>>> p = Path('/etc')\n>>> q = p / 'init.d' / 'reboot'\n>>> q\nPosixPath('/etc/init.d/reboot')\n>>> q.resolve()\nPosixPath('/etc/rc.d/init.d/halt')\n\nQuerying path properties:\n\n>>> q.exists()\nTrue\n>>> q.is_dir()\nFalse\n\nOpening a file:\n\n>>> with q.open() as f: f.readline()\n...\n'#!/bin/bash\\n'",
+        "hash": "25fb3d194c680805231f01ee82df3df423c8645840d7b6d2593e1b8f72ef0f09"
+      },
+      {
+        "id": "4d7e7f71-9ef4-4987-97b4-73d8d7233d23",
+        "kind": "material",
+        "text": "Basic use\n\nImporting the main class:\n\n>>> from pathlib import Path\n\nListing subdirectories:\n\n>>> p = Path('.')\n>>> [x for x in p.iterdir() if x.is_dir()]\n[PosixPath('.hg'), PosixPath('docs'), PosixPath('dist'),\n PosixPath('__pycache__'), PosixPath('build')]\n\nListing Python source files in this directory tree:\n\n>>> list(p.glob('**/*.py'))\n[PosixPath('test_pathlib.py'), PosixPath('setup.py'),\n PosixPath('pathlib.py'), PosixPath('docs/conf.py'),\n PosixPath('build/lib/pathlib.py')]\n\nNavigating inside a directory tree:\n\n>>> p = Path('/etc')\n>>> q = p / 'init.d' / 'reboot'\n>>> q\nPosixPath('/etc/init.d/reboot')\n>>> q.resolve()\nPosixPath('/etc/rc.d/init.d/halt')\n\nQuerying path properties:\n\n>>> q.exists()\nTrue\n>>> q.is_dir()\nFalse\n\nOpening a file:\n\n>>> with q.open() as f: f.readline()\n...\n'#!/bin/bash\\n'",
+        "title": "pathlib基础使用",
+        "origin": "https://docs.python.org/3.12/library/pathlib.html#basic-use",
+        "provenance": "author_material",
+        "permission": false,
+        "version": 1,
+        "hash": "9e70c603cb480477f7515cc546d856f1172e1a6e62e2ad72767b4a81ab3656a7",
+        "collected_at": 1791356663.1802728
+      }
+    ]
+  },
+  "final_report": {
+    "id": "b597b8e2-67ff-403c-a4ef-fe7c74783d61",
+    "batch_id": "b918fdfa-7720-42bc-8c0d-e98399cc0b02",
+    "draft_id": "5038f1c9-c451-49c1-805a-0dda92757004",
+    "draft_hash": "25fb3d194c680805231f01ee82df3df423c8645840d7b6d2593e1b8f72ef0f09",
+    "condition_set_id": "44c91a9e-5ba7-4c62-a67a-96b99de0c561",
+    "condition_hash": "1d06ad45b7afded61b4824e2ec5781a55c02e7e2b755f635518350ce475c57f1",
+    "material_hash": "47cd0d46a63b04c4a54092fc4363a8fcd5570849b9d889c6ec757661c5d6486b",
+    "results": [
+      {
+        "condition_id": "8d92a745-e9ba-40ed-8969-dc7fa01affdd",
+        "status": "pass",
+        "reason": "材料中有导入 Path 的原文，且 Path('.') 在列出子目录段落中用于代表当前目录。",
+        "citations": [
+          {
+            "source_id": "4d7e7f71-9ef4-4987-97b4-73d8d7233d23",
+            "quote": ">>> from pathlib import Path"
+          },
+          {
+            "source_id": "4d7e7f71-9ef4-4987-97b4-73d8d7233d23",
+            "quote": ">>> p = Path('.')\n>>> [x for x in p.iterdir() if x.is_dir()]\n[PosixPath('.hg'), PosixPath('docs'), PosixPath('dist'),\n PosixPath('__pycache__'), PosixPath('build')]"
+          }
+        ],
+        "reading": {
+          "condition_id": "8d92a745-e9ba-40ed-8969-dc7fa01affdd",
+          "status": "pass",
+          "answer": "导入 Path 用 `from pathlib import Path`；用 `p = Path('.')` 让 p 代表当前目录。",
+          "reason": "稿内有导入 Path 的原文；表示当前目录的 `Path('.')` 在列出子目录段落中给出。",
+          "excerpt": ">>> from pathlib import Path"
+        }
+      },
+      {
+        "condition_id": "d3d626a0-d36c-4e79-bfc7-f87c9a9f9cb9",
+        "status": "pass",
+        "reason": "材料中直接给出 p = Path('.') 以及用 iterdir 和 is_dir 过滤列出子目录的列表推导和示例输出。",
+        "citations": [
+          {
+            "source_id": "4d7e7f71-9ef4-4987-97b4-73d8d7233d23",
+            "quote": ">>> p = Path('.')\n>>> [x for x in p.iterdir() if x.is_dir()]\n[PosixPath('.hg'), PosixPath('docs'), PosixPath('dist'),\n PosixPath('__pycache__'), PosixPath('build')]"
+          }
+        ],
+        "reading": {
+          "condition_id": "d3d626a0-d36c-4e79-bfc7-f87c9a9f9cb9",
+          "status": "pass",
+          "answer": "先让 p 表示当前目录：`p = Path('.')`；列出子目录：`[x for x in p.iterdir() if x.is_dir()]`。稿内示例输出为 `[PosixPath('.hg'), PosixPath('docs'), PosixPath('dist'), PosixPath('__pycache__'), PosixPath('build')]`。",
+          "reason": "该原稿段落直接给出当前目录 p 的 iterdir 加 is_dir 过滤列表推导及示例结果。",
+          "excerpt": ">>> p = Path('.')\n>>> [x for x in p.iterdir() if x.is_dir()]\n[PosixPath('.hg'), PosixPath('docs'), PosixPath('dist'),\n PosixPath('__pycache__'), PosixPath('build')]"
+        }
+      },
+      {
+        "condition_id": "28c3e2e6-6f5d-424b-8e67-5afe3d76b84a",
+        "status": "pass",
+        "reason": "材料中直接给出递归列出目录树中 .py 文件的 glob 表达式和示例输出。",
+        "citations": [
+          {
+            "source_id": "4d7e7f71-9ef4-4987-97b4-73d8d7233d23",
+            "quote": ">>> list(p.glob('**/*.py'))\n[PosixPath('test_pathlib.py'), PosixPath('setup.py'),\n PosixPath('pathlib.py'), PosixPath('docs/conf.py'),\n PosixPath('build/lib/pathlib.py')]"
+          }
+        ],
+        "reading": {
+          "condition_id": "28c3e2e6-6f5d-424b-8e67-5afe3d76b84a",
+          "status": "pass",
+          "answer": "在表示当前目录的 p 上使用：`list(p.glob('**/*.py'))`。稿内示例输出为 `[PosixPath('test_pathlib.py'), PosixPath('setup.py'), PosixPath('pathlib.py'), PosixPath('docs/conf.py'), PosixPath('build/lib/pathlib.py')]`。",
+          "reason": "该原稿段落直接给出递归列出目录树中 Python 源文件的 glob 示例及输出。",
+          "excerpt": ">>> list(p.glob('**/*.py'))\n[PosixPath('test_pathlib.py'), PosixPath('setup.py'),\n PosixPath('pathlib.py'), PosixPath('docs/conf.py'),\n PosixPath('build/lib/pathlib.py')]"
+        }
+      },
+      {
+        "condition_id": "9c57c60c-83b2-4277-ad07-3737593f6024",
+        "status": "pass",
+        "reason": "材料中直接给出 p = Path('/etc')、q = p / 'init.d' / 'reboot'、q 显示为 PosixPath('/etc/init.d/reboot') 以及 q.resolve() 显示为 PosixPath('/etc/rc.d/init.d/halt')，两者不同，且示例机器路径不保证所有电脑相同。",
+        "citations": [
+          {
+            "source_id": "4d7e7f71-9ef4-4987-97b4-73d8d7233d23",
+            "quote": ">>> p = Path('/etc')\n>>> q = p / 'init.d' / 'reboot'\n>>> q\nPosixPath('/etc/init.d/reboot')\n>>> q.resolve()\nPosixPath('/etc/rc.d/init.d/halt')"
+          }
+        ],
+        "reading": {
+          "condition_id": "9c57c60c-83b2-4277-ad07-3737593f6024",
+          "status": "pass",
+          "answer": "稿内示例先 `p = Path('/etc')`，再 `q = p / 'init.d' / 'reboot'`，拼接路径 q 显示为 `PosixPath('/etc/init.d/reboot')`；`q.resolve()` 的示例结果显示为 `PosixPath('/etc/rc.d/init.d/halt')`。因此拼接路径与 resolve 示例结果不同，且 resolve 的示例机器路径结果不应保证所有电脑都相同。",
+          "reason": "该原稿段落完整展示 /etc/init.d/reboot 的拼接表达、q 显示结果以及 q.resolve() 示例结果。",
+          "excerpt": ">>> p = Path('/etc')\n>>> q = p / 'init.d' / 'reboot'\n>>> q\nPosixPath('/etc/init.d/reboot')\n>>> q.resolve()\nPosixPath('/etc/rc.d/init.d/halt')"
+        }
+      },
+      {
+        "condition_id": "2b232c59-7498-419c-94f0-bb27cac257b5",
+        "status": "pass",
+        "reason": "材料中直接给出 q.exists() 为 True、q.is_dir() 为 False，以及用 with q.open() as f: f.readline() 读取首行并输出 '#!/bin/bash\\n'，这些是示例机器结果，不应保证所有电脑相同。",
+        "citations": [
+          {
+            "source_id": "4d7e7f71-9ef4-4987-97b4-73d8d7233d23",
+            "quote": ">>> q.exists()\nTrue\n>>> q.is_dir()\nFalse"
+          },
+          {
+            "source_id": "4d7e7f71-9ef4-4987-97b4-73d8d7233d23",
+            "quote": ">>> with q.open() as f: f.readline()\n...\n'#!/bin/bash\\n'"
+          }
+        ],
+        "reading": {
+          "condition_id": "2b232c59-7498-419c-94f0-bb27cac257b5",
+          "status": "pass",
+          "answer": "在稿内示例中，q 为 `/etc/init.d/reboot` 的拼接路径；`q.exists()` 结果为 `True`，`q.is_dir()` 结果为 `False`。用 q 读取首行的方式是：`with q.open() as f: f.readline()`，稿内示例结果为 `'#!/bin/bash\\n'`。这些是示例机器上的结果，不应保证所有电脑相同。",
+          "reason": "该原稿段落直接给出 q.exists() 的 True 和 q.is_dir() 的 False；读取首行方式在相邻原稿段落中给出。",
+          "excerpt": ">>> q.exists()\nTrue\n>>> q.is_dir()\nFalse"
+        }
+      }
+    ],
+    "new_issues": [],
+    "mode": "live",
+    "created_at": 1791356674.7448719,
+    "model_policy": {
+      "version": "56cb27ab6fbf778239c193adfb5bcc084ca534730fef852bc02b83a150695d18",
+      "routes": {
+        "wt_conditions": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_read": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_verify": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_patch": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        }
+      },
+      "prompt_version": "windtunnel.v1"
+    },
+    "sources": [
+      {
+        "id": "5038f1c9-c451-49c1-805a-0dda92757004",
+        "source_id": "5038f1c9-c451-49c1-805a-0dda92757004",
+        "kind": "draft",
+        "text": "Basic use\n\nImporting the main class:\n\n>>> from pathlib import Path\n\nListing subdirectories:\n\n>>> p = Path('.')\n>>> [x for x in p.iterdir() if x.is_dir()]\n[PosixPath('.hg'), PosixPath('docs'), PosixPath('dist'),\n PosixPath('__pycache__'), PosixPath('build')]\n\nListing Python source files in this directory tree:\n\n>>> list(p.glob('**/*.py'))\n[PosixPath('test_pathlib.py'), PosixPath('setup.py'),\n PosixPath('pathlib.py'), PosixPath('docs/conf.py'),\n PosixPath('build/lib/pathlib.py')]\n\nNavigating inside a directory tree:\n\n>>> p = Path('/etc')\n>>> q = p / 'init.d' / 'reboot'\n>>> q\nPosixPath('/etc/init.d/reboot')\n>>> q.resolve()\nPosixPath('/etc/rc.d/init.d/halt')\n\nQuerying path properties:\n\n>>> q.exists()\nTrue\n>>> q.is_dir()\nFalse\n\nOpening a file:\n\n>>> with q.open() as f: f.readline()\n...\n'#!/bin/bash\\n'",
+        "hash": "25fb3d194c680805231f01ee82df3df423c8645840d7b6d2593e1b8f72ef0f09"
+      },
+      {
+        "id": "4d7e7f71-9ef4-4987-97b4-73d8d7233d23",
+        "kind": "material",
+        "text": "Basic use\n\nImporting the main class:\n\n>>> from pathlib import Path\n\nListing subdirectories:\n\n>>> p = Path('.')\n>>> [x for x in p.iterdir() if x.is_dir()]\n[PosixPath('.hg'), PosixPath('docs'), PosixPath('dist'),\n PosixPath('__pycache__'), PosixPath('build')]\n\nListing Python source files in this directory tree:\n\n>>> list(p.glob('**/*.py'))\n[PosixPath('test_pathlib.py'), PosixPath('setup.py'),\n PosixPath('pathlib.py'), PosixPath('docs/conf.py'),\n PosixPath('build/lib/pathlib.py')]\n\nNavigating inside a directory tree:\n\n>>> p = Path('/etc')\n>>> q = p / 'init.d' / 'reboot'\n>>> q\nPosixPath('/etc/init.d/reboot')\n>>> q.resolve()\nPosixPath('/etc/rc.d/init.d/halt')\n\nQuerying path properties:\n\n>>> q.exists()\nTrue\n>>> q.is_dir()\nFalse\n\nOpening a file:\n\n>>> with q.open() as f: f.readline()\n...\n'#!/bin/bash\\n'",
+        "title": "pathlib基础使用",
+        "origin": "https://docs.python.org/3.12/library/pathlib.html#basic-use",
+        "provenance": "author_material",
+        "permission": false,
+        "version": 1,
+        "hash": "9e70c603cb480477f7515cc546d856f1172e1a6e62e2ad72767b4a81ab3656a7",
+        "collected_at": 1791356663.1802728
+      }
+    ]
+  },
+  "unresolved_conditions": [],
+  "effective_repair_confirmed": false,
+  "run_id": "65d0e9e9-1153-45fa-94df-248f715e4664",
+  "wall_seconds": 11.575,
+  "final_sha256": "b4dfe1cd9baa87502b359f768740521404d3336d95a4c3f9bc7fbb407875ae6c",
+  "changed": false,
+  "calls": [
+    {
+      "stage": "wt_conditions",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 262,
+      "output_tokens": 872,
+      "total_tokens": 1134,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "conditions": [
+          {
+            "question": "作者能否提供稿内用于代表当前目录的 Path 构造写法（例如 Path('.')、Path.cwd() 或 Path(__file__).parent 等）及其出现位置，以便确认小抄第一项应引用哪段原文？",
+            "scene": "pathlib 项目浏览小抄：导入 Path 并代表当前目录",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "作者能否确认稿件中“列出当前目录的子目录”使用的是哪一种写法（如 p.iterdir() 配合 p.is_dir()、p.glob('*') 过滤、或 p.rglob('*') 过滤等），并提供对应代码行或小节标题？",
+            "scene": "pathlib 项目浏览小抄：列出当前目录的子目录",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "作者能否提供稿内递归收集目录树中 .py 文件的确切写法及其所在段落，以便小抄只引用稿件已有内容，而不添加未出现的模式？",
+            "scene": "pathlib 项目浏览小抄：递归收集 .py 文件",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "作者能否提供稿内关于 /etc/init.d/reboot 路径拼接示例的原文片段，包括参与拼接的基础路径和子路径，以便小抄准确区分拼接路径与 resolve 示例结果？",
+            "scene": "pathlib 项目浏览小抄：拼接 /etc/init.d/reboot 并区分拼接路径与 resolve 结果",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "作者能否说明稿件中 resolve 示例结果是否被写成某台具体机器的绝对路径，以及是否有任何脚注、提示或措辞表明该结果因机器而异？",
+            "scene": "pathlib 项目浏览小抄：解释 resolve 示例结果并避免保证所有电脑相同",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "作者能否提供稿内对 q.exists() 和 q.is_dir() 的原文解释或输出说明，包括 q 在示例中如何定义、其期望状态是什么，以便小抄不猜测结果？",
+            "scene": "pathlib 项目浏览小抄：解释 q.exists()、q.is_dir() 的结果",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "作者能否指出稿内使用 q 读取文件首行的具体方式（例如 q.open() 后 readline()、q.read_text().splitlines() 或其他写法）及对应位置？",
+            "scene": "pathlib 项目浏览小抄：用 q 读取首行",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "作者能否确认稿件中是否已经存在“不要执行代码/仅依据稿件描述”或“示例路径结果不保证跨机器一致”的类似免责声明；若没有，是否希望小抄标注为待补充？",
+            "scene": "pathlib 项目浏览小抄：整体边界与免责声明",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "作者能否列出稿件中与上述每项对应的证据标识（章节标题、代码块编号或段落位置），以便每条小抄都能附上稿内出处而不引用外部资料？",
+            "scene": "pathlib 项目浏览小抄：逐项附稿内证据",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "作者能否确认当前反馈列表为空是否意味着没有读者反馈可引用，因此所有来源只能标记为 author，而不能声称是真实读者意见？",
+            "scene": "来源与反馈处理规则",
+            "source_ids": [],
+            "origin": "author"
+          }
+        ]
+      }
+    },
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 2250,
+      "output_tokens": 1046,
+      "total_tokens": 3296,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "results": [
+          {
+            "condition_id": "8d92a745-e9ba-40ed-8969-dc7fa01affdd",
+            "status": "pass",
+            "answer": "导入 Path 用 `from pathlib import Path`；用 `p = Path('.')` 让 p 代表当前目录。",
+            "excerpt_id": "reading:25fb3d194c680805231f01ee82df3df423c8645840d7b6d2593e1b8f72ef0f09:P3",
+            "reason": "稿内有导入 Path 的原文；表示当前目录的 `Path('.')` 在列出子目录段落中给出。"
+          },
+          {
+            "condition_id": "d3d626a0-d36c-4e79-bfc7-f87c9a9f9cb9",
+            "status": "pass",
+            "answer": "先让 p 表示当前目录：`p = Path('.')`；列出子目录：`[x for x in p.iterdir() if x.is_dir()]`。稿内示例输出为 `[PosixPath('.hg'), PosixPath('docs'), PosixPath('dist'), PosixPath('__pycache__'), PosixPath('build')]`。",
+            "excerpt_id": "reading:25fb3d194c680805231f01ee82df3df423c8645840d7b6d2593e1b8f72ef0f09:P5",
+            "reason": "该原稿段落直接给出当前目录 p 的 iterdir 加 is_dir 过滤列表推导及示例结果。"
+          },
+          {
+            "condition_id": "28c3e2e6-6f5d-424b-8e67-5afe3d76b84a",
+            "status": "pass",
+            "answer": "在表示当前目录的 p 上使用：`list(p.glob('**/*.py'))`。稿内示例输出为 `[PosixPath('test_pathlib.py'), PosixPath('setup.py'), PosixPath('pathlib.py'), PosixPath('docs/conf.py'), PosixPath('build/lib/pathlib.py')]`。",
+            "excerpt_id": "reading:25fb3d194c680805231f01ee82df3df423c8645840d7b6d2593e1b8f72ef0f09:P7",
+            "reason": "该原稿段落直接给出递归列出目录树中 Python 源文件的 glob 示例及输出。"
+          },
+          {
+            "condition_id": "9c57c60c-83b2-4277-ad07-3737593f6024",
+            "status": "pass",
+            "answer": "稿内示例先 `p = Path('/etc')`，再 `q = p / 'init.d' / 'reboot'`，拼接路径 q 显示为 `PosixPath('/etc/init.d/reboot')`；`q.resolve()` 的示例结果显示为 `PosixPath('/etc/rc.d/init.d/halt')`。因此拼接路径与 resolve 示例结果不同，且 resolve 的示例机器路径结果不应保证所有电脑都相同。",
+            "excerpt_id": "reading:25fb3d194c680805231f01ee82df3df423c8645840d7b6d2593e1b8f72ef0f09:P9",
+            "reason": "该原稿段落完整展示 /etc/init.d/reboot 的拼接表达、q 显示结果以及 q.resolve() 示例结果。"
+          },
+          {
+            "condition_id": "2b232c59-7498-419c-94f0-bb27cac257b5",
+            "status": "pass",
+            "answer": "在稿内示例中，q 为 `/etc/init.d/reboot` 的拼接路径；`q.exists()` 结果为 `True`，`q.is_dir()` 结果为 `False`。用 q 读取首行的方式是：`with q.open() as f: f.readline()`，稿内示例结果为 `'#!/bin/bash\\n'`。这些是示例机器上的结果，不应保证所有电脑相同。",
+            "excerpt_id": "reading:25fb3d194c680805231f01ee82df3df423c8645840d7b6d2593e1b8f72ef0f09:P11",
+            "reason": "该原稿段落直接给出 q.exists() 的 True 和 q.is_dir() 的 False；读取首行方式在相邻原稿段落中给出。"
+          }
+        ]
+      }
+    },
+    {
+      "stage": "wt_verify",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 4337,
+      "output_tokens": 1030,
+      "total_tokens": 5367,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "results": [
+          {
+            "condition_id": "8d92a745-e9ba-40ed-8969-dc7fa01affdd",
+            "status": "pass",
+            "reason": "材料中有导入 Path 的原文，且 Path('.') 在列出子目录段落中用于代表当前目录。",
+            "citations": [
+              {
+                "evidence_id": "4d7e7f71-9ef4-4987-97b4-73d8d7233d23:9e70c603cb480477f7515cc546d856f1172e1a6e62e2ad72767b4a81ab3656a7:P3"
+              },
+              {
+                "evidence_id": "4d7e7f71-9ef4-4987-97b4-73d8d7233d23:9e70c603cb480477f7515cc546d856f1172e1a6e62e2ad72767b4a81ab3656a7:P5"
+              }
+            ]
+          },
+          {
+            "condition_id": "d3d626a0-d36c-4e79-bfc7-f87c9a9f9cb9",
+            "status": "pass",
+            "reason": "材料中直接给出 p = Path('.') 以及用 iterdir 和 is_dir 过滤列出子目录的列表推导和示例输出。",
+            "citations": [
+              {
+                "evidence_id": "4d7e7f71-9ef4-4987-97b4-73d8d7233d23:9e70c603cb480477f7515cc546d856f1172e1a6e62e2ad72767b4a81ab3656a7:P5"
+              }
+            ]
+          },
+          {
+            "condition_id": "28c3e2e6-6f5d-424b-8e67-5afe3d76b84a",
+            "status": "pass",
+            "reason": "材料中直接给出递归列出目录树中 .py 文件的 glob 表达式和示例输出。",
+            "citations": [
+              {
+                "evidence_id": "4d7e7f71-9ef4-4987-97b4-73d8d7233d23:9e70c603cb480477f7515cc546d856f1172e1a6e62e2ad72767b4a81ab3656a7:P7"
+              }
+            ]
+          },
+          {
+            "condition_id": "9c57c60c-83b2-4277-ad07-3737593f6024",
+            "status": "pass",
+            "reason": "材料中直接给出 p = Path('/etc')、q = p / 'init.d' / 'reboot'、q 显示为 PosixPath('/etc/init.d/reboot') 以及 q.resolve() 显示为 PosixPath('/etc/rc.d/init.d/halt')，两者不同，且示例机器路径不保证所有电脑相同。",
+            "citations": [
+              {
+                "evidence_id": "4d7e7f71-9ef4-4987-97b4-73d8d7233d23:9e70c603cb480477f7515cc546d856f1172e1a6e62e2ad72767b4a81ab3656a7:P9"
+              }
+            ]
+          },
+          {
+            "condition_id": "2b232c59-7498-419c-94f0-bb27cac257b5",
+            "status": "pass",
+            "reason": "材料中直接给出 q.exists() 为 True、q.is_dir() 为 False，以及用 with q.open() as f: f.readline() 读取首行并输出 '#!/bin/bash\\n'，这些是示例机器结果，不应保证所有电脑相同。",
+            "citations": [
+              {
+                "evidence_id": "4d7e7f71-9ef4-4987-97b4-73d8d7233d23:9e70c603cb480477f7515cc546d856f1172e1a6e62e2ad72767b4a81ab3656a7:P11"
+              },
+              {
+                "evidence_id": "4d7e7f71-9ef4-4987-97b4-73d8d7233d23:9e70c603cb480477f7515cc546d856f1172e1a6e62e2ad72767b4a81ab3656a7:P13"
+              }
+            ]
+          }
+        ],
+        "new_issues": []
+      }
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 1.737596,
+    "reserved_unknown_cny": 0.04281,
+    "committed_upper_cny": 1.780406,
+    "calls": 137,
+    "unknown_calls": 1
+  }
+}

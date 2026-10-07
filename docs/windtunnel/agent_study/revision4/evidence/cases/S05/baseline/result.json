@@ -1,0 +1,63 @@
+{
+  "sample_id": "S05",
+  "method": "baseline",
+  "participant_type": "codex_proxy",
+  "revision": "v4",
+  "draft_kind": "public_official_tutorial_excerpt",
+  "adaptation": "layout and attribution only; original English text",
+  "deletion_design": null,
+  "source_url": "https://docs.python.org/3.12/tutorial/datastructures.html#dictionaries",
+  "original_sha256": "5ae9dd634db54503543ac690d00aaba9b7ca8c69e2091cb09f491a1a934abbbc",
+  "material_sha256": "5ae9dd634db54503543ac690d00aaba9b7ca8c69e2091cb09f491a1a934abbbc",
+  "outcome": "completed",
+  "error": null,
+  "automatic_adoption": true,
+  "human_author": false,
+  "issues": [
+    {
+      "explanation": "The requested task includes changing jack to 5000, which is not in the supplied manuscript. The manuscript only reads tel['jack'] (returns 4098) and never assigns 5000; the final dictionary shown has 'jack': 4098. Any answer stating jack becomes 5000 would be unsupported and would contradict the manuscript's final tel.",
+      "evidence": "Manuscript: \">>> tel['jack']\\n4098\"; final tel: \"{'jack': 4098, 'guido': 4127, 'irv': 4127}\". No line assigns tel['jack'] = 5000."
+    },
+    {
+      "explanation": "The manuscript states reading a non-existent key is an error, but does not name the exception. The supported statement is only that it is an error; naming KeyError would go beyond the supplied text (though it is standard Python behavior).",
+      "evidence": "Manuscript: \"It is an error to extract a value using a non-existent key.\""
+    }
+  ],
+  "run_id": "3f61a367-1842-4761-b4c2-29dc349ee5b7",
+  "wall_seconds": 4.121,
+  "final_sha256": "ff80adad4cde2ad7b4496e5bfff4b997f50a2c19b59c46963a342bd77026dd58",
+  "changed": true,
+  "calls": [
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 2012,
+      "output_tokens": 961,
+      "total_tokens": 2973,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "issues": [
+          {
+            "explanation": "The requested task includes changing jack to 5000, which is not in the supplied manuscript. The manuscript only reads tel['jack'] (returns 4098) and never assigns 5000; the final dictionary shown has 'jack': 4098. Any answer stating jack becomes 5000 would be unsupported and would contradict the manuscript's final tel.",
+            "evidence": "Manuscript: \">>> tel['jack']\\n4098\"; final tel: \"{'jack': 4098, 'guido': 4127, 'irv': 4127}\". No line assigns tel['jack'] = 5000."
+          },
+          {
+            "explanation": "The manuscript states reading a non-existent key is an error, but does not name the exception. The supported statement is only that it is an error; naming KeyError would go beyond the supplied text (though it is standard Python behavior).",
+            "evidence": "Manuscript: \"It is an error to extract a value using a non-existent key.\""
+          }
+        ],
+        "revised_text": "5.5. Dictionaries\n\nAnother useful data type built into Python is the dictionary (see Mapping Types — dict). Dictionaries are sometimes found in other languages as “associative memories” or “associative arrays”. Unlike sequences, which are indexed by a range of numbers, dictionaries are indexed by keys, which can be any immutable type; strings and numbers can always be keys. Tuples can be used as keys if they contain only strings, numbers, or tuples; if a tuple contains any mutable object either directly or indirectly, it cannot be used as a key. You can’t use lists as keys, since lists can be modified in place using index assignments, slice assignments, or methods like append() and extend().\n\nIt is best to think of a dictionary as a set of key: value pairs, with the requirement that the keys are unique (within one dictionary). A pair of braces creates an empty dictionary: {}. Placing a comma-separated list of key:value pairs within the braces adds initial key:value pairs to the dictionary; this is also the way dictionaries are written on output.\n\nThe main operations on a dictionary are storing a value with some key and extracting the value given the key. It is also possible to delete a key:value pair with del. If you store using a key that is already in use, the old value associated with that key is forgotten. It is an error to extract a value using a non-existent key.\n\nPerforming list(d) on a dictionary returns a list of all the keys used in the dictionary, in insertion order (if you want it sorted, just use sorted(d) instead). To check whether a single key is in the dictionary, use the in keyword.\n\nHere is a small example using a dictionary:\n\n>>> tel = {'jack': 4098, 'sape': 4139}\n>>> tel['guido'] = 4127\n>>> tel\n{'jack': 4098, 'sape': 4139, 'guido': 4127}\n>>> tel['jack']\n4098\n>>> del tel['sape']\n>>> tel['irv'] = 4127\n>>> tel\n{'jack': 4098, 'guido': 4127, 'irv': 4127}\n>>> list(tel)\n['jack', 'guido', 'irv']\n>>> sorted(tel)\n['guido', 'irv', 'jack']\n>>> 'guido' in tel\nTrue\n>>> 'jack' not in tel\nFalse\n\nThe dict() constructor builds dictionaries directly from sequences of key-value pairs:\n\n>>> dict([('sape', 4139), ('guido', 4127), ('jack', 4098)])\n{'sape': 4139, 'guido': 4127, 'jack': 4098}\n\nIn addition, dict comprehensions can be used to create dictionaries from arbitrary key and value expressions:\n\n>>> {x: x**2 for x in (2, 4, 6)}\n{2: 4, 4: 16, 6: 36}\n\nWhen the keys are simple strings, it is sometimes easier to specify pairs using keyword arguments:\n\n>>> dict(sape=4139, guido=4127, jack=4098)\n{'sape': 4139, 'guido': 4127, 'jack': 4098}"
+      }
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 1.010912,
+    "reserved_unknown_cny": 0.04281,
+    "committed_upper_cny": 1.053722,
+    "calls": 89,
+    "unknown_calls": 1
+  }
+}

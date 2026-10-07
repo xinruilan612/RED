@@ -1,0 +1,1 @@
+The argparse module lets a program accept command-line arguments. A parser processes the arguments supplied by the user.

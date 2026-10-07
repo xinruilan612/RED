@@ -1,0 +1,148 @@
+{
+  "reader_id": "R01",
+  "participant_type": "codex_proxy",
+  "human_reading_seconds": null,
+  "responses": [
+    {
+      "blind_id": "Bb7b1e9733a61b0c5eadc22bb891395dc",
+      "points": [
+        {
+          "point": 1,
+          "answer_text": "最初未给 --verbosity 时 args.verbosity 为 None，if 真值测试不通过；程序无输出，且不报错。",
+          "evidence": [
+            "args.verbosity, is given None as a value, which is the reason it fails the truth test of the if statement.",
+            "The program is written so as to display something when --verbosity is specified and display nothing when not."
+          ],
+          "missing_information": ""
+        },
+        {
+          "point": 2,
+          "answer_text": "仅写 --verbosity 会报 expected one argument，因为该选项必须带一个值。",
+          "evidence": [
+            "When using the --verbosity option, one must also specify some value, any value.",
+            "prog.py: error: argument --verbosity: expected one argument"
+          ],
+          "missing_information": ""
+        },
+        {
+          "point": 3,
+          "answer_text": "使用 parser.add_argument(\"--verbose\", help=\"increase output verbosity\", action=\"store_true\")。启用时 args.verbose=True，缺省为 False；启用会输出 verbosity turned on。",
+          "evidence": [
+            "parser.add_argument(\"--verbose\", help=\"increase output verbosity\",\n                    action=\"store_true\")",
+            "This means that, if the option is specified, assign the value True to args.verbose. Not specifying it implies False."
+          ],
+          "missing_information": ""
+        },
+        {
+          "point": 4,
+          "answer_text": "--verbose 是无需值的 flag；附加 1 会作为无法识别的参数而报错。",
+          "evidence": [
+            "The option is now more of a flag than something that requires a value.",
+            "prog.py: error: unrecognized arguments: 1"
+          ],
+          "missing_information": ""
+        },
+        {
+          "point": 5,
+          "answer_text": "使用 parser.add_argument(\"-v\", \"--verbose\", help=\"increase output verbosity\", action=\"store_true\")。-v 输出 verbosity turned on；help 的 usage 显示 [-v]，选项列表同时显示 -v, --verbose，反映新增的短别名。",
+          "evidence": [
+            "parser.add_argument(\"-v\", \"--verbose\", help=\"increase output verbosity\",\n                    action=\"store_true\")",
+            "$ python prog.py -v\nverbosity turned on",
+            "usage: prog.py [-h] [-v]",
+            "-v, --verbose  increase output verbosity"
+          ],
+          "missing_information": ""
+        }
+      ],
+      "perceived_difficulty_1_to_5": null,
+      "open_feedback": ""
+    },
+    {
+      "blind_id": "B4b1b082ac65da65d050aea9a50714507",
+      "points": [
+        {
+          "point": 1,
+          "answer_text": "",
+          "evidence": [],
+          "missing_information": "稿件未提供末尾追加的模式、UTF-8 打开写法或与 w 模式的差异。"
+        },
+        {
+          "point": 2,
+          "answer_text": "",
+          "evidence": [],
+          "missing_information": "稿件未提供 with 的用途或使用原因。"
+        },
+        {
+          "point": 3,
+          "answer_text": "",
+          "evidence": [],
+          "missing_information": "稿件未提供 readline 空串与仅换行返回值的含义。"
+        },
+        {
+          "point": 4,
+          "answer_text": "",
+          "evidence": [],
+          "missing_information": "稿件未提供大文件逐行读取方案，或 read() 无 size 时的行为与差别。"
+        },
+        {
+          "point": 5,
+          "answer_text": "",
+          "evidence": [],
+          "missing_information": "稿件未提供复制 JPEG 的模式、读写对象类型或 encoding 参数限制。"
+        }
+      ],
+      "perceived_difficulty_1_to_5": null,
+      "open_feedback": ""
+    },
+    {
+      "blind_id": "Bfceded5a887ce0e09cf371b0a80b53bb",
+      "points": [
+        {
+          "point": 1,
+          "answer_text": "把 Python 数据层级转换为字符串表示叫 serializing（序列化）；从字符串表示重建数据叫 deserializing（反序列化）。",
+          "evidence": [
+            "this process is called serializing.",
+            "Reconstructing the data from the string representation is called deserializing."
+          ],
+          "missing_information": ""
+        },
+        {
+          "point": 2,
+          "answer_text": "对 x=[1,'simple','list'] 调用 json.dumps(x)，得到 JSON 字符串 '[1, \"simple\", \"list\"]'。",
+          "evidence": [
+            "json.dumps(x), which produces '[1, \"simple\", \"list\"]'."
+          ],
+          "missing_information": ""
+        },
+        {
+          "point": 3,
+          "answer_text": "已打开用于写入的文本文件对象 f 时，调用 json.dump(x, f)；已打开用于读取的文件对象 f 时，调用 x = json.load(f)。",
+          "evidence": [
+            "If f is a text file object opened for writing, call json.dump(x, f).",
+            "if f is a binary file or text file object opened for reading, call x = json.load(f)."
+          ],
+          "missing_information": ""
+        },
+        {
+          "point": 4,
+          "answer_text": "JSON 文件必须以 UTF-8 编码；文本方式打开读取或写入时都使用 encoding=\"utf-8\"。",
+          "evidence": [
+            "JSON files must be encoded in UTF-8; use encoding=\"utf-8\" when opening a JSON file as a text file for both reading and writing."
+          ],
+          "missing_information": ""
+        },
+        {
+          "point": 5,
+          "answer_text": "不可信 pickle 不能随意替代 JSON，因为 pickle 默认不安全，恶意构造的数据在反序列化时能执行任意代码。JSON 可处理列表、字典，但任意类实例的序列化需要额外工作。",
+          "evidence": [
+            "pickle is insecure by default, and deserializing pickle data from an untrusted source can execute arbitrary code if the data was crafted by a skilled attacker.",
+            "JSON can handle lists and dictionaries, but serializing arbitrary class instances in JSON requires extra effort."
+          ],
+          "missing_information": ""
+        }
+      ],
+      "perceived_difficulty_1_to_5": null,
+      "open_feedback": ""
+    }
+  ]
+}

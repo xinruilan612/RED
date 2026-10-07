@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "revision": "v3.controlled",
+  "classification": "人为删节缺口控制，非真实创作者",
+  "purpose": "Test supported gap repair under deliberately incomplete inputs; not evidence of superiority on naturally occurring creator drafts.",
+  "reference_answers_are_evaluation_only": true,
+  "rubric_path": "docs/windtunnel/agent_study/task_rubrics_candidate.json",
+  "rubric_sha256": "d843382b95bf5b78dec90078975b2ee56d5fad1aca2b84af21a8ce3dd91bca31",
+  "cases": [
+    {
+      "sample_id": "S06",
+      "source_sample_id": "S06",
+      "classification": "人为删节缺口控制，非真实创作者",
+      "language": "en",
+      "deletion_design": "Omit append versus overwrite, UTF-8 text opening, context-manager closing, EOF versus blank lines, streaming versus whole-file reads, and binary JPEG mode/types/encoding restrictions needed by the five-point task.",
+      "source_original_draft_path": "S06/draft.md",
+      "source_original_sha256": "d66b7563463ef984a107f41ff1ff687713a4ab20c33056204037c7103a95f6f4",
+      "source_original_section_sha256": "e875cb0dface6cf1ed20c0c5c4815d684aff35321bb80bb955a771c3424226c7",
+      "support_path": "S06/support.md",
+      "support_sha256": "6ab7935261aa7a0a6105d5917f226d9f546376ef93fd5c82239f5cc1554cac5b",
+      "source_url": "https://docs.python.org/3.12/tutorial/inputoutput.html#reading-and-writing-files",
+      "license_directory": "docs/windtunnel/public_samples",
+      "license_ref": "LICENSE_PSF.txt",
+      "code_license_ref": "LICENSE_0BSD.txt",
+      "license": "PSF-2.0 for documentation; code examples dual PSF-2.0/0BSD",
+      "draft_path": "../agent_study/revision3/probe_samples/S06.md",
+      "draft_sha256": "4c611de9999eb4c604f07f90dac116fddecbe7a1e524a2317e9be93fa41855dd",
+      "task": {
+        "sample_id": "S06",
+        "cohort": "holdout_pending_freeze",
+        "task_prompt": "依据稿件为同事制定日志文件读写方案：选择可保留原内容并在末尾追加的模式及UTF-8写法，说明与w模式的差异；说明为何使用with；区分readline返回空串和仅换行的含义；写出逐行读取的大文件方案并说明与read()无size的差别；说明复制JPEG时模式、读写对象类型及encoding参数限制。每项附稿内证据，不执行代码。",
+        "expected_answer": [
+          "with open('log.txt','a',encoding='utf-8') as f:追加；w会抹去同名已有文件",
+          "with退出块时自动正确关闭，发生异常也关闭；不关闭可能数据未完全写盘",
+          "''表示EOF；'\\n'表示空白行",
+          "for line in f逐行读取，正文称内存高效；read()省略size会读全文件，可能占大量内存",
+          "JPEG应binary模式rb/wb，返回/写入bytes而非str；binary模式不能指定encoding"
+        ],
+        "scoring_rule": "上述5项各1分；只写readlines()不能满足第4点的大文件逐行方案。"
+      }
+    },
+    {
+      "sample_id": "S07",
+      "source_sample_id": "S07",
+      "classification": "人为删节缺口控制，非真实创作者",
+      "language": "en",
+      "deletion_design": "Omit serialization/deserialization names, json.dumps output example, dump/load file operations, UTF-8 text encoding, unsafe pickle warning, and arbitrary-instance JSON limitations needed by the five-point task.",
+      "source_original_draft_path": "S07/draft.md",
+      "source_original_sha256": "7a11c0952c743e14807fa625346fb4e59cf7ea59a2399506609aa6f29dbd8d95",
+      "source_original_section_sha256": "31d7a8468f532da0abe60437c3b621135a6f9396bfd88fb4e62977a382e9fa29",
+      "support_path": "S07/support.md",
+      "support_sha256": "07a1a6fdc72b6621d5bec055d81c30b997f94307e33dff441fbb34d14dbdc020",
+      "source_url": "https://docs.python.org/3.12/tutorial/inputoutput.html#saving-structured-data-with-json",
+      "license_directory": "docs/windtunnel/public_samples",
+      "license_ref": "LICENSE_PSF.txt",
+      "code_license_ref": "LICENSE_0BSD.txt",
+      "license": "PSF-2.0 for documentation; code examples dual PSF-2.0/0BSD",
+      "draft_path": "../agent_study/revision3/probe_samples/S07.md",
+      "draft_sha256": "096c0861d19d90722f0601f4f6c281da6ff9e19c563414bce43f7ab6173a86f7",
+      "task": {
+        "sample_id": "S07",
+        "cohort": "holdout_pending_freeze",
+        "task_prompt": "依据稿件设计保存x=[1,'simple','list']再恢复的JSON方案：说明字符串转换及反向重建的名称；给出产生JSON字符串的函数及结果；说明已打开文本文件对象f时写入与读取分别用什么函数；说明文本JSON文件的encoding要求；说明为何不能随便将不可信pickle替代JSON，以及JSON对任意类实例的限制。每项附稿内证据，不执行代码。",
+        "expected_answer": [
+          "Python数据转字符串叫serializing/序列化；从字符串重建叫deserializing/反序列化",
+          "json.dumps(x)结果为'[1, \"simple\", \"list\"]'",
+          "json.dump(x,f)写文件；x=json.load(f)从读模式文件解码恢复",
+          "文本JSON读写用encoding='utf-8'",
+          "不可信pickle反序列化可能执行任意代码，且pickle特定于Python；JSON可处理列表/字典，任意类实例需要额外工作"
+        ],
+        "scoring_rule": "上述5项各1分；dumps与dump不可混淆；第4点依据正文可回答，但不要求本节未给出的open完整语法。"
+      }
+    },
+    {
+      "sample_id": "S10",
+      "source_sample_id": "S10",
+      "classification": "人为删节缺口控制，非真实创作者",
+      "language": "en",
+      "deletion_design": "Omit --verbosity defaults and value requirement, store_true Boolean flag definition, rejection of a flag value, and the -v/--verbose alias/help example needed by the five-point task.",
+      "source_original_draft_path": "S10/draft.md",
+      "source_original_sha256": "456190e2d4eafe656f4d3cdf710638fd19d9e02151cef4e90b89cf466cef22e1",
+      "source_original_section_sha256": "097a75cb3cc6e2bbe535cba19ca4f53a63d7283298cae24749c47145dac0915f",
+      "support_path": "S10/support.md",
+      "support_sha256": "ba277f0adc60667b308820b0f05ca08bb0165911162684634e33ab53825073fb",
+      "source_url": "https://docs.python.org/3.12/howto/argparse.html#introducing-optional-arguments",
+      "license_directory": "docs/windtunnel/public_samples",
+      "license_ref": "LICENSE_PSF.txt",
+      "code_license_ref": "LICENSE_0BSD.txt",
+      "license": "PSF-2.0 for documentation; code examples dual PSF-2.0/0BSD",
+      "draft_path": "../agent_study/revision3/probe_samples/S10.md",
+      "draft_sha256": "3aa59dfada441b21d0a8e71dd7b5b46a66867a2a09f8682dbfe270951f913ba7",
+      "task": {
+        "sample_id": "S10",
+        "cohort": "holdout_pending_freeze",
+        "task_prompt": "依据稿件为命令行工具设计verbose开关：解释最初--verbosity缺省时的值及输出；解释仅写--verbosity为什么报错；改成无需值的--verbose时给出add_argument及启用/缺省值；说明--verbose 1为何报错；增加-v别名并给出add_argument，说明-v的输出及help反映什么。每项附稿内证据，不执行代码。",
+        "expected_answer": [
+          "最初未用--verbosity时args.verbosity=None，程序不打印启用消息且无错误",
+          "最初--verbosity需要一个值；仅传参数名报expected one argument",
+          "parser.add_argument('--verbose',help='increase output verbosity',action='store_true')；传入True、未传False",
+          "--verbose是flag不带值，1被视为未识别参数而报unrecognized arguments: 1",
+          "parser.add_argument('-v','--verbose',help='increase output verbosity',action='store_true')；-v输出verbosity turned on；help显示两种名称"
+        ],
+        "scoring_rule": "上述5项各1分；help字符串不要求逐字相同，但值/flag区别必须准确。"
+      }
+    }
+  ]
+}

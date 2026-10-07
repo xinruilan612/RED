@@ -1,0 +1,37 @@
+✔ profile choices vary by positioning and platform (0.552333ms)
+✔ switching direction removes stale suggested values but preserves custom values (0.153708ms)
+✔ positioning round-trips a selected category and custom detail (0.079875ms)
+✔ platform-specific account selection preserves old account identity (0.062625ms)
+✔ next executes one background step and free research does not request model budget (2.293417ms)
+✔ step button stays visible while paused and hides during execution (0.527125ms)
+✔ blocked research offers same-task retry rather than repeated start (0.822125ms)
+✔ continuous execution remains an explicit separate command (0.633959ms)
+✔ request errors remain visible instead of being replaced by stale job errors (0.471625ms)
+✔ rejected review shows a free recovery action and hides pointless repeat execution (0.363541ms)
+✔ free recovery dispatches repair action rather than approval or model execution (0.392458ms)
+✔ review recovery is hidden once final confirmation is available (0.319167ms)
+✔ unavailable confirmation buttons remain disabled after workbench rendering (0.335541ms)
+✔ routine budget explanation stays hidden (0.351084ms)
+✔ only actionable budget warning is shown without disabling continuation (0.333083ms)
+✔ recovered review hides stale failure panel and explains current recovery (0.339792ms)
+✔ revision limit allows manual adoption and editing without claiming review approval (0.555792ms)
+✔ manual adoption sends exact draft acknowledgement without a model call (0.703375ms)
+✔ manual adopted result retains earlier issues and labels user choice (0.327834ms)
+✔ published archive shows actual records and hides prepublication approval queue (7.7925ms)
+✔ published record prefills adopted draft then archives actual edited text in one action (0.918916ms)
+✔ external published work can be archived without an AI draft (0.578875ms)
+✔ manual adoption is disabled during execution or unsaved editing (0.437125ms)
+✔ supplemented input does not label previous snapshot output as current (0.463125ms)
+✔ current snapshot output takes precedence over later previous snapshot records (0.411459ms)
+✔ successful background continuation clears stale failure while active failures remain visible (0.665833ms)
+✔ fresh background render removes resolved run error without hiding unrelated request errors (0.37925ms)
+✔ archive accepts full share text and sends only the extracted link (0.595208ms)
+✔ share extraction preserves encoded query and trims prose boundaries (0.62775ms)
+ℹ tests 29
+ℹ suites 0
+ℹ pass 29
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 57.816417

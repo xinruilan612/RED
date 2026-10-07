@@ -1,0 +1,50 @@
+[
+  {
+    "reader_id": "R01",
+    "codex_agent": "/root/repair_reader_01",
+    "fork_turns": "none",
+    "project_agent": false,
+    "human_reading_seconds": null,
+    "reported_own_files_only": true
+  },
+  {
+    "reader_id": "R02",
+    "codex_agent": "/root/repair_reader_02",
+    "fork_turns": "none",
+    "project_agent": false,
+    "human_reading_seconds": null,
+    "reported_own_files_only": true
+  },
+  {
+    "reader_id": "R03",
+    "codex_agent": "/root/repair_reader_03",
+    "fork_turns": "none",
+    "project_agent": false,
+    "human_reading_seconds": null,
+    "reported_own_files_only": true
+  },
+  {
+    "reader_id": "R04",
+    "codex_agent": "/root/repair_reader_04",
+    "fork_turns": "none",
+    "project_agent": false,
+    "human_reading_seconds": null,
+    "reported_own_files_only": true
+  },
+  {
+    "reader_id": "R05",
+    "codex_agent": "/root/repair_reader_05",
+    "fork_turns": "none",
+    "project_agent": false,
+    "human_reading_seconds": null,
+    "reported_own_files_only": true
+  },
+  {
+    "reader_id": "R06",
+    "codex_agent": "/root/repair_reader_06",
+    "fork_turns": "none",
+    "project_agent": false,
+    "human_reading_seconds": null,
+    "reported_own_files_only": true
+  }
+]

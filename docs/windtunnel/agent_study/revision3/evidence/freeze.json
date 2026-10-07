@@ -1,0 +1,51 @@
+{
+  "participant_type": "codex_proxy",
+  "revision": "v3",
+  "atomic_conditions": true,
+  "continue_after_unknown": true,
+  "model": "deepseek-flash",
+  "thinking": "disabled",
+  "output_tokens_max": 3000,
+  "maximum_budget_cny": 5,
+  "pricing_upper_cny_per_million": {
+    "input": 2,
+    "output": 8
+  },
+  "frozen_at": 1791355733.209548,
+  "baseline_prompt_sha256": "5c01f5c0961d1bbbaf4579945710d5641043787f32f491161ef4133024323c75",
+  "code_hashes": {
+    "backend/windtunnel.py": "85fb89bf621855c11c0786306269ac063f6c1a46f250c5cc9cdf94e3d8873e66",
+    "backend/windtunnel_runtime.py": "6fcdb1606c9e400c9d9bab42e18e084e98641e89353f8116accab4b3b639f0f2",
+    "backend/provider.py": "4a48dc4ccae91b86ad710c86257a5a5411402cdef7d81bac2c9f4a7a3e948640",
+    "scripts/run_windtunnel_agent_study.py": "86095f583bb361358b77ae8a8e8e0bfc51de8bbc5a8159dcfccdfdc9036bcec3",
+    "scripts/study_budget.py": "6e01bbbca25ec350500389b42e026fc6d7cdb38637368ab964393c7f154da933"
+  },
+  "effective_tasks_sha256": "399f79337583b56bb9033625afc9cea7d4fe96e137378ace5b03451c7f3edda5",
+  "effective_samples_sha256": "4e2140b077dbc01eb8dbe2fa03eca983d9942245d01f61043bedd1e50b472121",
+  "task_rubrics_sha256": "d843382b95bf5b78dec90078975b2ee56d5fad1aca2b84af21a8ce3dd91bca31",
+  "candidate_manifest_sha256": "f47bdcb30e5ed2639dfb6ca335961653fe60f45ed0922d36c5e189a829f5a656",
+  "input_file_hashes": {
+    "S01/draft.md": "60e1a164cc49658de5bf75fdb8de4befff8d84181e7da79e657fe196ada08f2c",
+    "S01/support.md": "a551eff6c337741dedabc357a322ac15b4d645e51eb66e0c3b354a30c66a811a",
+    "S02/draft.md": "cb8eccef6aac301abf7fbc4ec3dbdde6478a3ec04254fdf739cc3927f01e556a",
+    "S02/support.md": "8baddd11396e4f3e6238f62aa4ad3b7057d715b927611ec53a0b60b6715ed806",
+    "S03/draft.md": "ef83f431144c8feb23b3cb3ad59dd5c1ae6c1f2970a5b79c96708e23f2b90837",
+    "S03/support.md": "1cda6b99a180ee4d755d59df3f996633baad4426bbcd6f2147e9b5b703da4f02",
+    "S04/draft.md": "a23dbabe071f9e237194eb0a51d7789f6feeedbd24dbd6edea9da3cfbcccbc6b",
+    "S04/support.md": "a6352d7035652e7642fcf07d7706dc8f95c70c7e3f7e0d84d3a53427294e923b",
+    "S05/draft.md": "269d80bd47a9e7c7f10a9fb4dd6a89c8d5f09af6f567c2cdc35c4317c9674015",
+    "S05/support.md": "d1181fa14e432b23827f9dbb339058bf3c418109d5d3f8b8a9270195437ffc0f",
+    "S06/draft.md": "d66b7563463ef984a107f41ff1ff687713a4ab20c33056204037c7103a95f6f4",
+    "S06/support.md": "6ab7935261aa7a0a6105d5917f226d9f546376ef93fd5c82239f5cc1554cac5b",
+    "S07/draft.md": "7a11c0952c743e14807fa625346fb4e59cf7ea59a2399506609aa6f29dbd8d95",
+    "S07/support.md": "07a1a6fdc72b6621d5bec055d81c30b997f94307e33dff441fbb34d14dbdc020",
+    "S08/draft.md": "2b398bbc4d5094629c4b1665d420a63a555f3ea10e9996cc09722b457052cc5b",
+    "S08/support.md": "c836a67d4bf4aff987ef92a0cabd8ad1c936c7cf1ed82a5bb9702f1b4a57d998",
+    "S09/draft.md": "e991c982012d6a7c620badad7cfc7d3bf5b243a680c3f6c1c911fcbe8dc36e88",
+    "S09/support.md": "c8f4b2a16dfbac94513b3770a26e59928237066263364513ed7d9ab0add5509e",
+    "S10/draft.md": "456190e2d4eafe656f4d3cdf710638fd19d9e02151cef4e90b89cf466cef22e1",
+    "S10/support.md": "ba277f0adc60667b308820b0f05ca08bb0165911162684634e33ab53825073fb"
+  },
+  "adoption_policy": "accept all program-valid baseline manuscript / windtunnel patches; failed run preserves latest draft; no human author",
+  "human_readers": 0
+}

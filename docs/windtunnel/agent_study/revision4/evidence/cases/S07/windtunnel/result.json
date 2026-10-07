@@ -1,0 +1,567 @@
+{
+  "sample_id": "S07",
+  "method": "windtunnel",
+  "participant_type": "codex_proxy",
+  "revision": "v4",
+  "draft_kind": "public_official_tutorial_excerpt",
+  "adaptation": "layout and attribution only; original English text",
+  "deletion_design": null,
+  "source_url": "https://docs.python.org/3.12/tutorial/inputoutput.html#saving-structured-data-with-json",
+  "original_sha256": "31d7a8468f532da0abe60437c3b621135a6f9396bfd88fb4e62977a382e9fa29",
+  "material_sha256": "31d7a8468f532da0abe60437c3b621135a6f9396bfd88fb4e62977a382e9fa29",
+  "outcome": "completed",
+  "error": null,
+  "automatic_adoption": true,
+  "human_author": false,
+  "initial_report": {
+    "id": "cb952835-0240-4caa-81c5-b2bd6008c3cf",
+    "batch_id": "0fe82fa8-4f91-4096-835b-78a3b43672da",
+    "draft_id": "37a17a1d-9da9-4238-aa0e-b7645923e434",
+    "draft_hash": "4a8eb6d9e3e1775eaf6ad88eed361f3ce1858778f6576bbb3cd93352e9886cd5",
+    "condition_set_id": "c9ec19c4-9de5-4ddd-8241-6fe9fe5e38e7",
+    "condition_hash": "d29e8d49593220c83c01a321149376dc36d81ad282bbfbef98b501013dafd467",
+    "material_hash": "8d31c9e616ea1472711052b952249db8f31e593c566736bcde83bcd2541cf9be",
+    "results": [
+      {
+        "condition_id": "31421335-db0b-4c49-9eeb-afc7f4654be2",
+        "status": "pass",
+        "reason": "稿件直接给出字符串转换与反向重建的名称：serializing 和 deserializing，可用于保存 x=[1,'simple','list'] 再恢复的方案说明。",
+        "citations": [
+          {
+            "source_id": "f5f8307e-22a7-4443-beae-11673aba022e",
+            "quote": "Rather than having users constantly writing and debugging code to save\ncomplicated data types to files, Python allows you to use the popular data\ninterchange format called JSON (JavaScript Object Notation).  The standard module called json can take Python\ndata hierarchies, and convert them to string representations; this process is\ncalled serializing.  Reconstructing the data from the string representation\nis called deserializing.  Between serializing and deserializing, the\nstring representing the object may have been stored in a file or data, or\nsent over a network connection to some distant machine."
+          }
+        ],
+        "reading": {
+          "condition_id": "31421335-db0b-4c49-9eeb-afc7f4654be2",
+          "status": "pass",
+          "answer": "“字符串转换”称为 serializing；“反向重建”称为 deserializing。稿件明确：“this process is called serializing. Reconstructing the data from the string representation is called deserializing.”",
+          "excerpt": "this process is\ncalled serializing.  Reconstructing the data from the string representation\nis called deserializing.",
+          "reason": "稿件直接给出两个过程的名称，并可用于 x=[1,'simple','list'] 的保存与恢复方案说明。"
+        }
+      },
+      {
+        "condition_id": "8b91d039-99cc-4fbe-b4b4-ea6e44e1521d",
+        "status": "pass",
+        "reason": "稿件示例使用同一输入 x = [1, 'simple', 'list']，并给出 json.dumps(x) 的结果 '[1, \"simple\", \"list\"]'。",
+        "citations": [
+          {
+            "source_id": "f5f8307e-22a7-4443-beae-11673aba022e",
+            "quote": ">>> import json\n>>> x = [1, 'simple', 'list']\n>>> json.dumps(x)\n'[1, \"simple\", \"list\"]'"
+          }
+        ],
+        "reading": {
+          "condition_id": "8b91d039-99cc-4fbe-b4b4-ea6e44e1521d",
+          "status": "pass",
+          "answer": "产生 JSON 字符串用 json.dumps()。对给定输入直接演算：import json；x = [1, 'simple', 'list']；json.dumps(x) 的结果是 '[1, \"simple\", \"list\"]'。",
+          "excerpt": ">>> json.dumps(x)\n'[1, \"simple\", \"list\"]'",
+          "reason": "稿件示例与问题给定输入一致，直接给出函数和结果。"
+        }
+      },
+      {
+        "condition_id": "48ca5061-4fa0-45b1-9fd7-870403f010bd",
+        "status": "pass",
+        "reason": "稿件说明已打开用于写入的文本文件对象 f 用 json.dump(x, f)，已打开用于读取的 f 用 x = json.load(f)。",
+        "citations": [
+          {
+            "source_id": "f5f8307e-22a7-4443-beae-11673aba022e",
+            "quote": "json.dump(x, f)"
+          },
+          {
+            "source_id": "f5f8307e-22a7-4443-beae-11673aba022e",
+            "quote": "To decode the object again, if f is a binary file or\ntext file object which has been opened for reading:"
+          },
+          {
+            "source_id": "f5f8307e-22a7-4443-beae-11673aba022e",
+            "quote": "x = json.load(f)"
+          }
+        ],
+        "reading": {
+          "condition_id": "48ca5061-4fa0-45b1-9fd7-870403f010bd",
+          "status": "pass",
+          "answer": "当 f 是已打开用于写入的文本文件对象时，写入用 json.dump(x, f)。当 f 是已打开用于读取的二进制文件或文本文件对象时，读取用 x = json.load(f)。",
+          "excerpt": "json.dump(x, f)",
+          "reason": "稿件明确说明 dump() 写入文本文件，并给出 load(f) 读取；虽 excerpt 只列一段连续原文，但 answer 已覆盖对应规则。"
+        }
+      },
+      {
+        "condition_id": "ea2a1d9a-d3f6-4857-99ea-92677b70066c",
+        "status": "pass",
+        "reason": "稿件明确 JSON 文件必须使用 UTF-8 编码，并建议作为文本文件读取和写入时使用 encoding=\"utf-8\"。",
+        "citations": [
+          {
+            "source_id": "f5f8307e-22a7-4443-beae-11673aba022e",
+            "quote": "JSON files must be encoded in UTF-8. Use encoding=\"utf-8\" when opening\nJSON file as a text file for both of reading and writing."
+          }
+        ],
+        "reading": {
+          "condition_id": "ea2a1d9a-d3f6-4857-99ea-92677b70066c",
+          "status": "pass",
+          "answer": "文本 JSON 文件必须以 UTF-8 编码。作为文本文件打开用于读取和写入时，都应使用 encoding=\"utf-8\"。",
+          "excerpt": "JSON files must be encoded in UTF-8. Use encoding=\"utf-8\" when opening\nJSON file as a text file for both of reading and writing.",
+          "reason": "稿件直接说明 JSON 文件的编码要求及打开文本文件时的 encoding 参数。"
+        }
+      },
+      {
+        "condition_id": "bb15f11a-c385-4eaf-9eb5-2f054208a8f4",
+        "status": "pass",
+        "reason": "稿件说明 pickle 默认不安全，反序列化不可信来源数据可能执行任意代码；同时说明 JSON 简单序列化可处理列表和字典，但任意类实例需要额外工作。",
+        "citations": [
+          {
+            "source_id": "f5f8307e-22a7-4443-beae-11673aba022e",
+            "quote": "This simple serialization technique can handle lists and dictionaries, but\nserializing arbitrary class instances in JSON requires a bit of extra effort.\nThe reference for the json module contains an explanation of this."
+          },
+          {
+            "source_id": "f5f8307e-22a7-4443-beae-11673aba022e",
+            "quote": "Contrary to JSON, pickle is a protocol which allows\nthe serialization of arbitrarily complex Python objects.  As such, it is\nspecific to Python and cannot be used to communicate with applications\nwritten in other languages.  It is also insecure by default:\ndeserializing pickle data coming from an untrusted source can execute\narbitrary code, if the data was crafted by a skilled attacker."
+          }
+        ],
+        "reading": {
+          "condition_id": "bb15f11a-c385-4eaf-9eb5-2f054208a8f4",
+          "status": "pass",
+          "answer": "不能随便用不可信 pickle 替代 JSON，因为 pickle 默认不安全：反序列化来自不可信来源的 pickle 数据时，如果数据由熟练攻击者构造，可能执行任意代码。JSON 对任意类实例的限制是：这种简单序列化技术可处理列表和字典，但序列化任意类实例需要额外工作。",
+          "excerpt": "It is also insecure by default:\ndeserializing pickle data coming from an untrusted source can execute\narbitrary code, if the data was crafted by a skilled attacker.",
+          "reason": "稿件同时说明 pickle 的不可信来源风险及 JSON 对任意类实例需额外处理，足以回答两部分。"
+        }
+      }
+    ],
+    "new_issues": [],
+    "mode": "live",
+    "created_at": 1791356110.551292,
+    "model_policy": {
+      "version": "56cb27ab6fbf778239c193adfb5bcc084ca534730fef852bc02b83a150695d18",
+      "routes": {
+        "wt_conditions": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_read": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_verify": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_patch": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        }
+      },
+      "prompt_version": "windtunnel.v1"
+    },
+    "sources": [
+      {
+        "id": "37a17a1d-9da9-4238-aa0e-b7645923e434",
+        "source_id": "37a17a1d-9da9-4238-aa0e-b7645923e434",
+        "kind": "draft",
+        "text": "7.2.2. Saving structured data with json\n\nStrings can easily be written to and read from a file.  Numbers take a bit more\neffort, since the read() method only returns strings, which will have to\nbe passed to a function like int(), which takes a string like '123'\nand returns its numeric value 123.  When you want to save more complex data\ntypes like nested lists and dictionaries, parsing and serializing by hand\nbecomes complicated.\n\nRather than having users constantly writing and debugging code to save\ncomplicated data types to files, Python allows you to use the popular data\ninterchange format called JSON (JavaScript Object Notation).  The standard module called json can take Python\ndata hierarchies, and convert them to string representations; this process is\ncalled serializing.  Reconstructing the data from the string representation\nis called deserializing.  Between serializing and deserializing, the\nstring representing the object may have been stored in a file or data, or\nsent over a network connection to some distant machine.\n\nNote\n\nThe JSON format is commonly used by modern applications to allow for data\nexchange.  Many programmers are already familiar with it, which makes\nit a good choice for interoperability.\n\nIf you have an object x, you can view its JSON string representation with a\nsimple line of code:\n\n>>> import json\n>>> x = [1, 'simple', 'list']\n>>> json.dumps(x)\n'[1, \"simple\", \"list\"]'\n\nAnother variant of the dumps() function, called dump(),\nsimply serializes the object to a text file.  So if f is a\ntext file object opened for writing, we can do this:\n\njson.dump(x, f)\n\nTo decode the object again, if f is a binary file or\ntext file object which has been opened for reading:\n\nx = json.load(f)\n\nNote\n\nJSON files must be encoded in UTF-8. Use encoding=\"utf-8\" when opening\nJSON file as a text file for both of reading and writing.\n\nThis simple serialization technique can handle lists and dictionaries, but\nserializing arbitrary class instances in JSON requires a bit of extra effort.\nThe reference for the json module contains an explanation of this.\n\nSee also\n\npickle - the pickle module\n\nContrary to JSON, pickle is a protocol which allows\nthe serialization of arbitrarily complex Python objects.  As such, it is\nspecific to Python and cannot be used to communicate with applications\nwritten in other languages.  It is also insecure by default:\ndeserializing pickle data coming from an untrusted source can execute\narbitrary code, if the data was crafted by a skilled attacker.",
+        "hash": "4a8eb6d9e3e1775eaf6ad88eed361f3ce1858778f6576bbb3cd93352e9886cd5"
+      },
+      {
+        "id": "f5f8307e-22a7-4443-beae-11673aba022e",
+        "kind": "material",
+        "text": "7.2.2. Saving structured data with json\n\nStrings can easily be written to and read from a file.  Numbers take a bit more\neffort, since the read() method only returns strings, which will have to\nbe passed to a function like int(), which takes a string like '123'\nand returns its numeric value 123.  When you want to save more complex data\ntypes like nested lists and dictionaries, parsing and serializing by hand\nbecomes complicated.\n\nRather than having users constantly writing and debugging code to save\ncomplicated data types to files, Python allows you to use the popular data\ninterchange format called JSON (JavaScript Object Notation).  The standard module called json can take Python\ndata hierarchies, and convert them to string representations; this process is\ncalled serializing.  Reconstructing the data from the string representation\nis called deserializing.  Between serializing and deserializing, the\nstring representing the object may have been stored in a file or data, or\nsent over a network connection to some distant machine.\n\nNote\n\nThe JSON format is commonly used by modern applications to allow for data\nexchange.  Many programmers are already familiar with it, which makes\nit a good choice for interoperability.\n\nIf you have an object x, you can view its JSON string representation with a\nsimple line of code:\n\n>>> import json\n>>> x = [1, 'simple', 'list']\n>>> json.dumps(x)\n'[1, \"simple\", \"list\"]'\n\nAnother variant of the dumps() function, called dump(),\nsimply serializes the object to a text file.  So if f is a\ntext file object opened for writing, we can do this:\n\njson.dump(x, f)\n\nTo decode the object again, if f is a binary file or\ntext file object which has been opened for reading:\n\nx = json.load(f)\n\nNote\n\nJSON files must be encoded in UTF-8. Use encoding=\"utf-8\" when opening\nJSON file as a text file for both of reading and writing.\n\nThis simple serialization technique can handle lists and dictionaries, but\nserializing arbitrary class instances in JSON requires a bit of extra effort.\nThe reference for the json module contains an explanation of this.\n\nSee also\n\npickle - the pickle module\n\nContrary to JSON, pickle is a protocol which allows\nthe serialization of arbitrarily complex Python objects.  As such, it is\nspecific to Python and cannot be used to communicate with applications\nwritten in other languages.  It is also insecure by default:\ndeserializing pickle data coming from an untrusted source can execute\narbitrary code, if the data was crafted by a skilled attacker.",
+        "title": "JSON保存结构化数据",
+        "origin": "https://docs.python.org/3.12/tutorial/inputoutput.html#saving-structured-data-with-json",
+        "provenance": "author_material",
+        "permission": false,
+        "version": 1,
+        "hash": "5ae9cb89858758ad2ef271677102593c65f2f526dd8e88b6624a42dca76b5064",
+        "collected_at": 1791356094.655286
+      }
+    ]
+  },
+  "final_report": {
+    "id": "cb952835-0240-4caa-81c5-b2bd6008c3cf",
+    "batch_id": "0fe82fa8-4f91-4096-835b-78a3b43672da",
+    "draft_id": "37a17a1d-9da9-4238-aa0e-b7645923e434",
+    "draft_hash": "4a8eb6d9e3e1775eaf6ad88eed361f3ce1858778f6576bbb3cd93352e9886cd5",
+    "condition_set_id": "c9ec19c4-9de5-4ddd-8241-6fe9fe5e38e7",
+    "condition_hash": "d29e8d49593220c83c01a321149376dc36d81ad282bbfbef98b501013dafd467",
+    "material_hash": "8d31c9e616ea1472711052b952249db8f31e593c566736bcde83bcd2541cf9be",
+    "results": [
+      {
+        "condition_id": "31421335-db0b-4c49-9eeb-afc7f4654be2",
+        "status": "pass",
+        "reason": "稿件直接给出字符串转换与反向重建的名称：serializing 和 deserializing，可用于保存 x=[1,'simple','list'] 再恢复的方案说明。",
+        "citations": [
+          {
+            "source_id": "f5f8307e-22a7-4443-beae-11673aba022e",
+            "quote": "Rather than having users constantly writing and debugging code to save\ncomplicated data types to files, Python allows you to use the popular data\ninterchange format called JSON (JavaScript Object Notation).  The standard module called json can take Python\ndata hierarchies, and convert them to string representations; this process is\ncalled serializing.  Reconstructing the data from the string representation\nis called deserializing.  Between serializing and deserializing, the\nstring representing the object may have been stored in a file or data, or\nsent over a network connection to some distant machine."
+          }
+        ],
+        "reading": {
+          "condition_id": "31421335-db0b-4c49-9eeb-afc7f4654be2",
+          "status": "pass",
+          "answer": "“字符串转换”称为 serializing；“反向重建”称为 deserializing。稿件明确：“this process is called serializing. Reconstructing the data from the string representation is called deserializing.”",
+          "excerpt": "this process is\ncalled serializing.  Reconstructing the data from the string representation\nis called deserializing.",
+          "reason": "稿件直接给出两个过程的名称，并可用于 x=[1,'simple','list'] 的保存与恢复方案说明。"
+        }
+      },
+      {
+        "condition_id": "8b91d039-99cc-4fbe-b4b4-ea6e44e1521d",
+        "status": "pass",
+        "reason": "稿件示例使用同一输入 x = [1, 'simple', 'list']，并给出 json.dumps(x) 的结果 '[1, \"simple\", \"list\"]'。",
+        "citations": [
+          {
+            "source_id": "f5f8307e-22a7-4443-beae-11673aba022e",
+            "quote": ">>> import json\n>>> x = [1, 'simple', 'list']\n>>> json.dumps(x)\n'[1, \"simple\", \"list\"]'"
+          }
+        ],
+        "reading": {
+          "condition_id": "8b91d039-99cc-4fbe-b4b4-ea6e44e1521d",
+          "status": "pass",
+          "answer": "产生 JSON 字符串用 json.dumps()。对给定输入直接演算：import json；x = [1, 'simple', 'list']；json.dumps(x) 的结果是 '[1, \"simple\", \"list\"]'。",
+          "excerpt": ">>> json.dumps(x)\n'[1, \"simple\", \"list\"]'",
+          "reason": "稿件示例与问题给定输入一致，直接给出函数和结果。"
+        }
+      },
+      {
+        "condition_id": "48ca5061-4fa0-45b1-9fd7-870403f010bd",
+        "status": "pass",
+        "reason": "稿件说明已打开用于写入的文本文件对象 f 用 json.dump(x, f)，已打开用于读取的 f 用 x = json.load(f)。",
+        "citations": [
+          {
+            "source_id": "f5f8307e-22a7-4443-beae-11673aba022e",
+            "quote": "json.dump(x, f)"
+          },
+          {
+            "source_id": "f5f8307e-22a7-4443-beae-11673aba022e",
+            "quote": "To decode the object again, if f is a binary file or\ntext file object which has been opened for reading:"
+          },
+          {
+            "source_id": "f5f8307e-22a7-4443-beae-11673aba022e",
+            "quote": "x = json.load(f)"
+          }
+        ],
+        "reading": {
+          "condition_id": "48ca5061-4fa0-45b1-9fd7-870403f010bd",
+          "status": "pass",
+          "answer": "当 f 是已打开用于写入的文本文件对象时，写入用 json.dump(x, f)。当 f 是已打开用于读取的二进制文件或文本文件对象时，读取用 x = json.load(f)。",
+          "excerpt": "json.dump(x, f)",
+          "reason": "稿件明确说明 dump() 写入文本文件，并给出 load(f) 读取；虽 excerpt 只列一段连续原文，但 answer 已覆盖对应规则。"
+        }
+      },
+      {
+        "condition_id": "ea2a1d9a-d3f6-4857-99ea-92677b70066c",
+        "status": "pass",
+        "reason": "稿件明确 JSON 文件必须使用 UTF-8 编码，并建议作为文本文件读取和写入时使用 encoding=\"utf-8\"。",
+        "citations": [
+          {
+            "source_id": "f5f8307e-22a7-4443-beae-11673aba022e",
+            "quote": "JSON files must be encoded in UTF-8. Use encoding=\"utf-8\" when opening\nJSON file as a text file for both of reading and writing."
+          }
+        ],
+        "reading": {
+          "condition_id": "ea2a1d9a-d3f6-4857-99ea-92677b70066c",
+          "status": "pass",
+          "answer": "文本 JSON 文件必须以 UTF-8 编码。作为文本文件打开用于读取和写入时，都应使用 encoding=\"utf-8\"。",
+          "excerpt": "JSON files must be encoded in UTF-8. Use encoding=\"utf-8\" when opening\nJSON file as a text file for both of reading and writing.",
+          "reason": "稿件直接说明 JSON 文件的编码要求及打开文本文件时的 encoding 参数。"
+        }
+      },
+      {
+        "condition_id": "bb15f11a-c385-4eaf-9eb5-2f054208a8f4",
+        "status": "pass",
+        "reason": "稿件说明 pickle 默认不安全，反序列化不可信来源数据可能执行任意代码；同时说明 JSON 简单序列化可处理列表和字典，但任意类实例需要额外工作。",
+        "citations": [
+          {
+            "source_id": "f5f8307e-22a7-4443-beae-11673aba022e",
+            "quote": "This simple serialization technique can handle lists and dictionaries, but\nserializing arbitrary class instances in JSON requires a bit of extra effort.\nThe reference for the json module contains an explanation of this."
+          },
+          {
+            "source_id": "f5f8307e-22a7-4443-beae-11673aba022e",
+            "quote": "Contrary to JSON, pickle is a protocol which allows\nthe serialization of arbitrarily complex Python objects.  As such, it is\nspecific to Python and cannot be used to communicate with applications\nwritten in other languages.  It is also insecure by default:\ndeserializing pickle data coming from an untrusted source can execute\narbitrary code, if the data was crafted by a skilled attacker."
+          }
+        ],
+        "reading": {
+          "condition_id": "bb15f11a-c385-4eaf-9eb5-2f054208a8f4",
+          "status": "pass",
+          "answer": "不能随便用不可信 pickle 替代 JSON，因为 pickle 默认不安全：反序列化来自不可信来源的 pickle 数据时，如果数据由熟练攻击者构造，可能执行任意代码。JSON 对任意类实例的限制是：这种简单序列化技术可处理列表和字典，但序列化任意类实例需要额外工作。",
+          "excerpt": "It is also insecure by default:\ndeserializing pickle data coming from an untrusted source can execute\narbitrary code, if the data was crafted by a skilled attacker.",
+          "reason": "稿件同时说明 pickle 的不可信来源风险及 JSON 对任意类实例需额外处理，足以回答两部分。"
+        }
+      }
+    ],
+    "new_issues": [],
+    "mode": "live",
+    "created_at": 1791356110.551292,
+    "model_policy": {
+      "version": "56cb27ab6fbf778239c193adfb5bcc084ca534730fef852bc02b83a150695d18",
+      "routes": {
+        "wt_conditions": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_read": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_verify": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_patch": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        }
+      },
+      "prompt_version": "windtunnel.v1"
+    },
+    "sources": [
+      {
+        "id": "37a17a1d-9da9-4238-aa0e-b7645923e434",
+        "source_id": "37a17a1d-9da9-4238-aa0e-b7645923e434",
+        "kind": "draft",
+        "text": "7.2.2. Saving structured data with json\n\nStrings can easily be written to and read from a file.  Numbers take a bit more\neffort, since the read() method only returns strings, which will have to\nbe passed to a function like int(), which takes a string like '123'\nand returns its numeric value 123.  When you want to save more complex data\ntypes like nested lists and dictionaries, parsing and serializing by hand\nbecomes complicated.\n\nRather than having users constantly writing and debugging code to save\ncomplicated data types to files, Python allows you to use the popular data\ninterchange format called JSON (JavaScript Object Notation).  The standard module called json can take Python\ndata hierarchies, and convert them to string representations; this process is\ncalled serializing.  Reconstructing the data from the string representation\nis called deserializing.  Between serializing and deserializing, the\nstring representing the object may have been stored in a file or data, or\nsent over a network connection to some distant machine.\n\nNote\n\nThe JSON format is commonly used by modern applications to allow for data\nexchange.  Many programmers are already familiar with it, which makes\nit a good choice for interoperability.\n\nIf you have an object x, you can view its JSON string representation with a\nsimple line of code:\n\n>>> import json\n>>> x = [1, 'simple', 'list']\n>>> json.dumps(x)\n'[1, \"simple\", \"list\"]'\n\nAnother variant of the dumps() function, called dump(),\nsimply serializes the object to a text file.  So if f is a\ntext file object opened for writing, we can do this:\n\njson.dump(x, f)\n\nTo decode the object again, if f is a binary file or\ntext file object which has been opened for reading:\n\nx = json.load(f)\n\nNote\n\nJSON files must be encoded in UTF-8. Use encoding=\"utf-8\" when opening\nJSON file as a text file for both of reading and writing.\n\nThis simple serialization technique can handle lists and dictionaries, but\nserializing arbitrary class instances in JSON requires a bit of extra effort.\nThe reference for the json module contains an explanation of this.\n\nSee also\n\npickle - the pickle module\n\nContrary to JSON, pickle is a protocol which allows\nthe serialization of arbitrarily complex Python objects.  As such, it is\nspecific to Python and cannot be used to communicate with applications\nwritten in other languages.  It is also insecure by default:\ndeserializing pickle data coming from an untrusted source can execute\narbitrary code, if the data was crafted by a skilled attacker.",
+        "hash": "4a8eb6d9e3e1775eaf6ad88eed361f3ce1858778f6576bbb3cd93352e9886cd5"
+      },
+      {
+        "id": "f5f8307e-22a7-4443-beae-11673aba022e",
+        "kind": "material",
+        "text": "7.2.2. Saving structured data with json\n\nStrings can easily be written to and read from a file.  Numbers take a bit more\neffort, since the read() method only returns strings, which will have to\nbe passed to a function like int(), which takes a string like '123'\nand returns its numeric value 123.  When you want to save more complex data\ntypes like nested lists and dictionaries, parsing and serializing by hand\nbecomes complicated.\n\nRather than having users constantly writing and debugging code to save\ncomplicated data types to files, Python allows you to use the popular data\ninterchange format called JSON (JavaScript Object Notation).  The standard module called json can take Python\ndata hierarchies, and convert them to string representations; this process is\ncalled serializing.  Reconstructing the data from the string representation\nis called deserializing.  Between serializing and deserializing, the\nstring representing the object may have been stored in a file or data, or\nsent over a network connection to some distant machine.\n\nNote\n\nThe JSON format is commonly used by modern applications to allow for data\nexchange.  Many programmers are already familiar with it, which makes\nit a good choice for interoperability.\n\nIf you have an object x, you can view its JSON string representation with a\nsimple line of code:\n\n>>> import json\n>>> x = [1, 'simple', 'list']\n>>> json.dumps(x)\n'[1, \"simple\", \"list\"]'\n\nAnother variant of the dumps() function, called dump(),\nsimply serializes the object to a text file.  So if f is a\ntext file object opened for writing, we can do this:\n\njson.dump(x, f)\n\nTo decode the object again, if f is a binary file or\ntext file object which has been opened for reading:\n\nx = json.load(f)\n\nNote\n\nJSON files must be encoded in UTF-8. Use encoding=\"utf-8\" when opening\nJSON file as a text file for both of reading and writing.\n\nThis simple serialization technique can handle lists and dictionaries, but\nserializing arbitrary class instances in JSON requires a bit of extra effort.\nThe reference for the json module contains an explanation of this.\n\nSee also\n\npickle - the pickle module\n\nContrary to JSON, pickle is a protocol which allows\nthe serialization of arbitrarily complex Python objects.  As such, it is\nspecific to Python and cannot be used to communicate with applications\nwritten in other languages.  It is also insecure by default:\ndeserializing pickle data coming from an untrusted source can execute\narbitrary code, if the data was crafted by a skilled attacker.",
+        "title": "JSON保存结构化数据",
+        "origin": "https://docs.python.org/3.12/tutorial/inputoutput.html#saving-structured-data-with-json",
+        "provenance": "author_material",
+        "permission": false,
+        "version": 1,
+        "hash": "5ae9cb89858758ad2ef271677102593c65f2f526dd8e88b6624a42dca76b5064",
+        "collected_at": 1791356094.655286
+      }
+    ]
+  },
+  "unresolved_conditions": [],
+  "effective_repair_confirmed": false,
+  "run_id": "07280b79-1c88-4d82-b950-a92bcf7ffc48",
+  "wall_seconds": 15.917,
+  "final_sha256": "31d7a8468f532da0abe60437c3b621135a6f9396bfd88fb4e62977a382e9fa29",
+  "changed": false,
+  "calls": [
+    {
+      "stage": "wt_conditions",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 252,
+      "output_tokens": 1883,
+      "total_tokens": 2135,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "conditions": [
+          {
+            "question": "作者希望读者在文档中重点掌握哪些JSON与Python类型互转的名称（例如json.dumps / json.loads）？是否需要用稿内一个统一示例贯穿？",
+            "scene": "Python 3.12 beginner tutorial; manuscript remains English. Goal: 依据稿件设计保存x=[1,'simple','list']再恢复的JSON方案：说明字符串转换及反向重建的名称；给出产生JSON字符串的函数及结果；说明已打开文本文件对象f时写入与读取分别用什么函数；说明文本JSON文件的encoding要求；说明为何不能随便将不可信pickle替代JSON，以及JSON对任意类实例的限制。每项附稿内证据，不执行代码。",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "作者需要读者能复现的JSON字符串示例结果吗？对于x=[1,'simple','list']，是否希望文档预期给出可对比的JSON文本（如[1, \"simple\", \"list\"]）并强调双引号差异？",
+            "scene": "Python 3.12 beginner tutorial; manuscript remains English. Goal: 依据稿件设计保存x=[1,'simple','list']再恢复的JSON方案：说明字符串转换及反向重建的名称；给出产生JSON字符串的函数及结果；说明已打开文本文件对象f时写入与读取分别用什么函数；说明文本JSON文件的encoding要求；说明为何不能随便将不可信pickle替代JSON，以及JSON对任意类实例的限制。每项附稿内证据，不执行代码。",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "作者希望读者用哪一个产生JSON字符串的函数名与结果配对？是否要求同时展示dumps和dump的区别，并明确当前目标只不执行代码、只设计写法？",
+            "scene": "Python 3.12 beginner tutorial; manuscript remains English. Goal: 依据稿件设计保存x=[1,'simple','list']再恢复的JSON方案：说明字符串转换及反向重建的名称；给出产生JSON字符串的函数及结果；说明已打开文本文件对象f时写入与读取分别用什么函数；说明文本JSON文件的encoding要求；说明为何不能随便将不可信pickle替代JSON，以及JSON对任意类实例的限制。每项附稿内证据，不执行代码。",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "当已经打开文本文件对象f时，作者希望文档分别写f.write与f.read还是json.dump与json.load？是否要求说明两者都需要一个已打开的文件对象？",
+            "scene": "Python 3.12 beginner tutorial; manuscript remains English. Goal: 依据稿件设计保存x=[1,'simple','list']再恢复的JSON方案：说明字符串转换及反向重建的名称；给出产生JSON字符串的函数及结果；说明已打开文本文件对象f时写入与读取分别用什么函数；说明文本JSON文件的encoding要求；说明为何不能随便将不可信pickle替代JSON，以及JSON对任意类实例的限制。每项附稿内证据，不执行代码。",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "作者希望读者在读写文本JSON文件时采用什么encoding？是否要求明确指出必须用utf-8，并在open调用中显式写出encoding='utf-8'？",
+            "scene": "Python 3.12 beginner tutorial; manuscript remains English. Goal: 依据稿件设计保存x=[1,'simple','list']再恢复的JSON方案：说明字符串转换及反向重建的名称；给出产生JSON字符串的函数及结果；说明已打开文本文件对象f时写入与读取分别用什么函数；说明文本JSON文件的encoding要求；说明为何不能随便将不可信pickle替代JSON，以及JSON对任意类实例的限制。每项附稿内证据，不执行代码。",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "作者需要读者理解为什么不能随便使用不可信pickle替代JSON？是否要求强调pickle可执行任意代码、只适合可信数据，而JSON是更安全的数据交换格式？",
+            "scene": "Python 3.12 beginner tutorial; manuscript remains English. Goal: 依据稿件设计保存x=[1,'simple','list']再恢复的JSON方案：说明字符串转换及反向重建的名称；给出产生JSON字符串的函数及结果；说明已打开文本文件对象f时写入与读取分别用什么函数；说明文本JSON文件的encoding要求；说明为何不能随便将不可信pickle替代JSON，以及JSON对任意类实例的限制。每项附稿内证据，不执行代码。",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "作者希望读者说明JSON对任意类实例的限制时，重点放在“不能直接序列化自定义对象”还是“只能映射到基本类型”？是否要求提到需要自定义编码器或先转字典？",
+            "scene": "Python 3.12 beginner tutorial; manuscript remains English. Goal: 依据稿件设计保存x=[1,'simple','list']再恢复的JSON方案：说明字符串转换及反向重建的名称；给出产生JSON字符串的函数及结果；说明已打开文本文件对象f时写入与读取分别用什么函数；说明文本JSON文件的encoding要求；说明为何不能随便将不可信pickle替代JSON，以及JSON对任意类实例的限制。每项附稿内证据，不执行代码。",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "作者希望读者在稿内找到哪些证据来支持“字符串转换及反向重建的名称”？是否要求每个名称都引用稿件中的具体段落或代码块？",
+            "scene": "Python 3.12 beginner tutorial; manuscript remains English. Goal: 依据稿件设计保存x=[1,'simple','list']再恢复的JSON方案：说明字符串转换及反向重建的名称；给出产生JSON字符串的函数及结果；说明已打开文本文件对象f时写入与读取分别用什么函数；说明文本JSON文件的encoding要求；说明为何不能随便将不可信pickle替代JSON，以及JSON对任意类实例的限制。每项附稿内证据，不执行代码。",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "作者是否希望文档明确区分“把对象转成JSON字符串”和“把JSON字符串写进文件”两个步骤？是否要求指出json.dumps返回字符串，而json.dump直接写入文件？",
+            "scene": "Python 3.12 beginner tutorial; manuscript remains English. Goal: 依据稿件设计保存x=[1,'simple','list']再恢复的JSON方案：说明字符串转换及反向重建的名称；给出产生JSON字符串的函数及结果；说明已打开文本文件对象f时写入与读取分别用什么函数；说明文本JSON文件的encoding要求；说明为何不能随便将不可信pickle替代JSON，以及JSON对任意类实例的限制。每项附稿内证据，不执行代码。",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "作者是否要求文档说明读取时json.loads与json.load的区别？是否希望读者能判断：从字符串恢复用loads，从已打开文本文件恢复用load？",
+            "scene": "Python 3.12 beginner tutorial; manuscript remains English. Goal: 依据稿件设计保存x=[1,'simple','list']再恢复的JSON方案：说明字符串转换及反向重建的名称；给出产生JSON字符串的函数及结果；说明已打开文本文件对象f时写入与读取分别用什么函数；说明文本JSON文件的encoding要求；说明为何不能随便将不可信pickle替代JSON，以及JSON对任意类实例的限制。每项附稿内证据，不执行代码。",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "作者是否希望文档加入一句安全提醒：不要对不可信来源的JSON字符串直接调用eval，而应使用json.loads？是否要求与pickle风险对比？",
+            "scene": "Python 3.12 beginner tutorial; manuscript remains English. Goal: 依据稿件设计保存x=[1,'simple','list']再恢复的JSON方案：说明字符串转换及反向重建的名称；给出产生JSON字符串的函数及结果；说明已打开文本文件对象f时写入与读取分别用什么函数；说明文本JSON文件的encoding要求；说明为何不能随便将不可信pickle替代JSON，以及JSON对任意类实例的限制。每项附稿内证据，不执行代码。",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "作者是否要求读者能回答：JSON支持哪些Python基本类型？对于列表和字符串，恢复后类型是否保持不变？稿内证据应放在哪里？",
+            "scene": "Python 3.12 beginner tutorial; manuscript remains English. Goal: 依据稿件设计保存x=[1,'simple','list']再恢复的JSON方案：说明字符串转换及反向重建的名称；给出产生JSON字符串的函数及结果；说明已打开文本文件对象f时写入与读取分别用什么函数；说明文本JSON文件的encoding要求；说明为何不能随便将不可信pickle替代JSON，以及JSON对任意类实例的限制。每项附稿内证据，不执行代码。",
+            "source_ids": [],
+            "origin": "author"
+          }
+        ]
+      }
+    },
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 1378,
+      "output_tokens": 789,
+      "total_tokens": 2167,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "results": [
+          {
+            "condition_id": "31421335-db0b-4c49-9eeb-afc7f4654be2",
+            "status": "pass",
+            "answer": "“字符串转换”称为 serializing；“反向重建”称为 deserializing。稿件明确：“this process is called serializing. Reconstructing the data from the string representation is called deserializing.”",
+            "excerpt": "this process is\ncalled serializing.  Reconstructing the data from the string representation\nis called deserializing.",
+            "reason": "稿件直接给出两个过程的名称，并可用于 x=[1,'simple','list'] 的保存与恢复方案说明。"
+          },
+          {
+            "condition_id": "8b91d039-99cc-4fbe-b4b4-ea6e44e1521d",
+            "status": "pass",
+            "answer": "产生 JSON 字符串用 json.dumps()。对给定输入直接演算：import json；x = [1, 'simple', 'list']；json.dumps(x) 的结果是 '[1, \"simple\", \"list\"]'。",
+            "excerpt": ">>> json.dumps(x)\n'[1, \"simple\", \"list\"]'",
+            "reason": "稿件示例与问题给定输入一致，直接给出函数和结果。"
+          },
+          {
+            "condition_id": "48ca5061-4fa0-45b1-9fd7-870403f010bd",
+            "status": "pass",
+            "answer": "当 f 是已打开用于写入的文本文件对象时，写入用 json.dump(x, f)。当 f 是已打开用于读取的二进制文件或文本文件对象时，读取用 x = json.load(f)。",
+            "excerpt": "json.dump(x, f)",
+            "reason": "稿件明确说明 dump() 写入文本文件，并给出 load(f) 读取；虽 excerpt 只列一段连续原文，但 answer 已覆盖对应规则。"
+          },
+          {
+            "condition_id": "ea2a1d9a-d3f6-4857-99ea-92677b70066c",
+            "status": "pass",
+            "answer": "文本 JSON 文件必须以 UTF-8 编码。作为文本文件打开用于读取和写入时，都应使用 encoding=\"utf-8\"。",
+            "excerpt": "JSON files must be encoded in UTF-8. Use encoding=\"utf-8\" when opening\nJSON file as a text file for both of reading and writing.",
+            "reason": "稿件直接说明 JSON 文件的编码要求及打开文本文件时的 encoding 参数。"
+          },
+          {
+            "condition_id": "bb15f11a-c385-4eaf-9eb5-2f054208a8f4",
+            "status": "pass",
+            "answer": "不能随便用不可信 pickle 替代 JSON，因为 pickle 默认不安全：反序列化来自不可信来源的 pickle 数据时，如果数据由熟练攻击者构造，可能执行任意代码。JSON 对任意类实例的限制是：这种简单序列化技术可处理列表和字典，但序列化任意类实例需要额外工作。",
+            "excerpt": "It is also insecure by default:\ndeserializing pickle data coming from an untrusted source can execute\narbitrary code, if the data was crafted by a skilled attacker.",
+            "reason": "稿件同时说明 pickle 的不可信来源风险及 JSON 对任意类实例需额外处理，足以回答两部分。"
+          }
+        ]
+      }
+    },
+    {
+      "stage": "wt_verify",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 5188,
+      "output_tokens": 947,
+      "total_tokens": 6135,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "results": [
+          {
+            "condition_id": "31421335-db0b-4c49-9eeb-afc7f4654be2",
+            "status": "pass",
+            "reason": "稿件直接给出字符串转换与反向重建的名称：serializing 和 deserializing，可用于保存 x=[1,'simple','list'] 再恢复的方案说明。",
+            "citations": [
+              {
+                "evidence_id": "f5f8307e-22a7-4443-beae-11673aba022e:5ae9cb89858758ad2ef271677102593c65f2f526dd8e88b6624a42dca76b5064:P3"
+              }
+            ]
+          },
+          {
+            "condition_id": "8b91d039-99cc-4fbe-b4b4-ea6e44e1521d",
+            "status": "pass",
+            "reason": "稿件示例使用同一输入 x = [1, 'simple', 'list']，并给出 json.dumps(x) 的结果 '[1, \"simple\", \"list\"]'。",
+            "citations": [
+              {
+                "evidence_id": "f5f8307e-22a7-4443-beae-11673aba022e:5ae9cb89858758ad2ef271677102593c65f2f526dd8e88b6624a42dca76b5064:P7"
+              }
+            ]
+          },
+          {
+            "condition_id": "48ca5061-4fa0-45b1-9fd7-870403f010bd",
+            "status": "pass",
+            "reason": "稿件说明已打开用于写入的文本文件对象 f 用 json.dump(x, f)，已打开用于读取的 f 用 x = json.load(f)。",
+            "citations": [
+              {
+                "evidence_id": "f5f8307e-22a7-4443-beae-11673aba022e:5ae9cb89858758ad2ef271677102593c65f2f526dd8e88b6624a42dca76b5064:P9"
+              },
+              {
+                "evidence_id": "f5f8307e-22a7-4443-beae-11673aba022e:5ae9cb89858758ad2ef271677102593c65f2f526dd8e88b6624a42dca76b5064:P10"
+              },
+              {
+                "evidence_id": "f5f8307e-22a7-4443-beae-11673aba022e:5ae9cb89858758ad2ef271677102593c65f2f526dd8e88b6624a42dca76b5064:P11"
+              }
+            ]
+          },
+          {
+            "condition_id": "ea2a1d9a-d3f6-4857-99ea-92677b70066c",
+            "status": "pass",
+            "reason": "稿件明确 JSON 文件必须使用 UTF-8 编码，并建议作为文本文件读取和写入时使用 encoding=\"utf-8\"。",
+            "citations": [
+              {
+                "evidence_id": "f5f8307e-22a7-4443-beae-11673aba022e:5ae9cb89858758ad2ef271677102593c65f2f526dd8e88b6624a42dca76b5064:P13"
+              }
+            ]
+          },
+          {
+            "condition_id": "bb15f11a-c385-4eaf-9eb5-2f054208a8f4",
+            "status": "pass",
+            "reason": "稿件说明 pickle 默认不安全，反序列化不可信来源数据可能执行任意代码；同时说明 JSON 简单序列化可处理列表和字典，但任意类实例需要额外工作。",
+            "citations": [
+              {
+                "evidence_id": "f5f8307e-22a7-4443-beae-11673aba022e:5ae9cb89858758ad2ef271677102593c65f2f526dd8e88b6624a42dca76b5064:P14"
+              },
+              {
+                "evidence_id": "f5f8307e-22a7-4443-beae-11673aba022e:5ae9cb89858758ad2ef271677102593c65f2f526dd8e88b6624a42dca76b5064:P17"
+              }
+            ]
+          }
+        ],
+        "new_issues": []
+      }
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 1.147858,
+    "reserved_unknown_cny": 0.04281,
+    "committed_upper_cny": 1.190668,
+    "calls": 99,
+    "unknown_calls": 1
+  }
+}

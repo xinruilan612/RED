@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-07",
+  "full_python_tests": 454,
+  "skipped": 0,
+  "database": "real local PostgreSQL temporary schemas including durable restart",
+  "subsequently_added_evidence_test": true,
+  "evidence_suite_tests": 6,
+  "evidence_suite_passed": true,
+  "documents_tests": 17,
+  "frontend_tests": 29,
+  "frontend_js_syntax_files": 8,
+  "frontend_js_syntax_passed": true,
+  "diff_check": true,
+  "real_model_calls": 162,
+  "cumulative_budget_upper_cny": 2.118922,
+  "human_participants": 0,
+  "reader_type": "six fresh Codex subagents, not project agents"
+}

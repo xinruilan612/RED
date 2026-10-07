@@ -1,0 +1,22 @@
+test_atlas_offline (test_design_docs.DesignDocumentationTests.test_atlas_offline) ... ok
+test_content_trial_stand_direction_and_validation_layers_are_explicit (test_design_docs.DesignDocumentationTests.test_content_trial_stand_direction_and_validation_layers_are_explicit) ... ok
+test_diagrams_current_valid_and_in_bounds (test_design_docs.DesignDocumentationTests.test_diagrams_current_valid_and_in_bounds) ... ok
+test_explicit_manual_adoption_is_distinct_from_ai_approval (test_design_docs.DesignDocumentationTests.test_explicit_manual_adoption_is_distinct_from_ai_approval) ... ok
+test_five_layers_and_four_agents_are_unambiguous (test_design_docs.DesignDocumentationTests.test_five_layers_and_four_agents_are_unambiguous) ... ok
+test_lifecycle_mermaid_contains_every_transition (test_design_docs.DesignDocumentationTests.test_lifecycle_mermaid_contains_every_transition) ... ok
+test_local_links_resolve (test_design_docs.DesignDocumentationTests.test_local_links_resolve) ... ok
+test_modules_and_agents_documented (test_design_docs.DesignDocumentationTests.test_modules_and_agents_documented) ... ok
+test_operations_proposal_is_reachable_without_replacing_runtime_contract (test_design_docs.DesignDocumentationTests.test_operations_proposal_is_reachable_without_replacing_runtime_contract) ... ok
+test_operations_references_distinguish_requested_repo_and_platform_evidence (test_design_docs.DesignDocumentationTests.test_operations_references_distinguish_requested_repo_and_platform_evidence) ... ok
+test_parameter_invariants_and_paid_default (test_design_docs.DesignDocumentationTests.test_parameter_invariants_and_paid_default) ... ok
+test_research_provenance_and_no_execution_claim (test_design_docs.DesignDocumentationTests.test_research_provenance_and_no_execution_claim) ... ok
+test_revision_cannot_bypass_review_or_human_acceptance (test_design_docs.DesignDocumentationTests.test_revision_cannot_bypass_review_or_human_acceptance) ... ok
+test_service_promotion_handoff_preserves_scope_and_acceptance_boundaries (test_design_docs.DesignDocumentationTests.test_service_promotion_handoff_preserves_scope_and_acceptance_boundaries) ... ok
+test_states_known_and_terminals_absorbing (test_design_docs.DesignDocumentationTests.test_states_known_and_terminals_absorbing) ... ok
+test_tool_privileges_and_quality_limits (test_design_docs.DesignDocumentationTests.test_tool_privileges_and_quality_limits) ... ok
+test_workflow_diagram_matches_routing_contract (test_design_docs.DesignDocumentationTests.test_workflow_diagram_matches_routing_contract) ... ok
+
+----------------------------------------------------------------------
+Ran 17 tests in 0.020s
+
+OK
