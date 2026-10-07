@@ -135,3 +135,8 @@ test('competitor observation is a closed optional panel with usable save action'
  assert.match(source,/id="competitorForm"/);
  assert.match(source,/operate\('add_competitor',\{account_id:activeAccountId/);
 });
+
+test('compact reference layout uses stylesheet instead of CSP-blocked inline styles',()=>{
+ const source=fs.readFileSync('frontend/account.js','utf8'),css=fs.readFileSync('frontend/style.css','utf8');
+ assert.match(source,/class="panel account-reference"/);assert.doesNotMatch(source,/style="align-self/);assert.match(css,/\.account-reference\{align-self:start;padding:18px\}/);
+});

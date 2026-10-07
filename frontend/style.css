@@ -38,3 +38,5 @@ body{background:#f5f6f2}main{max-width:1560px;padding:36px 40px 24px;margin-left
 .history-context-menu{position:fixed;z-index:1000;background:white;border:1px solid #d8e1d9;border-radius:9px;padding:6px;box-shadow:0 5px 24px #19392b25;min-width:185px}.history-context-menu[hidden]{display:none}.history-context-menu button{width:100%;text-align:left;border:0;background:white;color:#9a3931;padding:12px}.history-context-menu button:hover,.history-context-menu button:focus{background:#f8eee8}.history-trash{font-size:11px;margin-top:6px;text-align:left;color:var(--muted)}
 
 .usage-details{font-size:12px;color:var(--muted);margin:8px 0 14px;background:transparent;border:0}.usage-details summary{cursor:pointer;width:fit-content}.usage-details p{margin:8px 0;line-height:1.6}
+
+.account-reference{align-self:start;padding:18px}
