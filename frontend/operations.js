@@ -17,7 +17,7 @@ function showPage(page){
  if(typeof renderPageTools==='function')renderPageTools(page);
  clearError();if(ops&&page!=='studio')renderOperations();window.scrollTo({top:0});
 }
-async function initOperations(){ops=await api('/api/operations');syncAccounts();if(run&&!matchesAccount(run)){run=null;$('workbench').hidden=true;$('welcome').hidden=false;fillAccountBrief();}showPage(location.hash.slice(1)||'overview');await history();}
+async function initOperations(){ops=await api('/api/operations');syncAccounts();if(run&&!matchesAccount(run)){run=null;$('workbench').hidden=true;$('welcome').hidden=false;fillAccountBrief();}showPage(location.hash.slice(1)||'overview');return await history();}
 async function operate(action,payload){
  if(opsBusy)return false;opsBusy=true;clearError();
  document.querySelectorAll('#operationsView button').forEach(b=>b.disabled=true);

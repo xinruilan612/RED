@@ -76,9 +76,9 @@ $('approveLiveBudget').onclick=async()=>{
 };
 let historyDeleted=false,historyRequest=0,historyMenuRun=null,historyMenuOpener=null;
 async function history(){
- const request=++historyRequest,deleted=historyDeleted;
+ const request=++historyRequest,deleted=historyDeleted,accountId=typeof activeAccountId==='undefined'?null:activeAccountId;
  const rows=(await api('/api/runs'+(deleted?'?deleted=true':''))).filter(r=>r.workflow_type!=='windtunnel'&&(typeof matchesAccount!=='function'||matchesAccount(r)));
- if(request!==historyRequest)return rows;
+ if(request!==historyRequest||(typeof activeAccountId!=='undefined'&&accountId!==activeAccountId))return [];
  $('history').innerHTML=rows.length?rows.map(r=>`<button data-run="${esc(r.run_id)}" data-title="${esc(r.context.topic||'旧任务')}" class="${run?.run_id===r.run_id?'selected':''}" title="右键${deleted?'恢复':'删除'}这条创作记录">${esc(r.context.topic||'旧任务')}<small>${deleted?'已删除 · 右键恢复':esc(r.background?.status==='blocked'?'已暂停 · 查看原因':states[r.run_status])+' · '+r.drafts.length+' 个版本'}</small></button>`).join(''):`<p class="helper">${deleted?'没有已删除的创作':'还没有创作记录'}</p>`;
  $('historyTrash').textContent=deleted?'返回最近的创作':'已删除的创作';
  return rows;
@@ -384,7 +384,7 @@ $('checkReaders').onclick=async()=>{
  if(draft&&typeof openDraftReaderCheck==='function')await openDraftReaderCheck(run,draft.ref);
 };
 window.addEventListener('beforeunload',e=>{if(editing){e.preventDefault();e.returnValue='';}});
-document.addEventListener('DOMContentLoaded',async()=>{try{const session=await api('/api/session');csrf=session.csrf;if(session.auth_required&&!session.user){showLogin(session);return;}showWebsiteUser(session);provider=session.provider;$('configMessage').textContent=provider.message+' · 执行前可查看用量上限';$('liveOption').disabled=!provider.ready;$('liveOption').textContent=provider.ready?'真实 AI · DeepSeek（消耗接口额度）':'真实 AI · DeepSeek（先填写 .env）';$('connectionStatus').textContent='DeepSeek：'+(provider.ready?'已配置':'未配置');$('mode').value=provider.ready?'live':'simulation';$('scenario').disabled=$('mode').value==='live';renderMode($('mode').value);const rows=await history();if(rows.length){run=rows[0];selected=currentAgent();render();await history();}await initOperations();}catch(e){error(e);}});
+document.addEventListener('DOMContentLoaded',async()=>{try{const session=await api('/api/session');csrf=session.csrf;if(session.auth_required&&!session.user){showLogin(session);return;}showWebsiteUser(session);provider=session.provider;$('configMessage').textContent=provider.message+' · 执行前可查看用量上限';$('liveOption').disabled=!provider.ready;$('liveOption').textContent=provider.ready?'真实 AI · DeepSeek（消耗接口额度）':'真实 AI · DeepSeek（先填写 .env）';$('connectionStatus').textContent='DeepSeek：'+(provider.ready?'已配置':'未配置');$('mode').value=provider.ready?'live':'simulation';$('scenario').disabled=$('mode').value==='live';renderMode($('mode').value);const rows=await initOperations();if(rows.length){run=rows[0];selected=currentAgent();render();await history();}}catch(e){error(e);}});
 
 const materialFiles=$('materialFiles');
 $('useWebResearch').onchange=()=>{if($('useWebResearch').checked&&$('mode').value!=='live'){$('useWebResearch').checked=false;error(new Error('请先选择“真实 AI”运行方式；模拟模式不会联网。'));} $('webResearchFields').hidden=!$('useWebResearch').checked;if($('useWebResearch').checked){const topic=$('topic').value.trim().slice(0,90);if(!$('webQuery1').value)$('webQuery1').value=topic;if(!$('webQuery2').value)$('webQuery2').value=($('targetPlatform').value==='douyin'?'抖音 ':'小红书 ')+topic+' 讨论';}};
