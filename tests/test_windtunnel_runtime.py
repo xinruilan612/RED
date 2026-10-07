@@ -66,6 +66,35 @@ class WindtunnelRuntimeTests(unittest.TestCase):
         self.work();self.assertEqual(self.value().wait_reason,'wt_confirm_conditions',self.job())
         self.confirm();self.work();self.assertEqual(self.value().wait_reason,'wt_report',self.job())
 
+    def test_unfinished_reader_checks_are_isolated_between_owned_accounts(self):
+        from backend.accounts import PROFILE_FIELDS
+        original = self.value()
+        state = self.service.operations.read(self.owner)
+        state = self.service.operations.command(self.owner, dict(action='save_account',
+            payload=dict(id='', name='另一个测试账号', platform='xiaohongshu',
+                         profile={**{key: '' for key in PROFILE_FIELDS}, 'weekly_frequency': 3}),
+            version=state['version'], key=uuid4().hex))
+        other = state['accounts'][-1]['id']
+        self.assertNotEqual(other, self.account)
+        created = self.service.create(self.owner, {**self.input, 'account_id': other, 'mode': 'simulation'})
+        self.assertEqual(created['windtunnel']['account_id'], other)
+        self.assertEqual(self.value(), original, 'Creating another account check must not cancel or change the first')
+        with self.assertRaises(DomainError) as caught:
+            self.service.create(self.owner, {**self.input, 'account_id': other, 'mode': 'simulation'})
+        self.assertEqual(caught.exception.code, 'RUN_ALREADY_ACTIVE')
+        self.assertEqual(len(self.store.list_runs(self.owner)), 2)
+        self.assertEqual(self.fixture.calls, [])
+
+    def test_same_account_unfinished_reader_check_still_blocks_duplicate(self):
+        original = self.value()
+        with self.assertRaises(DomainError) as caught:
+            self.service.create(self.owner, {**self.input, 'mode': 'simulation'})
+        self.assertEqual(caught.exception.code, 'RUN_ALREADY_ACTIVE')
+        self.assertIn('当前账号', str(caught.exception))
+        self.assertEqual(self.value(), original)
+        self.assertEqual(len(self.store.list_runs(self.owner)), 1)
+        self.assertEqual(self.fixture.calls, [])
+
     def test_complete_patch_recheck_and_export(self):
         self.report();before=wt.draft(self.value());cs=wt.conditions(self.value())
         self.action('propose_patch',{'condition_ids':[cs['conditions'][0]['id']]});self.work()

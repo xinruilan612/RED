@@ -356,7 +356,11 @@ class Windtunnel:
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             rows = db.execute('SELECT payload FROM runs WHERE owner=?', (owner,)).fetchall()
-            require(not any(json.loads(r[0]).get('workflow_type', 'creation') == 'windtunnel' and json.loads(r[0])['run_status'] not in ('SUCCEEDED', 'CANCELLED', 'FAILED', 'EXPIRED') for r in rows), 'RUN_ALREADY_ACTIVE', '已有未结束的内容预演')
+            existing = (json.loads(row[0]) for row in rows)
+            require(not any(item.get('workflow_type', 'creation') == 'windtunnel'
+                            and (item.get('windtunnel') or {}).get('account_id') == account
+                            and item['run_status'] not in ('SUCCEEDED', 'CANCELLED', 'FAILED', 'EXPIRED')
+                            for item in existing), 'RUN_ALREADY_ACTIVE', '当前账号已有未结束的读者检查，请先继续或取消它')
             db.execute('INSERT INTO runs(id,owner,payload) VALUES(?,?,?)', (run.run_id, owner, json.dumps(asdict(run), ensure_ascii=False)))
         return run
 
