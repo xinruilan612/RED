@@ -26,6 +26,22 @@ function trialReaderDownloadIssue(selected,question){
  if(!question.trim())return '请写一个理解问题，例如：读完后，你会先做哪一步？';
  return '';
 }
+function trialReaderExport(selected,question,label){
+ const issue=trialReaderDownloadIssue(selected,question);if(issue)return {issue};
+ const draftText=d=>[d.content.selected_title,d.content.body,d.content.cta].filter(Boolean).join('\n\n');
+ if(label==='A'||label==='B')return {filename:'试读稿-'+label+'.txt',text:[draftText(selected[label==='A'?0:1]),'读完后请回答：'+question].join('\n\n')};
+ return {filename:'组织者对照稿-含两版.txt',text:['仅供组织者对照，请勿将本文件发给读者。分别下载 A 稿、B 稿，每位读者只看一份。','理解问题：'+question,...selected.map((d,i)=>'版本 '+(i?'B':'A')+'\n'+draftText(d))].join('\n\n---\n\n')};
+}
+function trialPreparationKey(id){return 'trial-preparation:'+activeAccountId+':'+id;}
+function trialSavePreparation(id,form){
+ try{sessionStorage.setItem(trialPreparationKey(id),JSON.stringify({a:form.elements.arm_ref_0.value,b:form.elements.arm_ref_1.value,question:form.elements.reader_question.value}));}catch(_){/* Storage may be unavailable; server feedback is unaffected. */}
+}
+function trialRestorePreparation(id,form){
+ try{const saved=JSON.parse(sessionStorage.getItem(trialPreparationKey(id))||'null');if(!saved)return;
+  ['a','b'].forEach((key,i)=>{const select=form.elements['arm_ref_'+i];if(typeof saved[key]==='string'&&[...select.options].some(o=>o.value===saved[key])){select.value=saved[key];select.onchange();}});
+  if(typeof saved.question==='string')form.elements.reader_question.value=saved.question.slice(0,300);
+ }catch(_){/* Ignore obsolete local preparation. */}
+}
 function trialDraftOptions(h){return trialRuns.filter(r=>r.workflow_type==='creation'&&r.context?.mode==='live'&&(r.drafts||[]).length).flatMap(r=>r.drafts.map((d,i)=>`<option value="${esc(r.run_id+'|'+d.ref)}">${esc(r.context?.topic||'创作')} · v${i+1} · ${esc(d.content?.selected_title||'稿件')} · ${r.context?.mode==='simulation'?'模拟稿':'真实 AI 稿'}</option>`)).join('');}
 function trialWindOptions(h){return trialRuns.filter(r=>r.workflow_type==='windtunnel'&&r.windtunnel?.hypothesis_id===h.id&&r.run_status==='SUCCEEDED').map(r=>`<option value="${esc(r.run_id)}">${esc(r.context?.topic||'内容预演')} · ${esc(states[r.run_status]||r.run_status)}</option>`).join('');}
 function trialPublicationOptions(h){return accountRows('publications').filter(p=>p.status==='MANUAL_REPORTED'&&p.mode==='live'&&(h.validations?.small_race?.arms||[]).some(a=>a.run_id===p.run_id&&a.draft_ref===p.draft_ref&&a.content_hash===p.content_hash)).map(p=>{
@@ -97,18 +113,19 @@ function trialBind(){
   });
   // Reuse an existing original/revision pair, never fabricate reader feedback.
   trialDefaultPair().forEach((choice,i)=>{if(choice){const select=form.elements['arm_ref_'+i];select.value=choice.run.run_id+'|'+choice.draft.ref;select.onchange();}});
-  form.querySelector('[data-download-readers]').onclick=()=>{
+  trialRestorePreparation(h.id,form);
+  const savePreparation=e=>{if(['arm_ref_0','arm_ref_1','reader_question'].includes(e.target.name))trialSavePreparation(h.id,form);};
+  form.addEventListener('input',savePreparation);form.addEventListener('change',savePreparation);
+  form.querySelectorAll('[data-download-readers]').forEach(button=>button.onclick=()=>{
    const hint=form.querySelector('[data-reader-message]');
    const inform=message=>{hint.textContent=message;hint.hidden=false;};
 
    const selected=[0,1].map(i=>{const [id,ref]=form.elements['arm_ref_'+i].value.split('|');return trialRuns.find(r=>r.run_id===id)?.drafts.find(d=>d.ref===ref);});
-   const issue=trialReaderDownloadIssue(selected,form.elements.reader_question.value);
-   if(issue){inform(issue);if(!form.elements.reader_question.value.trim())form.elements.reader_question.focus();return;}
-   hint.hidden=true;
-   const parts=['读者试读：请只给每位读者看 A 或 B 中的一版，不提供来源或另一版。','理解问题：'+form.elements.reader_question.value];
-   for(const label of ['A','B']){const value=form.elements['arm_ref_'+(label==='A'?0:1)].value;if(!value){inform('请先选择 A 和 B 两份稿件；只有一版时，去创作保存修改稿后再回来。');return;}const [id,ref]=value.split('|'),d=trialRuns.find(r=>r.run_id===id)?.drafts.find(d=>d.ref===ref);parts.push('版本 '+label+'\n'+[d.content.selected_title,d.content.body,d.content.cta].filter(Boolean).join('\n\n'));}
-   const blob=new Blob([parts.join('\n\n---\n\n')],{type:'text/plain;charset=utf-8'}),link=document.createElement('a'),url=URL.createObjectURL(blob);link.href=url;link.download='读者试读稿件.txt';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
-  };
+   const result=trialReaderExport(selected,form.elements.reader_question.value,button.dataset.downloadReaders);
+   if(result.issue){inform(result.issue);if(!form.elements.reader_question.value.trim())form.elements.reader_question.focus();return;}
+   hint.hidden=true;trialSavePreparation(h.id,form);
+   const blob=new Blob([result.text],{type:'text/plain;charset=utf-8'}),link=document.createElement('a'),url=URL.createObjectURL(blob);link.href=url;link.download=result.filename;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  });
   form.onsubmit=async e=>{e.preventDefault();const f=new FormData(form),reader_feedback=[...rows.children].map((row,i)=>({reader_id:'读者'+String(i+1).padStart(2,'0'),label:row.querySelector('[data-reader-label]').value,understood:row.querySelector('[data-reader-understood]').value==='yes',would_act:row.querySelector('[data-reader-act]').value==='yes',answer:row.querySelector('[data-reader-answer]').value})),arms=[0,1].map(i=>{const label=i?'B':'A',[run_id,draft_ref]=f.get('arm_ref_'+i).split('|'),group=reader_feedback.filter(r=>r.label===label);return {label,run_id,draft_ref,denominator:group.length,outcomes:group.filter(r=>r.would_act).length};});await operate('record_trial',{hypothesis_id:form.dataset.hypothesis,level:'small_race',payload:{allocation:'observational',unit:'readers',arms,window:h.window,observed_at:new Date().toISOString(),notes:f.get('notes')||'',reader_question:f.get('reader_question'),reader_feedback}});};
  });
  document.querySelectorAll('[data-trial-stage="live_attribution"]').forEach(form=>form.onsubmit=async e=>{e.preventDefault();const f=new FormData(form),items=[...form.elements.items.selectedOptions].map(o=>{const [publication_id,metric_id]=o.value.split('|');return {publication_id,metric_id};});await operate('record_trial',{hypothesis_id:form.dataset.hypothesis,level:'live_attribution',payload:{items,evidence_method:f.get('evidence_method'),source_note:f.get('source_note'),observed_at:new Date(f.get('observed_at')).toISOString()}});});
@@ -135,4 +152,4 @@ function trialBind(){
 }
 
 function trialReaderRow(n,label){return `<fieldset class="trial-arm"><legend>读者 ${n}（匿名编号）</legend><div class="two-col"><div><label>看过哪一版</label><select data-reader-label><option value="A" ${label==='A'?'selected':''}>A</option><option value="B" ${label==='B'?'selected':''}>B</option></select></div><div><label>能回答理解问题吗？</label><select data-reader-understood required><option value="">请选择</option><option value="yes">能回答，看懂了</option><option value="no">不能回答，有疑问</option></select></div></div><label>愿意采取这次期望的行动吗？</label><select data-reader-act required><option value="">请选择</option><option value="yes">愿意</option><option value="no">暂不愿意</option></select><label>对理解问题的回答或不明白的地方（读者原话）</label><textarea data-reader-answer maxlength="1000" rows="2" required placeholder="记录真实回答，不填姓名或联系方式"></textarea><button type="button" class="quiet" data-remove-reader>移除这位读者</button></fieldset>`;}
-function trialReaderForm(h){return `<div class="trial-stage"><h3>开始试读</h3><p>找几位符合目标受众的朋友，每位只看一版。先问一个理解问题，再问愿不愿意${esc(h.desired_action)}。不要替读者回答。</p>${trialDraftOptions(h)?'':'<p class="helper">还没有真实稿件。先点上方“还没有两版？去创作”，保存一稿后手动修改为另一版，再回来选择 A/B。无需重新生成两次。</p>'}<form data-trial-stage="small_race" data-hypothesis="${esc(h.id)}"><details class="trial-step" open><summary>1 · 选两份稿件，下载给读者</summary>${[0,1].map(i=>`<fieldset class="trial-arm"><legend>版本 ${i?'B':'A'}</legend><label>选择真实创作的固定版本</label><select name="arm_ref_${i}" data-preview-arm="${i}" required><option value="">选择稿件版本</option>${trialDraftOptions(h)}</select><details><summary>查看这版正文（给读者看时只展示正文）</summary><pre class="trial-draft-preview" data-draft-preview="${i}"></pre></details></fieldset>`).join('')}<label>给两组问同一个理解问题</label><input name="reader_question" maxlength="300" required placeholder="例如：读完后，你会先做哪一步？"><p class="helper" data-reader-message role="status" hidden></p><button class="secondary" type="button" data-download-readers>下载 A/B 试读稿件，发给读者</button><p class="helper">两组都至少记录 1 位读者。按钮不会自动发送消息；把对应版本分别交给真实读者即可。每位读者只记一次。</p></details><details class="trial-step"><summary>2 · 读者看完后，记录回答</summary><div data-reader-rows></div><button class="quiet" type="button" data-add-reader>＋ 再记录一位读者</button><label>试读说明（如何找到读者、只改变了什么）</label><textarea name="notes" maxlength="800" rows="2"></textarea><button class="primary">保存反馈，看结果</button></details><p class="helper">系统自动数出看懂和愿意行动的人数。试读意愿不能当成平台涨粉或成交，也不声称随机分流。</p></form></div>`;}
+function trialReaderForm(h){return `<div class="trial-stage"><h3>开始试读</h3><p>找几位符合目标受众的朋友，每位只看一版。先问一个理解问题，再问愿不愿意${esc(h.desired_action)}。不要替读者回答。</p>${trialDraftOptions(h)?'':'<p class="helper">还没有真实稿件。先点上方“还没有两版？去创作”，保存一稿后手动修改为另一版，再回来选择 A/B。无需重新生成两次。</p>'}<form data-trial-stage="small_race" data-hypothesis="${esc(h.id)}"><details class="trial-step" open><summary>1 · 选两份稿件，下载给读者</summary>${[0,1].map(i=>`<fieldset class="trial-arm"><legend>版本 ${i?'B':'A'}</legend><label>选择真实创作的固定版本</label><select name="arm_ref_${i}" data-preview-arm="${i}" required><option value="">选择稿件版本</option>${trialDraftOptions(h)}</select><details><summary>查看这版正文（给读者看时只展示正文）</summary><pre class="trial-draft-preview" data-draft-preview="${i}"></pre></details></fieldset>`).join('')}<label>给两组问同一个理解问题</label><input name="reader_question" maxlength="300" required placeholder="例如：读完后，你会先做哪一步？"><p class="helper" data-reader-message role="status" hidden></p><div class="buttons"><button class="primary" type="button" data-download-readers="A">下载 A 稿</button><button class="primary" type="button" data-download-readers="B">下载 B 稿</button><button class="quiet" type="button" data-download-readers="organizer">下载组织者对照稿（含两版）</button></div><p class="helper">A 稿和 B 稿分别发给不同读者；组织者对照稿只供你自己查看。两组都至少记录 1 位读者，每位只记一次。当前选稿与理解问题会在本标签页刷新后保留；读者回答请及时保存。</p></details><details class="trial-step"><summary>2 · 读者看完后，记录回答</summary><div data-reader-rows></div><button class="quiet" type="button" data-add-reader>＋ 再记录一位读者</button><label>试读说明（如何找到读者、只改变了什么）</label><textarea name="notes" maxlength="800" rows="2"></textarea><button class="primary">保存反馈，看结果</button></details><p class="helper">系统自动数出看懂和愿意行动的人数。试读意愿不能当成平台涨粉或成交，也不声称随机分流。</p></form></div>`;}

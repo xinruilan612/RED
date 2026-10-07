@@ -6,7 +6,7 @@ test('trial offers existing real drafts and excludes simulation or another accou
  const html=run("trialDraftOptions({id:'new-hypothesis'})");assert.match(html,/existing\|v1/);assert.doesNotMatch(html,/demo\|v1/);assert.match(html,/&lt;unsafe&gt;/);
 });
 test('reader form records real individual answers and does not ask users to invent aggregate numbers',()=>{
- const run=setup();const html=run("trialReaderForm({id:'h',desired_action:'收藏教程'})");assert.match(html,/data-reader-rows/);assert.match(html,/reader_question/);assert.match(html,/下载 A\/B/);assert.match(html,/不要替读者回答/);assert.doesNotMatch(html,/name="(?:denominator|outcomes)_/);
+ const run=setup();const html=run("trialReaderForm({id:'h',desired_action:'收藏教程'})");assert.match(html,/data-reader-rows/);assert.match(html,/reader_question/);assert.match(html,/下载 A 稿/);assert.match(html,/不要替读者回答/);assert.doesNotMatch(html,/name="(?:denominator|outcomes)_/);
  const row=run("trialReaderRow(1,'B')");assert.match(row,/data-reader-understood required/);assert.match(row,/data-reader-answer/);assert.match(row,/value="B" selected/);
 });
 
@@ -67,4 +67,22 @@ test('demo account cannot accidentally enter invented evidence as real reader fe
 test('author-defined question is explicit default and never presented as reader sample',()=>{
  const run=setup();run(`badge=t=>String(t);currentAccount=()=>({name:'test'});output={innerHTML:''};$=()=>output;trialBind=()=>{};accountRows=k=>k==='signals'?[{id:'s',kind:'author_hypothesis',text:'步骤清楚吗',sample_size:0,collection_method:'manual'}]:[];trialPaint()`);
  const html=run('output.innerHTML');assert.match(html,/<select name="kind"><option value="author_hypothesis">/);assert.match(html,/作者预设，不计真实样本/);assert.match(html,/作者设定，不算真实读者反馈/);
+});
+
+
+test('individual reader exports contain only their assigned draft and identical question',()=>{
+ const run=setup();run(`pair=[{content_hash:'a',content:{selected_title:'标题A',body:'独有原文A',cta:'行动A'}},{content_hash:'b',content:{selected_title:'标题B',body:'独有原文B',cta:'行动B'}}]`);
+ const a=run("trialReaderExport(pair,'第一步是什么？','A')"),b=run("trialReaderExport(pair,'第一步是什么？','B')"),both=run("trialReaderExport(pair,'第一步是什么？','organizer')");
+ assert.match(a.text,/独有原文A/);assert.doesNotMatch(a.text,/独有原文B|版本 B|真实 AI/);assert.match(b.text,/独有原文B/);assert.doesNotMatch(b.text,/独有原文A|版本 A|真实 AI/);
+ for(const file of [a,b])assert.match(file.text,/第一步是什么？/);
+ assert.match(both.filename,/组织者/);assert.match(both.text,/请勿将本文件发给读者/);assert.match(both.text,/独有原文A/);assert.match(both.text,/独有原文B/);
+ assert.match(run("trialReaderExport(pair,'','A').issue"),/理解问题/);
+});
+test('refresh restores only preparation for the same account and trial, never reader answers',()=>{
+ const run=setup();run(`saved={};sessionStorage={setItem:(k,v)=>saved[k]=v,getItem:k=>saved[k]};form={elements:{arm_ref_0:{value:'r|a'},arm_ref_1:{value:'r|b'},reader_question:{value:'第一步？'},reader_answer:{value:'不要存这段'}}};trialSavePreparation('h',form);`);
+ assert.doesNotMatch(run('JSON.stringify(saved)'),/不要存这段|reader_answer/);
+ run(`form={elements:{arm_ref_0:{value:'',options:[{value:'r|a'}],onchange(){}},arm_ref_1:{value:'',options:[{value:'r|b'}],onchange(){}},reader_question:{value:''}}};trialRestorePreparation('h',form)`);
+ assert.equal(run('form.elements.arm_ref_1.value'),'r|b');assert.equal(run('form.elements.reader_question.value'),'第一步？');
+ run("activeAccountId='another';form.elements.reader_question.value='';trialRestorePreparation('h',form)");assert.equal(run('form.elements.reader_question.value'),'');
+ run("activeAccountId='mine';trialRestorePreparation('other-hypothesis',form)");assert.equal(run('form.elements.reader_question.value'),'');
 });
