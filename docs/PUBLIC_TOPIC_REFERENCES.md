@@ -30,3 +30,13 @@
 已安装的macOS ARM64官方v2.5.5二进制SHA256：`fad3633fda4a8060e66e2941bc8fc5460326c7cb4e58a32485a9e2c9408e95a8`。
 
 已有本机配置下，原命令 `runtime/venv/bin/python scripts/local_dev.py start` 会启动或复用公开搜索连接器；只有本次启动的子进程会随网站退出。也可单独前台运行 `runtime/venv/bin/python scripts/local_public_search.py`。未配置或端口冲突不会阻断原网站。
+
+## 本轮验收记录（2026-10-07）
+
+- PostgreSQL 全量后端测试：737 项通过，0 跳过；日志 `/private/tmp/public-full-final.log`。后续长文本与批量编码修正另跑相关 SQLite/PostgreSQL 测试 22 项通过，日志 `/private/tmp/public-batch-tests.log`。
+- 最终前端回归：210 项通过，0 跳过；所有前端脚本语法、角色卡生成一致性、Git 空白检查通过。
+- 真实 Chinese-CLIP 在临时数据库执行，包含历史图片与公开参考文本编码；切换摄影/美食定位后首选候选随之改变。耗时 8.41 秒。此为受控测试样本，不是联网搜索结果或真实增长证据。
+- Chrome 实际网站扫码入口成功展示连接器返回的二维码；连接器使用独立登录。真实搜索、正文抓取及公开结果比较仍待用户扫码后验收，不能将替身测试算作平台验收。
+- 最终代码已重启本机 API 和 Worker，`/health` 返回正常、PostgreSQL；公开搜索连接器被复用。
+
+当前交付边界：公开参考采集接口、手动导入、快照、账号隔离及参考匹配已实现；未交付经验证的跨账号未来热度预测模型。
