@@ -84,16 +84,16 @@ test('reading public library never starts an external search',async()=>{
 });
 test('explicit public search keeps drafts and configuration, invalidates stale report and advances version',async()=>{
  const x=setup();await x.s.renderTopics();x.eval("topicsState.keyword=' 夜景 ';topicsState.config.positioning='新方向';topicsState.candidates[0].title='保留草稿';topicsState.result={candidates:[]}");let sent;
- x.s.api=async(path,method,payload)=>{sent={path,payload};return {version:5,samples:[{title:'参考',url:'https://example.com',likes:2}],connection:{ready:true}};};await x.s.topicsSearchPublic();
+ x.s.api=async(path,method,payload)=>{if(path.endsWith('/config'))return data({version:4,config:payload.config});sent={path,payload};return {version:5,samples:[{title:'参考',url:'https://example.com',likes:2}],connection:{ready:true}};};await x.s.topicsSearchPublic();
  assert.equal(sent.path,'/api/topics/public/search');assert.equal(sent.payload.keyword,'夜景');assert.equal(x.eval('topicsState.data.version'),5);assert.equal(x.eval('topicsState.config.positioning'),'新方向');assert.equal(x.eval('topicsState.candidates[0].title'),'保留草稿');assert.equal(x.eval('topicsState.result'),null);
 });
 test('account switch rejects a late public search response',async()=>{
  const x=setup();await x.s.renderTopics();x.eval("topicsState.keyword='摄影'");let finish;x.s.api=()=>new Promise(r=>finish=r);const pending=x.s.topicsSearchPublic();x.s.activeAccountId='b';x.s.resetTopics();finish({version:9,samples:[{title:'A账号记录'}]});await pending;assert.equal(x.eval('topicsState.publicData'),null);assert.equal(x.eval('topicsState.busy'),false);
 });
 test('no keyword makes no external request and connection errors are calm',async()=>{
- const x=setup();await x.s.renderTopics();let called=0;x.s.api=async()=>{called++;throw new Error('搜索服务未连接');};await x.s.topicsSearchPublic();assert.equal(called,0);x.eval("topicsState.keyword='摄影'");await x.s.topicsSearchPublic();assert.equal(called,1);assert.match(x.e('operationsContent').innerHTML,/搜索服务未连接/);assert.doesNotMatch(x.e('operationsContent').innerHTML,/class="error/);
+ const x=setup();await x.s.renderTopics();x.eval("topicsState.config.positioning=''");let called=0;x.s.api=async()=>{called++;throw new Error('搜索服务未连接');};await x.s.topicsSearchPublic();assert.equal(called,0);x.eval("topicsState.keyword='摄影'");await x.s.topicsSearchPublic();assert.equal(called,1);assert.match(x.e('operationsContent').innerHTML,/搜索服务未连接/);assert.doesNotMatch(x.e('operationsContent').innerHTML,/class="error/);
 });
-test('backend public count snapshots render observed time and preserve unknown values',()=>{const {s}=setup();const html=s.topicsPublicRows([{title:'真实参考',counts:{likes:4,saves:0,comments:null},observed_at:'2026-10-07T12:00:00Z'}]);assert.match(html,/点赞 4/);assert.match(html,/收藏 0/);assert.match(html,/评论 未提供/);assert.match(html,/2026-10-07T12:00:00Z/);});
+test('backend public count snapshots render observed time and preserve unknown values',()=>{const {s}=setup();const html=s.topicsPublicRows([{title:'真实参考',counts:{likes:4,saves:0,comments:null},observed_at:'2026-10-07T12:00:00Z'}]);assert.match(html,/点赞 4/);assert.match(html,/收藏 0/);assert.match(html,/评论 未提供/);assert.match(html,/2026-10-07/);});
 test('QR connection is explicit, local image only and successful login clears it',async()=>{const x=setup();await x.s.renderTopics();let calls=[];x.s.api=async(path,method,payload)=>{calls.push({path,payload});return payload.mode==='qrcode'?{data:{img:'data:image/png;base64,'+'a'.repeat(120)}}:{is_logged_in:true};};await x.s.topicsConnect('qrcode');assert.match(x.eval('topicsState.publicQR'),/^data:image\/png/);assert.equal(calls[0].payload.mode,'qrcode');await x.s.topicsConnect('status');assert.equal(x.eval('topicsState.publicQR'),'');assert.match(x.eval('topicsState.message'),/已登录/);});
 test('remote or malicious QR images are not embedded',async()=>{const x=setup();await x.s.renderTopics();x.s.api=async()=>({img:'https://attacker.example/track.png'});await x.s.topicsConnect('qrcode');assert.equal(x.eval('topicsState.publicQR'),'');assert.doesNotMatch(x.e('operationsContent').innerHTML,/attacker/);});
 test('full render with real public schema includes content boundaries and working action controls',async()=>{const x=setup();x.s.api=async path=>path.includes('/public?')?{version:2,connection:'not_checked',samples:[{id:'p',url:'https://example.com',title:'公开笔记',content_status:'search_summary',counts:{likes:0},observed_at:'2026-10-07'}]}:data();await x.s.renderTopics();const html=x.e('operationsContent').innerHTML;assert.match(html,/尚未读取正文/);assert.match(html,/data-topics-public-refresh="p"/);assert.match(html,/data-topics-public-remove="p"/);assert.match(html,/data-topics="public-import"/);assert.equal(typeof x.e('topicsForm').onsubmit,'function');assert.equal(typeof x.e('operationsContent').onclick,'function');});
@@ -113,11 +113,22 @@ test('simple flow keeps search and candidate action prominent while advanced pan
  const result=x.s.topicsResultHTML({candidates:[{id:'a',title:'标题'}]},data().config);
  assert.match(result,/03 \/ 选一个开始创作/);assert.match(result,/class="primary" data-topics-adopt/);
 });
-test('verified login supersedes stale library connection text and folds connection tools',async()=>{
+test('verified login stays visible and supersedes stale connection text',async()=>{
  const x=setup();await x.s.renderTopics();x.eval("topicsState.publicData={connection:'not_checked',samples:[]}");x.s.api=async()=>({is_logged_in:true});await x.s.topicsConnect('status');
- const html=x.e('operationsContent').innerHTML;assert.match(html,/小红书已连接 · 管理连接/);assert.doesNotMatch(html,/尚未访问小红书/);assert.match(html,/<details class="topics-connection" >/);
+ const html=x.e('operationsContent').innerHTML;assert.match(html,/小红书已连接/);assert.doesNotMatch(html,/尚未访问小红书/);assert.match(html,/<div class="topics-connection" role="group"/);assert.doesNotMatch(html,/<details class="topics-connection"/);
 });
 test('missing profile and logged out connection open only the needed setup',async()=>{
  const x=setup();await x.s.renderTopics();x.eval("topicsState.config.positioning='';topicsState.publicConnected=false");const html=x.s.topicsHTML();
- assert.match(html,/<details class="panel topics-profile" open>/);assert.match(html,/<details class="topics-connection" open>/);
+ assert.match(html,/<details class="panel topics-profile" open>/);assert.match(html,/class="primary" data-topics="public-qrcode"/);assert.match(html,/<div class="topics-connection" role="group"/);
+});
+
+test('profile search uses saved dynamic positioning and never sends external status implicitly',async()=>{
+ const x=setup(),calls=[];await x.s.renderTopics();x.eval("topicsState.config.positioning='摄影 / 夜景';topicsState.keyword=''");
+ x.s.api=async(path,method,payload)=>{calls.push({path,payload});return path.endsWith('/config')?data({version:2,config:payload.config}):{version:3,samples:[],positioning:'摄影 / 夜景'};};
+ await x.s.topicsSearchPublic();assert.equal(calls.length,2);assert.equal(calls[0].path,'/api/topics/config');assert.equal(calls[1].payload.keyword,'摄影 / 夜景');assert.equal(calls[1].payload.version,2);assert.equal(x.eval('topicsState.config.positioning'),'摄影 / 夜景');
+});
+test('candidate helper and reference library make provenance and role understandable',async()=>{
+ const x=setup();await x.s.renderTopics();x.eval("topicsState.publicData={samples:[],archived_count:2,unclassified_count:1}");const html=x.s.topicsHTML();
+ assert.match(html,/准备写的想法，不是已发布作品或平台数据/);assert.match(html,/产品事实仍以资料库中的原文为准/);assert.match(html,/其他定位的 2 条参考已保留，本次不参与比较/);
+ const rows=x.s.topicsPublicRows([{title:'手录',source:'manual_public',observed_at:'2026-10-07T12:00:00Z'},{title:'搜索',source:'public_search',observed_at:'2026-10-07T12:00:00Z'}]);assert.match(rows,/手动录入/);assert.match(rows,/小红书公开检索/);assert.match(rows,/2026-10-07/);assert.doesNotMatch(rows,/T12:00:00Z/);
 });
