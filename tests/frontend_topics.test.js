@@ -32,7 +32,7 @@ test('account switch during save prevents evaluation of a different account',asy
 });
 test('blank titles do not save configuration or spend model work',async()=>{const x=setup();await x.s.renderTopics();let calls=0;x.s.api=async()=>calls++;await x.s.topicsAction('evaluate');assert.equal(calls,0);assert.match(x.e('operationsContent').innerHTML,/需要一个标题/);});
 test('conflict preserves drafts and offers quiet refresh instead of repeating work',async()=>{
- const x=setup();await x.s.renderTopics();x.eval("topicsState.candidates=[{id:'c',title:'已有草稿',body:'内容',image:''}]");x.s.api=async()=>{const e=new Error('conflict');e.status=409;throw e;};await x.s.topicsAction('evaluate');assert.equal(x.eval('topicsState.candidates[0].title'),'已有草稿');assert.match(x.e('operationsContent').innerHTML,/刷新历史/);assert.doesNotMatch(x.e('operationsContent').innerHTML,/class="error/);
+ const x=setup();await x.s.renderTopics();x.eval("topicsState.candidates=[{id:'c',title:'已有草稿',body:'内容',image:''}]");x.s.api=async()=>{const e=new Error('conflict');e.status=409;e.code='VERSION_CONFLICT';throw e;};await x.s.topicsAction('evaluate');assert.equal(x.eval('topicsState.candidates[0].title'),'已有草稿');assert.match(x.e('operationsContent').innerHTML,/刷新历史/);assert.doesNotMatch(x.e('operationsContent').innerHTML,/class="error/);
 });
 test('image input rejects unsupported type and oversized file without reading it',async()=>{const {s}=setup();await assert.rejects(()=>s.topicsReadImage({type:'text/html',size:1}),/JPG/);await assert.rejects(()=>s.topicsReadImage({type:'image/png',size:3*1024*1024+1}),/3 MB/);});
 test('editing profile or candidate invalidates old result immediately',async()=>{
@@ -46,4 +46,9 @@ test('crossmodal results describe actual image-text use, without claiming paired
 });
 test('uploading historical cover preserves unsaved positioning while advancing version',async()=>{
  const x=setup();await x.s.renderTopics();x.eval("topicsState.config.positioning='自己新写的方向'");x.s.FileReader=class{readAsDataURL(){this.result='data:image/png;base64,eA==';this.onload();}};x.s.api=async()=>data({version:2});await x.s.topicsAction('history','p',{type:'image/png',size:1});assert.equal(x.eval('topicsState.config.positioning'),'自己新写的方向');assert.equal(x.eval('topicsState.data.version'),2);
+});
+test('model unavailable conflict keeps the model explanation rather than claiming settings changed',async()=>{
+ const x=setup();await x.s.renderTopics();x.eval("topicsState.candidates=[{id:'c',title:'已有草稿',body:'内容',image:''}]");
+ x.s.api=async()=>{const e=new Error('正在分析另一批图文，请稍后再试。');e.status=409;e.code='TOPIC_MODEL_UNAVAILABLE';throw e;};
+ await x.s.topicsAction('evaluate');assert.match(x.eval('topicsState.message'),/正在分析另一批图文/);assert.doesNotMatch(x.eval('topicsState.message'),/设置或历史刚刚发生了变化/);
 });

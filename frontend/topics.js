@@ -59,7 +59,7 @@ async function topicsAction(action,publicationId='',file=null){
  s.result=result;if(Number.isInteger(result.version))s.data.version=result.version;s.message='比较完成。先看匹配依据，再决定下一篇。';
  }else{s.message='当前账号的选题设置已保存。';}
  }
- }catch(e){if(!topicsLive(account,sequence))return;s.result=null;s.message=e.status===409?'设置或历史刚刚发生了变化。已保留候选选题，请点“刷新历史”后再比较。':e.message;if(typeof noticeSeverity==='function'&&noticeSeverity(e)==='critical')error(e);}
+ }catch(e){if(!topicsLive(account,sequence))return;s.result=null;s.message=e.code==='VERSION_CONFLICT'?'设置或历史刚刚发生了变化。已保留候选选题，请点“刷新历史”后再比较。':e.message;if(typeof noticeSeverity==='function'&&noticeSeverity(e)==='critical')error(e);}
  finally{if(topicsLive(account,sequence)){s.busy=false;topicsPaint();}}
 }
 function topicsDownload(){
