@@ -45,10 +45,31 @@ test('crossmodal results describe actual image-text use, without claiming paired
  assert.match(html,/图文跨模态匹配/);assert.match(html,/回测帮助值/);assert.doesNotMatch(html,/本次按文字比较|参考权重/);
 });
 test('uploading historical cover preserves unsaved positioning while advancing version',async()=>{
- const x=setup();await x.s.renderTopics();x.eval("topicsState.config.positioning='自己新写的方向'");x.s.FileReader=class{readAsDataURL(){this.result='data:image/png;base64,eA==';this.onload();}};x.s.api=async()=>data({version:2});await x.s.topicsAction('history','p',{type:'image/png',size:1});assert.equal(x.eval('topicsState.config.positioning'),'自己新写的方向');assert.equal(x.eval('topicsState.data.version'),2);
+ const x=setup();await x.s.renderTopics();x.eval("topicsState.config.positioning='自己新写的方向'");mockImageTools(x.s);x.s.api=async()=>data({version:2});await x.s.topicsAction('history','p',{type:'image/png',size:1});assert.equal(x.eval('topicsState.config.positioning'),'自己新写的方向');assert.equal(x.eval('topicsState.data.version'),2);
 });
 test('model unavailable conflict keeps the model explanation rather than claiming settings changed',async()=>{
  const x=setup();await x.s.renderTopics();x.eval("topicsState.candidates=[{id:'c',title:'已有草稿',body:'内容',image:''}]");
  x.s.api=async()=>{const e=new Error('正在分析另一批图文，请稍后再试。');e.status=409;e.code='TOPIC_MODEL_UNAVAILABLE';throw e;};
  await x.s.topicsAction('evaluate');assert.match(x.eval('topicsState.message'),/正在分析另一批图文/);assert.doesNotMatch(x.eval('topicsState.message'),/设置或历史刚刚发生了变化/);
+});
+
+function mockImageTools(s,{width=4000,height=2000,encoded='data:image/jpeg;base64,eA=='}={}){
+ const record={closed:false,draws:[],fills:[],formats:[]};
+ s.createImageBitmap=async()=>({width,height,close(){record.closed=true;}});
+ const canvas={width:0,height:0,getContext:()=>({fillStyle:'',fillRect(...args){record.fills.push(args);},drawImage(...args){record.draws.push(args.slice(1));}}),toDataURL(...args){record.formats.push(args);return typeof encoded==='function'?encoded(args):encoded;}};
+ s.document={createElement:kind=>{assert.equal(kind,'canvas');return canvas;}};record.canvas=canvas;return record;
+}
+test('large cover becomes bounded proportional JPEG analysis input and releases decoded pixels',async()=>{
+ const {s}=setup(),record=mockImageTools(s);const file={type:'image/png',size:3*1024*1024,name:'original.png'};const result=await s.topicsReadImage(file);
+ assert.match(result,/^data:image\/jpeg;base64,/);assert.equal(record.canvas.width,1024);assert.equal(record.canvas.height,512);assert.deepEqual(record.draws,[[0,0,1024,512]]);assert.equal(record.fills.length,1);assert.deepEqual(record.formats[0],['image/jpeg',.85]);assert.equal(record.closed,true);assert.equal(file.name,'original.png');assert.equal(file.type,'image/png');
+});
+test('small image is not enlarged and oversized pixel dimensions fail gently',async()=>{
+ const {s}=setup();const small=mockImageTools(s,{width:320,height:240});await s.topicsReadImage({type:'image/jpeg',size:100});assert.equal(small.canvas.width,320);assert.equal(small.canvas.height,240);
+ const huge=mockImageTools(s,{width:5000,height:4000});await assert.rejects(()=>s.topicsReadImage({type:'image/jpeg',size:100}),/1600 万像素/);assert.equal(huge.closed,true);assert.equal(huge.draws.length,0);
+});
+test('five transformed images fit total request limit and excess image output is rejected',async()=>{
+ const {s}=setup();const record=mockImageTools(s,{encoded:([format,quality])=>'data:image/jpeg;base64,'+'a'.repeat(quality>.7?1100000:900000)});
+ const image=await s.topicsReadImage({type:'image/jpeg',size:3000000});assert.equal(record.formats.length,2);
+ const payload=JSON.stringify({candidates:Array.from({length:5},()=>({image,title:'图文选题',body:'内容'.repeat(3000)}))});assert.ok(Buffer.byteLength(payload)<8*1024*1024);
+ mockImageTools(s,{encoded:'data:image/jpeg;base64,'+'a'.repeat(1100000)});await assert.rejects(()=>s.topicsReadImage({type:'image/jpeg',size:3000000}),/压缩后仍较大/);
 });
