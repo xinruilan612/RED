@@ -74,6 +74,40 @@ class ContentTrialTests(unittest.TestCase):
                   dict(label='B',run_id=b.run_id,draft_ref='draft-b',denominator=6,outcomes=3)])))
         return a, b
 
+    def test_author_question_can_start_trial_without_fake_reader_evidence(self):
+        signal = self.command('add_signal', dict(account_id=self.account, kind='author_hypothesis',
+            text='编号步骤是否更容易理解？', source_url='', observed_at=now(), sample_size=0,
+            collection_method='manual', notes='作者预设'))['signals'][0]
+        self.assertEqual(signal['provenance'], 'author_defined')
+        self.assertEqual(signal['sample_size'], 0)
+        hypothesis = self.command('create_hypothesis', dict(account_id=self.account, objective='audience_growth',
+            audience='新手', statement='编号步骤比长段说明更容易理解', desired_action='进一步了解',
+            metric='new_followers', window='24h', minimum_lift_pct=20,
+            falsifier='未观察到改善', signal_ids=[signal['id']]))['hypotheses'][0]
+        self.assertEqual(hypothesis['signal_refs'][0]['provenance'], 'author_defined')
+        self.assertEqual(hypothesis['validations'], {})
+        context = self.ops.context(self.owner, {'account_id':self.account,'hypothesis_id':hypothesis['id']}, 'live')
+        from backend.creator_context import enrich
+        inputs = {'topic':'教程','audience':'新手','operations':context}
+        self.assertEqual(enrich('audience', {}, inputs)['sample_size'], 0)
+        strategy = enrich('strategy', {'angle':'步骤','reader':'新手'}, inputs)
+        self.assertIn('作者预设', strategy['content_brief']['limitation'])
+        self.assertEqual(strategy['learning_refs'], [])
+        self.assertEqual(Operations(Store(self.store.path)).read(self.owner)['signals'][0]['sample_size'], 0)
+        with self.assertRaises(DomainError):
+            self.command('decide_hypothesis', dict(hypothesis_id=hypothesis['id'], verdict='supported', notes=''))
+
+    def test_author_question_cannot_claim_real_samples_or_public_source(self):
+        base = dict(account_id=self.account, kind='author_hypothesis', text='作者问题', source_url='',
+            observed_at=now(), sample_size=0, collection_method='manual', notes='')
+        for change in ({'sample_size':1}, {'source_url':'https://example.com'}, {'collection_method':'public_source'}):
+            with self.subTest(change=change), self.assertRaises(DomainError):
+                self.command('add_signal', dict(base, **change))
+        sample = self.command('load_sample', {})['accounts'][-1]
+        self.assertTrue(sample['demo_sample'])
+        with self.assertRaises(DomainError):
+            self.command('add_signal', dict(base, account_id=sample['id']))
+
     def test_signal_and_hypothesis_are_account_bound_and_metric_matches_goal(self):
         self.assertEqual(self.signal['kind'], 'search_intent')
         self.assertEqual(self.signal['provenance'], 'user_recorded')

@@ -52,6 +52,8 @@ def enrich(stage, value, context):
                 core_viewpoint=active['statement'], cta=active['desired_action'],
                 hypothesis_id=active['id'], primary_metric=active['metric'],
                 limitation='本次创作服务于待验证假设；除非完成真实试验，不视为已证实规律。')
+        if active and any(s.get('kind') == 'author_hypothesis' for s in active.get('signal_refs', [])):
+            result['content_brief']['limitation'] += ' 起点包含作者预设问题，不代表已观察到真实读者需求。'
         memories = op.get('memories', [])
         experiments = op.get('experiment_memory', [])
         result['learning_refs'] = [m['id'] for m in memories] + [h['id'] for h in experiments]

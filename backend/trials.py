@@ -1,7 +1,7 @@
 """Account-scoped intent signals and staged, evidence-labelled content trials."""
 from uuid import uuid4
 
-from backend.contracts import require, integer
+from backend.contracts import CONTRACT, require, integer
 from backend.demo import validate_text
 from backend.workflow import digest
 
@@ -32,11 +32,16 @@ def apply(operations, db, owner, state, action, data):
         require(set(data) == {'account_id', 'kind', 'text', 'source_url', 'observed_at', 'sample_size', 'collection_method', 'notes'},
                 'INVALID_INPUT', '需求信号字段无效')
         account = _account(state, data['account_id'])
-        require(data['kind'] in ('comment_demand', 'search_intent'), 'INVALID_INPUT', '请选择评论需求或搜索意图')
+        require(not account.get('demo_sample'), 'INVALID_INPUT', '请切换到自己的账号再准备真人试读')
+        require(data['kind'] in CONTRACT['operations_extension']['trial_signal_kinds'], 'INVALID_INPUT', '请选择作者设定、评论需求或搜索意图')
+        author_defined = data['kind'] == 'author_hypothesis'
         require(data['collection_method'] in ('manual', 'public_source', 'authorized_export'), 'INVALID_INPUT', '采集方式无效')
         text = validate_text(data['text'], '信号内容', 1500)
         observed = timestamp(data['observed_at'])
-        sample_size = integer(data['sample_size'], '样本数', 1)
+        sample_size = integer(data['sample_size'], '样本数', 0 if author_defined else 1)
+        if author_defined:
+            require(sample_size == 0 and data['collection_method'] == 'manual' and not data['source_url'],
+                    'INVALID_INPUT', '作者设定不计真实样本，不填写读者来源或采集记录')
         require(sample_size <= 10000000, 'INVALID_INPUT', '样本数超出范围')
         source = data['source_url']
         if source:
@@ -47,7 +52,7 @@ def apply(operations, db, owner, state, action, data):
                 'DUPLICATE', '相同时间和内容的信号已记录')
         state['signals'].insert(0, dict(id=str(uuid4()), account_id=account['id'], platform=account['platform'],
             kind=data['kind'], text=text, source_url=source, observed_at=observed, sample_size=sample_size,
-            collection_method=data['collection_method'], notes=notes, provenance='user_recorded', created_at=now()))
+            collection_method=data['collection_method'], notes=notes, provenance='author_defined' if author_defined else 'user_recorded', created_at=now()))
         return
 
     if action == 'create_hypothesis':
@@ -64,7 +69,7 @@ def apply(operations, db, owner, state, action, data):
         lift = integer(data['minimum_lift_pct'], '最低提升百分比', 1)
         require(lift <= 1000, 'INVALID_INPUT', '最低提升百分比超出范围')
         signal_ids = data['signal_ids']
-        require(isinstance(signal_ids, list) and 1 <= len(signal_ids) <= 20 and len(signal_ids) == len(set(signal_ids)), 'INVALID_INPUT', '请关联 1 至 20 条不同的需求信号')
+        require(isinstance(signal_ids, list) and 1 <= len(signal_ids) <= 20 and len(signal_ids) == len(set(signal_ids)), 'INVALID_INPUT', '请关联 1 至 20 条不同的试读问题')
         signals = [item(state['signals'], signal_id) for signal_id in signal_ids]
         require(all(s['account_id'] == account['id'] and s['platform'] == account['platform'] for s in signals), 'RESOURCE_NOT_FOUND', '信号不属于该账号与平台')
         require(not any(h['account_id'] == account['id'] and h['statement'] == statement and h['status'] not in ('rejected', 'revoked') for h in state['hypotheses']),
@@ -72,7 +77,8 @@ def apply(operations, db, owner, state, action, data):
         record = dict(id=str(uuid4()), account_id=account['id'], platform=account['platform'], objective=data['objective'],
             audience=audience, statement=statement, desired_action=desired_action, metric=data['metric'],
             denominator=OBJECTIVE_DENOMINATORS[data['objective']], window=data['window'], minimum_lift_pct=lift, falsifier=falsifier,
-            signal_refs=[dict(id=s['id'], kind=s['kind'], observed_at=s['observed_at'], sample_size=s['sample_size']) for s in signals],
+            signal_refs=[dict(id=s['id'], kind=s['kind'], observed_at=s['observed_at'], sample_size=s['sample_size'],
+                              provenance=s.get('provenance', 'user_recorded')) for s in signals],
             created_at=now(), version=1, status='testing', validations={}, verdict=None, ledger_status=None, revision_hash='')
         record['revision_hash'] = digest({k: v for k, v in record.items() if k not in ('created_at', 'revision_hash')})
         state['hypotheses'].insert(0, record)

@@ -42,7 +42,7 @@ test('reader result shows counts prominently without pretending small feedback p
 
 test('cold start explains the real first step and reuses audience without inventing signals',()=>{
  const run=setup();run(`badge=t=>String(t);currentAccount=()=>({name:'test',profile:{audience:'初学者'}});empty=()=>'';output={innerHTML:''};$=()=>output;trialBind=()=>{};accountRows=()=>[];trialPaint()`);
- const html=run('output.innerHTML');assert.match(html,/先请一位朋友看看原稿/);assert.match(html,/href="#studio"/);assert.match(html,/name="audience"[^>]*value="初学者"/);assert.doesNotMatch(html,/name="signal_ids" multiple/);
+ const html=run('output.innerHTML');assert.match(html,/写下你想验证的问题/);assert.match(html,/href="#studio"/);assert.match(html,/name="audience"[^>]*value="初学者"/);assert.doesNotMatch(html,/name="signal_ids" multiple/);
 });
 test('default pair chooses two different revisions of one work and never mixes topics',()=>{
  const run=setup();run(`trialRuns=[{run_id:'only',workflow_type:'creation',context:{mode:'live'},drafts:[{ref:'one',content_hash:'1'}]},{run_id:'pair',workflow_type:'creation',context:{mode:'live'},drafts:[{ref:'old',content_hash:'2'},{ref:'copy',content_hash:'2'},{ref:'new',content_hash:'3'}]}]`);
@@ -61,4 +61,10 @@ test('download validates both versions and the shared question using local guida
 test('demo account cannot accidentally enter invented evidence as real reader feedback',()=>{
  const run=setup();run(`currentAccount=()=>({demo_sample:true});output={innerHTML:''};$=()=>output;trialPaint()`);
  const html=run('output.innerHTML');assert.match(html,/当前是虚构数据练习账号/);assert.match(html,/href="#examples"/);assert.doesNotMatch(html,/<form/);
+});
+
+
+test('author-defined question is explicit default and never presented as reader sample',()=>{
+ const run=setup();run(`badge=t=>String(t);currentAccount=()=>({name:'test'});output={innerHTML:''};$=()=>output;trialBind=()=>{};accountRows=k=>k==='signals'?[{id:'s',kind:'author_hypothesis',text:'步骤清楚吗',sample_size:0,collection_method:'manual'}]:[];trialPaint()`);
+ const html=run('output.innerHTML');assert.match(html,/<select name="kind"><option value="author_hypothesis">/);assert.match(html,/作者预设，不计真实样本/);assert.match(html,/作者设定，不算真实读者反馈/);
 });

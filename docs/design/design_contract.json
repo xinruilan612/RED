@@ -346,6 +346,8 @@
     "fetch_source_text"
   ],
   "operations_extension": {
+    "trial_signal_kinds": ["author_hypothesis", "comment_demand", "search_intent"],
+    "author_hypothesis_policy": {"provenance": "author_defined", "sample_size": 0, "collection_method": "manual", "source_url": "", "real_reader_evidence": false},
     "version": "0.5",
     "schema_version": 2,
     "agents": [
