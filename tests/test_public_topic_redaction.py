@@ -1,5 +1,6 @@
 """Connector tokens are retained server-side, absent from API/state/model context."""
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -14,7 +15,7 @@ from backend.public_topics import public_response
 class PublicRedactionTests(unittest.TestCase):
     def setUp(self):
         self.folder=tempfile.TemporaryDirectory();self.addCleanup(self.folder.cleanup)
-        self.app=create_app(Store(Path(self.folder.name)/'db'),Config(),origin='http://testserver',invite='')
+        self.app=create_app(self.make_store(),Config(),origin='http://testserver',invite='')
         self.client=TestClient(self.app);self.addCleanup(self.client.close)
         csrf=self.client.get('/api/session').json()['csrf']
         self.headers={'Origin':'http://testserver','X-CSRF-Token':csrf}
@@ -23,6 +24,7 @@ class PublicRedactionTests(unittest.TestCase):
         self.owner=self.app.state.auth.session(self.client.cookies.get('youji_session'))['owner']
         self.ops=self.app.state.service.operations;state=self.ops.read(self.owner);self.account=state['accounts'][0]
         self.ops.command(self.owner,dict(action='public_topics_update',payload={'account_id':self.account['id'],'samples':[{'id':'fixture123','title':'fixture','xsec_token':'fixture-secret-only','nested':{'xsecToken':'fixture-secret-only'}}]},version=state['version'],key=str(uuid4())),internal=True)
+    def make_store(self): return Store(Path(self.folder.name)/'db')
     def check_clean(self,response):
         self.assertEqual(response.status_code,200,response.text)
         self.assertNotIn('fixture-secret-only',response.text);self.assertNotIn('xsec_token',response.text);self.assertNotIn('xsecToken',response.text)
@@ -46,3 +48,14 @@ class PublicRedactionTests(unittest.TestCase):
     def test_public_serializer_does_not_mutate_input(self):
         original={'nested':[{'xsec_token':'fixture','title':'retain'}]}
         self.assertEqual(public_response(original),{'nested':[{'title':'retain'}]});self.assertIn('xsec_token',original['nested'][0])
+
+@unittest.skipUnless(os.environ.get('TEST_DATABASE_URL'),'PostgreSQL URL required')
+class PostgresPublicRedactionTests(PublicRedactionTests):
+    def make_store(self):
+        import psycopg
+        base=os.environ['TEST_DATABASE_URL'];schema='public_redaction_'+uuid4().hex
+        with psycopg.connect(base,autocommit=True) as db: db.execute('CREATE SCHEMA '+schema)
+        def cleanup():
+            with psycopg.connect(base,autocommit=True) as db: db.execute('DROP SCHEMA '+schema+' CASCADE')
+        self.addCleanup(cleanup)
+        return Store(base+('&' if '?' in base else '?')+'options=-csearch_path%3D'+schema)
