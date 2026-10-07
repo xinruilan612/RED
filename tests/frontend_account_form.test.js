@@ -130,7 +130,7 @@ test('category and platform changes do not require removed profile controls',()=
 
 test('competitor observation is a closed optional panel with usable save action',()=>{
  const source=fs.readFileSync('frontend/account.js','utf8');
- assert.match(source,/<details class="panel" style="align-self:start;padding:18px"><summary>参考其他账号（可选）<\/summary>/);
+ assert.match(source,/<details class="panel account-reference"><summary>参考其他账号（可选）<\/summary>/);
  assert.match(source,/下次创作时供受众分析参考。不会自动搜索账号或抓取数据/);
  assert.match(source,/id="competitorForm"/);
  assert.match(source,/operate\('add_competitor',\{account_id:activeAccountId/);
