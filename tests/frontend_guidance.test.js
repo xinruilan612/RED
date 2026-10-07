@@ -212,3 +212,9 @@ test('demo recap next-creation remains free simulation rather than live account 
  test('onboarding distinguishes free examples from configured live default',()=>{
  const source=fs.readFileSync('frontend/guidance.js','utf8');assert.doesNotMatch(source,/默认模拟免费/);assert.match(source,/体验示例使用免费模拟/);
  });
+
+test('practice page clearly explains fictional data and offers a direct skip',()=>{
+ const s=setup();s.eval("ops={accounts:[]};renderExamples()");const html=s.element('operationsContent').innerHTML;
+ assert.match(html,/这是什么？/);assert.match(html,/虚构数字/);assert.match(html,/不调用收费模型/);assert.match(html,/data-start-creation/);
+ const index=fs.readFileSync('frontend/index.html','utf8');assert.match(index,/真人试读（两稿对比）/);assert.match(index,/免费练习（虚构数据）/);
+});

@@ -3,7 +3,7 @@
 // Product guidance is derived from saved account state, not a browser-only wizard.
 pageInfo.studio=['CREATE / 创作','把想法写成一份可用稿件。','写清主题和素材，检查问题，再由你确认。'];
 pageInfo.trends=['TOPICS / 选题与来源','先找到一个值得写的问题。','公开搜索提供线索；保存的原文可回到资料库复用，不是实时平台热榜。'];
-pageInfo.examples=['EXAMPLES / 体验示例','先体验，不混入真实运营。','示例账号、模拟发布和演练数据均有标记，不代表真实平台结果。'];
+pageInfo.examples=['免费练习','不熟悉流程？先用示例练一次。','这里是可选练习区，使用虚构内容和数据。正式创作不需要先完成练习。'];
 
 function renderPageTools(page){
  const groups={studio:[['studio','写内容'],['trends','选题与来源']],publish:[['publish','作品归档'],['metrics','数据复盘']]};
@@ -43,7 +43,7 @@ async function loadExampleAccount(){
 }
 
 function renderExamples(){
- $('operationsContent').innerHTML=`<section class="panel"><h2>了解完整闭环，不需要填造真实数据</h2><p>穿搭示例包含虚构作品和演练指标，可看周计划、复盘和经验如何连接。示例在独立账号中保留，不替代你自己的业务记录。</p><div class="buttons"><button id="sampleAccount" class="secondary">体验穿搭示例账号</button><button class="quiet" data-go-page="trends">查看选题来源 →</button></div><p class="helper">自己的稿件也可使用免费模拟模式。模拟发布不会发送到小红书或抖音，模拟检查不能证明真实读者理解。</p></section>`;
+ $('operationsContent').innerHTML=`<section class="panel"><h2>这是什么？一份可以动手操作的练习。</h2><p>系统准备了虚构的穿搭作品和数据，让你练习“看作品 → 复盘 → 保存经验”。点击开始后会切换到独立练习账号，你的真实作品仍然保留。</p><div class="buttons"><button id="sampleAccount" class="primary">开始免费练习</button><button class="quiet" data-start-creation>跳过练习，去创作 →</button></div><p class="helper">练习按钮使用本地模拟，不调用收费模型、不向平台发布。示例中的阅读、点赞和收藏都是虚构数字。</p></section>`;
  $('sampleAccount').onclick=loadExampleAccount;
  if(currentAccount()?.demo_sample){
   $('operationsContent').insertAdjacentHTML('beforeend',`<section class="panel"><h2>示例已准备好，按顺序体验</h2><p>① 看虚构作品 → ② 看演练数据与复盘 → ③ 接受或撤销示例经验 → ④ 免费模拟创作。</p><div class="buttons"><button data-go-page="publish">1. 看示例作品</button><button data-go-page="metrics">2. 看示例复盘</button><button data-go-page="memory">3. 看示例经验</button><button id="exampleCreate">4. 免费模拟创作</button><button id="exampleReturn" class="secondary">返回自己的账号</button></div></section>`);
