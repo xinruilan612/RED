@@ -69,7 +69,7 @@ async function renderWindtunnel(){
  const account=activeAccountId,request=++wt.loading;
  if(!account){$('operationsContent').innerHTML=wtEmpty('先建立一个运营账号','在账号与历史中创建账号，再保存这次内容检查。');return;}
  if(wt.account!==account){wt.account=account;wt.run=null;wt.runs=[];wt.newDraft=true;wt.tab='input';wt.batch='';wt.form=wtFreshForm();wt.message='';wt.failure='';}
- $('operationsContent').innerHTML='<div class="wt-workspace">'+wtNotice()+'<div class="panel wt-loading" role="status">正在读取当前账号的风洞记录…</div></div>';
+ $('operationsContent').innerHTML='<div class="wt-workspace">'+wtNotice()+'<div class="panel wt-loading" role="status">正在读取当前账号的检查记录…</div></div>';
  try{
   const result=await Promise.all([api('/api/runs'),api('/api/windtunnel/checklists?account_id='+encodeURIComponent(account))]);
   if(request!==wt.loading||account!==activeAccountId||currentPage!=='windtunnel')return;
@@ -112,7 +112,7 @@ function wtSource(s){return `<article class="wt-source"><span class="pill neutra
 
 function wtCardsView(){
  const cards=wtCards();
- return `<section class="panel"><div class="wt-heading"><div><span class="wt-kicker">02 / 把问题固定下来</span><h2>确认这篇教程需要回答什么</h2><p>候选条件由你调整和确认；没有真实来源的条件会标为作者设定。</p></div><span class="pill neutral">${cards.length} 条条件</span></div>${wtExecution()}${cards.length?`<form id="wtConditions">${cards.map((c,i)=>wtCard(c,i)).join('')}${wtAllowed('edit_conditions')?'<button class="quiet" type="button" data-wt="add-condition">＋ 添加作者设定的条件</button>':''}<div class="wt-action-bar">${wtAllowed('edit_conditions')?'<button class="secondary" type="submit" name="intent" value="edit">保存条件修改</button>':''}${wtAllowed('confirm_conditions')?'<button class="primary" type="submit" name="intent" value="confirm">确认这些条件，固定检查范围 →</button>':''}${wtSet().confirmed?'<p class="helper">条件已确认。同条件复查将复用这一版本；改变条件需要建立新批次。</p>':''}</div></form>`:wtAllowed('set_initial_conditions')?wtInitialConditionsForm():wtEmpty('先生成候选问题','保存稿件后，启动一次后台检查。没有反馈时，候选条件会明确标为作者设定。')}${wtReuseView()}</section>`;
+ return `<section class="panel"><div class="wt-heading"><div><span class="wt-kicker">02 / 把问题固定下来</span><h2>确认这篇教程需要回答什么</h2><p>候选条件由你调整和确认；没有真实来源的条件会标为作者设定。</p></div><span class="pill neutral">${cards.length} 条条件</span></div>${wtExecution()}${cards.length?`<form id="wtConditions">${cards.map((c,i)=>wtCard(c,i)).join('')}${wtAllowed('edit_conditions')?'<button class="quiet" type="button" data-wt="add-condition">＋ 添加作者设定的条件</button>':''}<div class="wt-action-bar">${wtAllowed('edit_conditions')?'<button class="secondary" type="submit" name="intent" value="edit">保存条件修改</button>':''}${wtAllowed('confirm_conditions')?'<button class="primary" type="submit" name="intent" value="confirm">确认问题并开始检查 →</button>':''}${wtSet().confirmed?'<p class="helper">条件已确认。同条件复查将复用这一版本；改变条件需要建立新批次。</p>':''}</div></form>`:wtAllowed('set_initial_conditions')?wtInitialConditionsForm():wtEmpty('先生成候选问题','保存稿件后，启动一次后台检查。没有反馈时，候选条件会明确标为作者设定。')}${wtReuseView()}</section>`;
 }
 function wtInitialConditionsForm(){return `<form id="wtInitialConditions" class="wt-question"><h3>也可以自己写一个检查问题</h3><p>不必重建稿件，也不需要再次调用 AI 来生成问题卡。这里记录的是你设定的问题，之后仍由你确认。</p><label for="wtInitialQuestion">希望读者看完后能回答什么？</label><textarea id="wtInitialQuestion" rows="2" maxlength="500" required placeholder="例如：读完后，新手能说清早间洗脸后先做什么吗？"></textarea><label for="wtInitialScene">这篇写给谁，在什么情况下使用？</label><input id="wtInitialScene" maxlength="500" value="${esc(wtData().scene||'')}" placeholder="例如：第一次了解早间护肤顺序的新手"><button class="primary">保存我的问题（不调用 AI）</button><p class="helper">来源：作者设定。保存后可继续添加问题，再确认检查范围。</p></form>`;}
 
@@ -244,11 +244,17 @@ async function wtCreate(e){
 }
 
 async function wtSaveConditions(e){
- e.preventDefault();const original=wtCards(),conditions=wtReadConditions();
- const confirm=e.submitter?.value==='confirm';
+ e.preventDefault();const confirm=e.submitter?.value==='confirm';
+ if(wt.busy||!wtAllowed(confirm?'confirm_conditions':'edit_conditions'))return;
+ const original=wtCards(),conditions=wtReadConditions();
  if(JSON.stringify(conditions)!==JSON.stringify(original)&&!await wtMutation('edit_conditions',{conditions}))return;
- if(confirm&&await wtMutation('confirm_conditions',{condition_set_id:wtSet().id,condition_hash:wtSet().hash})){wt.tab='report';wt.message='条件已确认。启动后台检查，阅读与核实会分别执行。';wtPaint();}
- else if(!confirm){wt.message='条件已保存，请确认后再开始检查。';wtPaint();}
+ if(confirm){
+  if(!await wtMutation('confirm_conditions',{condition_set_id:wtSet().id,condition_hash:wtSet().hash}))return;
+  wt.tab='report';
+  // Use the same guarded queue endpoint as the explicit start button. Never retry a rejected start.
+  const started=await wtMutation('start',{},true);
+  wt.message=started?'问题已确认，正在检查正文与材料。完成后会显示结果。':'问题已确认，检查尚未启动。请按提示处理后再继续。';wtPaint();
+ }else{wt.message='条件已保存，请确认后再开始检查。';wtPaint();}
 }
 
 async function wtSaveChecklist(e){
