@@ -7,6 +7,18 @@ from scripts import skapp_experiment as skapp
 
 
 class SkappExperimentTests(unittest.TestCase):
+    def test_constant_baseline_has_undefined_rank_correlation(self):
+        result = skapp.constant_baseline([1, 3, 5], [0, 2])
+        self.assertIsNone(result['SRC'])
+        self.assertAlmostEqual(result['MSE'], 20 / 3)
+        self.assertEqual(result['MAE'], 2)
+        self.assertEqual(result['samples'], 3)
+        self.assertIn('"SRC": null', json.dumps(result))
+
+    def test_constant_baseline_rejects_empty_test_set(self):
+        with self.assertRaises(ValueError):
+            skapp.constant_baseline([], [1, 2])
+
     def test_pinned_vendor_files_unchanged(self):
         skapp.verify_vendor()
 

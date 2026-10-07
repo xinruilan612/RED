@@ -5,6 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 import subprocess
+import statistics
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -50,6 +51,16 @@ def command(args):
         else:
             cmd += ['--training-dir', str(args.training_dir)]
     return cmd
+
+
+def constant_baseline(actual, train_labels):
+    """A constant has no rank variance: Spearman correlation is undefined."""
+    average = statistics.fmean(float(value) for value in train_labels)
+    errors = [float(value) - average for value in actual]
+    if not errors:
+        raise ValueError('Cannot evaluate an empty test set')
+    return {'name': '训练集均值基线', 'MSE': statistics.fmean(value ** 2 for value in errors),
+            'MAE': statistics.fmean(abs(value) for value in errors), 'SRC': None, 'samples': len(errors)}
 
 
 def publish(args):
@@ -108,8 +119,7 @@ def publish(args):
     if any(not np.isclose(measured[k], reported[k], rtol=1e-5, atol=1e-7) for k in measured):
         raise ValueError('Reported metrics differ from predictions')
     training = read(source / 'attention-training.json')['runs'][0]
-    baseline = metrics(np.full_like(actual, labels['train'].mean()))
-    baseline['name'] = '训练集均值基线'
+    baseline = constant_baseline(actual, labels['train'])
     payload = {'status':'ready', 'upstream_commit':COMMIT, 'dataset':dataset['dataset'], 'scope':'public_benchmark',
         'metrics':measured, 'baseline':baseline,
         'predictions':[{'id':i,'actual':float(y),'predicted':float(p)} for i,y,p in zip(ids,actual,predicted)],
