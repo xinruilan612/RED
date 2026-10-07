@@ -22,3 +22,19 @@ test('empty trial choices explain how to prepare a pair and where to record publ
  assert.match(run('trialHypothesisCard(h)'),/还没有可关联的发布数据/);
  assert.match(run("trialReaderRow(3,'A')"),/data-remove-reader/);
 });
+
+test('trial setup is progressive and existing reader work is shown before new setup',()=>{
+ const run=setup();run(`badge=t=>String(t);currentAccount=()=>({name:'test'});empty=()=>'';output={innerHTML:''};$=()=>output;trialBind=()=>{};accountRows=()=>[];trialPaint()`);
+ let html=run('output.innerHTML');assert.match(html,/<strong>选两份稿件<\/strong>/);assert.match(html,/<strong>记录读者反馈<\/strong>/);assert.match(html,/<strong>看结果<\/strong>/);
+ assert.match(html,/<details class="trial-advanced"><summary>发布后比较设置/);
+ assert.match(html,/<details class="trial-setup" open>/);
+ run(`accountRows=kind=>kind==='hypotheses'?[{id:'h',status:'testing',statement:'改成步骤',validations:{},signal_refs:[]}]:[];trialPaint()`);
+ html=run('output.innerHTML');assert.match(html,/<details class="trial-setup" >/);assert.ok(html.indexOf('开始试读')<html.indexOf('新建一次试读'));
+ assert.ok(html.indexOf('1 · 选两份稿件')<html.indexOf('可选 · 先让 AI'));
+});
+
+test('reader result shows counts prominently without pretending small feedback proves growth',()=>{
+ const run=setup();const html=run(`trialReaderSummary({desired_action:'了解产品',validations:{small_race:{arms:[{label:'A',denominator:2,outcomes:1},{label:'B',denominator:3,outcomes:2}],comprehension:{A:{understood:1},B:{understood:3}}}}})`);
+ assert.match(html,/3 · 试读结果/);assert.match(html,/3 人看懂 · 2 人愿意了解产品/);assert.match(html,/不能证明发布后会涨粉或成交/);
+ assert.equal(run('trialReaderSummary({validations:{}})'), '');
+});
