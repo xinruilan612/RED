@@ -153,10 +153,10 @@ class TopicTests(unittest.TestCase):
     def test_only_skapp_prediction_is_exposed(self):
         from unittest.mock import patch
         r=self.configure()
-        with patch('backend.skapp_personal.predict',return_value=dict(available=True,status='ready',method='upstream_skapp_personal',predictions=[dict(id='a',predicted_value=42)],message='原模型测试替身')):
+        with patch('backend.skapp_personal.predict',return_value=dict(available=True,status='ready',method='upstream_skapp_shared',predictions=[dict(id='a',predicted_value=42)],message='原模型测试替身')):
             result=self.post('/api/topics/evaluate',dict(account_id=self.identity,version=r['version'],candidates=[dict(id='a',title='摄影')])).json()
         self.assertEqual(result['candidates'][0]['estimated_value'],42)
-        self.assertEqual(result['method'],'upstream_skapp_personal')
+        self.assertEqual(result['method'],'upstream_skapp_shared')
 
     def test_training_snapshot_invalidates_only_relevant_changes(self):
         import copy

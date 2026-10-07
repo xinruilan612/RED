@@ -117,7 +117,7 @@ class Topics:
         state,account=self.current(owner,identity);config=config_for(state,account);rows=history_rows(state,account,config)
         from backend.topic_encoder import availability
         from backend.skapp_personal import availability as skapp_availability
-        return dict(skapp=skapp_availability(owner,identity,dict(config,_training_history_digest=training_history_digest(state,account,config))),profile=account['profile'],account_revision=account['revision'],version=state['version'],config=config,history=[{k:r[k] for k in ('id','title','has_image','eligible','exclusion')} for r in rows],encoder_ready=bool(self.encoder) or availability()['ready'])
+        return dict(skapp=skapp_availability(owner,identity,dict(config,platform=account['platform'])),profile=account['profile'],account_revision=account['revision'],version=state['version'],config=config,history=[{k:r[k] for k in ('id','title','has_image','eligible','exclusion')} for r in rows],encoder_ready=bool(self.encoder) or availability()['ready'])
     def save(self,owner,data):
         require(set(data)=={'account_id','version','config'},'INVALID_INPUT','设置参数无效')
         self.current(owner,data['account_id'],data['version']);validate_config(data['config'])
@@ -191,9 +191,9 @@ class Topics:
         # Legacy matching remains useful, but its kernel estimates are not SKAPP.
         result=evaluate(encoded['text_vectors'][0],candidates,history,config)
         from backend.skapp_personal import predict as skapp_predict
-        skapp=skapp_predict(owner,account['id'],dict(config,_training_history_digest=training_history_digest(state,account,config)),candidates,encoded['model'])
+        skapp=skapp_predict(owner,account['id'],dict(config,platform=account['platform']),candidates,encoded['model'],profile_vector=encoded['text_vectors'][0])
         predictions={r['id']:r for r in skapp.get('predictions',[])} if skapp.get('available') else {}
-        result.update(skapp=skapp,method='upstream_skapp_personal' if predictions else 'reference_matching_only',status='experimental_prediction' if predictions else 'matching_only')
+        result.update(skapp=skapp,method='upstream_skapp_shared' if predictions else 'reference_matching_only',status='experimental_prediction' if predictions else 'matching_only')
         result['validation']={'history_count':len(history),'eligible_count':sum(r['eligible'] for r in history),'gate':bool(predictions),'reason':skapp.get('message',''),'model_validation':skapp.get('validation')}
         for row in result['candidates']:
             row['estimated_value']=predictions.get(row['id'],{}).get('predicted_value')

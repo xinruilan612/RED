@@ -38,46 +38,45 @@ runtime/venv/bin/python -m unittest tests.test_skapp_experiment -v
 包装层测试只验证来源完整性、参数、安全失败及禁止覆盖，不联网、不训练。实际训练与模型质量必须另行提供真实日志、检查点、预测文件和评估结果，不能用包装层测试通过替代。
 
 
-## 2026-10-07 个人图文预测接入（原结构重新训练）
+## 2026-10-07 共用中文模型接入
 
-网页 `Topics.evaluate` 现在通过 `backend/skapp_personal.py` 调用隔离的
-`scripts/skapp_personal.py`。只有账号专属模型验证通过才返回预测；原 kernel
-回归估值不再从网页输出。公开参考继续用于匹配，不能充当固定窗口训练标签。
+网页通过 backend/skapp_personal.py 调用 scripts/skapp_personal.py，按平台、指标、
+24h/72h 窗口选择 runtime/skapp/shared 下的共用模型。文件名保留兼容，不代表每个账号
+独立训练。账号定位作为输入参与参考筛选；没有个人历史也可调用已就绪的共用模型。
+旧个人训练导出接口保留，但网页不再读取个人模型或用个人历史变化阻断共用模型。
 
-计算直接实例化未修改的上游 `SKAPP`、`Teacher`、`predict_single_item_delta`。
-这实现的是作者当前参考代码的计算结构在中文目标域上重训，不是原 ICIP 权重迁移，
-也不是论文全部公式的逐项复刻。中文编码器使用 ChineseCLIP 512 维，邻居数默认5；
-原公开基准是768维、500邻居，两套权重不混用。自有账号的同作者关系为1。
-元数据缺失时不伪造 mean_views；目标定义为指定窗口计数的 log1p，最终逆变换。
+计算直接实例化未修改的上游 SKAPP、Teacher、predict_single_item_delta。
+这是原代码计算结构的中文目标域重训和检索适配，不是现有 ICIP 权重的直接转换，
+也不是论文全部公式逐项复刻。ChineseCLIP 输出512维；原公开基准768维，不能补维冒充兼容。
+定位、文本、图片使用统一编码器，定位参与邻居检索及关系特征计算。
 
-训练顺序：按发布时间划分70%训练、15%验证、15%测试；参考库仅取训练部分，
-且邻居观测时间必须早于当前作品发布时间；先训练全邻居与单邻居教师，再计算
-真实RRCP，最后训练SKAPP。教师及student仅按验证集选择权重，测试集只作报告。
-默认至少100条为工程门槛，不代表统计充分。这不是要求用户必须自己发100篇：
-训练文件也可由合法、同平台同指标同窗口的多作者图文数据构建，并填写真实author_id；
-当前网页导出器只导出自有历史，尚未实现外部固定窗口数据的自动采集与训练集构建。验证集误差须优于训练集常量基线，
-才能标记可预测；小样本测试集仍不能证明未来效果，不能宣称必爆或涨粉。
+训练按发布时间分70/15/15，隔离跨边界观察窗口；邻居只取训练部分且观测早于查询作品。
+先训练全邻居与单邻居教师，再计算RRCP，最后训练学生；验证集选权重，测试集只作报告。
+至少100条仅是工程门槛，不是有效性保证，更不是要求用户自己发布100篇。
+验证误差须低于训练集常量基线，合成包永远不得用于网页真实预测。
 
-训练输入通过认证且同账号的 `POST /api/topics/training-data` 导出，字段为
-`account_id`、当前`version`。只接纳手动报告的真实图文作品、自然流量、真实封面
-特征、来源链接和目标窗口±5%以内的观测；缺值不填零，来源不冒充平台核验。
-模拟发布、公开累计互动数、其他账号数据都不导入。
+### 从真实公开图文到共用模型
 
-本地维护命令（账号标识从自己的账号记录取得，输出放 runtime，禁止提交数据）：
+输入 raw.json 声明 data_scope=licensed_public、dataset_license、platform、
+target_metric、window_hours。records 每项必须含 id、author_id、text、profile、
+profile_observed_at、published_at、observed_at、source_url、value、image_path。
+图片路径相对 raw.json，必须在其目录内；定位应在发表前已知；value 是指定窗口的实际观测，
+缺失不得填零，累计互动快照不能冒充固定窗口标签。授权声明不等于独立核验。
 
 ```sh
-runtime/venv/bin/python scripts/export_skapp_training.py --owner OWNER --account ACCOUNT_ID --output runtime/skapp/training-input.json
-runtime/skapp/venv/bin/python scripts/skapp_personal.py train --input runtime/skapp/training-input.json --bundle runtime/skapp/personal/SCOPE_DIGEST --epochs 10
-runtime/skapp/venv/bin/python scripts/skapp_personal.py check --bundle runtime/skapp/personal/SCOPE_DIGEST
+runtime/venv/bin/python scripts/prepare_skapp_shared.py --input runtime/skapp/corpus/raw.json --output runtime/skapp/corpus/encoded.json
+runtime/skapp/venv/bin/python scripts/skapp_personal.py train --input runtime/skapp/corpus/encoded.json --bundle runtime/skapp/shared/xiaohongshu/views-72h --epochs 10
+runtime/skapp/venv/bin/python scripts/skapp_personal.py check --bundle runtime/skapp/shared/xiaohongshu/views-72h
 ```
 
-`SCOPE_DIGEST`取导出文件的同名字段；包不能覆盖，重新训练应先保存旧版本。
-网页根据 owner/account_id 固定选择模型目录，不接受客户端指定文件路径。
-模型包记录源代码指纹、编码器、数据口径、训练设置、留出误差及权重/参考库哈希。
-另绑定真实历史快照：历史指标、封面、作品分类或定位变化会使旧模型失效；保存预测本身不会使模型失效。
-训练库支持真实author_id，同作者关系按实际标识计算；新稿作者由模型配置固定，客户端不能伪造。
-进程超时、模型不兼容、未训练、缺封面均返回温和状态，不回退为另一种预测算法。
+目录必须匹配训练平台、指标和窗口。准备程序调用网站相同的真实中文编码器。
+支持小红书与抖音的独立数据口径，不混用模型。模型包保存语料指纹、授权声明、源代码
+指纹、权重及语料哈希；网页检查这些信息，拒绝不兼容、损坏、未验证或合成模型。
+输出目录不可覆盖；旧包先由维护人员保存版本。训练数据、模型留在 runtime，不提交。
 
-当前真实账号数据检查：没有符合全部训练要求的记录，不能完成该账号的生产训练。
-合成数据仅用于测试原结构训练、RRCP、保存重载和推理的程序链路；带synthetic标记的
-模型包被网页拒绝，测试误差不能写成用户真实预测效果。
+### 当前交付边界
+
+已实现共用训练、中文图文预处理、账号定位输入及网页推理路由，测试包含原结构训练
+和两账号共用模型的程序验证。尚无真实中文固定窗口语料训练出的生产权重，网页仍只
+给参考匹配，不输出热度预测。现有公开累计互动参考不能替代训练标签。
+合成测试只证明程序链路，不证明真实选题预测准确率或增长效果。

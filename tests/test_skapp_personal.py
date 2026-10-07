@@ -19,6 +19,15 @@ def dataset(n=40,dim=16):
     return {"schema_version":1,"scope_digest":"a"*64,"training_history_digest":"b"*64,"encoder_id":pipeline.ENCODER,"target_metric":"views","window_hours":72,"records":rows}
 
 
+def shared_dataset(n=40, dim=16):
+    data=dataset(n,dim)
+    data.pop("scope_digest"); data.pop("training_history_digest")
+    data.update(model_scope="shared", data_scope="licensed_public", platform="xiaohongshu", dataset_license="Synthetic fixtures only; not production observations")
+    for i,row in enumerate(data["records"]):
+        row.update(author_id="author-"+str(i%4), profile_vector=list(row["textual"]), profile_observed_at=row["published_at"])
+    return data
+
+
 def with_torch(test):
     @functools.wraps(test)
     def wrapped(self):
@@ -121,6 +130,68 @@ class PersonalSKAPPTests(unittest.TestCase):
             # RRCP genuinely follows teacher outputs rather than cosine similarity.
             with torch.no_grad():one.predict_linear_2.bias.add_(20.)
             self.assertFalse(torch.allclose(rrcp,pipeline.rrcp_values(all_m,one,x)))
+
+
+class SharedSKAPPTests(unittest.TestCase):
+    def test_shared_requires_declared_provenance_and_prepublication_profile(self):
+        valid=shared_dataset()
+        rows=pipeline.validate(valid,16,30)
+        self.assertTrue(rows[0]["author_id"].startswith("corpus:"))
+        for field in ("author_id", "profile_vector", "profile_observed_at", "source_url"):
+            data=copy.deepcopy(valid); data["records"][0].pop(field)
+            with self.assertRaises(ValueError): pipeline.validate(data,16,30)
+        for field in ("dataset_license", "platform", "data_scope"):
+            data=copy.deepcopy(valid); data.pop(field)
+            with self.assertRaises(ValueError): pipeline.validate(data,16,30)
+        data=copy.deepcopy(valid);data["records"][0]["profile_observed_at"]="2021-01-01T00:00:00Z"
+        with self.assertRaisesRegex(ValueError,"publication"):pipeline.validate(data,16,30)
+
+    def test_shared_fingerprint_independent_of_private_history(self):
+        data=shared_dataset(); first=pipeline.corpus_fingerprint(data)
+        data.update(scope_digest="x", training_history_digest="different-private-history")
+        self.assertEqual(first,pipeline.corpus_fingerprint(data))
+        data["records"][0]["value"]+=1
+        self.assertNotEqual(first,pipeline.corpus_fingerprint(data))
+
+    @with_torch
+    def test_profile_changes_neighbors_and_relation_score_consistently(self):
+        query={"id":"q","visual":[1.,0.],"textual":[0.,1.],"profile_vector":[1.,0.],"author_id":"q"}
+        pool=[{"id":"a","visual":[1.,0.],"textual":[1.,0.],"observed_ts":0,"value":1,"author_id":"a"},
+              {"id":"b","visual":[1.,0.],"textual":[0.,1.],"observed_ts":0,"value":1,"author_id":"b"}]
+        query["profile_vector"]=[-1.,0.]
+        first=pipeline.neighbors(query,pool,1)[0]["id"]
+        query["profile_vector"]=[1.,-1.]
+        second=pipeline.neighbors(query,pool,1)[0]["id"]
+        self.assertNotEqual(first,second)
+        *_,rel=pipeline.tensors([(query,pool)],0.,1.)
+        self.assertEqual(rel[0,:,2].tolist(),[1.,-1.])
+        self.assertEqual(rel[0,:,3].tolist(),[0.,0.])
+
+    @with_torch
+    def test_shared_training_inference_for_two_empty_history_accounts(self):
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as tmp:
+            data=shared_dataset();path=Path(tmp)/"shared"
+            manifest=pipeline.train(data,path,epochs=1,k=2,dim=16,minimum=30,synthetic=True)
+            self.assertEqual(manifest["method"],"upstream_skapp_shared")
+            self.assertNotIn("training_history_digest",manifest)
+            self.assertEqual(manifest["corpus_fingerprint"],pipeline.corpus_fingerprint(data))
+            self.assertFalse(manifest["ready_for_prediction"])
+            self.assertIn("corpus.json",manifest["files"])
+            query={key:data[key] for key in ("schema_version","encoder_id","platform","target_metric","window_hours")}
+            query.update(author_id="first",profile_vector=data["records"][0]["profile_vector"], candidates=[{"id":"new", "visual":data["records"][0]["visual"],"textual":data["records"][0]["textual"],"author_id":"author-0"}])
+            original=pipeline.tensors
+            observed=[]
+            def capture(pairs,*args):
+                result=original(pairs,*args); observed.append(result[-1][:,:,3].tolist()); return result
+            with patch.object(pipeline,"tensors",side_effect=capture):
+                first=pipeline._predict_bundle(path,query,manifest)
+                query["author_id"]="second"
+                second=pipeline._predict_bundle(path,query,manifest)
+            self.assertEqual(first["candidates"],second["candidates"])
+            self.assertTrue(all(value==0 for batch in observed for row in batch for value in row))
+            query.pop("profile_vector")
+            with self.assertRaises(ValueError):pipeline._predict_bundle(path,query,manifest)
 
 
 if __name__=="__main__":unittest.main()

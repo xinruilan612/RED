@@ -1,4 +1,4 @@
-"""Account-isolated original SKAPP inference bridge; no torch in the web process."""
+"""Shared original SKAPP inference bridge; no torch in the web process."""
 import hashlib
 import json
 import math
@@ -10,14 +10,14 @@ import threading
 from backend.topic_encoder import MODEL_NAME
 
 ROOT = Path(__file__).resolve().parents[1]
-BUNDLES = ROOT / 'runtime/skapp/personal'
+BUNDLES = ROOT / 'runtime/skapp/shared'
 PYTHON = ROOT / 'runtime/skapp/venv/bin/python'
 SCRIPT = ROOT / 'scripts/skapp_personal.py'
 VENDOR = ROOT / 'third_party/skapp/src'
 MAX_ARTIFACT_BYTES = 512 * 1024 * 1024
 TIMEOUT_SECONDS = 180
 MAX_BYTES = 1_000_000
-METHOD = 'upstream_skapp_personal'
+METHOD = 'upstream_skapp_shared'
 _LOCK = threading.BoundedSemaphore(1)
 
 
@@ -46,9 +46,9 @@ def _read(path):
 
 def _context(owner, account_id, config):
     digest = scope_digest(owner, account_id)
-    if not isinstance(config, dict) or config.get('metric') not in ('views', 'likes', 'saves', 'comments') or config.get('window') not in ('24h', '72h'):
+    if not isinstance(config, dict) or config.get('platform') not in ('xiaohongshu', 'douyin') or config.get('metric') not in ('views', 'likes', 'saves', 'comments') or config.get('window') not in ('24h', '72h'):
         raise ValueError('config')
-    return digest, BUNDLES / digest, config['metric'], int(config['window'][:-1])
+    return digest, BUNDLES / config['platform'] / (config['metric'] + '-' + config['window']), config['metric'], int(config['window'][:-1])
 
 
 def _valid_digest(value):
@@ -75,7 +75,7 @@ def _file_digest(path):
 def _verify_artifacts(bundle, manifest):
     files = manifest.get('files')
     upstream = manifest.get('upstream_sha256')
-    if manifest.get('method') != METHOD or not isinstance(files, dict) or set(files) != {'weights.pt', 'references.json'}:
+    if manifest.get('method') != METHOD or not isinstance(files, dict) or set(files) != {'weights.pt', 'references.json', 'corpus.json'}:
         raise ValueError('artifact manifest')
     if not isinstance(upstream, dict) or set(upstream) != {'model.py', 'teachers.py', 'teacher_graph.py'}:
         raise ValueError('architecture manifest')
@@ -89,23 +89,22 @@ def availability(owner, account_id, config):
     try:
         digest, bundle, metric, window = _context(owner, account_id, config)
         if not (bundle / 'manifest.json').exists():
-            return _state('not_trained', '此账号尚未训练 SKAPP 模型。需要带封面和同一观察时长数据的真实历史作品。')
-        if bundle.is_symlink() or bundle.resolve().parent != BUNDLES.resolve():
+            return _state('not_trained', '共用中文 SKAPP 模型尚未就绪，暂不输出热度预测。无需为账号单独训练。')
+        if bundle.is_symlink() or bundle.parent.is_symlink() or bundle.resolve().parent != BUNDLES.resolve() / config['platform']:
             raise ValueError('scope')
         manifest = _read(bundle / 'manifest.json')
-        expected = dict(schema_version=1, scope_digest=digest, encoder_id=MODEL_NAME, feature_dim=512, target_metric=metric, window_hours=window)
+        expected = dict(schema_version=1, model_scope='shared', data_scope='licensed_public', platform=config['platform'], encoder_id=MODEL_NAME, feature_dim=512, target_metric=metric, window_hours=window)
         if any(manifest.get(k) != v for k, v in expected.items()):
-            return _state('incompatible', '模型与当前账号、图文模型或统计口径不一致，需要重新训练。')
-        history_digest = config.get('_training_history_digest')
-        if not _valid_digest(history_digest) or manifest.get('training_history_digest') != history_digest:
-            return _state('stale_history', '历史作品或账号定位已变化，请重新导出数据并训练 SKAPP 模型。')
+            return _state('incompatible', '共用模型与当前平台、图文编码或统计口径不兼容，暂不输出热度预测。')
+        if not isinstance(manifest.get('dataset_license'), str) or not manifest['dataset_license'].strip() or not _valid_digest(manifest.get('corpus_fingerprint')):
+            return _state('incompatible', '共用模型缺少公开训练资料的来源声明或校验记录。')
         if manifest.get('synthetic') or manifest.get('ready_for_prediction') is not True:
-            return _state('trained_unvalidated', '账号模型已训练，但独立验证尚未通过，暂不输出热度预测。')
+            return _state('trained_unvalidated', '共用模型的独立验证尚未通过，暂不输出热度预测。')
         if not PYTHON.is_file() or not SCRIPT.is_file():
             return _state('unavailable', '本机 SKAPP 运行环境尚未就绪。')
         _verify_artifacts(bundle, manifest)
         return dict(available=True, status='ready', method=METHOD, target_metric=metric, window_hours=window,
-                    message='已安装此账号的 SKAPP 模型；预测效果请结合独立验证结果判断。')
+                    message='正在使用共用中文 SKAPP 模型，结合当前账号定位进行预测。')
     except (OSError, ValueError, TypeError, RecursionError):
         return _state('unavailable', 'SKAPP 模型暂不可读取，请检查训练结果。')
 
@@ -134,12 +133,14 @@ def _safe_validation(value):
     return result
 
 
-def predict(owner, account_id, config, candidates, encoder):
+def predict(owner, account_id, config, candidates, encoder, *, profile_vector=None):
     state = availability(owner, account_id, config)
     if not state['available']:
         return state
     if encoder != MODEL_NAME:
         return _state('incompatible', '当前图文编码模型与 SKAPP 训练模型不一致，请重新训练。')
+    if not _vector(profile_vector):
+        return _state('invalid_input', '账号定位特征尚未就绪，请重新比较。')
     if not isinstance(candidates, list) or not 1 <= len(candidates) <= 5:
         return _state('invalid_input', '每次预测 1 至 5 个选题。')
     rows = []
@@ -158,7 +159,7 @@ def predict(owner, account_id, config, candidates, encoder):
         return _state('busy', '正在进行另一批 SKAPP 预测，请稍后重试。')
     try:
         digest, bundle, metric, window = _context(owner, account_id, config)
-        payload = dict(schema_version=1, scope_digest=digest, encoder_id=encoder, target_metric=metric, window_hours=window, training_history_digest=config['_training_history_digest'], candidates=rows)
+        payload = dict(schema_version=1, author_id='web:' + digest, profile_vector=profile_vector, platform=config['platform'], encoder_id=encoder, target_metric=metric, window_hours=window, candidates=rows)
         with tempfile.TemporaryDirectory(prefix='youji-skapp-') as directory:
             input_path, output_path = Path(directory) / 'input.json', Path(directory) / 'output.json'
             raw = json.dumps(payload, ensure_ascii=False, allow_nan=False)

@@ -1,4 +1,4 @@
-"""Train the vendored SKAPP architecture on fixed-window, account-scoped labels.
+"""Train the vendored SKAPP architecture on fixed-window personal or shared labels.
 
 Encoded JSON is the boundary: vectors must come from the declared ChineseCLIP
 encoder. No web collection, label synthesis or paid model calls occur here.
@@ -55,15 +55,32 @@ def vector(value, dim):
     return [v/norm for v in value]
 
 
+def corpus_fingerprint(data):
+    """Public corpus identity is independent of any website account history."""
+    keys = ("schema_version", "model_scope", "data_scope", "encoder_id", "platform", "target_metric", "window_hours", "dataset_license", "records")
+    payload = {key: data.get(key) for key in keys}
+    return hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False, allow_nan=False).encode()).hexdigest()
+
+
 def validate(data, dim=512, minimum=MIN_RECORDS):
     if data.get("schema_version") != 1 or data.get("encoder_id") != ENCODER:
         raise ValueError("Unsupported schema or encoder")
-    history = data.get("training_history_digest", "")
-    if len(history) != 64 or any(c not in "0123456789abcdef" for c in history):
-        raise ValueError("Invalid training history snapshot digest")
+    model_scope = data.get("model_scope", "personal")
+    if model_scope not in ("shared", "personal"):
+        raise ValueError("Unsupported model scope")
+    shared = model_scope == "shared"
     scope = data.get("scope_digest", "")
-    if len(scope) != 64 or any(c not in "0123456789abcdef" for c in scope):
-        raise ValueError("Invalid account scope")
+    if shared:
+        if data.get("data_scope") != "licensed_public" or data.get("platform") not in ("xiaohongshu", "douyin"):
+            raise ValueError("Shared training requires licensed_public supported-platform data")
+        if not isinstance(data.get("dataset_license"), str) or not data["dataset_license"].strip():
+            raise ValueError("dataset_license must state permission; this declaration is not legal verification")
+    else:
+        history = data.get("training_history_digest", "")
+        if len(history) != 64 or any(c not in "0123456789abcdef" for c in history):
+            raise ValueError("Invalid training history snapshot digest")
+        if len(scope) != 64 or any(c not in "0123456789abcdef" for c in scope):
+            raise ValueError("Invalid account scope")
     if data.get("target_metric") not in ("reads", "views", "likes", "saves", "comments", "shares"):
         raise ValueError("Unsupported observed target metric")
     window = data.get("window_hours")
@@ -77,12 +94,20 @@ def validate(data, dim=512, minimum=MIN_RECORDS):
         if not isinstance(row.get("id"), str) or not row["id"] or row["id"] in ids:
             raise ValueError("Record IDs must be unique")
         ids.add(row["id"])
-        row["author_id"] = row.get("author_id") or scope
-        if not isinstance(row["author_id"], str):
+        row["author_id"] = row.get("author_id") if shared else (row.get("author_id") or scope)
+        if not isinstance(row["author_id"], str) or not row["author_id"].strip():
             raise ValueError("Invalid author ID")
         if not str(row.get("source_url", "")).startswith(("https://", "http://")):
             raise ValueError("Each real observation needs a source URL")
+        if shared:
+            # A website account is never assumed to be a corpus author.
+            row["author_id"] = "corpus:" + row["author_id"]
+            row["profile_vector"] = vector(row.get("profile_vector"), dim)
         row["published_ts"] = stamp(row["published_at"])
+        if shared:
+            profile_time = row.get("profile_observed_at") or row.get("profile_asof")
+            if not isinstance(profile_time, str) or stamp(profile_time) > row["published_ts"]:
+                raise ValueError("Shared profile requires profile_observed_at no later than publication")
         row["observed_ts"] = stamp(row["observed_at"])
         if row["observed_ts"] > datetime.now(timezone.utc).timestamp():
             raise ValueError("Future observations cannot be training labels")
@@ -101,7 +126,10 @@ def neighbors(query, pool, k, cutoff=None):
     cutoff = query.get("published_ts", float("inf")) if cutoff is None else cutoff
     eligible = [r for r in pool if r["id"] != query["id"] and r["observed_ts"] < cutoff]
     def score(row):
-        return sum(a*b for a,b in zip(query["visual"], row["visual"])) + sum(a*b for a,b in zip(query["textual"], row["textual"]))
+        base = sum(a*b for a,b in zip(query["visual"], row["visual"])) + sum(a*b for a,b in zip(query["textual"], row["textual"]))
+        # Same retrieval policy in training and inference. Profile is pre-publication
+        # positioning encoded with the same ChineseCLIP text encoder, never labels.
+        return base + sum(a*b for a,b in zip(query.get("profile_vector", []), row["textual"]))
     return sorted(eligible, key=lambda r: (-score(r), r["id"]))[:k]
 
 
@@ -124,6 +152,8 @@ def tensors(pairs, mean, std):
     labels=make([[(math.log1p(v["value"])-mean)/std for v in n] for r,n in pairs])
     vi=(qv[:,None,:]*nv).sum(-1); tx=(qt[:,None,:]*nt).sum(-1)
     scores=vi+tx
+    profile_scores=make([[sum(a*b for a,b in zip(r.get("profile_vector", []), v["textual"])) for v in n] for r,n in pairs])
+    scores=scores+profile_scores
     scores=((scores-scores.mean(1,keepdim=True))/scores.std(1,keepdim=True,unbiased=False).clamp_min(.001)).clamp(-5,5)
     same_author=make([[float(r.get("author_id")==v.get("author_id")) for v in n] for r,n in pairs])
     relations=torch.stack((vi,tx,scores,same_author),dim=-1)
@@ -181,6 +211,7 @@ def single_inputs(inputs):
 
 
 def train(data, bundle, epochs=10, k=5, dim=512, minimum=MIN_RECORDS, synthetic=False):
+    synthetic = synthetic or data.get("synthetic") is True
     if not 1 <= epochs <= 200 or not 1 <= k <= 50: raise ValueError("epochs 1..200, neighbors 1..50")
     if Path(bundle).exists(): raise ValueError("Bundle already exists; use a new version directory")
     rows=validate(data,dim,minimum); pool,groups=temporal_split(rows,k)
@@ -210,8 +241,19 @@ def train(data, bundle, epochs=10, k=5, dim=512, minimum=MIN_RECORDS, synthetic=
         folder=Path(tmp)/"bundle"; folder.mkdir()
         torch.save({"student":student.state_dict(),"all_teacher":all_model.state_dict(),"single_teacher":single_model.state_dict()},folder/"weights.pt")
         (folder/"references.json").write_text(json.dumps(pool),encoding="utf-8")
-        manifest={key:data[key] for key in ("schema_version","scope_digest","encoder_id","target_metric","window_hours","training_history_digest")}
-        manifest.update(query_author_id=data.get("query_author_id") or data["scope_digest"],feature_dim=dim,neighbors=k,method="upstream_skapp_personal",upstream_sha256=upstream_hash(),trained_at=datetime.now(timezone.utc).isoformat(),statistics={"label_log1p_mean":mean,"label_log1p_std":std,"rrcp_scale":scale},evaluation=evaluation,ready_for_prediction=ready,synthetic=synthetic,status="ready" if ready else "trained_unvalidated",training={"epochs":epochs,"seed":12,"relation_features":["visual_cosine","text_cosine","standardized_retrieval_score","same_author"],"engineering_minimum_records":minimum},files={name:digest(folder/name) for name in ("weights.pt","references.json")})
+        manifest={key:data[key] for key in ("schema_version","encoder_id","target_metric","window_hours")}
+        shared = data.get("model_scope") == "shared"
+        if shared:
+            manifest.update(model_scope="shared", data_scope="licensed_public", platform=data["platform"],
+                            dataset_license=data["dataset_license"], corpus_fingerprint=corpus_fingerprint(data),
+                            retrieval_policy="visual_cosine+text_cosine+prepublication_profile_to_reference_text_cosine")
+        else:
+            manifest.update(scope_digest=data["scope_digest"], training_history_digest=data["training_history_digest"])
+        manifest.update(query_author_id=data.get("query_author_id") or data.get("scope_digest", ""),feature_dim=dim,neighbors=k,method="upstream_skapp_shared" if shared else "upstream_skapp_personal",upstream_sha256=upstream_hash(),trained_at=datetime.now(timezone.utc).isoformat(),statistics={"label_log1p_mean":mean,"label_log1p_std":std,"rrcp_scale":scale},evaluation=evaluation,ready_for_prediction=ready,synthetic=synthetic,status="ready" if ready else "trained_unvalidated",training={"epochs":epochs,"seed":12,"relation_features":["visual_cosine","text_cosine","standardized_retrieval_score","same_author"],"engineering_minimum_records":minimum},files={name:digest(folder/name) for name in ("weights.pt","references.json")})
+        if shared:
+            (folder/"corpus.json").write_text(json.dumps(data, ensure_ascii=False, allow_nan=False), encoding="utf-8")
+            manifest["files"]["corpus.json"] = digest(folder/"corpus.json")
+            manifest["training"]["relation_features"][2] = "standardized_profile_aware_retrieval_score"
         (folder/"manifest.json").write_text(json.dumps(manifest,indent=2),encoding="utf-8")
         os.rename(folder,destination)
     return manifest
@@ -219,15 +261,26 @@ def train(data, bundle, epochs=10, k=5, dim=512, minimum=MIN_RECORDS, synthetic=
 
 def check(bundle):
     folder=Path(bundle); manifest=json.loads((folder/"manifest.json").read_text())
-    history=manifest.get("training_history_digest", "")
-    if len(history)!=64 or any(c not in "0123456789abcdef" for c in history):
-        raise ValueError("Model is missing a valid training history snapshot")
-    if manifest.get("method") != "upstream_skapp_personal" or manifest.get("feature_dim") != 512 or manifest.get("encoder_id") != ENCODER or manifest.get("synthetic"):
+    shared = manifest.get("method") == "upstream_skapp_shared"
+    fingerprint = manifest.get("corpus_fingerprint" if shared else "training_history_digest", "")
+    if len(fingerprint)!=64 or any(c not in "0123456789abcdef" for c in fingerprint):
+        raise ValueError("Model is missing a valid corpus or training history snapshot")
+    if shared and (manifest.get("model_scope") != "shared" or manifest.get("data_scope") != "licensed_public" or manifest.get("platform") not in ("xiaohongshu", "douyin") or not str(manifest.get("dataset_license", "")).strip()):
+        raise ValueError("Invalid shared model provenance")
+    if manifest.get("method") not in ("upstream_skapp_personal", "upstream_skapp_shared") or manifest.get("feature_dim") != 512 or manifest.get("encoder_id") != ENCODER or manifest.get("synthetic"):
         raise ValueError("Not a production ChineseCLIP SKAPP bundle")
     if manifest.get("upstream_sha256") != upstream_hash(): raise ValueError("Vendored architecture fingerprint mismatch")
     files=manifest.get("files",{})
-    if set(files) != {"weights.pt","references.json"} or any(digest(folder/name)!=sha for name,sha in files.items()):
+    expected_files = {"weights.pt", "references.json", "corpus.json"} if shared else {"weights.pt", "references.json"}
+    if set(files) != expected_files or any(digest(folder/name)!=sha for name,sha in files.items()):
         raise ValueError("Incomplete or modified bundle")
+    if shared:
+        corpus = json.loads((folder/"corpus.json").read_text())
+        if corpus_fingerprint(corpus) != manifest["corpus_fingerprint"]:
+            raise ValueError("Shared corpus fingerprint mismatch")
+        for key in ("schema_version", "model_scope", "data_scope", "encoder_id", "platform", "target_metric", "window_hours", "dataset_license"):
+            if corpus.get(key) != manifest.get(key):
+                raise ValueError("Shared corpus metadata mismatch: " + key)
     return manifest
 
 
@@ -240,7 +293,13 @@ def predict(bundle, data):
 def _predict_bundle(bundle,data,manifest):
     """Internal inference also used by synthetic architecture tests; public predict gates first."""
     dim=manifest["feature_dim"]
-    for key in ("schema_version","scope_digest","encoder_id","target_metric","window_hours","training_history_digest"):
+    shared = manifest.get("method") == "upstream_skapp_shared"
+    keys = ("schema_version", "encoder_id", "target_metric", "window_hours", "platform") if shared else ("schema_version","scope_digest","encoder_id","target_metric","window_hours","training_history_digest")
+    if shared:
+        if not isinstance(data.get("author_id"), str) or not data["author_id"].strip():
+            raise ValueError("Shared query requires an isolated account author_id")
+        profile = vector(data.get("profile_vector"), dim)
+    for key in keys:
         if data.get(key)!=manifest.get(key): raise ValueError(f"Prediction scope/encoder/metric mismatch: {key}")
     rows=copy.deepcopy(data.get("candidates",[]))
     if not 1<=len(rows)<=10: raise ValueError("Use 1..10 candidates")
@@ -248,7 +307,8 @@ def _predict_bundle(bundle,data,manifest):
     for r in rows:
         if not isinstance(r.get("id"),str) or r["id"] in ids: raise ValueError("Unique candidate IDs required")
         ids.add(r["id"])
-        r["author_id"]=manifest.get("query_author_id") or manifest["scope_digest"]
+        r["author_id"]=("web:" + data["author_id"]) if shared else (manifest.get("query_author_id") or manifest["scope_digest"])
+        if shared: r["profile_vector"] = profile
         for field in ("visual","textual"): r[field]=vector(r.get(field),dim)
     torch,SKAPP,Teacher,_=libraries(); torch.set_num_threads(2)
     pool=json.loads((Path(bundle)/"references.json").read_text()); k=manifest["neighbors"]
@@ -267,7 +327,7 @@ def _predict_bundle(bundle,data,manifest):
         value=float(prediction[i])*stats["label_log1p_std"]+stats["label_log1p_mean"]
         if not math.isfinite(value) or value>80: raise ValueError("Unstable prediction")
         results.append({"id":r["id"],"predicted_value":max(0.,math.expm1(value)),"reference_ids":[v["id"] for v in n],"rrcp":rr[i].tolist(),"attention":details["attention"][i].tolist()})
-    return {"schema_version":1,"status":"predicted","method":"upstream_skapp_personal","target_metric":manifest["target_metric"],"window_hours":manifest["window_hours"],"candidates":results,"validation":manifest["evaluation"]}
+    return {"schema_version":1,"status":"predicted","method":manifest["method"],"target_metric":manifest["target_metric"],"window_hours":manifest["window_hours"],"candidates":results,"validation":manifest["evaluation"]}
 
 
 def main():
