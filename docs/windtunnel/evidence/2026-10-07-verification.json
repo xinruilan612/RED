@@ -24,5 +24,8 @@
     "2026-10-07-tests.txt",
     "2026-10-07-frontend.txt",
     "2026-10-07-preparation-status.json"
-  ]
+  ],
+  "raw_html_whitespace": "Exact upstream HTML preserved; only raw HTML paths disable whitespace diagnostics via .gitattributes",
+  "test_log_normalization": "Trailing whitespace removed for repository presentation; original runtime output retained in temporary log",
+  "git_diff_check": "passed including all changes against pre-task parent"
 }

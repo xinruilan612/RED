@@ -1,0 +1,3 @@
+# Exact official HTML evidence keeps upstream whitespace and download hashes.
+docs/windtunnel/public_samples/license.html -whitespace
+docs/windtunnel/public_samples/sources/*.html -whitespace
