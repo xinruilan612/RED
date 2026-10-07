@@ -54,3 +54,15 @@ Chrome 真实登录后搜索“新手护肤”，三种排序合计去重保存2
 正文续验：首次详情读取超过原15秒等待上限；修复后已在Chrome点击同条参考更新成功，保留旧互动快照。仅正文读取放宽至30秒，搜索仍15秒，不自动重试；对应20项后端测试通过。
 
 最终完整PostgreSQL后端回归739项通过（277.095秒），0跳过；本轮新增详情超时测试另随20项相关测试通过。角色卡一致性、前端语法及Git空白检查通过。网站API/Worker已重启，健康检查正常。
+
+## Position-scoped reference libraries: 2026-10-07 acceptance
+
+Connection controls remain visible. Search is explicit and uses saved positioning when no keyword is supplied. References are scoped by owner, account and normalized positioning; switching away preserves old references, and switching back restores them. Legacy unclassified records are excluded from comparison.
+
+The 23 verified skincare references from 2026-10-07 19:02 Asia/Shanghai were explicitly classified under their original skincare positioning through an audited operations command; timestamps and source data were preserved. One detail was refreshed at 19:06. The two earlier candidate ideas were manual acceptance inputs, not published works; browser refresh clears them for user acceptance.
+
+Public references support topic selection. Uploaded product documents remain the separate factual source library.
+
+Manual acceptance: verify visible connection status, inspect reference provenance and local time, save a different positioning and verify the reference group changes, restore the original positioning, then search and compare your own candidates.
+
+Validation: 746 backend tests passed with real PostgreSQL (276.488s, no skips); 220 frontend tests passed. Frontend syntax, agent-card consistency and git diff checks passed. Chrome shows the live connection and 23 original scoped references; empty candidate inputs are ready for user acceptance.
