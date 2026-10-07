@@ -39,6 +39,23 @@ class TopicTests(unittest.TestCase):
         owner=owner or self.owner;identity=self.ops.read(owner)['accounts'][0]['id']
         state=self.command('import_post',dict(account_id=identity,title='摄影历史作品',body='真实历史正文',url='https://www.xiaohongshu.com/explore/'+uuid4().hex,published_at=(datetime.now(timezone.utc)-timedelta(days=8)).isoformat(),format='image_text',pillar='摄影',traffic='organic'),owner)
         return state['publications'][0]
+    def test_public_samples_are_encoded_but_never_personal_labels(self):
+        r=self.configure()
+        imported=self.post('/api/topics/public/import',dict(account_id=self.identity,version=r['version'],samples=[dict(url='https://www.xiaohongshu.com/explore/12345678',title='摄影构图参考',body='公开样本测试',counts={'likes':200})]))
+        self.assertEqual(imported.status_code,200,imported.text)
+        result=self.post('/api/topics/evaluate',dict(account_id=self.identity,version=imported.json()['version'],candidates=[dict(id='a',title='摄影构图')])).json()
+        self.assertEqual(result['public_sample_count'],1)
+        self.assertFalse(result['public_prediction_available'])
+        row=result['candidates'][0]
+        self.assertIsNone(row['estimated_value'])
+        self.assertEqual(row['public_references'][0]['likes'],200)
+        self.assertIsNone(row['public_references'][0]['saves'])
+        self.assertTrue(any('公开样本测试' in text for text in self.seen[-1][0]))
+        self.assertEqual(self.ops.read(self.owner)['publications'],[])
+        other=self.ops.read('other')['accounts'][0]['id']
+        self.assertEqual(self.client.get('/api/topics/public',params={'account_id':other}).status_code,404)
+        self.assertEqual(self.client.post('/api/topics/public/import',json={}).status_code,403)
+
     def test_config_updates_live_profile_and_persists(self):
         first=self.configure();self.assertEqual(self.ops.read(self.owner)['accounts'][0]['profile']['positioning'],'摄影教程')
         self.configure('校园收纳');self.assertEqual(self.read()['config']['positioning'],'校园收纳')

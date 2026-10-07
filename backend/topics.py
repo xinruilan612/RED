@@ -113,13 +113,22 @@ class Topics:
             candidates.append(c)
         require(len({c['id'] for c in candidates})==len(candidates),'INVALID_INPUT','选题标识不能重复')
         history=history_rows(state,account,config)
-        texts=[config['positioning']+'。目标受众：'+config['audience']]+[r['title']+'。'+r['body'] for r in candidates]+[r['title']+'。'+r['body'] for r in history]
+        public_samples=copy.deepcopy(state.get('public_topic_samples',{}).get(account['id'],[])[-100:])
+        texts=[config['positioning']+'。目标受众：'+config['audience']]+[r['title']+'。'+r['body'] for r in candidates]+[r['title']+'。'+r['body'] for r in history]+[r['title']+'。'+r.get('body','') for r in public_samples]
         encoded=self.encode(texts,images)
         for i,row in enumerate(candidates):
             row['text_vector']=encoded['text_vectors'][i+1];row['image_vector']=encoded['image_vectors'][ix[i]] if i in ix else None
         for i,row in enumerate(history): row['text_vector']=encoded['text_vectors'][1+len(candidates)+i]
         from backend.topic_ranking import evaluate
         result=evaluate(encoded['text_vectors'][0],candidates,history,config)
+        from backend.public_topic_ranking import rank_public
+        offset=1+len(candidates)+len(history)
+        for i,row in enumerate(public_samples): row['text_vector']=encoded['text_vectors'][offset+i]
+        public=rank_public(encoded['text_vectors'][0],candidates,public_samples,config)
+        refs={r['id']:r for r in public['candidates']}
+        for row in result['candidates']:
+            row.update({k:v for k,v in refs[row['id']].items() if k!='id'})
+        result.update(public_sample_count=public['public_sample_count'],public_method=public['method'],public_evidence_boundary=public['evidence_boundary'],public_prediction_available=False)
         self.current(owner,data['account_id'],data['version'])
         result.update(config=config,profile_revision=account['revision'],account_id=account['id'],encoder=encoded['model'],created_at=datetime.now(timezone.utc).isoformat(),source='user_reported_history',history_limit=100,data_version=data['version'])
         self.operations.command(owner,dict(action='topic_result',payload=dict(account_id=account['id'],result=result),version=data['version'],key=str(uuid4())),internal=True)

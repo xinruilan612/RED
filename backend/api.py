@@ -128,6 +128,22 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
     def topic_settings(account_id: str, user=Depends(logged)):
         return topics.read(user['owner'], account_id)
 
+    from backend.public_topics import PublicTopics
+    public_topics = PublicTopics(service.operations)
+    app.state.public_topics = public_topics
+
+    @app.get('/api/topics/public')
+    def public_topic_samples(account_id: str, user=Depends(logged)):
+        return public_topics.read(user['owner'],account_id)
+
+    @app.post('/api/topics/public/{action}')
+    def public_topic_action(action: str, data: dict, user=Depends(logged)):
+        actions={'search':public_topics.search,'refresh':public_topics.refresh,
+                 'remove':public_topics.remove,'import':public_topics.import_samples,'connect':public_topics.connect}
+        require(action in actions,'RESOURCE_NOT_FOUND','操作不存在')
+        auth.throttle('public-topics:'+user['owner'],30,3600)
+        return actions[action](user['owner'],data)
+
     @app.post('/api/topics/{action}')
     def topic_action(action: str, data: dict, user=Depends(logged)):
         require(action in ('config','history-image','evaluate'),'RESOURCE_NOT_FOUND','操作不存在')
