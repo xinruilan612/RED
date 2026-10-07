@@ -98,9 +98,12 @@ def serve(env):
             raise RuntimeError('Port is already in use. Stop the previous server or change PUBLIC_ORIGIN.') from None
     (ROOT / 'runtime').mkdir(parents=True, exist_ok=True)
     children = []
+    optional_child = None
     try:
         for args in (['backend.api', '--host', host, '--port', str(port)], ['backend.worker']):
             children.append(subprocess.Popen([sys.executable, '-m', *args], cwd=ROOT, env=child_environment()))
+        from scripts.local_public_search import start_optional
+        optional_child = start_optional(ROOT)
         print(f'Website: {origin}/  (wait for API startup). Keep this window open; Ctrl+C stops both processes.', flush=True)
         while True:
             if any(child.poll() is not None for child in children):
@@ -109,7 +112,7 @@ def serve(env):
     except KeyboardInterrupt:
         print('\nStopping local services.')
     finally:
-        stop_children(children)
+        stop_children(children + ([optional_child] if optional_child is not None else []))
 
 
 def main():

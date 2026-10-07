@@ -14,6 +14,11 @@ from backend.api import settings
 
 
 class LocalDevTests(unittest.TestCase):
+    def setUp(self):
+        connector = patch('scripts.local_public_search.start_optional', return_value=None)
+        connector.start()
+        self.addCleanup(connector.stop)
+
     def test_start_probe_allows_restart_after_closed_tcp_connection(self):
         from unittest.mock import MagicMock
         probe=MagicMock();api=MagicMock();api.poll.return_value=None;worker=MagicMock();worker.poll.return_value=None
