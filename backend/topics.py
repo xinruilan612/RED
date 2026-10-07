@@ -71,9 +71,33 @@ def history_rows(state,account,config):
 class Topics:
     def __init__(self,operations,encoder=None): self.operations=operations;self.encoder=encoder
     def encode(self,texts,images):
-        if self.encoder: return self.encoder(texts,images)
         from backend.topic_encoder import encode
-        return encode(texts,images)
+        engine=self.encoder or encode
+        if len(texts)<=128 and all(len(t)<=10000 for t in texts):
+            return engine(texts,images)
+        # Preserve long public articles and both pools without exceeding the
+        # isolated encoder's per-call bounds. Never silently drop the tail.
+        chunks=[];groups=[]
+        for text in texts:
+            indexes=[]
+            for start in range(0,len(text),9000):
+                part=text[start:start+9000]
+                if part.strip(): indexes.append((len(chunks),len(part)));chunks.append(part)
+            require(bool(indexes),'INVALID_INPUT','参考正文不能为空')
+            groups.append(indexes)
+        vectors=[];image_vectors=[];model=None
+        for start in range(0,len(chunks),128):
+            result=engine(chunks[start:start+128],images if start==0 else [])
+            if model is not None: require(model==result['model'],'INVALID_INPUT','图文编码模型不一致，请重新比较')
+            model=result['model'];vectors.extend(result['text_vectors'])
+            if start==0: image_vectors=result['image_vectors']
+        pooled=[]
+        for group in groups:
+            values=[sum(vectors[i][axis]*weight for i,weight in group) for axis in range(len(vectors[group[0][0]]))]
+            norm=math.sqrt(sum(v*v for v in values))
+            require(norm>0,'INVALID_INPUT','参考正文无法编码，请检查内容')
+            pooled.append([v/norm for v in values])
+        return dict(model=model,text_vectors=pooled,image_vectors=image_vectors)
     def current(self,owner,identity,version=None):
         state=self.operations.read(owner);account=find_account(state,identity)
         require(not account.get('demo_sample'),'INVALID_INPUT','请切换到自己的账号；演示作品不参与真实选题评估')

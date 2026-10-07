@@ -56,6 +56,21 @@ class TopicTests(unittest.TestCase):
         self.assertEqual(self.client.get('/api/topics/public',params={'account_id':other}).status_code,404)
         self.assertEqual(self.client.post('/api/topics/public/import',json={}).status_code,403)
 
+    def test_encoder_batches_large_combined_pools_and_keeps_long_text_tail(self):
+        calls=[]
+        def bounded(texts,images):
+            self.assertLessEqual(len(texts),128)
+            self.assertTrue(all(len(t)<=10000 for t in texts))
+            calls.append((texts,images))
+            return dict(model='test',text_vectors=[[1.,0.] if '尾部' not in t else [0.,1.] for t in texts],image_vectors=[[1.,0.] for _ in images])
+        self.app.state.topics.encoder=bounded
+        result=self.app.state.topics.encode(['前'*11000+'尾部']+['公开正文']*199,['image'])
+        self.assertEqual(len(result['text_vectors']),200)
+        self.assertGreater(result['text_vectors'][0][1],0)
+        self.assertEqual(result['image_vectors'],[[1.,0.]])
+        self.assertEqual(len(calls),2)
+        self.assertEqual(calls[1][1],[])
+
     def test_config_updates_live_profile_and_persists(self):
         first=self.configure();self.assertEqual(self.ops.read(self.owner)['accounts'][0]['profile']['positioning'],'摄影教程')
         self.configure('校园收纳');self.assertEqual(self.read()['config']['positioning'],'校园收纳')
