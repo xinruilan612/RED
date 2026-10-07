@@ -120,6 +120,28 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
         current=auth.session(fresh)
         return set_cookie(JSONResponse({'user':current['user'],'csrf':current['csrf'],'recovery_code':recovery}),fresh)
 
+    from backend.topics import Topics
+    topics = Topics(service.operations)
+    app.state.topics = topics
+
+    @app.get('/api/topics')
+    def topic_settings(account_id: str, user=Depends(logged)):
+        return topics.read(user['owner'], account_id)
+
+    @app.post('/api/topics/{action}')
+    def topic_action(action: str, data: dict, user=Depends(logged)):
+        require(action in ('config','history-image','evaluate'),'RESOURCE_NOT_FOUND','操作不存在')
+        auth.throttle('topics:'+user['owner'],30,3600)
+        from backend.topic_encoder import TopicEncoderError
+        try:
+            return {'config':topics.save,'history-image':topics.image,'evaluate':topics.evaluate}[action](user['owner'],data)
+        except DomainError:
+            raise
+        except TopicEncoderError as error:
+            raise DomainError('TOPIC_MODEL_UNAVAILABLE',str(error)) from None
+        except ValueError:
+            raise DomainError('INVALID_INPUT','图文或选题设置无效，请检查后重试') from None
+
     @app.get('/api/skapp/report')
     def skapp_report(user=Depends(logged)):
         from backend.skapp_report import read_report
@@ -254,7 +276,7 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
 
     @app.get('/{asset}')
     def asset(asset: str):
-        require(asset in ('style.css','app.js','operations.js','account.js','account_profile.js','auth.js','knowledge.js','windtunnel.js','windtunnel.css','trials.js','trials.css','guidance.js','media_exports.js','media_exports.css','skapp.js'),'RESOURCE_NOT_FOUND','页面不存在')
+        require(asset in ('style.css','app.js','operations.js','account.js','account_profile.js','auth.js','knowledge.js','windtunnel.js','windtunnel.css','trials.js','trials.css','guidance.js','media_exports.js','media_exports.css','skapp.js','topics.js','topics.css'),'RESOURCE_NOT_FOUND','页面不存在')
         require((FRONTEND/asset).is_file(),'RESOURCE_NOT_FOUND','页面不存在')
         media_type = 'text/css' if asset.endswith('.css') else 'text/javascript'
         return FileResponse(FRONTEND/asset, media_type=media_type)

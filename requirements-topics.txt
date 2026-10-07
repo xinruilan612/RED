@@ -1,0 +1,5 @@
+# Isolated runtime/skapp/venv only; Python 3.12, verified Apple-silicon CPU.
+torch==2.14.1
+transformers==4.57.1
+Pillow==12.3.0
+safetensors==0.8.0

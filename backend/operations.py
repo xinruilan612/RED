@@ -140,7 +140,7 @@ class Operations:
         integer(command['version'], 'version')
         key = validate_text(command['key'], '操作标识', 100)
         require(isinstance(command['payload'],dict), 'INVALID_INPUT', '参数无效')
-        require(internal or command['action']!='create_agent_plan','INVALID_INPUT','该计划只能由运营 Agent 生成')
+        require(internal or command['action'] not in ('create_agent_plan','topic_image','topic_result'),'INVALID_INPUT','该计划只能由运营 Agent 生成')
         fingerprint = digest(command)
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
@@ -161,6 +161,10 @@ class Operations:
             return state
 
     def apply(self, db, owner, state, action, data):
+        if action in ('topic_config','topic_image','topic_result'):
+            from backend.topics import apply_topic_action
+            apply_topic_action(state,action,data)
+            return
         if action == 'load_sample':
             require(not data, 'INVALID_INPUT', '演示数据无需参数')
             require(not any(a.get('demo_sample') for a in state['accounts']), 'DUPLICATE', '已载入演示账号，请从顶部切换')
