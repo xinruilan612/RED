@@ -1,6 +1,8 @@
 # 内容风洞研究执行指南
 
-本指南将 [研究协议](STUDY_PROTOCOL.md) 落实为准备、执行、结果三个阶段。当前交付研究工具与公开许可候选准备；真实两流程输出、真人同意/阅读、效果结论尚未取得。状态见 [集中待办](OPEN_ITEMS.md)。
+本指南将 [研究协议](STUDY_PROTOCOL.md) 落实为准备、执行、结果三个阶段。真人研究仍未执行；2026-10-07另按用户5元授权完成真实模型调用与六个Codex子agent代理盲评，费用异常使完整对照提前停止，见 [实测报告](agent_study/REPORT.md)。状态见 [集中待办](OPEN_ITEMS.md)。下面的真人准备流程不以代理记录补齐。
+
+代理分支实际工具为 `scripts/run_windtunnel_agent_study.py` 与 `scripts/study_budget.py`，研究库在 `runtime/windtunnel-agent-study-20261007`，不调用项目Agent充当阅读评审。费率与预留仅适用于本轮核验的deepseek-flash、thinking关闭、3000 token输出上限；不是通用模型定价器。真实调用原始记录、冻结哈希、六个独立读者回答和盲评分均已导出到报告证据目录。当前账本有未知用量，后续付费已阻断，不得重置目录或账本绕过。原有 `scripts/windtunnel_study.py` 的真人目录保持未完成状态，两种参与者不能混写。
 
 ## 1. 私有研究目录与样本审核
 

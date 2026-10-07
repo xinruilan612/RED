@@ -1,0 +1,41 @@
+{
+  "sample_id": "S06",
+  "method": "windtunnel",
+  "participant_type": "codex_proxy",
+  "source_url": "https://docs.python.org/3.12/tutorial/inputoutput.html#reading-and-writing-files",
+  "original_sha256": "e875cb0dface6cf1ed20c0c5c4815d684aff35321bb80bb955a771c3424226c7",
+  "material_sha256": "e875cb0dface6cf1ed20c0c5c4815d684aff35321bb80bb955a771c3424226c7",
+  "outcome": "failed",
+  "error": {
+    "code": "STUDY_WORKFLOW_BLOCKED",
+    "message": "已有调用在途或用量未知，已停止后续付费调用"
+  },
+  "automatic_adoption": true,
+  "human_author": false,
+  "fallback": "latest preserved draft; does not imply successful review",
+  "run_id": "3123ee7f-9c0c-4182-9106-c54521d60956",
+  "wall_seconds": 0.017,
+  "final_sha256": "e875cb0dface6cf1ed20c0c5c4815d684aff35321bb80bb955a771c3424226c7",
+  "changed": false,
+  "calls": [
+    {
+      "stage": "wt_conditions",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": null,
+      "output_tokens": null,
+      "total_tokens": null,
+      "outcome": "failed",
+      "error": "已有调用在途或用量未知，已停止后续付费调用",
+      "response": null
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 0.221956,
+    "reserved_unknown_cny": 0.04281,
+    "committed_upper_cny": 0.264766,
+    "calls": 25,
+    "unknown_calls": 1
+  }
+}

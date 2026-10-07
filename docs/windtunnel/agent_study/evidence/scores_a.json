@@ -1,0 +1,447 @@
+{
+  "scorer": "blind_scorer_a",
+  "group_mapping_seen": false,
+  "scores": [
+    {
+      "reader_id": "R01",
+      "blind_id": "P4028",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "答案的a/UTF-8追加方案及w清空差异齐全；稿中模式段、UTF-8建议与with示例可定位。",
+        "答案含with结束/异常均关闭及未关闭可能写盘不完整；稿中with段和Warning支持。",
+        "空串EOF与仅换行空白行均正确；稿中readline段支持。",
+        "逐行方案、内存高效及无size的read读取全文件风险均齐全；Methods段支持。",
+        "rb/wb、bytes及禁止encoding齐全；binary/JPEG段支持。"
+      ]
+    },
+    {
+      "reader_id": "R01",
+      "blind_id": "P2887",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "序列化及反序列化名称与方向齐全；called serializing/deserializing段支持。",
+        "dumps函数及题设JSON字符串正确；稿中dumps示例支持。",
+        "dump写入与load恢复齐全，读写文件对象条件有稿中写入/读取段支持。",
+        "文本JSON读写UTF-8要求正确；JSON files must be encoded段支持。",
+        "pickle任意代码风险、Python专用及JSON类实例限制齐全；末尾两个限制段支持；具体类实现不属必答项。"
+      ]
+    },
+    {
+      "reader_id": "R01",
+      "blind_id": "P9115",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "ValueError重试与KeyboardInterrupt不匹配齐全；循环及异常传递段支持。",
+        "跳过剩余try、执行匹配except、继续块后且最多一个处理器齐全；try规则段支持。",
+        "D/C/B及B优先两种输出和首匹配规则正确；B/C/D示例支持。",
+        "else位置、无异常执行及避免误捕原因齐全；else两段支持。",
+        "日志后raise及直接/间接函数异常捕获齐全；re-raise与末尾函数段支持。"
+      ]
+    },
+    {
+      "reader_id": "R01",
+      "blind_id": "P1759",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "筛选后翻倍表达式及[0,4,8]正确；稿中筛选与翻倍规则支持组合推导。",
+        "题设嵌套列表展平表达式及[1,2,3,4]正确；稿中两for展平示例支持。",
+        "元组括号及缺括号语法错误说明齐全；must be parenthesized与SyntaxError示例支持。",
+        "外for、内for、if及条件满足后append顺序齐全；普通循环示例支持。",
+        "普通for创建/覆盖并留下x、推导式避免该副作用齐全；side effects段支持。"
+      ]
+    },
+    {
+      "reader_id": "R01",
+      "blind_id": "P5040",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "Path导入与当前目录构造齐全；Importing和Listing段支持。",
+        "子目录表达式正确；iterdir/is_dir示例支持。",
+        "递归.py表达式正确；glob目录树示例支持。",
+        "拼接与resolve结果区分且保留示例机器限制；Navigating段支持。",
+        "exists/is_dir结果及首行读取方式、示例首行齐全；Querying和Opening段支持。"
+      ]
+    },
+    {
+      "reader_id": "R01",
+      "blind_id": "P7699",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "None及无输出说明正确，无输出语义未包含报错；稿中缺省说明及无参数输出支持。",
+        "选项需值及expected one argument齐全；首版输出支持。",
+        "store_true写法及启用True/缺省False齐全；修改版代码和说明支持。",
+        "flag不需值及1未识别错误正确；修改版输出支持。",
+        "-v别名写法、启用输出及help两名称齐全；Short options代码和输出支持。"
+      ]
+    },
+    {
+      "reader_id": "R01",
+      "blind_id": "P1259",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "最终字典及操作顺序正确，覆盖与del语义可定位；存储/删除段支持。",
+        "list及sorted两结果正确，符合稿中插入顺序和排序规则；列表示例支持。",
+        "guido成员表达式与True齐全；稿中in示例支持。",
+        "删除后读取报错正确；non-existent key段支持，未命名异常类不扣分。",
+        "列表及含可变对象元组均不能作键，原因齐全；immutable/mutable段支持。"
+      ]
+    },
+    {
+      "reader_id": "R02",
+      "blind_id": "P5040",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "Path导入与当前目录构造齐全；Importing和Listing段支持。",
+        "子目录表达式正确；iterdir/is_dir示例支持。",
+        "递归.py表达式正确；glob目录树示例支持。",
+        "拼接与resolve结果区分且保留示例机器限制；Navigating段支持。",
+        "exists/is_dir结果及首行读取方式、示例首行齐全；Querying和Opening段支持。"
+      ]
+    },
+    {
+      "reader_id": "R02",
+      "blind_id": "P4028",
+      "points": [
+        1,
+        0,
+        1,
+        1,
+        1
+      ],
+      "score": 4,
+      "correct": false,
+      "contradiction": false,
+      "reasons": [
+        "a、UTF-8、保留末尾追加及w清空齐全；结合答案另项使用with的说明构成方案，稿中模式/with段支持。",
+        "未说明不关闭可能导致数据未完全写盘；答案仅含自动关闭与简短性，未满足该点全部子条件。稿件Warning信息存在。",
+        "空串EOF与仅换行空白行均正确；稿中readline段支持。",
+        "逐行方案、内存高效及无size的read读取全文件风险均齐全；Methods段支持。",
+        "rb/wb、bytes及禁止encoding齐全；binary/JPEG段支持。"
+      ]
+    },
+    {
+      "reader_id": "R02",
+      "blind_id": "P7699",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "None及无输出说明正确，无输出语义未包含报错；稿中缺省说明及无参数输出支持。",
+        "选项需值及expected one argument齐全；首版输出支持。",
+        "store_true写法及启用True/缺省False齐全；修改版代码和说明支持。",
+        "flag不需值及1未识别错误正确；修改版输出支持。",
+        "-v别名写法、启用输出及help两名称齐全；Short options代码和输出支持。"
+      ]
+    },
+    {
+      "reader_id": "R02",
+      "blind_id": "P1259",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "最终字典及操作顺序正确，覆盖与del语义可定位；存储/删除段支持。",
+        "list及sorted两结果正确，符合稿中插入顺序和排序规则；列表示例支持。",
+        "guido成员表达式与True齐全；稿中in示例支持。",
+        "删除后读取报错正确；non-existent key段支持，未命名异常类不扣分。",
+        "列表及含可变对象元组均不能作键，原因齐全；immutable/mutable段支持。"
+      ]
+    },
+    {
+      "reader_id": "R02",
+      "blind_id": "P2887",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "序列化及反序列化名称与方向齐全；called serializing/deserializing段支持。",
+        "dumps函数及题设JSON字符串正确；稿中dumps示例支持。",
+        "dump写入与load恢复齐全，读写文件对象条件有稿中写入/读取段支持。",
+        "文本JSON读写UTF-8要求正确；JSON files must be encoded段支持。",
+        "pickle任意代码风险、Python专用及JSON类实例限制齐全；末尾两个限制段支持；具体类实现不属必答项。"
+      ]
+    },
+    {
+      "reader_id": "R02",
+      "blind_id": "P2194",
+      "points": [
+        1,
+        1,
+        1,
+        0,
+        1
+      ],
+      "score": 4,
+      "correct": false,
+      "contradiction": false,
+      "reasons": [
+        "筛选后翻倍表达式及[0,4,8]正确；稿中筛选与翻倍规则支持组合推导。",
+        "题设嵌套列表展平表达式及[1,2,3,4]正确；稿中两for展平示例支持。",
+        "元组括号及缺括号语法错误说明齐全；must be parenthesized与SyntaxError示例支持。",
+        "说明外for、内for和if顺序，但未说明条件通过后append表达式结果；冻结点子条件不全，稿中combs.append示例存在。",
+        "普通for创建/覆盖并留下x、推导式避免该副作用齐全；side effects段支持。"
+      ]
+    },
+    {
+      "reader_id": "R02",
+      "blind_id": "P7084",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "ValueError重试与KeyboardInterrupt不匹配齐全；循环及异常传递段支持。",
+        "跳过剩余try、执行匹配except、继续块后且最多一个处理器齐全；try规则段支持。",
+        "D/C/B及B优先两种输出和首匹配规则正确；B/C/D示例支持。",
+        "else位置、无异常执行及避免误捕原因齐全；else两段支持。",
+        "日志后raise及直接/间接函数异常捕获齐全；re-raise与末尾函数段支持。"
+      ]
+    },
+    {
+      "reader_id": "R03",
+      "blind_id": "P4028",
+      "points": [
+        1,
+        0,
+        1,
+        0,
+        1
+      ],
+      "score": 3,
+      "correct": false,
+      "contradiction": false,
+      "reasons": [
+        "a、UTF-8、保留末尾追加及w清空齐全；结合答案另项使用with的说明构成方案，稿中模式/with段支持。",
+        "未说明不关闭可能导致数据未完全写盘；该点只回答结束/异常关闭。稿件Warning信息存在。",
+        "空串EOF与仅换行空白行均正确；稿中readline段支持。",
+        "给出逐行方案与read全量风险，但答案未说明逐行读取内存高效，冻结点子条件不全；短引用虽含memory efficient，不能替代缺失的方案说明。",
+        "rb/wb、bytes及禁止encoding齐全；binary/JPEG段支持。"
+      ]
+    },
+    {
+      "reader_id": "R03",
+      "blind_id": "P1259",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "最终字典及操作顺序正确，覆盖与del语义可定位；存储/删除段支持。",
+        "list及sorted两结果正确，符合稿中插入顺序和排序规则；列表示例支持。",
+        "guido成员表达式与True齐全；稿中in示例支持。",
+        "删除后读取报错正确；non-existent key段支持，未命名异常类不扣分。",
+        "列表及含可变对象元组均不能作键，原因齐全；immutable/mutable段支持。"
+      ]
+    },
+    {
+      "reader_id": "R03",
+      "blind_id": "P3107",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "None及无输出说明正确，无输出语义未包含报错；稿中缺省说明及无参数输出支持。",
+        "选项需值及expected one argument齐全；首版输出支持。",
+        "store_true写法及启用True/缺省False齐全；修改版代码和说明支持。",
+        "flag不需值及1未识别错误正确；修改版输出支持。",
+        "-v别名写法、启用输出及help两名称齐全；Short options代码和输出支持。"
+      ]
+    },
+    {
+      "reader_id": "R03",
+      "blind_id": "P9115",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "ValueError重试与KeyboardInterrupt不匹配齐全；循环及异常传递段支持。",
+        "跳过剩余try、执行匹配except、继续块后且最多一个处理器齐全；try规则段支持。",
+        "D/C/B及B优先两种输出和首匹配规则正确；B/C/D示例支持。",
+        "else位置、无异常执行及避免误捕原因齐全；else两段支持。",
+        "日志后raise及直接/间接函数异常捕获齐全；re-raise与末尾函数段支持。"
+      ]
+    },
+    {
+      "reader_id": "R03",
+      "blind_id": "P1759",
+      "points": [
+        1,
+        1,
+        0,
+        1,
+        1
+      ],
+      "score": 4,
+      "correct": false,
+      "contradiction": false,
+      "reasons": [
+        "筛选后翻倍表达式及[0,4,8]正确；稿中筛选与翻倍规则支持组合推导。",
+        "题设嵌套列表展平表达式及[1,2,3,4]正确；稿中两for展平示例支持。",
+        "给出带括号元组表达式，但未说明缺括号将产生语法错误；冻结点子条件不全，稿中SyntaxError示例存在。",
+        "外for、内for、if及条件满足后append顺序齐全；普通循环示例支持。",
+        "普通for创建/覆盖并留下x、推导式避免该副作用齐全；side effects段支持。"
+      ]
+    },
+    {
+      "reader_id": "R03",
+      "blind_id": "P5040",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "Path导入与当前目录构造齐全；Importing和Listing段支持。",
+        "子目录表达式正确；iterdir/is_dir示例支持。",
+        "递归.py表达式正确；glob目录树示例支持。",
+        "拼接与resolve结果区分且保留示例机器限制；Navigating段支持。",
+        "exists/is_dir结果及首行读取方式、示例首行齐全；Querying和Opening段支持。"
+      ]
+    },
+    {
+      "reader_id": "R03",
+      "blind_id": "P2887",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "序列化及反序列化名称与方向齐全；called serializing/deserializing段支持。",
+        "dumps函数及题设JSON字符串正确；稿中dumps示例支持。",
+        "dump写入与load恢复齐全，读写文件对象条件有稿中写入/读取段支持。",
+        "文本JSON读写UTF-8要求正确；JSON files must be encoded段支持。",
+        "pickle任意代码风险、Python专用及JSON类实例限制齐全；末尾两个限制段支持；具体类实现不属必答项。"
+      ]
+    }
+  ]
+}

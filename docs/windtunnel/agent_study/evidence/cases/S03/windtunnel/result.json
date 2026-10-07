@@ -1,0 +1,459 @@
+{
+  "sample_id": "S03",
+  "method": "windtunnel",
+  "participant_type": "codex_proxy",
+  "source_url": "https://docs.python.org/3.12/tutorial/controlflow.html#defining-functions",
+  "original_sha256": "54199b2281f7966693709a7965bb02889300375119eb46b7ca7d3beca1a8fff5",
+  "material_sha256": "54199b2281f7966693709a7965bb02889300375119eb46b7ca7d3beca1a8fff5",
+  "outcome": "completed",
+  "error": null,
+  "automatic_adoption": true,
+  "human_author": false,
+  "initial_report": {
+    "id": "27d1ad6f-d571-4da9-94c4-92601eb90c77",
+    "batch_id": "7f25063b-5d92-41d2-82fe-923009033890",
+    "draft_id": "6bf42327-87c5-493b-88f6-228eac016db1",
+    "draft_hash": "b11a9a1a397f31115a1d6e9d513b736e7142889081fb8e7183f1c55b5ffeb6ca",
+    "condition_set_id": "fc65cd0c-3396-4681-b87d-3c99c9acd8f1",
+    "condition_hash": "761a9e8bf94a9e23df59d988189e71d2bd20259c9508a3e82e392d22d89ddfae",
+    "material_hash": "05534d94966c82f461d30a87fcc8dccec8817150b81526a7e6b531188e408fc9",
+    "results": [
+      {
+        "condition_id": "98259fd6-e532-41dd-8590-17438f6f56ce",
+        "status": "unclear",
+        "reason": "稿内未提供fib2(10)调用及其结果，也未提供fib(10)的打印结果，仅根据稿件判断为unclear。",
+        "citations": [
+          {
+            "source_id": "55db3d35-a9c9-482e-b6c4-9359a340ccca",
+            "quote": ">>> f100 = fib2(100)    # call it"
+          },
+          {
+            "source_id": "55db3d35-a9c9-482e-b6c4-9359a340ccca",
+            "quote": ">>> fib(2000)"
+          },
+          {
+            "source_id": "55db3d35-a9c9-482e-b6c4-9359a340ccca",
+            "quote": ">>> f(100)"
+          }
+        ],
+        "reading": {
+          "condition_id": "98259fd6-e532-41dd-8590-17438f6f56ce",
+          "status": "unclear",
+          "answer": "稿内给出了返回Fibonacci列表的函数fib2，但未给出fib2(10)的具体结果。原fib(10)的打印结果也未在稿内出现（稿内示例为fib(2000)和f(100)）。原fib函数没有return语句，因此返回None。函数体首个字符串是docstring。f=fib后调用f确实调用同一函数对象。函数内赋值的变量存放在局部符号表；读取名称的查找顺序依次为：局部、外层函数局部、全局、内置名称。",
+          "excerpt": "def fib2(n):  # return Fibonacci series up to n\n...     \"\"\"Return a list containing the Fibonacci series up to n.\"\"\"\n...     result = []\n...     a, b = 0, 1\n...     while a < n:\n...         result.append(a)    # see below\n...         a, b = b, a+b\n...     return result\n...\n>>> f100 = fib2(100)    # call it\n>>> f100                # write the result\n[0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]",
+          "reason": "稿内未提供fib2(10)调用及其结果，也未提供fib(10)的打印结果，仅根据稿件判断为unclear。"
+        }
+      }
+    ],
+    "new_issues": [],
+    "mode": "live",
+    "created_at": 1791343132.5316439,
+    "model_policy": {
+      "version": "56cb27ab6fbf778239c193adfb5bcc084ca534730fef852bc02b83a150695d18",
+      "routes": {
+        "wt_conditions": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_read": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_verify": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_patch": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        }
+      },
+      "prompt_version": "windtunnel.v1"
+    },
+    "sources": [
+      {
+        "id": "6bf42327-87c5-493b-88f6-228eac016db1",
+        "source_id": "6bf42327-87c5-493b-88f6-228eac016db1",
+        "kind": "draft",
+        "text": "4.8. Defining Functions\n\nWe can create a function that writes the Fibonacci series to an arbitrary\nboundary:\n\n>>> def fib(n):    # write Fibonacci series less than n\n...     \"\"\"Print a Fibonacci series less than n.\"\"\"\n...     a, b = 0, 1\n...     while a < n:\n...         print(a, end=' ')\n...         a, b = b, a+b\n...     print()\n...\n>>> # Now call the function we just defined:\n>>> fib(2000)\n0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597\n\nThe keyword def introduces a function definition.  It must be\nfollowed by the function name and the parenthesized list of formal parameters.\nThe statements that form the body of the function start at the next line, and\nmust be indented.\n\nThe first statement of the function body can optionally be a string literal;\nthis string literal is the function’s documentation string, or docstring.\n(More about docstrings can be found in the section Documentation Strings.)\nThere are tools which use docstrings to automatically produce online or printed\ndocumentation, or to let the user interactively browse through code; it’s good\npractice to include docstrings in code that you write, so make a habit of it.\n\nThe execution of a function introduces a new symbol table used for the local\nvariables of the function.  More precisely, all variable assignments in a\nfunction store the value in the local symbol table; whereas variable references\nfirst look in the local symbol table, then in the local symbol tables of\nenclosing functions, then in the global symbol table, and finally in the table\nof built-in names. Thus, global variables and variables of enclosing functions\ncannot be directly assigned a value within a function (unless, for global\nvariables, named in a global statement, or, for variables of enclosing\nfunctions, named in a nonlocal statement), although they may be\nreferenced.\n\nThe actual parameters (arguments) to a function call are introduced in the local\nsymbol table of the called function when it is called; thus, arguments are\npassed using call by value (where the value is always an object reference,\nnot the value of the object). [1] When a function calls another function,\nor calls itself recursively, a new\nlocal symbol table is created for that call.\n\nA function definition associates the function name with the function object in\nthe current symbol table.  The interpreter recognizes the object pointed to by\nthat name as a user-defined function.  Other names can also point to that same\nfunction object and can also be used to access the function:\n\n>>> fib\n<function fib at 10042ed0>\n>>> f = fib\n>>> f(100)\n0 1 1 2 3 5 8 13 21 34 55 89\n\nComing from other languages, you might object that fib is not a function but\na procedure since it doesn’t return a value.  In fact, even functions without a\nreturn statement do return a value, albeit a rather boring one.  This\nvalue is called None (it’s a built-in name).  Writing the value None is\nnormally suppressed by the interpreter if it would be the only value written.\nYou can see it if you really want to using print():\n\n>>> fib(0)\n>>> print(fib(0))\nNone\n\nIt is simple to write a function that returns a list of the numbers of the\nFibonacci series, instead of printing it:\n\n>>> def fib2(n):  # return Fibonacci series up to n\n...     \"\"\"Return a list containing the Fibonacci series up to n.\"\"\"\n...     result = []\n...     a, b = 0, 1\n...     while a < n:\n...         result.append(a)    # see below\n...         a, b = b, a+b\n...     return result\n...\n>>> f100 = fib2(100)    # call it\n>>> f100                # write the result\n[0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]\n\nThis example, as usual, demonstrates some new Python features:\n\nThe return statement returns with a value from a function.\nreturn without an expression argument returns None. Falling off\nthe end of a function also returns None.\n\nThe statement result.append(a) calls a method of the list object\nresult.  A method is a function that ‘belongs’ to an object and is named\nobj.methodname, where obj is some object (this may be an expression),\nand methodname is the name of a method that is defined by the object’s type.\nDifferent types define different methods.  Methods of different types may have\nthe same name without causing ambiguity.  (It is possible to define your own\nobject types and methods, using classes, see Classes)\nThe method append() shown in the example is defined for list objects; it\nadds a new element at the end of the list.  In this example it is equivalent to\nresult = result + [a], but more efficient.",
+        "hash": "b11a9a1a397f31115a1d6e9d513b736e7142889081fb8e7183f1c55b5ffeb6ca"
+      },
+      {
+        "id": "55db3d35-a9c9-482e-b6c4-9359a340ccca",
+        "kind": "material",
+        "text": "4.8. Defining Functions\n\nWe can create a function that writes the Fibonacci series to an arbitrary\nboundary:\n\n>>> def fib(n):    # write Fibonacci series less than n\n...     \"\"\"Print a Fibonacci series less than n.\"\"\"\n...     a, b = 0, 1\n...     while a < n:\n...         print(a, end=' ')\n...         a, b = b, a+b\n...     print()\n...\n>>> # Now call the function we just defined:\n>>> fib(2000)\n0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597\n\nThe keyword def introduces a function definition.  It must be\nfollowed by the function name and the parenthesized list of formal parameters.\nThe statements that form the body of the function start at the next line, and\nmust be indented.\n\nThe first statement of the function body can optionally be a string literal;\nthis string literal is the function’s documentation string, or docstring.\n(More about docstrings can be found in the section Documentation Strings.)\nThere are tools which use docstrings to automatically produce online or printed\ndocumentation, or to let the user interactively browse through code; it’s good\npractice to include docstrings in code that you write, so make a habit of it.\n\nThe execution of a function introduces a new symbol table used for the local\nvariables of the function.  More precisely, all variable assignments in a\nfunction store the value in the local symbol table; whereas variable references\nfirst look in the local symbol table, then in the local symbol tables of\nenclosing functions, then in the global symbol table, and finally in the table\nof built-in names. Thus, global variables and variables of enclosing functions\ncannot be directly assigned a value within a function (unless, for global\nvariables, named in a global statement, or, for variables of enclosing\nfunctions, named in a nonlocal statement), although they may be\nreferenced.\n\nThe actual parameters (arguments) to a function call are introduced in the local\nsymbol table of the called function when it is called; thus, arguments are\npassed using call by value (where the value is always an object reference,\nnot the value of the object). [1] When a function calls another function,\nor calls itself recursively, a new\nlocal symbol table is created for that call.\n\nA function definition associates the function name with the function object in\nthe current symbol table.  The interpreter recognizes the object pointed to by\nthat name as a user-defined function.  Other names can also point to that same\nfunction object and can also be used to access the function:\n\n>>> fib\n<function fib at 10042ed0>\n>>> f = fib\n>>> f(100)\n0 1 1 2 3 5 8 13 21 34 55 89\n\nComing from other languages, you might object that fib is not a function but\na procedure since it doesn’t return a value.  In fact, even functions without a\nreturn statement do return a value, albeit a rather boring one.  This\nvalue is called None (it’s a built-in name).  Writing the value None is\nnormally suppressed by the interpreter if it would be the only value written.\nYou can see it if you really want to using print():\n\n>>> fib(0)\n>>> print(fib(0))\nNone\n\nIt is simple to write a function that returns a list of the numbers of the\nFibonacci series, instead of printing it:\n\n>>> def fib2(n):  # return Fibonacci series up to n\n...     \"\"\"Return a list containing the Fibonacci series up to n.\"\"\"\n...     result = []\n...     a, b = 0, 1\n...     while a < n:\n...         result.append(a)    # see below\n...         a, b = b, a+b\n...     return result\n...\n>>> f100 = fib2(100)    # call it\n>>> f100                # write the result\n[0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]\n\nThis example, as usual, demonstrates some new Python features:\n\nThe return statement returns with a value from a function.\nreturn without an expression argument returns None. Falling off\nthe end of a function also returns None.\n\nThe statement result.append(a) calls a method of the list object\nresult.  A method is a function that ‘belongs’ to an object and is named\nobj.methodname, where obj is some object (th",
+        "title": "定义函数",
+        "origin": "https://docs.python.org/3.12/tutorial/controlflow.html#defining-functions",
+        "provenance": "author_material",
+        "permission": false,
+        "version": 1,
+        "hash": "c281d045dfb8b99bd62f9d9812112f2abadc7208baacc95ec4b973dbca69d6dc",
+        "collected_at": 1791343128.087465
+      },
+      {
+        "id": "37d11e8c-a271-4946-b936-bf5cac6037e5",
+        "kind": "material",
+        "text": "is may be an expression),\nand methodname is the name of a method that is defined by the object’s type.\nDifferent types define different methods.  Methods of different types may have\nthe same name without causing ambiguity.  (It is possible to define your own\nobject types and methods, using classes, see Classes)\nThe method append() shown in the example is defined for list objects; it\nadds a new element at the end of the list.  In this example it is equivalent to\nresult = result + [a], but more efficient.",
+        "title": "定义函数",
+        "origin": "https://docs.python.org/3.12/tutorial/controlflow.html#defining-functions",
+        "provenance": "author_material",
+        "permission": false,
+        "version": 1,
+        "hash": "a6570a44bee4b5211e71e4140d2ca34e4f073c4d0ef484886115e40609cbd417",
+        "collected_at": 1791343128.0874722
+      }
+    ]
+  },
+  "patch_count": 1,
+  "final_report": {
+    "id": "f1b6dc36-f231-48c9-97d3-e3a5f82eb816",
+    "batch_id": "f557744c-4f11-4c5d-90c7-cf540611cafe",
+    "draft_id": "fc769b42-aa7e-425f-9e7a-c8a0e15d8e69",
+    "draft_hash": "a991910f85d4bedb25a77f5738cd222f78136a6c43b3f3a792336457ee2894ee",
+    "condition_set_id": "fc65cd0c-3396-4681-b87d-3c99c9acd8f1",
+    "condition_hash": "761a9e8bf94a9e23df59d988189e71d2bd20259c9508a3e82e392d22d89ddfae",
+    "material_hash": "05534d94966c82f461d30a87fcc8dccec8817150b81526a7e6b531188e408fc9",
+    "results": [
+      {
+        "condition_id": "98259fd6-e532-41dd-8590-17438f6f56ce",
+        "status": "unclear",
+        "reason": "材料包含fib2定义、fib定义、docstring、f=fib、局部符号表和查找顺序等一般依据，但未包含fib2(10)调用及结果，也未包含fib(10)的打印结果与返回值；因此该复合条件的多项无法按稿内逐字证据核验，阅读本身标为unclear。",
+        "citations": [
+          {
+            "source_id": "55db3d35-a9c9-482e-b6c4-9359a340ccca",
+            "quote": "It is simple to write a function that returns a list of the numbers of the\nFibonacci series, instead of printing it:"
+          },
+          {
+            "source_id": "55db3d35-a9c9-482e-b6c4-9359a340ccca",
+            "quote": ">>> f100 = fib2(100)    # call it\n>>> f100                # write the result\n[0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]"
+          },
+          {
+            "source_id": "55db3d35-a9c9-482e-b6c4-9359a340ccca",
+            "quote": ">>> fib\n<function fib at 10042ed0>\n>>> f = fib\n>>> f(100)\n0 1 1 2 3 5 8 13 21 34 55 89"
+          },
+          {
+            "source_id": "55db3d35-a9c9-482e-b6c4-9359a340ccca",
+            "quote": "all variable assignments in a\nfunction store the value in the local symbol table; whereas variable references\nfirst look in the local symbol table, then in the local symbol tables of\nenclosing functions, then in the global symbol table, and finally in the table\nof built-in names."
+          }
+        ],
+        "reading": {
+          "condition_id": "98259fd6-e532-41dd-8590-17438f6f56ce",
+          "status": "unclear",
+          "answer": "",
+          "excerpt": "",
+          "reason": "稿内没有fib2(10)执行结果或结果推导；同时原fib(10)的打印结果与返回值、函数体首个字符串的作用、f=fib后调用f是否调用同一函数对象、函数内赋值变量存放位置和读取名称查找顺序等多项无法仅凭稿内逐字证据回答。"
+        }
+      }
+    ],
+    "new_issues": [
+      {
+        "excerpt": "待补充并核实：同事需要取得Fibonacci列表而非直接打印。依据稿件写出实现该目标的函数及fib2(10)结果；说明原fib(10)的打印结果与返回值；说明函数体首个字符串的作用；说明f=fib后调用f是否调用同一函数对象；说明函数内赋值的变量存放在哪里，以及读取名称的查找顺序。每项附稿内证据，不执行代码。",
+        "status": "insufficient",
+        "reason": "该新增段落要求给出稿内没有直接提供的fib2(10)结果、fib(10)打印结果与返回值等具体推断答案；材料仅给出fib2(100)、fib(2000)、fib(100)和fib(0)的例子及相关说明，不能凭稿内逐字证据完成这些新要求。",
+        "citations": [
+          {
+            "source_id": "55db3d35-a9c9-482e-b6c4-9359a340ccca",
+            "quote": ">>> f100 = fib2(100)    # call it\n>>> f100                # write the result\n[0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]"
+          },
+          {
+            "source_id": "55db3d35-a9c9-482e-b6c4-9359a340ccca",
+            "quote": ">>> # Now call the function we just defined:\n>>> fib(2000)\n0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597"
+          },
+          {
+            "source_id": "55db3d35-a9c9-482e-b6c4-9359a340ccca",
+            "quote": ">>> fib(0)\n>>> print(fib(0))\nNone"
+          }
+        ]
+      }
+    ],
+    "mode": "live",
+    "created_at": 1791343138.435843,
+    "model_policy": {
+      "version": "56cb27ab6fbf778239c193adfb5bcc084ca534730fef852bc02b83a150695d18",
+      "routes": {
+        "wt_conditions": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_read": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_verify": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_patch": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        }
+      },
+      "prompt_version": "windtunnel.v1"
+    },
+    "sources": [
+      {
+        "id": "fc769b42-aa7e-425f-9e7a-c8a0e15d8e69",
+        "source_id": "fc769b42-aa7e-425f-9e7a-c8a0e15d8e69",
+        "kind": "draft",
+        "text": "4.8. Defining Functions\n\nWe can create a function that writes the Fibonacci series to an arbitrary\nboundary:\n\n>>> def fib(n):    # write Fibonacci series less than n\n...     \"\"\"Print a Fibonacci series less than n.\"\"\"\n...     a, b = 0, 1\n...     while a < n:\n...         print(a, end=' ')\n...         a, b = b, a+b\n...     print()\n...\n>>> # Now call the function we just defined:\n>>> fib(2000)\n0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597\n\nThe keyword def introduces a function definition.  It must be\nfollowed by the function name and the parenthesized list of formal parameters.\nThe statements that form the body of the function start at the next line, and\nmust be indented.\n\nThe first statement of the function body can optionally be a string literal;\nthis string literal is the function’s documentation string, or docstring.\n(More about docstrings can be found in the section Documentation Strings.)\nThere are tools which use docstrings to automatically produce online or printed\ndocumentation, or to let the user interactively browse through code; it’s good\npractice to include docstrings in code that you write, so make a habit of it.\n\nThe execution of a function introduces a new symbol table used for the local\nvariables of the function.  More precisely, all variable assignments in a\nfunction store the value in the local symbol table; whereas variable references\nfirst look in the local symbol table, then in the local symbol tables of\nenclosing functions, then in the global symbol table, and finally in the table\nof built-in names. Thus, global variables and variables of enclosing functions\ncannot be directly assigned a value within a function (unless, for global\nvariables, named in a global statement, or, for variables of enclosing\nfunctions, named in a nonlocal statement), although they may be\nreferenced.\n\nThe actual parameters (arguments) to a function call are introduced in the local\nsymbol table of the called function when it is called; thus, arguments are\npassed using call by value (where the value is always an object reference,\nnot the value of the object). [1] When a function calls another function,\nor calls itself recursively, a new\nlocal symbol table is created for that call.\n\nA function definition associates the function name with the function object in\nthe current symbol table.  The interpreter recognizes the object pointed to by\nthat name as a user-defined function.  Other names can also point to that same\nfunction object and can also be used to access the function:\n\n>>> fib\n<function fib at 10042ed0>\n>>> f = fib\n>>> f(100)\n0 1 1 2 3 5 8 13 21 34 55 89\n\nComing from other languages, you might object that fib is not a function but\na procedure since it doesn’t return a value.  In fact, even functions without a\nreturn statement do return a value, albeit a rather boring one.  This\nvalue is called None (it’s a built-in name).  Writing the value None is\nnormally suppressed by the interpreter if it would be the only value written.\nYou can see it if you really want to using print():\n\n>>> fib(0)\n>>> print(fib(0))\nNone\n\nIt is simple to write a function that returns a list of the numbers of the\nFibonacci series, instead of printing it:\n\n>>> def fib2(n):  # return Fibonacci series up to n\n...     \"\"\"Return a list containing the Fibonacci series up to n.\"\"\"\n...     result = []\n...     a, b = 0, 1\n...     while a < n:\n...         result.append(a)    # see below\n...         a, b = b, a+b\n...     return result\n...\n>>> f100 = fib2(100)    # call it\n>>> f100                # write the result\n[0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]\n\nThis example, as usual, demonstrates some new Python features:\n\nThe return statement returns with a value from a function.\nreturn without an expression argument returns None. Falling off\nthe end of a function also returns None.\n\nThe statement result.append(a) calls a method of the list object\nresult.  A method is a function that ‘belongs’ to an object and is named\nobj.methodname, where obj is some object (this may be an expression),\nand methodname is the name of a method that is defined by the object’s type.\nDifferent types define different methods.  Methods of different types may have\nthe same name without causing ambiguity.  (It is possible to define your own\nobject types and methods, using classes, see Classes)\nThe method append() shown in the example is defined for list objects; it\nadds a new element at the end of the list.  In this example it is equivalent to\nresult = result + [a], but more efficient.\n\n待补充并核实：同事需要取得Fibonacci列表而非直接打印。依据稿件写出实现该目标的函数及fib2(10)结果；说明原fib(10)的打印结果与返回值；说明函数体首个字符串的作用；说明f=fib后调用f是否调用同一函数对象；说明函数内赋值的变量存放在哪里，以及读取名称的查找顺序。每项附稿内证据，不执行代码。",
+        "hash": "a991910f85d4bedb25a77f5738cd222f78136a6c43b3f3a792336457ee2894ee"
+      },
+      {
+        "id": "6bf42327-87c5-493b-88f6-228eac016db1",
+        "source_id": "6bf42327-87c5-493b-88f6-228eac016db1",
+        "kind": "draft_history",
+        "text": "4.8. Defining Functions\n\nWe can create a function that writes the Fibonacci series to an arbitrary\nboundary:\n\n>>> def fib(n):    # write Fibonacci series less than n\n...     \"\"\"Print a Fibonacci series less than n.\"\"\"\n...     a, b = 0, 1\n...     while a < n:\n...         print(a, end=' ')\n...         a, b = b, a+b\n...     print()\n...\n>>> # Now call the function we just defined:\n>>> fib(2000)\n0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597\n\nThe keyword def introduces a function definition.  It must be\nfollowed by the function name and the parenthesized list of formal parameters.\nThe statements that form the body of the function start at the next line, and\nmust be indented.\n\nThe first statement of the function body can optionally be a string literal;\nthis string literal is the function’s documentation string, or docstring.\n(More about docstrings can be found in the section Documentation Strings.)\nThere are tools which use docstrings to automatically produce online or printed\ndocumentation, or to let the user interactively browse through code; it’s good\npractice to include docstrings in code that you write, so make a habit of it.\n\nThe execution of a function introduces a new symbol table used for the local\nvariables of the function.  More precisely, all variable assignments in a\nfunction store the value in the local symbol table; whereas variable references\nfirst look in the local symbol table, then in the local symbol tables of\nenclosing functions, then in the global symbol table, and finally in the table\nof built-in names. Thus, global variables and variables of enclosing functions\ncannot be directly assigned a value within a function (unless, for global\nvariables, named in a global statement, or, for variables of enclosing\nfunctions, named in a nonlocal statement), although they may be\nreferenced.\n\nThe actual parameters (arguments) to a function call are introduced in the local\nsymbol table of the called function when it is called; thus, arguments are\npassed using call by value (where the value is always an object reference,\nnot the value of the object). [1] When a function calls another function,\nor calls itself recursively, a new\nlocal symbol table is created for that call.\n\nA function definition associates the function name with the function object in\nthe current symbol table.  The interpreter recognizes the object pointed to by\nthat name as a user-defined function.  Other names can also point to that same\nfunction object and can also be used to access the function:\n\n>>> fib\n<function fib at 10042ed0>\n>>> f = fib\n>>> f(100)\n0 1 1 2 3 5 8 13 21 34 55 89\n\nComing from other languages, you might object that fib is not a function but\na procedure since it doesn’t return a value.  In fact, even functions without a\nreturn statement do return a value, albeit a rather boring one.  This\nvalue is called None (it’s a built-in name).  Writing the value None is\nnormally suppressed by the interpreter if it would be the only value written.\nYou can see it if you really want to using print():\n\n>>> fib(0)\n>>> print(fib(0))\nNone\n\nIt is simple to write a function that returns a list of the numbers of the\nFibonacci series, instead of printing it:\n\n>>> def fib2(n):  # return Fibonacci series up to n\n...     \"\"\"Return a list containing the Fibonacci series up to n.\"\"\"\n...     result = []\n...     a, b = 0, 1\n...     while a < n:\n...         result.append(a)    # see below\n...         a, b = b, a+b\n...     return result\n...\n>>> f100 = fib2(100)    # call it\n>>> f100                # write the result\n[0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]\n\nThis example, as usual, demonstrates some new Python features:\n\nThe return statement returns with a value from a function.\nreturn without an expression argument returns None. Falling off\nthe end of a function also returns None.\n\nThe statement result.append(a) calls a method of the list object\nresult.  A method is a function that ‘belongs’ to an object and is named\nobj.methodname, where obj is some object (this may be an expression),\nand methodname is the name of a method that is defined by the object’s type.\nDifferent types define different methods.  Methods of different types may have\nthe same name without causing ambiguity.  (It is possible to define your own\nobject types and methods, using classes, see Classes)\nThe method append() shown in the example is defined for list objects; it\nadds a new element at the end of the list.  In this example it is equivalent to\nresult = result + [a], but more efficient.",
+        "hash": "b11a9a1a397f31115a1d6e9d513b736e7142889081fb8e7183f1c55b5ffeb6ca"
+      },
+      {
+        "id": "55db3d35-a9c9-482e-b6c4-9359a340ccca",
+        "kind": "material",
+        "text": "4.8. Defining Functions\n\nWe can create a function that writes the Fibonacci series to an arbitrary\nboundary:\n\n>>> def fib(n):    # write Fibonacci series less than n\n...     \"\"\"Print a Fibonacci series less than n.\"\"\"\n...     a, b = 0, 1\n...     while a < n:\n...         print(a, end=' ')\n...         a, b = b, a+b\n...     print()\n...\n>>> # Now call the function we just defined:\n>>> fib(2000)\n0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597\n\nThe keyword def introduces a function definition.  It must be\nfollowed by the function name and the parenthesized list of formal parameters.\nThe statements that form the body of the function start at the next line, and\nmust be indented.\n\nThe first statement of the function body can optionally be a string literal;\nthis string literal is the function’s documentation string, or docstring.\n(More about docstrings can be found in the section Documentation Strings.)\nThere are tools which use docstrings to automatically produce online or printed\ndocumentation, or to let the user interactively browse through code; it’s good\npractice to include docstrings in code that you write, so make a habit of it.\n\nThe execution of a function introduces a new symbol table used for the local\nvariables of the function.  More precisely, all variable assignments in a\nfunction store the value in the local symbol table; whereas variable references\nfirst look in the local symbol table, then in the local symbol tables of\nenclosing functions, then in the global symbol table, and finally in the table\nof built-in names. Thus, global variables and variables of enclosing functions\ncannot be directly assigned a value within a function (unless, for global\nvariables, named in a global statement, or, for variables of enclosing\nfunctions, named in a nonlocal statement), although they may be\nreferenced.\n\nThe actual parameters (arguments) to a function call are introduced in the local\nsymbol table of the called function when it is called; thus, arguments are\npassed using call by value (where the value is always an object reference,\nnot the value of the object). [1] When a function calls another function,\nor calls itself recursively, a new\nlocal symbol table is created for that call.\n\nA function definition associates the function name with the function object in\nthe current symbol table.  The interpreter recognizes the object pointed to by\nthat name as a user-defined function.  Other names can also point to that same\nfunction object and can also be used to access the function:\n\n>>> fib\n<function fib at 10042ed0>\n>>> f = fib\n>>> f(100)\n0 1 1 2 3 5 8 13 21 34 55 89\n\nComing from other languages, you might object that fib is not a function but\na procedure since it doesn’t return a value.  In fact, even functions without a\nreturn statement do return a value, albeit a rather boring one.  This\nvalue is called None (it’s a built-in name).  Writing the value None is\nnormally suppressed by the interpreter if it would be the only value written.\nYou can see it if you really want to using print():\n\n>>> fib(0)\n>>> print(fib(0))\nNone\n\nIt is simple to write a function that returns a list of the numbers of the\nFibonacci series, instead of printing it:\n\n>>> def fib2(n):  # return Fibonacci series up to n\n...     \"\"\"Return a list containing the Fibonacci series up to n.\"\"\"\n...     result = []\n...     a, b = 0, 1\n...     while a < n:\n...         result.append(a)    # see below\n...         a, b = b, a+b\n...     return result\n...\n>>> f100 = fib2(100)    # call it\n>>> f100                # write the result\n[0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]\n\nThis example, as usual, demonstrates some new Python features:\n\nThe return statement returns with a value from a function.\nreturn without an expression argument returns None. Falling off\nthe end of a function also returns None.\n\nThe statement result.append(a) calls a method of the list object\nresult.  A method is a function that ‘belongs’ to an object and is named\nobj.methodname, where obj is some object (th",
+        "title": "定义函数",
+        "origin": "https://docs.python.org/3.12/tutorial/controlflow.html#defining-functions",
+        "provenance": "author_material",
+        "permission": false,
+        "version": 1,
+        "hash": "c281d045dfb8b99bd62f9d9812112f2abadc7208baacc95ec4b973dbca69d6dc",
+        "collected_at": 1791343128.087465
+      },
+      {
+        "id": "37d11e8c-a271-4946-b936-bf5cac6037e5",
+        "kind": "material",
+        "text": "is may be an expression),\nand methodname is the name of a method that is defined by the object’s type.\nDifferent types define different methods.  Methods of different types may have\nthe same name without causing ambiguity.  (It is possible to define your own\nobject types and methods, using classes, see Classes)\nThe method append() shown in the example is defined for list objects; it\nadds a new element at the end of the list.  In this example it is equivalent to\nresult = result + [a], but more efficient.",
+        "title": "定义函数",
+        "origin": "https://docs.python.org/3.12/tutorial/controlflow.html#defining-functions",
+        "provenance": "author_material",
+        "permission": false,
+        "version": 1,
+        "hash": "a6570a44bee4b5211e71e4140d2ca34e4f073c4d0ef484886115e40609cbd417",
+        "collected_at": 1791343128.0874722
+      }
+    ]
+  },
+  "run_id": "493952ca-421c-4f8c-9d95-39b441cecf3a",
+  "wall_seconds": 10.361,
+  "final_sha256": "52a2fa3a6201921cb0e9a2df12bdc7924c6f98a303c457972513fe48d188ce9a",
+  "changed": true,
+  "calls": [
+    {
+      "stage": "wt_conditions",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 248,
+      "output_tokens": 259,
+      "total_tokens": 507,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "conditions": [
+          {
+            "question": "在同事需要取得 Fibonacci 列表而非直接打印的场景下，依据稿件应写出哪个函数实现，以及调用 fib2(10) 的预期结果是什么？",
+            "scene": "Python 3.12 初学者教程；同事需要返回列表而非打印",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "原 fib(10) 的打印结果是什么，它的返回值又是什么？",
+            "scene": "对比 fib 与 fib2 的输出与返回值差异",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "函数体首个字符串（文档字符串）的作用是什么？",
+            "scene": "解释 Python 函数文档字符串的用途",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "执行 f = fib 后调用 f 是否调用同一函数对象？",
+            "scene": "说明 Python 中函数作为一等对象的赋值行为",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "在函数内赋值的变量存放在哪里？读取名称时的查找顺序是什么？",
+            "scene": "解释函数局部变量与名称解析规则（LEGB）",
+            "source_ids": [],
+            "origin": "author"
+          }
+        ]
+      }
+    },
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 1610,
+      "output_tokens": 359,
+      "total_tokens": 1969,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "results": [
+          {
+            "condition_id": "98259fd6-e532-41dd-8590-17438f6f56ce",
+            "status": "unclear",
+            "answer": "稿内给出了返回Fibonacci列表的函数fib2，但未给出fib2(10)的具体结果。原fib(10)的打印结果也未在稿内出现（稿内示例为fib(2000)和f(100)）。原fib函数没有return语句，因此返回None。函数体首个字符串是docstring。f=fib后调用f确实调用同一函数对象。函数内赋值的变量存放在局部符号表；读取名称的查找顺序依次为：局部、外层函数局部、全局、内置名称。",
+            "excerpt": "def fib2(n):  # return Fibonacci series up to n\n...     \"\"\"Return a list containing the Fibonacci series up to n.\"\"\"\n...     result = []\n...     a, b = 0, 1\n...     while a < n:\n...         result.append(a)    # see below\n...         a, b = b, a+b\n...     return result\n...\n>>> f100 = fib2(100)    # call it\n>>> f100                # write the result\n[0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]",
+            "reason": "稿内未提供fib2(10)调用及其结果，也未提供fib(10)的打印结果，仅根据稿件判断为unclear。"
+          }
+        ]
+      }
+    },
+    {
+      "stage": "wt_verify",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 3528,
+      "output_tokens": 242,
+      "total_tokens": 3770,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "results": [
+          {
+            "condition_id": "98259fd6-e532-41dd-8590-17438f6f56ce",
+            "status": "unclear",
+            "reason": "稿内未提供fib2(10)调用及其结果，也未提供fib(10)的打印结果，仅根据稿件判断为unclear。",
+            "citations": [
+              {
+                "source_id": "55db3d35-a9c9-482e-b6c4-9359a340ccca",
+                "quote": ">>> f100 = fib2(100)    # call it"
+              },
+              {
+                "source_id": "55db3d35-a9c9-482e-b6c4-9359a340ccca",
+                "quote": ">>> fib(2000)"
+              },
+              {
+                "source_id": "55db3d35-a9c9-482e-b6c4-9359a340ccca",
+                "quote": ">>> f(100)"
+              }
+            ]
+          }
+        ],
+        "new_issues": []
+      }
+    },
+    {
+      "stage": "wt_patch",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 3795,
+      "output_tokens": 193,
+      "total_tokens": 3988,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "patches": [
+          {
+            "start": 4508,
+            "end": 4508,
+            "original": "",
+            "replacement": "\n\n待补充并核实：同事需要取得Fibonacci列表而非直接打印。依据稿件写出实现该目标的函数及fib2(10)结果；说明原fib(10)的打印结果与返回值；说明函数体首个字符串的作用；说明f=fib后调用f是否调用同一函数对象；说明函数内赋值的变量存放在哪里，以及读取名称的查找顺序。每项附稿内证据，不执行代码。",
+            "condition_ids": [
+              "98259fd6-e532-41dd-8590-17438f6f56ce"
+            ],
+            "reason": "稿内未提供fib2(10)调用及其结果，也未提供fib(10)的打印结果；需作者补充并核实这些依据稿件可推导的答案。",
+            "citations": []
+          }
+        ]
+      }
+    },
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 1704,
+      "output_tokens": 132,
+      "total_tokens": 1836,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "results": [
+          {
+            "condition_id": "98259fd6-e532-41dd-8590-17438f6f56ce",
+            "status": "unclear",
+            "answer": "",
+            "excerpt": "",
+            "reason": "稿内没有fib2(10)执行结果或结果推导；同时原fib(10)的打印结果与返回值、函数体首个字符串的作用、f=fib后调用f是否调用同一函数对象、函数内赋值变量存放位置和读取名称查找顺序等多项无法仅凭稿内逐字证据回答。"
+          }
+        ]
+      }
+    },
+    {
+      "stage": "wt_verify",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 5056,
+      "output_tokens": 829,
+      "total_tokens": 5885,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "results": [
+          {
+            "condition_id": "98259fd6-e532-41dd-8590-17438f6f56ce",
+            "status": "unclear",
+            "reason": "材料包含fib2定义、fib定义、docstring、f=fib、局部符号表和查找顺序等一般依据，但未包含fib2(10)调用及结果，也未包含fib(10)的打印结果与返回值；因此该复合条件的多项无法按稿内逐字证据核验，阅读本身标为unclear。",
+            "citations": [
+              {
+                "source_id": "55db3d35-a9c9-482e-b6c4-9359a340ccca",
+                "quote": "It is simple to write a function that returns a list of the numbers of the\nFibonacci series, instead of printing it:"
+              },
+              {
+                "source_id": "55db3d35-a9c9-482e-b6c4-9359a340ccca",
+                "quote": ">>> f100 = fib2(100)    # call it\n>>> f100                # write the result\n[0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]"
+              },
+              {
+                "source_id": "55db3d35-a9c9-482e-b6c4-9359a340ccca",
+                "quote": ">>> fib\n<function fib at 10042ed0>\n>>> f = fib\n>>> f(100)\n0 1 1 2 3 5 8 13 21 34 55 89"
+              },
+              {
+                "source_id": "55db3d35-a9c9-482e-b6c4-9359a340ccca",
+                "quote": "all variable assignments in a\nfunction store the value in the local symbol table; whereas variable references\nfirst look in the local symbol table, then in the local symbol tables of\nenclosing functions, then in the global symbol table, and finally in the table\nof built-in names."
+              }
+            ]
+          }
+        ],
+        "new_issues": [
+          {
+            "excerpt": "待补充并核实：同事需要取得Fibonacci列表而非直接打印。依据稿件写出实现该目标的函数及fib2(10)结果；说明原fib(10)的打印结果与返回值；说明函数体首个字符串的作用；说明f=fib后调用f是否调用同一函数对象；说明函数内赋值的变量存放在哪里，以及读取名称的查找顺序。每项附稿内证据，不执行代码。",
+            "status": "insufficient",
+            "reason": "该新增段落要求给出稿内没有直接提供的fib2(10)结果、fib(10)打印结果与返回值等具体推断答案；材料仅给出fib2(100)、fib(2000)、fib(100)和fib(0)的例子及相关说明，不能凭稿内逐字证据完成这些新要求。",
+            "citations": [
+              {
+                "source_id": "55db3d35-a9c9-482e-b6c4-9359a340ccca",
+                "quote": ">>> f100 = fib2(100)    # call it\n>>> f100                # write the result\n[0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]"
+              },
+              {
+                "source_id": "55db3d35-a9c9-482e-b6c4-9359a340ccca",
+                "quote": ">>> # Now call the function we just defined:\n>>> fib(2000)\n0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597"
+              },
+              {
+                "source_id": "55db3d35-a9c9-482e-b6c4-9359a340ccca",
+                "quote": ">>> fib(0)\n>>> print(fib(0))\nNone"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 0.138974,
+    "reserved_unknown_cny": 0.0,
+    "committed_upper_cny": 0.138974,
+    "calls": 14,
+    "unknown_calls": 0
+  }
+}

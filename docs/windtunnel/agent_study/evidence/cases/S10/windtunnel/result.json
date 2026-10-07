@@ -1,0 +1,41 @@
+{
+  "sample_id": "S10",
+  "method": "windtunnel",
+  "participant_type": "codex_proxy",
+  "source_url": "https://docs.python.org/3.12/howto/argparse.html#introducing-optional-arguments",
+  "original_sha256": "097a75cb3cc6e2bbe535cba19ca4f53a63d7283298cae24749c47145dac0915f",
+  "material_sha256": "097a75cb3cc6e2bbe535cba19ca4f53a63d7283298cae24749c47145dac0915f",
+  "outcome": "failed",
+  "error": {
+    "code": "STUDY_WORKFLOW_BLOCKED",
+    "message": "已有调用在途或用量未知，已停止后续付费调用"
+  },
+  "automatic_adoption": true,
+  "human_author": false,
+  "fallback": "latest preserved draft; does not imply successful review",
+  "run_id": "691ad37f-004e-4ff6-a168-a59a149cda6a",
+  "wall_seconds": 0.011,
+  "final_sha256": "097a75cb3cc6e2bbe535cba19ca4f53a63d7283298cae24749c47145dac0915f",
+  "changed": false,
+  "calls": [
+    {
+      "stage": "wt_conditions",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": null,
+      "output_tokens": null,
+      "total_tokens": null,
+      "outcome": "failed",
+      "error": "已有调用在途或用量未知，已停止后续付费调用",
+      "response": null
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 0.221956,
+    "reserved_unknown_cny": 0.04281,
+    "committed_upper_cny": 0.264766,
+    "calls": 25,
+    "unknown_calls": 1
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "version": "candidate-2026-10-07-v1",
+  "status": "candidate_not_frozen",
+  "participant_type": "codex_proxy",
+  "cohort_plan": {"exploration": ["S01", "S02", "S03"], "holdout_pending_freeze": ["S04", "S05", "S06", "S07", "S08", "S09", "S10"]},
+  "scope": "AI代理阅读任务实验，非真人研究，非小红书或抖音目标读者反馈。研究者预读留出只用于固定任务，不得据此调优审稿提示词。",
+  "scoring_rule": {
+    "point_rule": "每题5个二元点；满足该点全部条件得1分，否则0分。接受语义等价解释、变量名及单/双引号差异。不得根据主观自信或answer_found判正确。",
+    "task_correct": "correct仅为5/5且无与题目结果相矛盾的陈述；有实质回答但未满足为incorrect；无回答、包损坏、无法读取等为unscorable，附原因。",
+    "unsupported_rule": "每点均须能定位所读盲稿中的短证据；只从既有Python知识给答案而无稿内证据，该点0分。若正文删去所需信息，允许回答稿件未提供，但该任务不算正确完成并记录missing_information，不补其他版本证据。",
+    "scorer_blinding": "评分者仅看盲号、任务、代理答案和对应冻结标准，不看组别/版本映射；评分后锁定再拆盲。",
+    "secondary": "报告0—5分以避免全部5/5的天花板被二元主指标掩盖；评分及引用质量须独立复核。"
+  },
+  "agent_protocol": {
+    "reader_instruction": "只阅读分配给自己的盲稿和任务，不调用搜索、代码运行、模型或读其他文件。不使用外部知识补答案；正文未提供时明确写未提供。每个要点回答后附该盲稿的短句或代码证据。不得猜测生成流程，不得把模型判断称为用户反馈。",
+    "response_fields": ["blind_id", "answer_found", "answer_text", "evidence", "perceived_difficulty_1_to_5", "missing_information", "open_feedback"],
+    "metadata": {"human_consent": null, "consent_status": "not_applicable_ai_proxy", "human_reading_seconds": null, "wall_time_seconds": "研究者若有实际进程计时可记录，不能称真人阅读时间", "model_version": "由调度者记录可证实的版本，未知留空", "execution_context": "fork_none；只提供自身任务路径；共享工作区仅指令隔离"},
+    "blind_control": "盲稿删除来源URL、样本号、组别、报告、版本标签；每人每样本只看一版。参考答案、本文件及分配映射绝不提供给受试代理。",
+    "limitations": ["同类模型代理的Python先验强，全文正确的官方教程可能使完成率饱和", "引用约束可证明文本定位，不能证明代理从阅读中学会知识", "6个代理共享模型族/运行环境，不能视为6个独立真人", "每代理7任务存在上下文及顺序影响；42任务不是42独立稿件", "共享目录无访问权限强隔离；记录实际访问，违规任务保留并单列", "原稿为英文，改稿若改成中文则语言也是处理的一部分；冻结两组相同语言约束或披露混杂", "S06正文含S07章节，样本内容重叠，公开这一依赖", "探索后冻结提示词、任务、阈值和评分，已用于调优的留出须重标探索"]
+  },
+  "tasks": [
+    {
+      "sample_id": "S01",
+      "cohort": "exploration",
+      "task_prompt": "请依据稿件给同事一段字符串排错说明。设word='Python'、prefix='Py'：说明word[-1]与word[2:5]的结果；说明word[42]与word[42:]的不同后果；把首字符改成J时应如何生成新字符串；说明prefix 'thon'为何失败及正确拼接方式；最后说明打印Windows路径C:\\some\\name时如何保留反斜线，以及raw字符串的结尾限制。每项附稿内证据，不执行代码。",
+      "expected_answer": ["word[-1]='n'；word[2:5]='tho'，起点含、终点不含", "word[42]抛IndexError；word[42:]为''", "字符串不可变，不能word[0]='J'；用'J'+word[1:]得到'Jython'", "邻接拼接只适用于字符串字面量；prefix+'thon'得到'Python'", "print(r'C:\\some\\name')保留反斜线；raw字符串不能以奇数个反斜线结束"],
+      "scoring_rule": "上述5项各1分；每项全部子条件及文本证据满足才计分。"
+    },
+    {
+      "sample_id": "S02",
+      "cohort": "exploration",
+      "task_prompt": "依据稿件检查颜色列表更新方案。执行rgb=['Red','Green','Blue']; rgba=rgb; rgba.append('Alph'); correct_rgba=rgba[:]; correct_rgba[-1]='Alpha'后，给出rgb、rgba、correct_rgba；解释赋值与切片的区别及rgb和rgba是否为同一对象；说明correct_rgba的独立性是否等同于深复制。每项附稿内证据，不执行代码。",
+      "expected_answer": ["rgb为['Red','Green','Blue','Alph']", "rgba为['Red','Green','Blue','Alph']", "correct_rgba为['Red','Green','Blue','Alpha']", "rgba=rgb不复制；二者引用同一列表，id相同，一方append可在另一方看到", "[:]生成新列表，是shallow copy；不是深复制，本例改外层末项不影响rgba"],
+      "scoring_rule": "上述5项各1分；第5点不得泛化为所有嵌套内容都独立。"
+    },
+    {
+      "sample_id": "S03",
+      "cohort": "exploration",
+      "task_prompt": "同事需要取得Fibonacci列表而非直接打印。依据稿件写出实现该目标的函数及fib2(10)结果；说明原fib(10)的打印结果与返回值；说明函数体首个字符串的作用；说明f=fib后调用f是否调用同一函数对象；说明函数内赋值的变量存放在哪里，以及读取名称的查找顺序。每项附稿内证据，不执行代码。",
+      "expected_answer": ["使用示例fib2：result=[]，a,b=0,1，while a<n时append(a)、a,b=b,a+b，return result；fib2(10)=[0,1,1,2,3,5,8]", "fib(10)打印0 1 1 2 3 5 8；无return返回None", "函数体首个字符串可作为docstring/文档字符串", "f=fib指向同一函数对象，f可用于调用它", "赋值存本地符号表；引用依次查本地、外层函数本地、全局、内置名称"],
+      "scoring_rule": "上述5项各1分；伪代码若明确保留相同控制逻辑可接受。"
+    },
+    {
+      "sample_id": "S04",
+      "cohort": "holdout_pending_freeze",
+      "task_prompt": "请依据稿件写一份列表推导式小抄：将vec=[-4,-2,0,2,4]筛去负数后将剩余值翻倍并给出结果；将[[1,2],[3,4]]按原顺序展平成列表并给出表达式和结果；说明生成(number,square)对时元组表达式的括号要求；说明两个for加一个if如何与普通嵌套循环对应；说明普通for循环变量与稿内推导式例子的变量副作用区别。每项附稿内证据，不执行代码。",
+      "expected_answer": ["[x*2 for x in vec if x>=0]，得到[0,4,8]", "[num for elem in vec for num in elem]，得到[1,2,3,4]；此处vec指题设嵌套列表", "写[(x,x**2) for x in range(6)]；[x,x**2 for ...]缺括号会语法错误", "for/if顺序与普通循环一致；先外层for、内层for，再if筛选，再append表达式结果", "普通for会创建或覆盖x且循环后仍存在；稿中推导式计算平方避免这种变量副作用"],
+      "scoring_rule": "上述5项各1分；翻倍不包括负值，展平顺序必须一致。"
+    },
+    {
+      "sample_id": "S05",
+      "cohort": "holdout_pending_freeze",
+      "task_prompt": "请依据稿件给通讯录维护步骤及结果：从tel={'jack':4098,'sape':4139}开始，新增guido:4127、将jack改为5000、删除sape、再新增irv:4127。写出最终字典；给出list(tel)和sorted(tel)；检查guido是否存在并写表达式和结果；说明再读取sape会怎样；说明用列表作键或用含列表的元组作键是否可行及原因。每项附稿内证据，不执行代码。",
+      "expected_answer": ["{'jack':5000,'guido':4127,'irv':4127}；赋值已有键覆盖旧值，del删除sape", "list(tel)=['jack','guido','irv']按插入顺序；sorted(tel)=['guido','irv','jack']", "'guido' in tel为True", "读取不存在的sape键会发生错误；不要求给出正文未命名的异常类", "列表不能作键；含可变对象的元组也不能，稿件要求键不可变"],
+      "scoring_rule": "上述5项各1分；字典展示顺序不单独扣分，但第2点顺序须正确。"
+    },
+    {
+      "sample_id": "S06",
+      "cohort": "holdout_pending_freeze",
+      "task_prompt": "依据稿件为同事制定日志文件读写方案：选择可保留原内容并在末尾追加的模式及UTF-8写法，说明与w模式的差异；说明为何使用with；区分readline返回空串和仅换行的含义；写出逐行读取的大文件方案并说明与read()无size的差别；说明复制JPEG时模式、读写对象类型及encoding参数限制。每项附稿内证据，不执行代码。",
+      "expected_answer": ["with open('log.txt','a',encoding='utf-8') as f:追加；w会抹去同名已有文件", "with退出块时自动正确关闭，发生异常也关闭；不关闭可能数据未完全写盘", "''表示EOF；'\\n'表示空白行", "for line in f逐行读取，正文称内存高效；read()省略size会读全文件，可能占大量内存", "JPEG应binary模式rb/wb，返回/写入bytes而非str；binary模式不能指定encoding"],
+      "scoring_rule": "上述5项各1分；只写readlines()不能满足第4点的大文件逐行方案。"
+    },
+    {
+      "sample_id": "S07",
+      "cohort": "holdout_pending_freeze",
+      "task_prompt": "依据稿件设计保存x=[1,'simple','list']再恢复的JSON方案：说明字符串转换及反向重建的名称；给出产生JSON字符串的函数及结果；说明已打开文本文件对象f时写入与读取分别用什么函数；说明文本JSON文件的encoding要求；说明为何不能随便将不可信pickle替代JSON，以及JSON对任意类实例的限制。每项附稿内证据，不执行代码。",
+      "expected_answer": ["Python数据转字符串叫serializing/序列化；从字符串重建叫deserializing/反序列化", "json.dumps(x)结果为'[1, \"simple\", \"list\"]'", "json.dump(x,f)写文件；x=json.load(f)从读模式文件解码恢复", "文本JSON读写用encoding='utf-8'", "不可信pickle反序列化可能执行任意代码，且pickle特定于Python；JSON可处理列表/字典，任意类实例需要额外工作"],
+      "scoring_rule": "上述5项各1分；dumps与dump不可混淆；第4点依据正文可回答，但不要求本节未给出的open完整语法。"
+    },
+    {
+      "sample_id": "S08",
+      "cohort": "holdout_pending_freeze",
+      "task_prompt": "依据稿件给异常处理代码审查建议：输入整数的重试循环应处理哪类异常，Ctrl-C为何不会被该处理器吃掉；try出现匹配异常后剩余语句和处理器怎样执行；父类与子类异常处理器顺序如何影响稿内B/C/D示例；else应何时执行及为何比塞进try更合适；意外Exception被记录后建议如何处理，以及try调用的函数内部异常是否能被捕获。每项附稿内证据，不执行代码。",
+      "expected_answer": ["处理ValueError后重试；Ctrl-C是KeyboardInterrupt，未匹配ValueError，会继续传递", "跳过try剩余语句，执行匹配的一个except，随后继续try/except后；最多一个处理器", "先D后C后B时输出B,C,D；若B排最前则B,B,B，首个匹配处理器触发", "try无异常才执行else，放在所有except后；避免误捕保护代码之外的异常", "记录意外Exception后raise重抛；try内直接/间接调用函数抛出的异常也可由对应处理器捕获"],
+      "scoring_rule": "上述5项各1分；不得声称Exception能包含KeyboardInterrupt或SystemExit。"
+    },
+    {
+      "sample_id": "S09",
+      "cohort": "holdout_pending_freeze",
+      "task_prompt": "仅依据稿件，给出pathlib项目浏览小抄：导入Path并代表当前目录；列出当前目录的子目录；递归收集目录树中.py文件；按示例拼接/etc/init.d/reboot，并区分拼接路径与resolve示例结果；解释示例q.exists()、q.is_dir()的结果，并写出用q读取首行的方式。不要把示例机器路径结果保证为所有电脑都相同。每项附稿内证据，不执行代码。",
+      "expected_answer": ["from pathlib import Path；p=Path('.')", "[x for x in p.iterdir() if x.is_dir()]", "list(p.glob('**/*.py'))", "p=Path('/etc'); q=p/'init.d'/'reboot'得到/etc/init.d/reboot；示例resolve得到/etc/rc.d/init.d/halt，不是对所有机器的保证", "示例exists=True、is_dir=False；with q.open() as f: f.readline()读首行，示例为'#!/bin/bash\\n'"],
+      "scoring_rule": "上述5项各1分；不得执行目录访问或凭机器环境改示例结果。"
+    },
+    {
+      "sample_id": "S10",
+      "cohort": "holdout_pending_freeze",
+      "task_prompt": "依据稿件为命令行工具设计verbose开关：解释最初--verbosity缺省时的值及输出；解释仅写--verbosity为什么报错；改成无需值的--verbose时给出add_argument及启用/缺省值；说明--verbose 1为何报错；增加-v别名并给出add_argument，说明-v的输出及help反映什么。每项附稿内证据，不执行代码。",
+      "expected_answer": ["最初未用--verbosity时args.verbosity=None，程序不打印启用消息且无错误", "最初--verbosity需要一个值；仅传参数名报expected one argument", "parser.add_argument('--verbose',help='increase output verbosity',action='store_true')；传入True、未传False", "--verbose是flag不带值，1被视为未识别参数而报unrecognized arguments: 1", "parser.add_argument('-v','--verbose',help='increase output verbosity',action='store_true')；-v输出verbosity turned on；help显示两种名称"],
+      "scoring_rule": "上述5项各1分；help字符串不要求逐字相同，但值/flag区别必须准确。"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "locked_at_unix": 1791343799.699701,
+  "scorers": [
+    "/root/blind_scorer_a",
+    "/root/blind_scorer_b"
+  ],
+  "fork_turns": "none",
+  "group_mapping_seen": false,
+  "hashes": {
+    "scores_a.json": "74e89b55f68382d5e165d5539c6368c2ca5f8069d2e7d7640628fe33a9f0f0c8",
+    "scores_b.json": "74b4cd49e8a185157e52cc5e3be376960043cfeaf113e5aa28803b1876c686af"
+  }
+}

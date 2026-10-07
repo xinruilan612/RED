@@ -111,7 +111,7 @@ def messages_for(run, stage):
                     conditions=[{k: c[k] for k in ('id', 'question', 'scene')} for c in cs['conditions']])
         if stage == 'wt_read':
             shape = {'results': [{'condition_id': cs['conditions'][0]['id'], 'status': 'unclear', 'answer': '', 'excerpt': '', 'reason': '仅根据稿件判断'}]}
-            rule = '仅依据当前稿件回答每个问题，逐项返回。status只能pass或unclear。pass必须给稿件逐字excerpt；未交代或读者需猜测为unclear，不能用自身知识补答案。'
+            rule = '仅依据当前稿件回答每个问题，逐项返回。status只能pass或unclear。pass必须给稿件逐字excerpt；excerpt只能是一段连续原文，禁止拼接分散句子、添加省略号或改变空白。多点答案可在answer中说明，excerpt仍只选一段短原文。未交代或读者需猜测为unclear，不能用自身知识补答案。'
         elif stage == 'wt_verify':
             data['reading'] = copy.deepcopy(state['reading'])
             data['materials'] = [s for s in stage_sources(run, stage) if s['kind'] == 'material']
@@ -120,7 +120,7 @@ def messages_for(run, stage):
                 data['adopted_changes'] = [copy.deepcopy(p) for p in state['patches'] if any(i.get('accepted_draft_id') == draft(run)['id'] for i in p['items'])]
             shape = {'results': [{'condition_id': cs['conditions'][0]['id'], 'status': 'insufficient', 'reason': '材料不足', 'citations': []}],
                      'new_issues': [{'excerpt': '当前稿件的原句', 'status': 'insufficient', 'reason': '修改引入的新问题', 'citations': []}]}
-            rule = '逐项核验reading的答案，状态只能pass/unclear/unsupported/insufficient。阅读unclear仍为unclear；答案与材料矛盾为unsupported；材料没有依据为insufficient；材料支持才pass。pass和unsupported必须给citations:[{source_id,quote}]，quote逐字取自materials。材料并非已验证真相。另用new_issues检查修改是否引入不属于原条件的新错误，引用当前稿件原句；无前版或未发现则[]。new_issues不能替换或删除固定条件。'
+            rule = '逐项核验reading的答案，状态只能pass/unclear/unsupported/insufficient。先检查reading.status：只要它是unclear，本条必须输出unclear，不能改为insufficient、unsupported或pass，即使材料提供了答案也不例外。仅当阅读为pass时，答案与材料矛盾为unsupported；材料没有依据为insufficient；材料支持才pass。pass和unsupported必须给citations:[{source_id,quote}]，quote逐字取自materials。材料并非已验证真相。另用new_issues检查修改是否引入不属于原条件的新错误，引用当前稿件原句；无前版或未发现则[]。new_issues不能替换或删除固定条件。'
         else:
             report = current_report(run)
             data['report'] = copy.deepcopy(report['results'])

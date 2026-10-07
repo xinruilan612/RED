@@ -1,0 +1,148 @@
+{
+  "sample_id": "S05",
+  "method": "windtunnel",
+  "participant_type": "codex_proxy",
+  "source_url": "https://docs.python.org/3.12/tutorial/datastructures.html#dictionaries",
+  "original_sha256": "5ae9dd634db54503543ac690d00aaba9b7ca8c69e2091cb09f491a1a934abbbc",
+  "material_sha256": "5ae9dd634db54503543ac690d00aaba9b7ca8c69e2091cb09f491a1a934abbbc",
+  "outcome": "failed",
+  "error": {
+    "code": "STUDY_WORKFLOW_BLOCKED",
+    "message": "调用未能确认费用，保留预留并停止后续付费调用；未自动重试"
+  },
+  "automatic_adoption": true,
+  "human_author": false,
+  "fallback": "latest preserved draft; does not imply successful review",
+  "run_id": "e5e460d8-8748-4965-9f77-31c5377d74d1",
+  "wall_seconds": 5.715,
+  "final_sha256": "5ae9dd634db54503543ac690d00aaba9b7ca8c69e2091cb09f491a1a934abbbc",
+  "changed": false,
+  "calls": [
+    {
+      "stage": "wt_conditions",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 278,
+      "output_tokens": 771,
+      "total_tokens": 1049,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "conditions": [
+          {
+            "question": "稿件中给出的初始字典 tel={'jack':4098,'sape':4139} 的完整字面量应如何写出？",
+            "scene": "Python 3.12 初学者教程；定义初始字典",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "从该初始字典开始，依次执行新增 guido:4127、将 jack 改为 5000、删除 sape、再新增 irv:4127 后，最终字典的完整字面量应是什么？",
+            "scene": "Python 3.12 初学者教程；字典增删改操作后的最终状态",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "对最终字典调用 list(tel) 的结果应是什么？稿内证据是哪一句？",
+            "scene": "Python 3.12 初学者教程；list(dict) 返回键列表",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "对最终字典调用 sorted(tel) 的结果应是什么？稿内证据是哪一句？",
+            "scene": "Python 3.12 初学者教程；sorted(dict) 返回排序后的键列表",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "检查 guido 是否存在的表达式（例如 'guido' in tel）应如何写？其布尔结果是什么？稿内证据在哪？",
+            "scene": "Python 3.12 初学者教程；成员检查表达式与结果",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "在删除 sape 之后，如果再次读取 tel['sape']，按稿件说明会发生什么？稿内证据是哪一句？",
+            "scene": "Python 3.12 初学者教程；访问已删除键的后果",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "用列表作为字典键是否可行？稿件给出的原因是什么？",
+            "scene": "Python 3.12 初学者教程；不可哈希类型作键",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "用含列表的元组作为字典键是否可行？稿件给出的原因是什么？",
+            "scene": "Python 3.12 初学者教程；含可变元素的元组作键",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "对最终字典调用 list(tel) 和 sorted(tel) 时，返回的是键、值还是键值对？稿内证据是哪一句？",
+            "scene": "Python 3.12 初学者教程；澄清 list/sorted 在字典上的行为",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "上述每一步操作（新增、修改、删除、再新增）在稿件中对应的具体代码行或描述分别是什么？",
+            "scene": "Python 3.12 初学者教程；逐步骤证据映射",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "最终字典中键的集合与 sorted(tel) 的输出顺序是否一致？若不一致，差异来自哪里？稿内证据是什么？",
+            "scene": "Python 3.12 初学者教程；字典键顺序与排序输出对比",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "稿件是否明确说明 'guido' in tel 这类成员检查返回 True/False，还是使用其他写法（如 tel.get('guido')）？稿内证据是哪一句？",
+            "scene": "Python 3.12 初学者教程；成员检查的稿内表述",
+            "source_ids": [],
+            "origin": "author"
+          }
+        ]
+      }
+    },
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 1317,
+      "output_tokens": 134,
+      "total_tokens": 1451,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "results": [
+          {
+            "condition_id": "f45c8053-4a4f-4e64-a72d-8bf07542c426",
+            "status": "unclear",
+            "answer": "",
+            "excerpt": "",
+            "reason": "稿件未包含从初始tel开始将jack改为5000的步骤或任何最终字典包含jack:5000的内容；稿件示例中jack始终为4098且未展示修改jack的赋值语句，因此无法仅依据稿件给出所要求的最终字典及其后续list(tel)、sorted(tel)等结果。"
+          }
+        ]
+      }
+    },
+    {
+      "stage": "wt_verify",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": null,
+      "output_tokens": null,
+      "total_tokens": null,
+      "outcome": "failed",
+      "error": "调用未能确认费用，保留预留并停止后续付费调用；未自动重试",
+      "response": null
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 0.221956,
+    "reserved_unknown_cny": 0.04281,
+    "committed_upper_cny": 0.264766,
+    "calls": 25,
+    "unknown_calls": 1
+  }
+}

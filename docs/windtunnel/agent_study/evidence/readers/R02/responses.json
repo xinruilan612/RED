@@ -1,0 +1,219 @@
+{
+  "reader_id": "R02",
+  "participant_type": "codex_proxy",
+  "human_reading_seconds": null,
+  "responses": [
+    {
+      "blind_id": "P5040",
+      "answer_found": true,
+      "answer_text": "1. from pathlib import Path；p = Path('.') 表示当前目录。\n2. 用 [x for x in p.iterdir() if x.is_dir()] 列子目录。\n3. 用 list(p.glob('**/*.py')) 递归收集 .py 文件。\n4. p = Path('/etc'); q = p / 'init.d' / 'reboot' 拼接为 /etc/init.d/reboot；稿内 q.resolve() 示例为 /etc/rc.d/init.d/halt，这只是示例机器结果。\n5. 示例 q.exists() 为 True、q.is_dir() 为 False，即路径存在且不是目录；用 with q.open() as f: f.readline() 读取首行，示例返回 '#!/bin/bash\\n'。",
+      "evidence": [
+        {
+          "point": 1,
+          "quote": ">>> from pathlib import Path\n\nListing subdirectories:\n\n>>> p = Path('.')"
+        },
+        {
+          "point": 2,
+          "quote": ">>> [x for x in p.iterdir() if x.is_dir()]"
+        },
+        {
+          "point": 3,
+          "quote": ">>> list(p.glob('**/*.py'))"
+        },
+        {
+          "point": 4,
+          "quote": ">>> p = Path('/etc')\n>>> q = p / 'init.d' / 'reboot'\n>>> q\nPosixPath('/etc/init.d/reboot')\n>>> q.resolve()\nPosixPath('/etc/rc.d/init.d/halt')"
+        },
+        {
+          "point": 5,
+          "quote": ">>> q.exists()\nTrue\n>>> q.is_dir()\nFalse\n\nOpening a file:\n\n>>> with q.open() as f: f.readline()\n...\n'#!/bin/bash\\n'"
+        }
+      ],
+      "perceived_difficulty_1_to_5": 1,
+      "missing_information": [],
+      "open_feedback": "五项信息均可直接定位；路径结果应保留示例语境。"
+    },
+    {
+      "blind_id": "P4028",
+      "answer_found": true,
+      "answer_text": "1. 用 open('日志文件', 'a', encoding=\"utf-8\") 保留原内容并追加到末尾；w 会清除同名已有文件。\n2. 使用 with 可在代码块结束时关闭文件，即使发生异常；也比等价 try-finally 简短。\n3. readline() 返回 '' 表示文件结束；返回 '\\n' 表示空白行。\n4. 大文件逐行用 for line in f: print(line, end='')；这样节省内存。read() 不给 size 会一次读取全部内容，可能超出内存。\n5. JPEG 用 rb 读取、wb 写入，读写 bytes 对象；二进制模式不能指定 encoding，文本模式换行转换会损坏 JPEG。",
+      "evidence": [
+        {
+          "point": 1,
+          "quote": "'w'\nfor only writing (an existing file with the same name will be erased), and\n'a' opens the file for appending; any data written to the file is\nautomatically added to the end."
+        },
+        {
+          "point": 2,
+          "quote": "The advantage is that the file is properly closed\nafter its suite finishes, even if an exception is raised at some\npoint."
+        },
+        {
+          "point": 3,
+          "quote": "if f.readline() returns an empty string, the end of the file\nhas been reached, while a blank line is represented by '\\n', a string\ncontaining only a single newline."
+        },
+        {
+          "point": 4,
+          "quote": "For reading lines from a file, you can loop over the file object. This is memory\nefficient, fast, and leads to simple code:\n\n>>> for line in f:\n...     print(line, end='')"
+        },
+        {
+          "point": 5,
+          "quote": "Appending a 'b' to the mode opens the file in binary mode.\nBinary mode data is read and written as bytes objects.\nYou can not specify encoding when opening file in binary mode."
+        }
+      ],
+      "perceived_difficulty_1_to_5": 2,
+      "missing_information": [],
+      "open_feedback": "信息完整，但需要从模式说明与读取方法两处分组整理。"
+    },
+    {
+      "blind_id": "P7699",
+      "answer_found": true,
+      "answer_text": "1. 最初未传 --verbosity 时 args.verbosity 为 None，if 测试失败，程序无输出。\n2. 只写 --verbosity 会报 expected one argument，因为该选项需要一个值。\n3. 改为 parser.add_argument(\"--verbose\", help=\"increase output verbosity\", action=\"store_true\")；启用为 True，缺省为 False，启用后输出 verbosity turned on。\n4. --verbose 1 报 unrecognized arguments: 1，因为该 flag 不需要值。\n5. 别名写为 parser.add_argument(\"-v\", \"--verbose\", help=\"increase output verbosity\", action=\"store_true\")；-v 输出 verbosity turned on，help 显示 -v, --verbose 两种形式，usage 显示 [-v]。",
+      "evidence": [
+        {
+          "point": 1,
+          "quote": "Note that by default, if an optional argument isn’t\nused, the relevant variable, in this case args.verbosity, is\ngiven None as a value, which is the reason it fails the truth\ntest of the if statement."
+        },
+        {
+          "point": 2,
+          "quote": "prog.py: error: argument --verbosity: expected one argument"
+        },
+        {
+          "point": 3,
+          "quote": "parser.add_argument(\"--verbose\", help=\"increase output verbosity\",\n                    action=\"store_true\")"
+        },
+        {
+          "point": 4,
+          "quote": "$ python prog.py --verbose 1\nusage: prog.py [-h] [--verbose]\nprog.py: error: unrecognized arguments: 1"
+        },
+        {
+          "point": 5,
+          "quote": "parser.add_argument(\"-v\", \"--verbose\", help=\"increase output verbosity\",\n                    action=\"store_true\")"
+        }
+      ],
+      "perceived_difficulty_1_to_5": 1,
+      "missing_information": [],
+      "open_feedback": "三版代码和输出对应清楚，容易整理开关演变。"
+    },
+    {
+      "blind_id": "P1259",
+      "answer_found": true,
+      "answer_text": "1. 依次 tel['guido'] = 4127、tel['jack'] = 5000、del tel['sape']、tel['irv'] = 4127，最终 {'jack': 5000, 'guido': 4127, 'irv': 4127}；已有键赋值会替换旧值。\n2. list(tel) 为 ['jack', 'guido', 'irv']；sorted(tel) 为 ['guido', 'irv', 'jack']。\n3. 'guido' in tel 为 True。\n4. 再读 tel['sape'] 会报错，因为键已删除；具体异常名称稿件未提供。\n5. 列表不能作键，因为可原地修改；含列表的元组也不能作键，因为直接或间接包含可变对象。",
+      "evidence": [
+        {
+          "point": 1,
+          "quote": "If you store using a key that is already in use, the old\nvalue associated with that key is forgotten."
+        },
+        {
+          "point": 2,
+          "quote": ">>> list(tel)\n['jack', 'guido', 'irv']\n>>> sorted(tel)\n['guido', 'irv', 'jack']"
+        },
+        {
+          "point": 3,
+          "quote": ">>> 'guido' in tel\nTrue"
+        },
+        {
+          "point": 4,
+          "quote": "It is an error to extract a value\nusing a non-existent key."
+        },
+        {
+          "point": 5,
+          "quote": "if a tuple contains\nany mutable object either directly or indirectly, it cannot be used as a key.\nYou can’t use lists as keys, since lists can be modified in place using index\nassignments, slice assignments, or methods like append() and\nextend()."
+        }
+      ],
+      "perceived_difficulty_1_to_5": 2,
+      "missing_information": [
+        "读取不存在键的具体异常名称未提供。"
+      ],
+      "open_feedback": "jack 改为 5000 需按稿内覆盖规则推导，其余结果有直接示例。"
+    },
+    {
+      "blind_id": "P2887",
+      "answer_found": true,
+      "answer_text": "1. 转成字符串表示叫 serializing（序列化），从字符串重建叫 deserializing（反序列化）。\n2. import json；x = [1, 'simple', 'list']；json.dumps(x) 产生 '[1, \"simple\", \"list\"]'。\n3. f 为打开的文本写入对象时用 json.dump(x, f)；打开读取对象时用 x = json.load(f) 恢复。\n4. JSON 文件必须为 UTF-8；文本方式读写都指定 encoding=\"utf-8\"。\n5. 不可信 pickle 反序列化可能执行任意代码，不能随意替代；pickle 还仅适用于 Python。JSON 可处理列表和字典，但任意类实例序列化需要额外工作。",
+      "evidence": [
+        {
+          "point": 1,
+          "quote": "called serializing.  Reconstructing the data from the string representation\nis called deserializing."
+        },
+        {
+          "point": 2,
+          "quote": ">>> x = [1, 'simple', 'list']\n>>> json.dumps(x)\n'[1, \"simple\", \"list\"]'"
+        },
+        {
+          "point": 3,
+          "quote": "json.dump(x, f)\n\nTo decode the object again, if f is a binary file or\ntext file object which has been opened for reading:\n\nx = json.load(f)"
+        },
+        {
+          "point": 4,
+          "quote": "JSON files must be encoded in UTF-8. Use encoding=\"utf-8\" when opening\nJSON file as a text file for both of reading and writing."
+        },
+        {
+          "point": 5,
+          "quote": "deserializing pickle data coming from an untrusted source can execute\narbitrary code, if the data was crafted by a skilled attacker."
+        }
+      ],
+      "perceived_difficulty_1_to_5": 1,
+      "missing_information": [],
+      "open_feedback": "保存和恢复函数相邻，编码与安全边界明确。"
+    },
+    {
+      "blind_id": "P2194",
+      "answer_found": true,
+      "answer_text": "1. vec = [-4,-2,0,2,4]；[x*2 for x in vec if x >= 0] 得 [0, 4, 8]。\n2. [num for elem in [[1, 2], [3, 4]] for num in elem] 得 [1, 2, 3, 4]。\n3. 生成 (number, square) 对时表达式须带括号，例如 [(x, x**2) for x in range(6)]；省略元组括号会产生 SyntaxError。\n4. 第一个 for 是外循环，第二个 for 是内循环，if 筛选内循环结果；for 和 if 的顺序与普通嵌套循环相同。\n5. 普通 for 会创建或覆盖 x，结束后 x 仍存在；稿内 squares = [x**2 for x in range(10)] 被描述为避免这种变量副作用。",
+      "evidence": [
+        {
+          "point": 1,
+          "quote": "[x*2 for x in vec if x >= 0]\nResult:\n[0, 4, 8]"
+        },
+        {
+          "point": 2,
+          "quote": "[num for elem in [[1, 2], [3, 4]] for num in elem]\nResult:\n[1, 2, 3, 4]"
+        },
+        {
+          "point": 3,
+          "quote": "If the expression is a tuple (e.g. the (x, y) in the previous example), it must be parenthesized,"
+        },
+        {
+          "point": 4,
+          "quote": "The first for is the outer loop; the second for is the inner loop; the if filters the inner results."
+        },
+        {
+          "point": 5,
+          "quote": "Note that this creates (or overwrites) a variable named x that still exists after the loop completes."
+        }
+      ],
+      "perceived_difficulty_1_to_5": 1,
+      "missing_information": [],
+      "open_feedback": "五项按题目结构直接给出，查找负担很低。"
+    },
+    {
+      "blind_id": "P7084",
+      "answer_found": true,
+      "answer_text": "1. 整数输入重试捕获 ValueError；Ctrl-C 引发 KeyboardInterrupt，与 ValueError 不匹配，所以该处理器不会吞掉它。\n2. try 出现异常后跳过剩余语句；执行匹配 except，再继续 try/except 之后；最多执行一个处理器。\n3. except 可匹配自身类与派生类；优先放子类。稿内 D、C、B 顺序对依次抛出的 B、C、D 输出 B、C、D；B 放第一则输出 B、B、B，因触发首个匹配项。\n4. else 放在所有 except 后，try 未抛异常时执行；可避免把非受保护代码的异常意外捕获。\n5. 意外 Exception 应打印或记录后重新 raise，让调用方也可处理；try 调用的函数内部甚至间接调用产生的异常也能被处理器捕获。",
+      "evidence": [
+        {
+          "point": 1,
+          "quote": "...     except ValueError:\n...         print(\"Oops!  That was no valid number.  Try again...\")"
+        },
+        {
+          "point": 2,
+          "quote": "If an exception occurs during execution of the try clause, the rest of the\nclause is skipped.  Then, if its type matches the exception named after the\nexcept keyword, the except clause is executed, and then execution\ncontinues after the try/except block."
+        },
+        {
+          "point": 3,
+          "quote": "Note that if the except clauses were reversed (with except B first), it\nwould have printed B, B, B — the first matching except clause is triggered."
+        },
+        {
+          "point": 4,
+          "quote": "The use of the else clause is better than adding additional code to\nthe try clause because it avoids accidentally catching an exception\nthat wasn’t raised by the code being protected by the try …\nexcept statement."
+        },
+        {
+          "point": 5,
+          "quote": "The most common pattern for handling Exception is to print or log\nthe exception and then re-raise it (allowing a caller to handle the\nexception as well):"
+        }
+      ],
+      "perceived_difficulty_1_to_5": 2,
+      "missing_information": [],
+      "open_feedback": "信息完整，继承顺序和 else 的用途需要串联前后说明。"
+    }
+  ]
+}

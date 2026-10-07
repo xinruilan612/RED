@@ -77,6 +77,22 @@ class WindtunnelDomainTests(unittest.TestCase):
             self.assertNotIn(forbidden, serialized)
         self.assertEqual([s['kind'] for s in stage_sources(run, 'wt_read')], ['draft'])
 
+    def test_exploration_failures_remain_rejected_with_explicit_prompt_rules(self):
+        run = self.confirmed()
+        messages, _ = messages_for(run, 'wt_read')
+        self.assertIn('禁止拼接', messages[0]['content'])
+        reading = simulate(run, 'wt_read')
+        reading['results'][0].update(status='pass', answer='答案', excerpt='打开工具。导出。')
+        with self.assertRaises(DomainError):
+            normalize(run, 'wt_read', reading)
+        run = self.step(run)
+        messages, _ = messages_for(run, 'wt_verify')
+        self.assertIn('本条必须输出unclear', messages[0]['content'])
+        verify = simulate(run, 'wt_verify')
+        verify['results'][0]['status'] = 'insufficient'
+        with self.assertRaises(DomainError):
+            normalize(run, 'wt_verify', verify)
+
     def test_cross_owner_and_account_import_and_knowledge_denied(self):
         from backend.demo import validate_brief
         bob_account = self.account_for('bob')

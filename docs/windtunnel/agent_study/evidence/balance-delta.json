@@ -1,0 +1,5 @@
+{
+  "observed_account_balance_decrease_cny": "0.07",
+  "attribution": "Account-level delta, not per-call bill; concurrent unrelated activity cannot be excluded",
+  "does_not_resolve_unknown_usage": true
+}
