@@ -80,3 +80,34 @@ class PublicTopicTests(unittest.TestCase):
         self.client.search=racing
         with self.assertRaises(DomainError):self.service.search('u',self.data(keyword='摄影'))
         self.assertEqual(self.service.read('u','uaccount')['samples'],[])
+    def test_official_detail_envelope_and_shared_count(self):
+        self.service.search('u',self.data(keyword='摄影'))
+        self.client.detail=lambda *a:{'feed_id':'abc123456789','data':{'note':{'noteId':'abc123456789','title':'官方详情','desc':'正文','time':1702195200000,'interactInfo':{'sharedCount':'20'},'imageList':[{'urlDefault':'https://example.com/image.jpg'}]},'comments':{'list':[]}}}
+        row=self.service.refresh('u',self.data(sample_id='abc123456789'))['samples'][0]
+        self.assertEqual(row['body'],'正文');self.assertEqual(row['counts']['shares'],20);self.assertEqual(row['content_status'],'detail_read');self.assertEqual(len(row['image_urls']),1)
+    def test_malformed_detail_preserves_existing_snapshot(self):
+        self.service.import_samples('u',self.data(samples=[dict(url='https://www.xiaohongshu.com/explore/abc123456789',body='已有正文')]))
+        before=self.service.read('u','uaccount')
+        for invalid in ({},{'data':None},{'data':{'note':{}}},{'data':{'note':{'noteId':'another123','title':'wrong'}}}):
+            self.client.detail=lambda *a:invalid
+            with self.assertRaises(DomainError):self.service.refresh('u',self.data(sample_id='abc123456789'))
+            self.assertEqual(self.service.read('u','uaccount'),before)
+    def test_malformed_feeds_do_not_crash_or_erase(self):
+        self.service.search('u',self.data(keyword='摄影'))
+        for invalid in (None,{},'bad',3):
+            self.client.search=lambda *a:{'feeds':invalid}
+            self.assertEqual(len(self.service.search('u',self.data(keyword='摄影'))['samples']),1)
+        self.client.search=lambda *a:{'feeds':[None,{'id':'abc123456789','noteCard':None}]}
+        self.assertEqual(len(self.service.search('u',self.data(keyword='摄影'))['samples']),1)
+    def test_count_overflow_missing_and_bad_types(self):
+        for bad in ('9'*400,'9'*30+'万',float('inf'),float('nan'),10**30,{},[]):self.assertIsNone(count(bad))
+        row=normalize(dict(id='abc123456789',title=None,desc=None,user='bad',imageList=[None,1,{}],interactInfo=['bad']),'public_search')
+        self.assertEqual(row['body'],'');self.assertEqual(row['title'],'');self.assertIsNone(row['counts']['likes'])
+    def test_search_summary_and_cover_are_explicit(self):
+        row=normalize(dict(id='abc123456789',noteCard={'displayTitle':'题目','cover':{'urlDefault':'https://example.com/cover.jpg'}}),'public_search')
+        self.assertEqual(row['content_status'],'search_summary');self.assertEqual(row['body'],'');self.assertEqual(len(row['image_urls']),1)
+    def test_summary_cannot_replace_read_body(self):
+        old=normalize(dict(id='abc123456789',body='完整正文'),'public_detail')
+        new=normalize(dict(id='abc123456789',body='搜索摘要'),'public_search')
+        row=merge_samples([old],[new])[0]
+        self.assertEqual(row['body'],'完整正文');self.assertEqual(row['content_status'],'detail_read')

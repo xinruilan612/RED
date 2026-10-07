@@ -1,6 +1,7 @@
 """Explicit, bounded public-reference collection. Never personal outcome labels."""
 import copy
 import json
+import math
 import os
 import re
 import urllib.request
@@ -17,13 +18,29 @@ CONNECTOR_DIR=Path(__file__).resolve().parents[1]/'runtime'/'xhs'
 def now(): return datetime.now(timezone.utc).isoformat()
 
 def count(value):
-    if type(value) is int and value>=0: return value
-    if isinstance(value,str):
+    if type(value) is int: return value if 0<=value<=10**12 else None
+    if isinstance(value,str) and len(value)<=32:
         match=re.fullmatch(r'(\d+(?:\.\d+)?)([万wW千kK]?)',value.strip().replace(',',''))
-        if match: return int(float(match[1])*({'万':10000,'w':10000,'W':10000,'千':1000,'k':1000,'K':1000}.get(match[2],1)))
+        if match:
+            number=float(match[1])*({'万':10000,'w':10000,'W':10000,'千':1000,'k':1000,'K':1000}.get(match[2],1))
+            if math.isfinite(number) and 0<=number<=10**12: return int(number)
     return None
 
+def text(value,limit): return value[:limit] if isinstance(value,str) else ''
+
+def detail_card(result,identity):
+    # PublicClient already unwraps the outer success/data envelope. The official
+    # detail payload is {feed_id, data: {note, comments}}; no comments are retained.
+    require(isinstance(result,dict),'PUBLIC_SOURCE_UNAVAILABLE','笔记详情暂不可读，保留已有参考')
+    detail=result.get('data',result)
+    require(isinstance(detail,dict) and isinstance(detail.get('note'),dict),'PUBLIC_SOURCE_UNAVAILABLE','笔记详情暂不可读，保留已有参考')
+    note=detail['note'];returned=note.get('noteId',note.get('note_id',identity))
+    require(returned==identity,'PUBLIC_SOURCE_UNAVAILABLE','笔记详情与请求不一致，保留已有参考')
+    require(any(isinstance(note.get(k),str) and note[k].strip() for k in ('title','desc')),'PUBLIC_SOURCE_UNAVAILABLE','笔记内容暂不可读，保留已有参考')
+    return note
+
 def note_id(url):
+    require(isinstance(url,str) and len(url)<=4000,'INVALID_INPUT','公开链接格式无效')
     match=re.fullmatch(r'https://(?:www\.)?xiaohongshu\.com/(?:explore|discovery/item)/([a-zA-Z0-9_-]{8,80})(?:\?[^\s]*)?',url)
     require(match,'INVALID_INPUT','请填写小红书笔记的完整公开链接')
     return match[1]
@@ -31,18 +48,25 @@ def note_id(url):
 def normalize(row,source,keyword='',sort=''):
     require(isinstance(row,dict),'INVALID_INPUT','参考样本格式无效')
     card=row.get('noteCard',row.get('note_card',row))
+    require(isinstance(card,dict),'INVALID_INPUT','参考卡片格式无效')
     identity=row.get('id') or row.get('note_id') or card.get('note_id')
     url=row.get('url') or ('https://www.xiaohongshu.com/explore/'+str(identity))
     identity=note_id(url)
     raw=card.get('interactInfo',card.get('interact_info',card.get('counts',{}))) or {}
-    aliases={'likes':('likes','likedCount','liked_count'),'saves':('saves','collectedCount','collected_count'),'comments':('comments','commentCount','comment_count'),'shares':('shares','shareCount','share_count'),'views':('views','viewCount','view_count')}
+    if not isinstance(raw,dict): raw={}
+    aliases={'likes':('likes','likedCount','liked_count'),'saves':('saves','collectedCount','collected_count'),'comments':('comments','commentCount','comment_count'),'shares':('shares','sharedCount','shareCount','share_count','shared_count'),'views':('views','viewCount','view_count')}
     counts={k:next((count(raw[x]) for x in names if x in raw),None) for k,names in aliases.items()}
     images=card.get('image_urls',card.get('imageList',card.get('image_list',[]))) or []
+    if not isinstance(images,list): images=[]
+    cover=card.get('cover')
+    if not images and isinstance(cover,dict): images=[cover]
     urls=[]
     for item in images[:9]:
+        if not isinstance(item,(str,dict)): continue
         u=item if isinstance(item,str) else item.get('urlDefault',item.get('url_default',item.get('url','')))
         if isinstance(u,str) and u.startswith('https://') and len(u)<=2000: urls.append(u)
     user=card.get('user',{}) or {}
+    if not isinstance(user,dict): user={}
     published=card.get('published_at') or card.get('time') or None
     if type(published) in (int,float):
         try: published=datetime.fromtimestamp(published/(1000 if published>1e11 else 1),timezone.utc).isoformat()
@@ -53,7 +77,7 @@ def normalize(row,source,keyword='',sort=''):
             published=date.isoformat() if date.tzinfo and date<=datetime.now(timezone.utc) else None
         except ValueError: published=None
     stamp=now()
-    return dict(id=identity,url='https://www.xiaohongshu.com/explore/'+identity,title=str(card.get('displayTitle',card.get('title','')))[:300],body=str(card.get('desc',card.get('body','')))[:12000],author=str(card.get('author') or user.get('nickname',''))[:200],author_id=str(user.get('userId',user.get('user_id','')))[:100],image_urls=urls,published_at=published,observed_at=stamp,counts=counts,observations=[dict(observed_at=stamp,counts=counts)],source=source,keyword=keyword,search_sorts=[sort] if sort else [],xsec_token=str(row.get('xsecToken',row.get('xsec_token','')))[:2000],prediction_eligible=False,exclusion='公开累计互动，不是本账号固定时长结果')
+    return dict(id=identity,url='https://www.xiaohongshu.com/explore/'+identity,title=text(card.get('displayTitle',card.get('title','')),300),body=text(card.get('desc',card.get('body','')),12000),content_status='detail_read' if source=='public_detail' else ('manual_supplied' if source=='manual_public' else 'search_summary'),author=text(card.get('author') or user.get('nickname',''),200),author_id=text(user.get('userId',user.get('user_id','')),100),image_urls=urls,published_at=published,observed_at=stamp,counts=counts,observations=[dict(observed_at=stamp,counts=counts)],source=source,keyword=keyword,search_sorts=[sort] if sort else [],xsec_token=text(row.get('xsecToken',row.get('xsec_token','')),2000),prediction_eligible=False,exclusion='公开累计互动，不是本账号固定时长结果')
 
 class PublicClient:
     """No user-controlled server URL, redirects, proxies, or mutation endpoints."""
@@ -91,6 +115,8 @@ def merge_samples(previous,incoming):
             observations=(old.get('observations',[])+row['observations'])[-30:]
             sorts=list(dict.fromkeys(old.get('search_sorts',[])+row.get('search_sorts',[])))
             # Search cards can omit body/date/images; do not erase richer detail.
+            if old.get('content_status')=='detail_read' and row.get('content_status')=='search_summary':
+                row['body']=old.get('body','');row['content_status']='detail_read'
             row={**old,**{k:v for k,v in row.items() if v not in ('',None,[])}}
             row.update(observations=observations,search_sorts=sorts)
             result[result.index(old)]=row
@@ -135,6 +161,8 @@ class PublicTopics:
                 if not incoming: raise
                 warnings.append('部分排序未完成，已保留取得的公开样本');break
             rows=result.get('feeds',result.get('items',[])) if isinstance(result,dict) else []
+            if not isinstance(rows,list):
+                warnings.append('公开搜索返回格式不完整，已保留原有参考');continue
             for row in rows[:8]:
                 try: incoming.append(normalize(row,'public_search',keyword,sort))
                 except (DomainError,TypeError,AttributeError): continue
@@ -153,8 +181,7 @@ class PublicTopics:
         require(old,'RESOURCE_NOT_FOUND','找不到此账号的参考')
         self.check_connector_owner(owner)
         result=self.client.detail(old['id'],old.get('xsec_token',''))
-        detail=result.get('data',result) if isinstance(result,dict) else {}
-        if 'note' in detail: detail=detail['note']
+        detail=detail_card(result,old['id'])
         row=normalize(dict(id=old['id'],xsec_token=old.get('xsec_token',''),noteCard=detail),'public_detail',old.get('keyword',''))
         return self.save(owner,data,merge_samples(samples,[row]))
     def remove(self,owner,data):
