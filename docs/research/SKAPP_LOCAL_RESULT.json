@@ -1,0 +1,66 @@
+{
+  "upstream_commit": "3353b5a79bbeacf8110971b2ef035a4046c1a25c",
+  "dataset": "icip",
+  "scope": "public_benchmark",
+  "metrics": {
+    "MSE": 0.6597821712493896,
+    "MAE": 0.5457857251167297,
+    "SRC": 0.7694764289956273,
+    "samples": 2034
+  },
+  "baseline": {
+    "name": "训练集均值基线",
+    "MSE": 2.3547033308577068,
+    "MAE": 1.1757189028403718,
+    "SRC": null,
+    "samples": 2034
+  },
+  "training": {
+    "seed": 12,
+    "epochs": 6,
+    "best_epoch": 3,
+    "train_samples": 16269,
+    "valid_samples": 2034,
+    "test_samples": 2034,
+    "device": "cpu",
+    "duration_seconds": null,
+    "method": "作者当前参考实现：RRCP 门控注意力；不声称逐公式复现论文双图网络",
+    "limitations": [
+      "公开数据集结果，不代表小红书效果或爆款概率",
+      "没有新稿图文编码与邻居构建流程，不能对用户新稿推理",
+      "ICIP mean_views 的采集时点未验证，不能据此证明严格发布前预测",
+      "单随机种子实验，不等于论文多次实验结果"
+    ]
+  },
+  "evidence": {
+    "evaluation_result_sha256": "bb14ab4c42ed2e76783face8e75b140ba2101b35cc3a9f07fcfc2125489055b1",
+    "dataset_manifest_sha256": "76dfa7da37ac69a90e083b1a545187e0907a862e1ba8ec2133bc5d8eaa233d67",
+    "checkpoint_sha256": "50a717e53b05eef289861eced5733894a2e1de33b335fa96e8614e9aaf1a7048"
+  },
+  "protocol": {
+    "planned_epochs": 10,
+    "patience": 3,
+    "seed": 12,
+    "checkpoint_selection": "validation MSE",
+    "teacher_training": "not rerun; author precomputed RRCP",
+    "full_paper_reproduction": false,
+    "personal_topic_prediction_complete": false
+  },
+  "browser_verification": "Chrome: #skapp rendered actual metrics; youji-skapp-report.json downloaded successfully",
+  "user_target": "Use account profile, candidate text/images, and relevant personal historical posts to rank topic potential. This benchmark does not implement that target.",
+  "verification": {
+    "backend_full": {
+      "passed": 643,
+      "seconds": 267.736,
+      "real_postgresql": true
+    },
+    "frontend": {
+      "passed": 180
+    },
+    "final_focused": {
+      "passed": 14
+    },
+    "paid_llm_calls": 0,
+    "platform_publications": 0
+  }
+}
