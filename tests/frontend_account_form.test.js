@@ -102,3 +102,36 @@ test('late overview material readiness cannot update a different account guide',
  finishMaterials([]);await pending;
  assert.equal(s.element('gettingStarted').outerHTML,'');
 });
+
+test('simplified account form omits four removed controls while preserving stored constraints',async()=>{
+ const s=setup('existing-a');Object.assign(s.rows[0].profile,{goal:'既有目标',resources:'已有设备',banned:'不得虚构',weekly_frequency:5});
+ const html=s.eval('accountForm(currentAccount())');
+ assert.doesNotMatch(html,/name="(?:goal_choice|goal_custom|weekly_frequency)"|data-profile-picker="(?:resources|banned)"/);
+ for(const key of ['goal_choice','goal_custom','weekly_frequency'])delete s.form.elements[key];
+ s.eval('bindAccountForm()');await s.submit();
+ const p=s.sandbox.calls[0].payload.profile;
+ assert.equal(p.goal,'既有目标');assert.equal(p.resources,'已有设备');assert.equal(p.banned,'不得虚构');assert.equal(p.weekly_frequency,5);
+});
+
+test('new account uses valid empty defaults rather than copying another account constraints',async()=>{
+ const s=setup();for(const key of ['goal_choice','goal_custom','weekly_frequency'])delete s.form.elements[key];
+ s.eval('bindAccountForm()');await s.submit();const p=s.sandbox.calls[0].payload.profile;
+ assert.equal(p.goal,'');assert.equal(p.resources,'');assert.equal(p.banned,'');assert.equal(p.weekly_frequency,3);
+});
+
+test('category and platform changes do not require removed profile controls',()=>{
+ const s=setup('existing-a');for(const key of ['goal_choice','goal_custom','weekly_frequency'])delete s.form.elements[key];
+ s.eval('bindAccountForm()');
+ s.form.onchange({target:{name:'position_category',value:'摄影 / 摄影服务'}});
+ s.form.onchange({target:{name:'platform',value:'douyin'}});
+ assert.equal(s.form.dataset.oldPlatform,'douyin');
+ assert.ok(s.form.dataset.profileValues.includes('pillars'));
+});
+
+test('competitor observation is a closed optional panel with usable save action',()=>{
+ const source=fs.readFileSync('frontend/account.js','utf8');
+ assert.match(source,/<details class="panel" style="align-self:start;padding:18px"><summary>参考其他账号（可选）<\/summary>/);
+ assert.match(source,/下次创作时供受众分析参考。不会自动搜索账号或抓取数据/);
+ assert.match(source,/id="competitorForm"/);
+ assert.match(source,/operate\('add_competitor',\{account_id:activeAccountId/);
+});

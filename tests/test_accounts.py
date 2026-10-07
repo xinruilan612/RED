@@ -42,6 +42,22 @@ class AccountTests(unittest.TestCase):
         self.assertEqual(saved['revision'], account['revision'] + 1)
         self.assertEqual(state['plans'][0]['status'], 'needs_review')
 
+    def test_public_account_observation_persists_and_reaches_only_its_audience_context(self):
+        from backend.creator_context import enrich
+        account = self.command('save_account', self.profile())['accounts'][-1]
+        other = self.command('save_account', self.profile(name='另一个账号'))['accounts'][-1]
+        state = self.command('add_competitor', dict(account_id=account['id'], name='公开参考',
+            url='https://www.xiaohongshu.com/explore/example', observation='先展示整理步骤，再说明适用条件', observed_at=now()))
+        row = state['competitors'][0]
+        restored = Operations(Store(self.store.path))
+        self.assertEqual(restored.read(self.owner)['competitors'][0], row)
+        context = restored.context(self.owner, {'account_id': account['id']}, 'live')
+        audience = enrich('audience', {}, {'operations': context})
+        self.assertEqual(audience['competitor_observations'], [row])
+        other_context = restored.context(self.owner, {'account_id': other['id']}, 'live')
+        self.assertEqual(enrich('audience', {}, {'operations': other_context})['competitor_observations'], [])
+        self.assertIn('未经独立核验', audience['evidence_limit'])
+
     def test_stable_identity_rename_and_import_independent_of_model(self):
         state = self.command('save_account', self.profile())
         account = state['accounts'][-1]
