@@ -32,6 +32,35 @@ class PublicTopicTests(unittest.TestCase):
         self.assertEqual(self.client.calls,['综合','最新','最多点赞']);self.assertEqual(len(result['samples']),1)
         row=result['samples'][0];self.assertEqual(row['counts']['likes'],12000);self.assertIsNone(row['counts']['views']);self.assertFalse(row['prediction_eligible']);self.assertNotIn('xsec_token',row)
         self.assertEqual(self.ops.read('u')['publications'],[])
+    def set_position(self,label):
+        state=self.ops.read('u');state['accounts'][0]['profile']['positioning']=label
+        state['version']+=1;self.ops.states['u']=state
+    def test_position_libraries_survive_switch_and_same_note_membership(self):
+        self.set_position('摄影 教程')
+        self.service.search('u',self.data(keyword='摄影'))
+        self.set_position('收纳')
+        result=self.service.read('u','uaccount')
+        self.assertEqual(result['samples'],[]);self.assertEqual(result['archived_count'],1)
+        self.service.search('u',self.data(keyword='收纳'))
+        self.assertEqual(len(self.ops.read('u')['public_topic_samples']['uaccount']),1)
+        self.service.refresh('u',self.data(sample_id='abc123456789'))
+        self.set_position('  摄影   教程  ')
+        row=self.service.read('u','uaccount')['samples'][0]
+        self.assertEqual(len(row['library_positions']),2);self.assertEqual(row['body'],'详细正文')
+    def test_legacy_is_visible_but_never_silently_assigned(self):
+        legacy=normalize(dict(id='legacy123456',title='旧参考'),'public_search','摄影')
+        state=self.ops.read('u');state['public_topic_samples']={'uaccount':[legacy]};self.ops.states['u']=state
+        self.set_position('摄影')
+        result=self.service.read('u','uaccount')
+        self.assertEqual(result['samples'],[]);self.assertEqual(result['unclassified_count'],1)
+        self.assertEqual(result['unclassified_samples'][0]['id'],'legacy123456')
+        self.assertNotIn('xsec_token',result['unclassified_samples'][0])
+    def test_explicit_blank_search_uses_saved_position(self):
+        self.set_position('手机摄影')
+        keywords=[]
+        self.client.search=lambda keyword,sort:keywords.append(keyword) or {'feeds':[]}
+        self.service.search('u',self.data(keyword=' '))
+        self.assertEqual(keywords,['手机摄影']*3)
     def test_read_performs_no_network(self):
         self.service.read('u','uaccount');self.assertEqual(self.client.calls,[])
     def test_owner_and_account_isolation(self):

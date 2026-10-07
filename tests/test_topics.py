@@ -56,6 +56,20 @@ class TopicTests(unittest.TestCase):
         self.assertEqual(self.client.get('/api/topics/public',params={'account_id':other}).status_code,404)
         self.assertEqual(self.client.post('/api/topics/public/import',json={}).status_code,403)
 
+    def test_public_library_switch_filters_encoder_and_restores_saved_references(self):
+        r=self.configure('摄影')
+        imported=self.post('/api/topics/public/import',dict(account_id=self.identity,version=r['version'],samples=[dict(url='https://www.xiaohongshu.com/explore/12345678',title='摄影专属参考',body='摄影证据')]))
+        self.assertEqual(imported.status_code,200,imported.text)
+        r=self.configure('烹饪')
+        library=self.client.get('/api/topics/public',params={'account_id':self.identity}).json()
+        self.assertEqual(library['positioning'],'烹饪');self.assertEqual(library['samples'],[]);self.assertEqual(library['archived_count'],1)
+        result=self.post('/api/topics/evaluate',dict(account_id=self.identity,version=r['version'],candidates=[dict(id='food',title='烹饪')])).json()
+        self.assertEqual(result['public_sample_count'],0)
+        self.assertFalse(any('摄影专属参考' in t for t in self.seen[-1][0]))
+        self.configure('摄影')
+        library=self.client.get('/api/topics/public',params={'account_id':self.identity}).json()
+        self.assertEqual(len(library['samples']),1);self.assertEqual(library['archived_count'],0)
+
     def test_encoder_batches_large_combined_pools_and_keeps_long_text_tail(self):
         calls=[]
         def bounded(texts,images):

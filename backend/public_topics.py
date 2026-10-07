@@ -4,6 +4,7 @@ import json
 import math
 import os
 import re
+import unicodedata
 import urllib.request
 from datetime import datetime, timezone
 from uuid import uuid4
@@ -109,18 +110,36 @@ class PublicClient:
     def status(self): return self.request('/login/status')
     def qrcode(self): return self.request('/login/qrcode')
 
+def positioning(account):
+    label=account.get('profile',{}).get('positioning','').strip()
+    return dict(key=' '.join(unicodedata.normalize('NFKC',label).casefold().split()),label=label)
+
+def stamp_position(row,account):
+    """Bind an explicitly collected reference to the saved account positioning."""
+    row=copy.deepcopy(row)
+    scope=positioning(account)
+    scopes=row.setdefault('library_positions',[])
+    if not any(x.get('key')==scope['key'] for x in scopes): scopes.append(scope)
+    return row
+
+def scoped_samples(state,account):
+    scope=positioning(account)
+    return [copy.deepcopy(row) for row in state.get('public_topic_samples',{}).get(account['id'],[])
+            if any(x.get('key')==scope['key'] for x in row.get('library_positions',[]))]
+
 def merge_samples(previous,incoming):
     result=copy.deepcopy(previous)
     for row in incoming:
         old=next((x for x in result if x['id']==row['id']),None)
         if old:
             observations=(old.get('observations',[])+row['observations'])[-30:]
+            scopes={x['key']:x for x in old.get('library_positions',[])+row.get('library_positions',[])}
             sorts=list(dict.fromkeys(old.get('search_sorts',[])+row.get('search_sorts',[])))
             # Search cards can omit body/date/images; do not erase richer detail.
             if old.get('content_status')=='detail_read' and row.get('content_status')=='search_summary':
                 row['body']=old.get('body','');row['content_status']='detail_read'
             row={**old,**{k:v for k,v in row.items() if v not in ('',None,[])}}
-            row.update(observations=observations,search_sorts=sorts)
+            row.update(observations=observations,search_sorts=sorts,library_positions=list(scopes.values()))
             result[result.index(old)]=row
         else: result.append(row)
     return result[-200:]
@@ -155,16 +174,23 @@ class PublicTopics:
         return state,account
     def read(self,owner,identity):
         state,account=self.current(owner,identity)
-        samples=copy.deepcopy(state.get('public_topic_samples',{}).get(identity,[]))
-        for row in samples: row.pop('xsec_token',None)
-        return dict(account_id=identity,version=state['version'],samples=samples,source='public_reference',prediction_ready=False,connection='not_checked')
+        all_samples=state.get('public_topic_samples',{}).get(identity,[])
+        samples=scoped_samples(state,account)
+        unclassified=[row for row in all_samples if not row.get('library_positions')]
+        return public_response(dict(account_id=identity,version=state['version'],samples=samples,
+            positioning=positioning(account)['label'],total_count=len(all_samples),
+            archived_count=len(all_samples)-len(samples)-len(unclassified),unclassified_count=len(unclassified),
+            unclassified_samples=unclassified,source='public_reference',prediction_ready=False,connection='not_checked'))
     def save(self,owner,data,samples):
         self.current(owner,data['account_id'],data['version'])
         self.operations.command(owner,dict(action='public_topics_update',payload=dict(account_id=data['account_id'],samples=samples),version=data['version'],key=str(uuid4())),internal=True)
         return self.read(owner,data['account_id'])
     def search(self,owner,data):
         require(set(data)=={'account_id','version','keyword'},'INVALID_INPUT','搜索参数无效')
-        state,_=self.current(owner,data['account_id'],data['version']);self.check_connector_owner(owner);keyword=validate_text(data['keyword'],'搜索词',100)
+        state,account=self.current(owner,data['account_id'],data['version']);self.check_connector_owner(owner)
+        raw_keyword=data['keyword']
+        require(isinstance(raw_keyword,str),'INVALID_INPUT','请填写搜索词')
+        keyword=validate_text(raw_keyword.strip() or positioning(account)['label'],'搜索词',100)
         incoming=[];warnings=[]
         for sort in SORTS:
             try: result=self.client.search(keyword,sort)
@@ -175,15 +201,15 @@ class PublicTopics:
             if not isinstance(rows,list):
                 warnings.append('公开搜索返回格式不完整，已保留原有参考');continue
             for row in rows[:8]:
-                try: incoming.append(normalize(row,'public_search',keyword,sort))
+                try: incoming.append(stamp_position(normalize(row,'public_search',keyword,sort),account))
                 except (DomainError,TypeError,AttributeError): continue
         result=self.save(owner,data,merge_samples(state.get('public_topic_samples',{}).get(data['account_id'],[]),incoming))
         result.update(warnings=warnings,added=len({r['id'] for r in incoming}));return result
     def import_samples(self,owner,data):
         require(set(data)=={'account_id','version','samples'},'INVALID_INPUT','导入参数无效')
-        state,_=self.current(owner,data['account_id'],data['version'])
+        state,account=self.current(owner,data['account_id'],data['version'])
         require(isinstance(data['samples'],list) and 1<=len(data['samples'])<=20,'INVALID_INPUT','每次添加 1 至 20 条公开参考')
-        incoming=[normalize(row,'manual_public') for row in data['samples']]
+        incoming=[stamp_position(normalize(row,'manual_public'),account) for row in data['samples']]
         return self.save(owner,data,merge_samples(state.get('public_topic_samples',{}).get(data['account_id'],[]),incoming))
     def refresh(self,owner,data):
         require(set(data)=={'account_id','version','sample_id'},'INVALID_INPUT','更新参数无效')

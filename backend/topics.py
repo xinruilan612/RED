@@ -137,7 +137,8 @@ class Topics:
             candidates.append(c)
         require(len({c['id'] for c in candidates})==len(candidates),'INVALID_INPUT','选题标识不能重复')
         history=history_rows(state,account,config)
-        public_samples=copy.deepcopy(state.get('public_topic_samples',{}).get(account['id'],[])[-100:])
+        from backend.public_topics import scoped_samples
+        public_samples=scoped_samples(state,account)[-100:]
         texts=[config['positioning']+'。目标受众：'+config['audience']]+[r['title']+'。'+r['body'] for r in candidates]+[r['title']+'。'+r['body'] for r in history]+[r['title']+'。'+r.get('body','') for r in public_samples]
         encoded=self.encode(texts,images)
         for i,row in enumerate(candidates):
