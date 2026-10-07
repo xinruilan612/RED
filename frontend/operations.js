@@ -7,7 +7,7 @@ const pageInfo={overview:['THIS WEEK / 00','把每周运营，连成长期积累
 const dateText=value=>value?new Date(value).toLocaleString('zh-CN',{hour12:false}):'固定示例 · 无采集时间';
 const badge=(text,kind='')=>`<span class="pill ${kind}">${esc(text)}</span>`;
 const empty=(title,body)=>`<div class="empty-state"><span class="empty-symbol">↗</span><h2>${esc(title)}</h2><p>${esc(body)}</p></div>`;
-const navigationGroup=page=>({accounts:'overview',examples:'overview',trends:'studio',windtunnel:'studio',trials:'studio',metrics:'publish'})[page]||page;
+const navigationGroup=page=>({accounts:'overview',examples:'overview',trends:'studio',windtunnel:'studio',trials:'studio',topics:'studio',metrics:'publish'})[page]||page;
 function showPage(page){
  if(!pageInfo[page])page='overview';
  currentPage=page;location.hash=page;
@@ -37,6 +37,7 @@ function renderOperations(){
  if(currentPage==='metrics')renderMetrics();
  if(currentPage==='memory')renderMemory();
  if(currentPage==='examples')renderExamples();
+ if(currentPage==='topics'&&typeof renderTopics==='function')renderTopics();
  if(currentPage==='skapp'&&typeof renderSkapp==='function')renderSkapp();
 }
 function stat(label,value,note){return `<div><span>${esc(label)}</span><b>${esc(value)}</b><small>${esc(note)}</small></div>`;}

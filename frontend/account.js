@@ -17,6 +17,7 @@ function syncAccounts(){
 }
 function fillAccountBrief(){const a=currentAccount();if(!a)return;$('targetPlatform').value=a.platform;$('accountName').value=a.name;if($('welcome').hidden)return;$('audience').value=a.profile.audience||'请填写本次目标读者';$('tone').value=a.profile.tone||'真实、具体、清楚';}
 function resetAccountWorkspace(){
+ if(typeof resetTopics==='function')resetTopics();
  auto=false;chosenTrend=null;chosenHypothesis=null;window.activeTrialHypothesisId=null;
  $('selectedTrend').hidden=true;$('clearTrend').hidden=true;
  run=null;editing=false;$('editor').hidden=true;$('workbench').hidden=true;$('welcome').hidden=false;
