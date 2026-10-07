@@ -102,3 +102,22 @@ test('invalid manual counters do not send and failed saves retain user input',as
 test('refresh and remove use current account/version and direct removal needs no confirmation',async()=>{const x=setup();await x.s.renderTopics();const calls=[];x.s.api=async(path,method,payload)=>{calls.push({path,payload});return {version:7,samples:[]};};await x.s.topicsManagePublic('refresh','sample');await x.s.topicsManagePublic('remove','sample');assert.equal(calls[0].path,'/api/topics/public/refresh');assert.equal(calls[1].path,'/api/topics/public/remove');assert.equal(calls[1].payload.version,7);assert.equal(calls[1].payload.account_id,'a');assert.equal(calls[1].payload.sample_id,'sample');});
 
 test('public result discloses unavailable cover analysis and escapes image notes',()=>{const {s}=setup();const html=s.topicsPublicRows([{title:'参考1',image_missing:true,image_note:'尚未编码公开参考封面 <script>'},{title:'参考2',image_missing:true}]);assert.match(html,/尚未编码公开参考封面 &lt;script&gt;/);assert.match(html,/未分析参考封面，本条参考按文字匹配/);assert.doesNotMatch(html,/<script>/);});
+
+test('simple flow keeps search and candidate action prominent while advanced panels stay collapsed',async()=>{
+ const x=setup();await x.s.renderTopics();const html=x.e('operationsContent').innerHTML;
+ assert.match(html,/aria-label="使用步骤"/);assert.match(html,/01 \/ 找参考/);assert.match(html,/02 \/ 比较选题/);
+ assert.match(html,/class="primary" data-topics="public-search"/);
+ assert.match(html,/<details class="panel topics-profile" ><summary>当前方向：摄影/);
+ assert.match(html,/<details class="panel topics-details"><summary>补充自己的历史作品/);
+ assert.doesNotMatch(html,/尚未访问小红书|先补充真实历史/);
+ const result=x.s.topicsResultHTML({candidates:[{id:'a',title:'标题'}]},data().config);
+ assert.match(result,/03 \/ 选一个开始创作/);assert.match(result,/class="primary" data-topics-adopt/);
+});
+test('verified login supersedes stale library connection text and folds connection tools',async()=>{
+ const x=setup();await x.s.renderTopics();x.eval("topicsState.publicData={connection:'not_checked',samples:[]}");x.s.api=async()=>({is_logged_in:true});await x.s.topicsConnect('status');
+ const html=x.e('operationsContent').innerHTML;assert.match(html,/小红书已连接 · 管理连接/);assert.doesNotMatch(html,/尚未访问小红书/);assert.match(html,/<details class="topics-connection" >/);
+});
+test('missing profile and logged out connection open only the needed setup',async()=>{
+ const x=setup();await x.s.renderTopics();x.eval("topicsState.config.positioning='';topicsState.publicConnected=false");const html=x.s.topicsHTML();
+ assert.match(html,/<details class="panel topics-profile" open>/);assert.match(html,/<details class="topics-connection" open>/);
+});
