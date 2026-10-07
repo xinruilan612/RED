@@ -1,0 +1,817 @@
+{
+  "kind": "real-model-study-and-codex-proxy-evidence-not-installer",
+  "source_commit": "bcb5a2dad845dc0d186dc9421e8fe0fe4c518bcb",
+  "human_readers": 0,
+  "codex_readers": 6,
+  "readings": 42,
+  "budget_cap_cny": 5,
+  "maximum_accounted_cny": 0.264766,
+  "complete_paid_holdout_pairs": 1,
+  "unknown_requests": 1,
+  "files": {
+    "START_HERE.md": {
+      "sha256": "0988053c4b6741c2124f9ee43759835ad30e29b63045cc18fd24ab790458dc39",
+      "bytes": 1001
+    },
+    "docs/windtunnel/DEMO_MATERIAL.md": {
+      "sha256": "3f84bf95fe6cd6f71885951c8796598c21d9e463bea044ada80d31fb583e7da0",
+      "bytes": 2068
+    },
+    "docs/windtunnel/DEMO_SCRIPT.md": {
+      "sha256": "c311bd7e562025150946eec70dcd7460bd073ddff5008c6a08a20a7951000cc6",
+      "bytes": 2055
+    },
+    "docs/windtunnel/DEPLOYMENT.md": {
+      "sha256": "5f57e957acf3eaa749d6f51d5cafdc8a9bd7c3b1b4248ffb1c6e2b140504aba4",
+      "bytes": 4842
+    },
+    "docs/windtunnel/ENGINEERING_REPORT.md": {
+      "sha256": "3bea3a520a9d99e743d37f0883e6869936c926a63b9a624058ed5516a48247ae",
+      "bytes": 4105
+    },
+    "docs/windtunnel/EXECUTION_GUIDE.md": {
+      "sha256": "54265d0f8b536d3ed11cfd55695210baeb0f59d8393cb58237a3491ad0e4bc07",
+      "bytes": 9506
+    },
+    "docs/windtunnel/OPEN_ITEMS.md": {
+      "sha256": "efcd1b56baf46f8ada036bfaad99e599644d70eb33e0facaf05ecc003c211fb4",
+      "bytes": 7688
+    },
+    "docs/windtunnel/README.md": {
+      "sha256": "9cb6c1b3f956dcb22747916452767ded83b9cc8672d6629a6f2d457c9a0da59f",
+      "bytes": 2117
+    },
+    "docs/windtunnel/STUDY_PROTOCOL.md": {
+      "sha256": "b8e7c6fbd139d9c6f0cd1a1ce288d356c838a66d0655b2f0c2d2616368efab17",
+      "bytes": 5859
+    },
+    "docs/windtunnel/agent_study/REPORT.md": {
+      "sha256": "3eda387421d36141352381a8ffa96b12bbdb7c0b9b39480d13b03b8c3f4d5f4c",
+      "bytes": 10828
+    },
+    "docs/windtunnel/agent_study/authorization.json": {
+      "sha256": "109c35a516af1084ee5e2e7ea00a960845925c69f8fab694b8d8e546da66d87f",
+      "bytes": 752
+    },
+    "docs/windtunnel/agent_study/evidence/analysis-summary.json": {
+      "sha256": "a27bfc583151a2da3dc07c3b7ca3cd3c622febbaa62e2ea9652a34fc3d443319",
+      "bytes": 8224
+    },
+    "docs/windtunnel/agent_study/evidence/balance-delta.json": {
+      "sha256": "edc63d7811571538561ab3c531072e6901771f23a1716c982fdc51c876200b18",
+      "bytes": 205
+    },
+    "docs/windtunnel/agent_study/evidence/budget-call-audit.json": {
+      "sha256": "6e8187acf53726347446bccc8549b833c3f952c2494981b29cefa9efe6299b70",
+      "bytes": 61244
+    },
+    "docs/windtunnel/agent_study/evidence/budget-summary.json": {
+      "sha256": "c3bb03828633c418d2588d3ae4da3a50bbf84e38ea54f2b26eceb9099d59fcc7",
+      "bytes": 161
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S01/baseline/final.txt": {
+      "sha256": "c8ebcdaad0604b93f0811cac9ed7f73f0560cd9f77d3f66374b8a845346036c3",
+      "bytes": 7238
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S01/baseline/input.json": {
+      "sha256": "9192262a40e2de01660d381490a2fe13c0ae30519c5e9656787390ef9eab78a2",
+      "bytes": 17999
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S01/baseline/result.json": {
+      "sha256": "60e143d6dcaf9a74a3eab7c0a4776bb05115fad23982aed36cb28fcf06ab8859",
+      "bytes": 8694
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S01/windtunnel/final.txt": {
+      "sha256": "c8ebcdaad0604b93f0811cac9ed7f73f0560cd9f77d3f66374b8a845346036c3",
+      "bytes": 7238
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S01/windtunnel/result.json": {
+      "sha256": "26cf09ada3a0b2b4be1c8d74153194923a785a41841e97c7f00bf6c21852cf4b",
+      "bytes": 6905
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S02/baseline/final.txt": {
+      "sha256": "c17fb070a778b2a18a29432257aca23c2e4204a7a4e98e8edab02add230477ad",
+      "bytes": 2801
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S02/baseline/input.json": {
+      "sha256": "c82b25a51e63ea222485032c2750330e7b2f53dbc24a6d1d8c874233267729de",
+      "bytes": 8273
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S02/baseline/result.json": {
+      "sha256": "b02c485f907a5f46b7efa42ed992b5db424ddb424b5950d8d9100d506e80edde",
+      "bytes": 5883
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S02/windtunnel/final.txt": {
+      "sha256": "02e9278eb2eabe8e46a14c5e22ec5b489bbd085a2f8581a4c2e154ca9746d8fc",
+      "bytes": 2802
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S02/windtunnel/result.json": {
+      "sha256": "0fef43d7a0daed599fba3eb692e6c0afa625bdd0f0bf31c285a067f1fd895132",
+      "bytes": 7220
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S03/baseline/final.txt": {
+      "sha256": "54199b2281f7966693709a7965bb02889300375119eb46b7ca7d3beca1a8fff5",
+      "bytes": 4522
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S03/baseline/input.json": {
+      "sha256": "d80facc2d63cd5f441ab22f23725053b4122f1d3f3f6972baf015007cb786590",
+      "bytes": 11609
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S03/baseline/result.json": {
+      "sha256": "574ab5e7981d85826165de396e0fb561a4913f900f62951a1cb74b51838540bc",
+      "bytes": 5801
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S03/windtunnel/final.txt": {
+      "sha256": "52a2fa3a6201921cb0e9a2df12bdc7924c6f98a303c457972513fe48d188ce9a",
+      "bytes": 4929
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S03/windtunnel/report.md": {
+      "sha256": "de3d63b7e90bddec56b3c0e6c920ef8bbe42c42f123060d87896af7bf0447025",
+      "bytes": 7533
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S03/windtunnel/result.json": {
+      "sha256": "60c03f890e0f2df66e364653548d641970cd102502089d2e8ccbb96f56679bcb",
+      "bytes": 44674
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S04/baseline/final.txt": {
+      "sha256": "d14f56d644e4a350c4b590a59586b075ff58a6a1dad86a85e725bb4d64d44ca7",
+      "bytes": 2681
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S04/baseline/input.json": {
+      "sha256": "1cb431fb1557cfabc85842dcef1693490a73bb74452f8bdb24bfd09a2261d0fd",
+      "bytes": 8369
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S04/baseline/result.json": {
+      "sha256": "d17e7253f88a84454ddbfa4cc446f046f4034760c7e2a0ba09f805c0ff7994f5",
+      "bytes": 8672
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S04/windtunnel/final.txt": {
+      "sha256": "e05b216736dcbffa783c1dbf9e5f99b93723f0b3acc5c666a6462ddee34fb85d",
+      "bytes": 3365
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S04/windtunnel/report.md": {
+      "sha256": "5f2ed53029195bf3b8f5a10063770d5bd9ca15c58bbae5dce3beb391e177c08b",
+      "bytes": 4579
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S04/windtunnel/result.json": {
+      "sha256": "c04e475343237b4cefad44deb5fecf75fbbcf1d700c14eccb8e513388fd8be5a",
+      "bytes": 33372
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S05/baseline/final.txt": {
+      "sha256": "5ae9dd634db54503543ac690d00aaba9b7ca8c69e2091cb09f491a1a934abbbc",
+      "bytes": 2596
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S05/baseline/input.json": {
+      "sha256": "138f4786c57075aceb30386922e84e2f14435384df6a64c60a30b738703ab88f",
+      "bytes": 7615
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S05/baseline/result.json": {
+      "sha256": "65d8b705a84ebd2e2b795a2153294a90b5de721d3851c5c557686485ce83ca09",
+      "bytes": 3829
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S05/windtunnel/final.txt": {
+      "sha256": "5ae9dd634db54503543ac690d00aaba9b7ca8c69e2091cb09f491a1a934abbbc",
+      "bytes": 2596
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S05/windtunnel/result.json": {
+      "sha256": "f1ea8832ca31a356a2f733d218129838fb5d8fed6ef95586691d83d78b06c24a",
+      "bytes": 6235
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S06/baseline/final.txt": {
+      "sha256": "e875cb0dface6cf1ed20c0c5c4815d684aff35321bb80bb955a771c3424226c7",
+      "bytes": 8696
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S06/baseline/input.json": {
+      "sha256": "ad73b63f313500778fdf50d706da3ebec69ad7a8d5cf1f68f18663364907d1e9",
+      "bytes": 20579
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S06/baseline/result.json": {
+      "sha256": "d00076eb1cf515ba35de2134765c08f8449538b1d9f984bbfe31fbc0f51e3c42",
+      "bytes": 1352
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S06/windtunnel/final.txt": {
+      "sha256": "e875cb0dface6cf1ed20c0c5c4815d684aff35321bb80bb955a771c3424226c7",
+      "bytes": 8696
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S06/windtunnel/result.json": {
+      "sha256": "1b46d6a000c86810c3130f748b5f03d35f3d88b190e731c6fe0afe996e9a26ec",
+      "bytes": 1368
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S07/baseline/final.txt": {
+      "sha256": "31d7a8468f532da0abe60437c3b621135a6f9396bfd88fb4e62977a382e9fa29",
+      "bytes": 2515
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S07/baseline/input.json": {
+      "sha256": "581712ff6d7d52b0cbbfcfd0bd209539e47e171c2b7cff50e31387c144c41f73",
+      "bytes": 7473
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S07/baseline/result.json": {
+      "sha256": "12648e65621511b4dd8686c45a977bd033db72e787af1546353224962ea1cb6d",
+      "bytes": 1359
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S07/windtunnel/final.txt": {
+      "sha256": "31d7a8468f532da0abe60437c3b621135a6f9396bfd88fb4e62977a382e9fa29",
+      "bytes": 2515
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S07/windtunnel/result.json": {
+      "sha256": "234475bc14f358c33dd376b4f8700f686828e45ec336c08910e96e8d5fef8cee",
+      "bytes": 1375
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S08/baseline/final.txt": {
+      "sha256": "617f423787fbd1d5e3a0bb2454b7d0b89c69a7162df99a76c3027c0d5b64f6f4",
+      "bytes": 5654
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S08/baseline/input.json": {
+      "sha256": "082a26cc0097ccaaca3f4bc7e6c4335fbcbaef1a0f8c7817c63f7436c5e4fef0",
+      "bytes": 14315
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S08/baseline/result.json": {
+      "sha256": "5799f43eb8145314ad32bfba6c3f091c5cb78e0a37c75c78dffe3ba271121021",
+      "bytes": 1341
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S08/windtunnel/final.txt": {
+      "sha256": "617f423787fbd1d5e3a0bb2454b7d0b89c69a7162df99a76c3027c0d5b64f6f4",
+      "bytes": 5654
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S08/windtunnel/result.json": {
+      "sha256": "5a451180de8efe3a670183b39a5aea34e77bebad97d2f155ab2fbcd0736d948d",
+      "bytes": 1357
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S09/baseline/final.txt": {
+      "sha256": "b4dfe1cd9baa87502b359f768740521404d3336d95a4c3f9bc7fbb407875ae6c",
+      "bytes": 806
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S09/baseline/input.json": {
+      "sha256": "0536d05d99a63edd9296792910d62f93d6b2c7f04198316db51d1b071194d6d0",
+      "bytes": 3961
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S09/baseline/result.json": {
+      "sha256": "176cf3c014506394cf19694aac1320e5658ed582ed598e7ce4647c0b513fab05",
+      "bytes": 1331
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S09/windtunnel/final.txt": {
+      "sha256": "b4dfe1cd9baa87502b359f768740521404d3336d95a4c3f9bc7fbb407875ae6c",
+      "bytes": 806
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S09/windtunnel/result.json": {
+      "sha256": "5b1bc86263cab154eac4765200f73302b73a25638dc0d0e0aef06471ccd0dc08",
+      "bytes": 1346
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S10/baseline/final.txt": {
+      "sha256": "097a75cb3cc6e2bbe535cba19ca4f53a63d7283298cae24749c47145dac0915f",
+      "bytes": 3231
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S10/baseline/input.json": {
+      "sha256": "6d4af3bb89c17590e023750812a2760f925a05f06b3abad9ef50f7c131f39cee",
+      "bytes": 9107
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S10/baseline/result.json": {
+      "sha256": "c945466abd061da4780bbd7c1a6cf062903fbe72cbd9156539739cb72ec4f5aa",
+      "bytes": 1351
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S10/windtunnel/final.txt": {
+      "sha256": "097a75cb3cc6e2bbe535cba19ca4f53a63d7283298cae24749c47145dac0915f",
+      "bytes": 3231
+    },
+    "docs/windtunnel/agent_study/evidence/cases/S10/windtunnel/result.json": {
+      "sha256": "1917c54b06297cfcec6308663be765fb39befa2e0a151272b478c5cdd3454def",
+      "bytes": 1367
+    },
+    "docs/windtunnel/agent_study/evidence/freeze.json": {
+      "sha256": "f467c9b2d3038c79aaa2e6fe9022ed0fdd27dfa7f54f7c595991cfa0e49005ba",
+      "bytes": 2957
+    },
+    "docs/windtunnel/agent_study/evidence/frontend-tests.txt": {
+      "sha256": "767611838017b1ab07ca259b58d95fba4784f87cecd1d3f1de25c44119e6be04",
+      "bytes": 2665
+    },
+    "docs/windtunnel/agent_study/evidence/frozen_source/backend/windtunnel.py": {
+      "sha256": "db63c08624ab7ce677c74018779ec95c28cb25ea2587a098653ffed774eb4f52",
+      "bytes": 43840
+    },
+    "docs/windtunnel/agent_study/evidence/frozen_source/backend/windtunnel_runtime.py": {
+      "sha256": "6fcdb1606c9e400c9d9bab42e18e084e98641e89353f8116accab4b3b639f0f2",
+      "bytes": 5053
+    },
+    "docs/windtunnel/agent_study/evidence/frozen_source/scripts/run_windtunnel_agent_study.py": {
+      "sha256": "b1bc0575bfddf0f475f9c10276c90656eee11b9b4b4c9ea2192b3a8d6ce0f294",
+      "bytes": 15405
+    },
+    "docs/windtunnel/agent_study/evidence/frozen_source/scripts/study_budget.py": {
+      "sha256": "cbadd6a091d7986d34586961be45105d3b397d1fe1c2b77c6b962720aae13188",
+      "bytes": 6516
+    },
+    "docs/windtunnel/agent_study/evidence/python-tests.txt": {
+      "sha256": "54309f3622cbde0a56134fb5e6146d75f34e507eb045fe69766a78fca598a2d8",
+      "bytes": 64404
+    },
+    "docs/windtunnel/agent_study/evidence/reader-provenance.json": {
+      "sha256": "eaf737db09e1453e23acaa0add50223f7981c67759dab2e3e69e621c39466e08",
+      "bytes": 3735
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R01/P1259.txt": {
+      "sha256": "5ae9dd634db54503543ac690d00aaba9b7ca8c69e2091cb09f491a1a934abbbc",
+      "bytes": 2596
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R01/P1759.txt": {
+      "sha256": "e05b216736dcbffa783c1dbf9e5f99b93723f0b3acc5c666a6462ddee34fb85d",
+      "bytes": 3365
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R01/P2887.txt": {
+      "sha256": "31d7a8468f532da0abe60437c3b621135a6f9396bfd88fb4e62977a382e9fa29",
+      "bytes": 2515
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R01/P4028.txt": {
+      "sha256": "e875cb0dface6cf1ed20c0c5c4815d684aff35321bb80bb955a771c3424226c7",
+      "bytes": 8696
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R01/P5040.txt": {
+      "sha256": "b4dfe1cd9baa87502b359f768740521404d3336d95a4c3f9bc7fbb407875ae6c",
+      "bytes": 806
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R01/P7699.txt": {
+      "sha256": "097a75cb3cc6e2bbe535cba19ca4f53a63d7283298cae24749c47145dac0915f",
+      "bytes": 3231
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R01/P9115.txt": {
+      "sha256": "617f423787fbd1d5e3a0bb2454b7d0b89c69a7162df99a76c3027c0d5b64f6f4",
+      "bytes": 5654
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R01/responses.json": {
+      "sha256": "1ff22d7cfc832e2d66df60d8279ebb2a4528e97ae55fe948982d5f050c11af2f",
+      "bytes": 12656
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R01/tasks.json": {
+      "sha256": "4454b3f3fcf222ce5ea1277fec401932d9f705903027ee2ffa31d09101cd192e",
+      "bytes": 5444
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R02/P1259.txt": {
+      "sha256": "5ae9dd634db54503543ac690d00aaba9b7ca8c69e2091cb09f491a1a934abbbc",
+      "bytes": 2596
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R02/P2194.txt": {
+      "sha256": "d14f56d644e4a350c4b590a59586b075ff58a6a1dad86a85e725bb4d64d44ca7",
+      "bytes": 2681
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R02/P2887.txt": {
+      "sha256": "31d7a8468f532da0abe60437c3b621135a6f9396bfd88fb4e62977a382e9fa29",
+      "bytes": 2515
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R02/P4028.txt": {
+      "sha256": "e875cb0dface6cf1ed20c0c5c4815d684aff35321bb80bb955a771c3424226c7",
+      "bytes": 8696
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R02/P5040.txt": {
+      "sha256": "b4dfe1cd9baa87502b359f768740521404d3336d95a4c3f9bc7fbb407875ae6c",
+      "bytes": 806
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R02/P7084.txt": {
+      "sha256": "617f423787fbd1d5e3a0bb2454b7d0b89c69a7162df99a76c3027c0d5b64f6f4",
+      "bytes": 5654
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R02/P7699.txt": {
+      "sha256": "097a75cb3cc6e2bbe535cba19ca4f53a63d7283298cae24749c47145dac0915f",
+      "bytes": 3231
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R02/responses.json": {
+      "sha256": "2071d617960ce2c4b8f4b4f4c9f931ee9f693c87e86aff247c622399f07ea858",
+      "bytes": 12945
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R02/tasks.json": {
+      "sha256": "8af654442deec9472e063d2b120b43b8d7ff44f662807b976906769fdf7cd6a7",
+      "bytes": 5444
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R03/P1259.txt": {
+      "sha256": "5ae9dd634db54503543ac690d00aaba9b7ca8c69e2091cb09f491a1a934abbbc",
+      "bytes": 2596
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R03/P1759.txt": {
+      "sha256": "e05b216736dcbffa783c1dbf9e5f99b93723f0b3acc5c666a6462ddee34fb85d",
+      "bytes": 3365
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R03/P2887.txt": {
+      "sha256": "31d7a8468f532da0abe60437c3b621135a6f9396bfd88fb4e62977a382e9fa29",
+      "bytes": 2515
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R03/P3107.txt": {
+      "sha256": "097a75cb3cc6e2bbe535cba19ca4f53a63d7283298cae24749c47145dac0915f",
+      "bytes": 3231
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R03/P4028.txt": {
+      "sha256": "e875cb0dface6cf1ed20c0c5c4815d684aff35321bb80bb955a771c3424226c7",
+      "bytes": 8696
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R03/P5040.txt": {
+      "sha256": "b4dfe1cd9baa87502b359f768740521404d3336d95a4c3f9bc7fbb407875ae6c",
+      "bytes": 806
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R03/P9115.txt": {
+      "sha256": "617f423787fbd1d5e3a0bb2454b7d0b89c69a7162df99a76c3027c0d5b64f6f4",
+      "bytes": 5654
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R03/responses.json": {
+      "sha256": "76c403e443cd837dd4de1d45a60bba42c1e1bae0fe33091bcb83bca976a9ff51",
+      "bytes": 12520
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R03/tasks.json": {
+      "sha256": "0914aa349e25e462381660d7fccc7af11bade2ad168f7e3cef652110cfe3a7b2",
+      "bytes": 5444
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R04/P1591.txt": {
+      "sha256": "31d7a8468f532da0abe60437c3b621135a6f9396bfd88fb4e62977a382e9fa29",
+      "bytes": 2515
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R04/P2194.txt": {
+      "sha256": "d14f56d644e4a350c4b590a59586b075ff58a6a1dad86a85e725bb4d64d44ca7",
+      "bytes": 2681
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R04/P4697.txt": {
+      "sha256": "b4dfe1cd9baa87502b359f768740521404d3336d95a4c3f9bc7fbb407875ae6c",
+      "bytes": 806
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R04/P4752.txt": {
+      "sha256": "5ae9dd634db54503543ac690d00aaba9b7ca8c69e2091cb09f491a1a934abbbc",
+      "bytes": 2596
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R04/P7084.txt": {
+      "sha256": "617f423787fbd1d5e3a0bb2454b7d0b89c69a7162df99a76c3027c0d5b64f6f4",
+      "bytes": 5654
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R04/P7699.txt": {
+      "sha256": "097a75cb3cc6e2bbe535cba19ca4f53a63d7283298cae24749c47145dac0915f",
+      "bytes": 3231
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R04/P9283.txt": {
+      "sha256": "e875cb0dface6cf1ed20c0c5c4815d684aff35321bb80bb955a771c3424226c7",
+      "bytes": 8696
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R04/responses.json": {
+      "sha256": "b41e676a561563b524f8062b9e1b6beb369ff1fe1cd97c2542bc921425724e38",
+      "bytes": 12091
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R04/tasks.json": {
+      "sha256": "985614250e63808e9233ae3cb8da6e1116aef7785340e24270b517fb63c14be2",
+      "bytes": 5444
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R05/P1591.txt": {
+      "sha256": "31d7a8468f532da0abe60437c3b621135a6f9396bfd88fb4e62977a382e9fa29",
+      "bytes": 2515
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R05/P2194.txt": {
+      "sha256": "d14f56d644e4a350c4b590a59586b075ff58a6a1dad86a85e725bb4d64d44ca7",
+      "bytes": 2681
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R05/P3107.txt": {
+      "sha256": "097a75cb3cc6e2bbe535cba19ca4f53a63d7283298cae24749c47145dac0915f",
+      "bytes": 3231
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R05/P4697.txt": {
+      "sha256": "b4dfe1cd9baa87502b359f768740521404d3336d95a4c3f9bc7fbb407875ae6c",
+      "bytes": 806
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R05/P4752.txt": {
+      "sha256": "5ae9dd634db54503543ac690d00aaba9b7ca8c69e2091cb09f491a1a934abbbc",
+      "bytes": 2596
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R05/P9115.txt": {
+      "sha256": "617f423787fbd1d5e3a0bb2454b7d0b89c69a7162df99a76c3027c0d5b64f6f4",
+      "bytes": 5654
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R05/P9283.txt": {
+      "sha256": "e875cb0dface6cf1ed20c0c5c4815d684aff35321bb80bb955a771c3424226c7",
+      "bytes": 8696
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R05/responses.json": {
+      "sha256": "b38eb553ad2248ce437e08ac27016dd45b0890aaf8474bfb57b2c7066b662c23",
+      "bytes": 11871
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R05/tasks.json": {
+      "sha256": "0a0589d7674221fa90afb3f4adb46038fd02e5d0633200da38a5053941692f23",
+      "bytes": 5444
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R06/P1591.txt": {
+      "sha256": "31d7a8468f532da0abe60437c3b621135a6f9396bfd88fb4e62977a382e9fa29",
+      "bytes": 2515
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R06/P1759.txt": {
+      "sha256": "e05b216736dcbffa783c1dbf9e5f99b93723f0b3acc5c666a6462ddee34fb85d",
+      "bytes": 3365
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R06/P3107.txt": {
+      "sha256": "097a75cb3cc6e2bbe535cba19ca4f53a63d7283298cae24749c47145dac0915f",
+      "bytes": 3231
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R06/P4697.txt": {
+      "sha256": "b4dfe1cd9baa87502b359f768740521404d3336d95a4c3f9bc7fbb407875ae6c",
+      "bytes": 806
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R06/P4752.txt": {
+      "sha256": "5ae9dd634db54503543ac690d00aaba9b7ca8c69e2091cb09f491a1a934abbbc",
+      "bytes": 2596
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R06/P7084.txt": {
+      "sha256": "617f423787fbd1d5e3a0bb2454b7d0b89c69a7162df99a76c3027c0d5b64f6f4",
+      "bytes": 5654
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R06/P9283.txt": {
+      "sha256": "e875cb0dface6cf1ed20c0c5c4815d684aff35321bb80bb955a771c3424226c7",
+      "bytes": 8696
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R06/responses.json": {
+      "sha256": "e6c9dbeef0e7253be191dd6fc8f1b042d5ec8b3eb0dca1127770ff10e052e698",
+      "bytes": 13540
+    },
+    "docs/windtunnel/agent_study/evidence/readers/R06/tasks.json": {
+      "sha256": "8a2e30fcc6f0bcfd8ced388c95bb2ee26b18aade90fa9ccb55f5fbd81aa6ab15",
+      "bytes": 5444
+    },
+    "docs/windtunnel/agent_study/evidence/scored-readings-unblinded.json": {
+      "sha256": "63420c60d93d9cb95d01d46d403c231227024aa7340c4566065b4e4c6bdda69a",
+      "bytes": 34223
+    },
+    "docs/windtunnel/agent_study/evidence/scores_a.json": {
+      "sha256": "74e89b55f68382d5e165d5539c6368c2ca5f8069d2e7d7640628fe33a9f0f0c8",
+      "bytes": 15711
+    },
+    "docs/windtunnel/agent_study/evidence/scores_b.json": {
+      "sha256": "74b4cd49e8a185157e52cc5e3be376960043cfeaf113e5aa28803b1876c686af",
+      "bytes": 14053
+    },
+    "docs/windtunnel/agent_study/evidence/scoring-lock.json": {
+      "sha256": "a39618b952fac97c6380ee114be67dbc2e05408ebc917f89a63e8f117a9ece72",
+      "bytes": 368
+    },
+    "docs/windtunnel/agent_study/evidence/supplement-tests.txt": {
+      "sha256": "28f16a04f7289636eae1f9e1edac4a429165a3ad0fedf9ca280b3bee6e18cc8f",
+      "bytes": 11503
+    },
+    "docs/windtunnel/agent_study/evidence/verification.json": {
+      "sha256": "95265af82d9ac6738b4168a2687e018b45de11c5aea382820c6a647a18484a08",
+      "bytes": 840
+    },
+    "docs/windtunnel/agent_study/task_rubrics_candidate.json": {
+      "sha256": "d843382b95bf5b78dec90078975b2ee56d5fad1aca2b84af21a8ce3dd91bca31",
+      "bytes": 13855
+    },
+    "docs/windtunnel/evidence/2026-10-07-frontend.txt": {
+      "sha256": "290dbf0aa2f2bece6d2fdc23a5f25b4141c962e840246b2d32824ddf74789b09",
+      "bytes": 2667
+    },
+    "docs/windtunnel/evidence/2026-10-07-official-check.md": {
+      "sha256": "50026b9a5d034d89d1c92cde447e3d5a7b4a10a75188fc1a3a5cd4390d7ef2a0",
+      "bytes": 4852
+    },
+    "docs/windtunnel/evidence/2026-10-07-preparation-status.json": {
+      "sha256": "d3001a662ed4ee459704e70a90f7f925165eb6ee3ba58851d448fad9cb464aae",
+      "bytes": 762
+    },
+    "docs/windtunnel/evidence/2026-10-07-tests.txt": {
+      "sha256": "06f936fc6f8f78f3cb316dfe4add592e27283d7c71225a20e43b3d3ff816fb48",
+      "bytes": 61121
+    },
+    "docs/windtunnel/evidence/2026-10-07-verification.json": {
+      "sha256": "f6bc68a8d13b7d39f6365bfd0efc2f8397dd2ed23a9e58b6f3891c89e05e5440",
+      "bytes": 1058
+    },
+    "docs/windtunnel/evidence/browser-evidence.json": {
+      "sha256": "a493ea895bb9060654525f9210a993a1c84359763e5955de514562e75de8501e",
+      "bytes": 889
+    },
+    "docs/windtunnel/evidence/final-browser-smoke.json": {
+      "sha256": "b125d80cbce742185ecd0e70d50b03b83e5b0e997a64cbb1ceb9441013318b06",
+      "bytes": 846
+    },
+    "docs/windtunnel/evidence/simulated-report.md": {
+      "sha256": "e73d45a8b96440035b77d7f6596006399c4451452dc37da1c44d5c6fb79ee835",
+      "bytes": 1155
+    },
+    "docs/windtunnel/evidence/unittest.txt": {
+      "sha256": "01c16fa69e949eeb8604ad27a164d25d39d4b4a76942e9ce018a945b59f102b4",
+      "bytes": 33477
+    },
+    "docs/windtunnel/evidence/verification.json": {
+      "sha256": "dfa21cfaf3d14f77936cf8a0ccec185487d527501f3d0e83047bf4678a577e0e",
+      "bytes": 552
+    },
+    "docs/windtunnel/public_samples/LICENSE_0BSD.txt": {
+      "sha256": "48b6aee90e7b570464311282f7e8e3811ae75d756315312ea1fbd984f40ec5c8",
+      "bytes": 670
+    },
+    "docs/windtunnel/public_samples/LICENSE_PSF.txt": {
+      "sha256": "073140a41423ee76db7d318fb6934a855283a77491554cf4d60b37f59ca445f4",
+      "bytes": 2398
+    },
+    "docs/windtunnel/public_samples/LICENSE_SOURCE.txt": {
+      "sha256": "d3e62211600f0f2bee184f6f52cd1725458a5a6268995fb99ee82ca7deb13e38",
+      "bytes": 49742
+    },
+    "docs/windtunnel/public_samples/README.md": {
+      "sha256": "5b0f8ea0c0a316425cfc234a1437a4a8bcdeb1d4225530689d3efbc317824727",
+      "bytes": 3455
+    },
+    "docs/windtunnel/public_samples/S01/draft.md": {
+      "sha256": "60e1a164cc49658de5bf75fdb8de4befff8d84181e7da79e657fe196ada08f2c",
+      "bytes": 8064
+    },
+    "docs/windtunnel/public_samples/S01/support.md": {
+      "sha256": "a551eff6c337741dedabc357a322ac15b4d645e51eb66e0c3b354a30c66a811a",
+      "bytes": 7779
+    },
+    "docs/windtunnel/public_samples/S02/draft.md": {
+      "sha256": "cb8eccef6aac301abf7fbc4ec3dbdde6478a3ec04254fdf739cc3927f01e556a",
+      "bytes": 3626
+    },
+    "docs/windtunnel/public_samples/S02/support.md": {
+      "sha256": "8baddd11396e4f3e6238f62aa4ad3b7057d715b927611ec53a0b60b6715ed806",
+      "bytes": 3341
+    },
+    "docs/windtunnel/public_samples/S03/draft.md": {
+      "sha256": "ef83f431144c8feb23b3cb3ad59dd5c1ae6c1f2970a5b79c96708e23f2b90837",
+      "bytes": 5358
+    },
+    "docs/windtunnel/public_samples/S03/support.md": {
+      "sha256": "1cda6b99a180ee4d755d59df3f996633baad4426bbcd6f2147e9b5b703da4f02",
+      "bytes": 5073
+    },
+    "docs/windtunnel/public_samples/S04/draft.md": {
+      "sha256": "a23dbabe071f9e237194eb0a51d7789f6feeedbd24dbd6edea9da3cfbcccbc6b",
+      "bytes": 3745
+    },
+    "docs/windtunnel/public_samples/S04/support.md": {
+      "sha256": "a6352d7035652e7642fcf07d7706dc8f95c70c7e3f7e0d84d3a53427294e923b",
+      "bytes": 3460
+    },
+    "docs/windtunnel/public_samples/S05/draft.md": {
+      "sha256": "269d80bd47a9e7c7f10a9fb4dd6a89c8d5f09af6f567c2cdc35c4317c9674015",
+      "bytes": 3423
+    },
+    "docs/windtunnel/public_samples/S05/support.md": {
+      "sha256": "d1181fa14e432b23827f9dbb339058bf3c418109d5d3f8b8a9270195437ffc0f",
+      "bytes": 3138
+    },
+    "docs/windtunnel/public_samples/S06/draft.md": {
+      "sha256": "d66b7563463ef984a107f41ff1ff687713a4ab20c33056204037c7103a95f6f4",
+      "bytes": 9545
+    },
+    "docs/windtunnel/public_samples/S06/support.md": {
+      "sha256": "6ab7935261aa7a0a6105d5917f226d9f546376ef93fd5c82239f5cc1554cac5b",
+      "bytes": 9260
+    },
+    "docs/windtunnel/public_samples/S07/draft.md": {
+      "sha256": "7a11c0952c743e14807fa625346fb4e59cf7ea59a2399506609aa6f29dbd8d95",
+      "bytes": 3378
+    },
+    "docs/windtunnel/public_samples/S07/support.md": {
+      "sha256": "07a1a6fdc72b6621d5bec055d81c30b997f94307e33dff441fbb34d14dbdc020",
+      "bytes": 3093
+    },
+    "docs/windtunnel/public_samples/S08/draft.md": {
+      "sha256": "2b398bbc4d5094629c4b1665d420a63a555f3ea10e9996cc09722b457052cc5b",
+      "bytes": 6486
+    },
+    "docs/windtunnel/public_samples/S08/support.md": {
+      "sha256": "c836a67d4bf4aff987ef92a0cabd8ad1c936c7cf1ed82a5bb9702f1b4a57d998",
+      "bytes": 6201
+    },
+    "docs/windtunnel/public_samples/S09/draft.md": {
+      "sha256": "e991c982012d6a7c620badad7cfc7d3bf5b243a680c3f6c1c911fcbe8dc36e88",
+      "bytes": 1635
+    },
+    "docs/windtunnel/public_samples/S09/support.md": {
+      "sha256": "c8f4b2a16dfbac94513b3770a26e59928237066263364513ed7d9ab0add5509e",
+      "bytes": 1350
+    },
+    "docs/windtunnel/public_samples/S10/draft.md": {
+      "sha256": "456190e2d4eafe656f4d3cdf710638fd19d9e02151cef4e90b89cf466cef22e1",
+      "bytes": 4081
+    },
+    "docs/windtunnel/public_samples/S10/support.md": {
+      "sha256": "ba277f0adc60667b308820b0f05ca08bb0165911162684634e33ab53825073fb",
+      "bytes": 3796
+    },
+    "docs/windtunnel/public_samples/collect.py": {
+      "sha256": "487ce06b83f0d17970f8e95f468c7822228f3de05dbee1ac1c5cf2f2e1ad797e",
+      "bytes": 6964
+    },
+    "docs/windtunnel/public_samples/license.html": {
+      "sha256": "4aa9eb676fb9cbae7d73b91590335e25715a1b64efc3aa34b05a19c143ba3817",
+      "bytes": 81999
+    },
+    "docs/windtunnel/public_samples/manifest.json": {
+      "sha256": "f47bdcb30e5ed2639dfb6ca335961653fe60f45ed0922d36c5e189a829f5a656",
+      "bytes": 15930
+    },
+    "docs/windtunnel/public_samples/sources/howto_argparse.html": {
+      "sha256": "90db41d77990738eea3a3a95c4e6a437a33582b2ee5dab1b4514a3efd83c7109",
+      "bytes": 107130
+    },
+    "docs/windtunnel/public_samples/sources/library_pathlib.html": {
+      "sha256": "85fa64bd13ef47a0a837c1b1d3523db7312601def534c7d9783effd0845e333c",
+      "bytes": 210454
+    },
+    "docs/windtunnel/public_samples/sources/tutorial_controlflow.html": {
+      "sha256": "427b9a7efd964a059824fd290770e1e51c1160e7d065fc2b3e6705aaf70d91e5",
+      "bytes": 137694
+    },
+    "docs/windtunnel/public_samples/sources/tutorial_datastructures.html": {
+      "sha256": "da391aa509c1609bf291925c9a96ac4e7edf2172632e9deb8e6e8b40010a1342",
+      "bytes": 96503
+    },
+    "docs/windtunnel/public_samples/sources/tutorial_errors.html": {
+      "sha256": "812f08c04914c5d8d42991d89d59b741d78195a70cd137347b4af7cc6b2fec92",
+      "bytes": 79557
+    },
+    "docs/windtunnel/public_samples/sources/tutorial_inputoutput.html": {
+      "sha256": "dfd790d5034d2bf51f33dab1043ca70674aaa68acbbf7dfd4774b72658a35a78",
+      "bytes": 76076
+    },
+    "docs/windtunnel/public_samples/sources/tutorial_introduction.html": {
+      "sha256": "63d76a1173c4a909d060bd144c8d4f27340032907d41c2ba38f3bb4763ce28ff",
+      "bytes": 70328
+    },
+    "docs/windtunnel/public_samples/verify.py": {
+      "sha256": "71d16b75985d57b6d6f5f14ea7794bbbd2872042006dba112688f0f5ee09a747",
+      "bytes": 1977
+    },
+    "docs/windtunnel/templates/README.md": {
+      "sha256": "49de847d170a4cb0f57463f29e433930dc4f57b2677032faa148e0172d1d3670",
+      "bytes": 2684
+    },
+    "docs/windtunnel/templates/assignment_key_RESEARCHER_ONLY.csv": {
+      "sha256": "d380503d958e4a360f3620ca6ae10724525eb306d8b7fea7a87f6d1674d57f1e",
+      "bytes": 367
+    },
+    "docs/windtunnel/templates/human_scoring_RESEARCHER_ONLY.csv": {
+      "sha256": "0b2d7b9a3567164bc48785ee631e32e060588311697141f474d31c305b616727",
+      "bytes": 708
+    },
+    "docs/windtunnel/templates/reader_R01.csv": {
+      "sha256": "4213ed15b038686a5fe64c75cfa294db923fe3102342f3ada629b7cdd150f6d5",
+      "bytes": 137
+    },
+    "docs/windtunnel/templates/reader_R02.csv": {
+      "sha256": "b5e5bdd9c11e0d9e71359041f3fa57068a0cec5e4410a4166ce0a7e17c60077b",
+      "bytes": 137
+    },
+    "docs/windtunnel/templates/reader_R03.csv": {
+      "sha256": "2597f4d18ebf30d68cd620aaf5db94ef0b85e5983bc541bc2106c4e327bfad9e",
+      "bytes": 137
+    },
+    "docs/windtunnel/templates/reader_R04.csv": {
+      "sha256": "d3587f7a6345e8d926bc2518b8069dba69819e7d3b3fbf350629570b1b2793af",
+      "bytes": 137
+    },
+    "docs/windtunnel/templates/reader_R05.csv": {
+      "sha256": "631d34426617286d0755e1ed1042cd541e6409732834a6bc107517dac7a5cf00",
+      "bytes": 137
+    },
+    "docs/windtunnel/templates/reader_R06.csv": {
+      "sha256": "9a2739be30e2e2641e3e79b3979580c5fe5dc4c292f9d3e0c88d3a67a0dc3198",
+      "bytes": 137
+    },
+    "docs/windtunnel/templates/reader_consent_RESEARCHER_ONLY.csv": {
+      "sha256": "2f15ea9f32da562b2f3a96be8e6a2d98376dda1c078d3f5bb275fe5ad29e8d27",
+      "bytes": 138
+    },
+    "docs/windtunnel/templates/reader_evaluation_TEMPLATE.csv": {
+      "sha256": "5c79653ce1f3934747d0aecbcd8df533d1c61db5d12a209f3a56ff5b22ffe180",
+      "bytes": 870
+    },
+    "docs/windtunnel/templates/run_costs_RESEARCHER_ONLY.csv": {
+      "sha256": "7bec208feb9c72a5ac5ac1bf69557ed804c5313cb4d4d89204bcae87e9d52d74",
+      "bytes": 479
+    },
+    "docs/windtunnel/templates/sample_registry.csv": {
+      "sha256": "1b8cf00e358c71fa7a0035b80b10ad1fecdebba8e1069bc1d256cacdb2dc1295",
+      "bytes": 335
+    },
+    "docs/windtunnel/templates/source_authorization.csv": {
+      "sha256": "8419be4185178b6ddcd253fba4237ef99fe3dda4952cbc44dde8111797ef5a05",
+      "bytes": 303
+    },
+    "docs/windtunnel/templates/study_run_TEMPLATE.json": {
+      "sha256": "7a53b0e3cdeb5596329de207d98ab41d508dd0a66a1f0a01c4c4ab54476e82e5",
+      "bytes": 688
+    },
+    "scripts/run_windtunnel_agent_study.py": {
+      "sha256": "b1bc0575bfddf0f475f9c10276c90656eee11b9b4b4c9ea2192b3a8d6ce0f294",
+      "bytes": 15405
+    },
+    "scripts/study_budget.py": {
+      "sha256": "cbadd6a091d7986d34586961be45105d3b397d1fe1c2b77c6b962720aae13188",
+      "bytes": 6516
+    },
+    "tests/test_agent_study_evidence.py": {
+      "sha256": "ae8b77ff39620d331ee56db2672ab47594102ccecf8daed9b30117aacbc25b9d",
+      "bytes": 6345
+    },
+    "tests/test_agent_study_runner.py": {
+      "sha256": "0846b980a584f6f13d690745b51ff3fc0a92c1e426b48d9b2b86a7aba220bd89",
+      "bytes": 9654
+    },
+    "tests/test_study_budget.py": {
+      "sha256": "667b3f1e3c704d8ea84138a253a2f475832ad53e224ef48d17ac7bc123d850e1",
+      "bytes": 6127
+    }
+  }
+}
