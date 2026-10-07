@@ -14,5 +14,6 @@
   "real_model_calls": 162,
   "cumulative_budget_upper_cny": 2.118922,
   "human_participants": 0,
-  "reader_type": "six fresh Codex subagents, not project agents"
+  "reader_type": "six fresh Codex subagents, not project agents",
+  "test_log_normalization": "Trailing whitespace removed from exported test logs; original terminal logs retained privately."
 }
