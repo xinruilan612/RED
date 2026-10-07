@@ -60,7 +60,7 @@ class WindtunnelApiTests(unittest.TestCase):
         self.assertEqual(len(rows),1)
         download=self.client.get('/api/runs/'+run['run_id']+'/export')
         self.assertEqual(download.status_code,200,download.text)
-        self.assertIn('attachment',download.headers['content-disposition'])
+        self.assertEqual(download.headers['content-disposition'], 'attachment; filename="youji-reader-check-' + run['run_id'][:8] + '.md"')
         self.assertIn('模拟流程',download.text)
         target=Path(self.tmp.name)/'download.md';target.write_bytes(download.content)
         self.assertIn('本地工具导出教程',target.read_text(encoding='utf-8'))

@@ -162,7 +162,9 @@ class ProductionTests(unittest.TestCase):
         self.assertNotIn('accept',run['allowed_actions'])
         act('next');act('accept',{'draft_ref':run['drafts'][-1]['ref'],'review_ref':run['review']['ref']})
         self.assertEqual(run['run_status'],'SUCCEEDED')
-        self.assertEqual(self.client.get('/api/runs/'+run['run_id']+'/export').status_code,200)
+        exported = self.client.get('/api/runs/'+run['run_id']+'/export')
+        self.assertEqual(exported.status_code,200)
+        self.assertEqual(exported.headers['content-disposition'], 'attachment; filename="youji-draft.md"')
 
     def test_rate_limit_and_public_config(self):
         auth=self.app.state.auth

@@ -217,7 +217,10 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
 
     @app.get('/api/runs/{run_id}/export')
     def export(run_id: str,user=Depends(logged)):
-        return Response(service.export(user['owner'],run_id),media_type='text/markdown',headers={'Content-Disposition':'attachment; filename="youji-draft.md"'})
+        body = service.export(user['owner'], run_id)
+        run = store.get(run_id, user['owner'])
+        filename = 'youji-reader-check-' + run.run_id[:8] + '.md' if run.workflow_type == 'windtunnel' else 'youji-draft.md'
+        return Response(body, media_type='text/markdown', headers={'Content-Disposition': f'attachment; filename="{filename}"'})
 
     @app.get('/')
     def index(): return FileResponse(FRONTEND/'index.html')
