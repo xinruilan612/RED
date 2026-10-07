@@ -218,3 +218,15 @@ test('practice page clearly explains fictional data and offers a direct skip',()
  assert.match(html,/这是什么？/);assert.match(html,/虚构数字/);assert.match(html,/不调用收费模型/);assert.match(html,/data-start-creation/);
  const index=fs.readFileSync('frontend/index.html','utf8');assert.match(index,/真人试读（两稿对比）/);assert.match(index,/免费练习（虚构数据）/);
 });
+
+
+test('topic comparison keeps a single guided flow without sibling tool links',()=>{
+ const s=setup();s.eval("renderPageTools('studio')");
+ assert.match(s.element('pageTools').innerHTML,/写内容/);
+ s.eval("renderPageTools('topics')");
+ assert.equal(s.element('pageTools').hidden,true);
+ assert.equal(s.element('pageTools').innerHTML,'');
+ s.eval("renderPageTools('metrics')");
+ assert.equal(s.element('pageTools').hidden,false);
+ assert.match(s.element('pageTools').innerHTML,/数据复盘/);
+});

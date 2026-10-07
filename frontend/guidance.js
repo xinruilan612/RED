@@ -6,6 +6,7 @@ pageInfo.trends=['TOPICS / 选题与来源','先找到一个值得写的问题�
 pageInfo.examples=['免费练习','不熟悉流程？先用示例练一次。','这里是可选练习区，使用虚构内容和数据。正式创作不需要先完成练习。'];
 
 function renderPageTools(page){
+ if(page==='topics'){const host=$('pageTools');host.hidden=true;host.innerHTML='';return;}
  const groups={studio:[['studio','写内容'],['trends','选题与来源']],publish:[['publish','作品归档'],['metrics','数据复盘']]};
  const group=navigationGroup(page),links=groups[group]||[];
  if(group==='studio'&&websiteSession?.auth_required)links.push(['windtunnel','读者理解检查（可选）']);
