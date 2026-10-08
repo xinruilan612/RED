@@ -324,6 +324,37 @@ function renderDraftActionState(){
  $('draftActionDetails').textContent=!latest?'查看最新稿件':'查看审核结果';
 }
 function draftHTML(d,index,changed=false){const c=d.content;return `<article class="draft-copy ${changed?'changed':''}"><span class="version-tag">版本 ${index+1} · ${d.actor==='user'?'你手动修改':run.mode==='live'?'AI 创作':'模拟创作'} · ${esc(d.ref.slice(0,8))}${run.accepted_ref===d.ref?' · 已确认':''}</span><h3>${esc(c.selected_title)}</h3><pre>${esc(c.body)}</pre><p>${esc(c.cta)}</p><div>${(c.tags||[]).map(t=>'<span class="tag">#'+esc(t)+'</span>').join('')}</div></article>`;}
+function draftChangeDetails(previous,current){
+ const fields={selected_title:'标题',body:'正文',cta:'互动引导',tags:'标签'};
+ const rows=Object.entries(fields).flatMap(([key,label])=>{
+  const before=key==='tags'?(previous[key]||[]).map(t=>'#'+t).join(' '):String(previous[key]||'');
+  const after=key==='tags'?(current[key]||[]).map(t=>'#'+t).join(' '):String(current[key]||'');
+  if(before===after)return [];
+  // Compare Unicode characters, preserving the literal text rather than an AI summary.
+  const a=Array.from(before),b=Array.from(after);let start=0,end=0;
+  while(start<a.length&&start<b.length&&a[start]===b[start])start++;
+  while(end<a.length-start&&end<b.length-start&&a[a.length-1-end]===b[b.length-1-end])end++;
+  const excerpt=(text,tag)=>{
+   const left=text.slice(Math.max(0,start-35),start).join('');
+   const changed=text.slice(start,text.length-end).join('');
+   const right=text.slice(text.length-end,text.length-end+35).join('');
+   return (start>35?'…':'')+esc(left)+(changed?'<'+tag+'>'+esc(changed)+'</'+tag+'>':'<em>（此处无文字）</em>')+esc(right)+(end>35?'…':'');
+  };
+  return ['<div class="readable"><b>'+label+'</b><p>修改前：'+excerpt(a,'del')+'</p><p>修改后：'+excerpt(b,'ins')+'</p></div>'];
+ });
+ return rows.length?'<details class="revision-diff"><summary>展开查看实际修改前后</summary><p class="helper">以下直接比较两版文字；是否解决审核问题，以当前版本复审结果为准。</p>'+rows.join('')+'</details>':'';
+}
+function draftReviewSummary(d,index){
+ const prefix='第 '+(index+1)+' 版：';
+ if(d.ref!==run.drafts.at(-1).ref)return prefix+'历史版本。请查看最新版本的审核结果与下一步。';
+ if(run.run_status==='SUCCEEDED'&&run.accepted_ref===d.ref)return prefix+(run.acceptance?.mode==='manual_override'?'已人工确认采用，不代表 AI 审核通过。':'已确认。')+'可下载全部成品包。';
+ if(run.in_flight)return prefix+'复审未完成，正在处理。完成后将显示结果，请先阅读稿件。';
+ if(run.allowed_actions.includes('accept'))return prefix+'审核通过。满意后点击下方确认，再下载全部成品包。';
+ const review=run.review?.draft_ref===d.ref&&run.review?.content_hash===d.content_hash?run.review:null;
+ if(review?.decision==='revision_required')return prefix+'需要修改。查看审核意见，补充要求后让 AI 改稿并复审。';
+ if(review?.decision==='needs_human')return prefix+'需要补充信息。请查看审核问题并补充真实资料。';
+ return prefix+'复审未完成。请查看审核结果处理；文字发生变化不代表审核通过。';
+}
 function renderDraft(){
  if(typeof mountMediaExports==='function'&&$('mediaExports'))mountMediaExports(run,$('mediaExports'));
  $('draftPanel').hidden=!run.drafts.length;if(!run.drafts.length){renderDraftActionState();return;}
@@ -344,9 +375,10 @@ function renderDraft(){
   const request=run.context?.revision_requests?.findLast(r=>r.draft_ref===prev.ref);
   if(request?.feedback)summary='<p class="helper">本次修改意见：'+esc(request.feedback)+'</p>';
   summary+='<p class="change-summary">与上一版相比：'+(onlyTags?'仅修改标签，标题和正文未变':changes.length?'修改了 '+changes.join('、'):'标题、正文、互动引导和标签均未变化')+'。'+(compare?'左侧旧稿，右侧当前所选稿。':'当前显示所选版本。')+'</p>';
+  summary+=draftChangeDetails(prev.content,d.content);
   if(changes.includes('标签'))summary+='<p class="change-summary">标签：'+esc((prev.content.tags||[]).map(t=>'#'+t).join(' '))+' → '+esc((d.content.tags||[]).map(t=>'#'+t).join(' '))+'</p>';
  }
- $('draftView').innerHTML=summary+(compare?'<div class="draft-columns">'+draftHTML(prev,i-1)+draftHTML(d,i,true)+'</div>':draftHTML(d,i));
+ $('draftView').innerHTML='<p class="helper" role="status">'+esc(draftReviewSummary(d,i))+'</p>'+summary+(compare?'<div class="draft-columns">'+draftHTML(prev,i-1)+draftHTML(d,i,true)+'</div>':draftHTML(d,i));
  $('checkReaders').hidden=!websiteSession?.auth_required;$('readerCheckHelp').hidden=$('checkReaders').hidden;
  $('checkReaders').textContent=`用版本 ${i+1} 做读者理解检查（可选） →`;
  $('checkReaders').disabled=busy||editing||run.in_flight;

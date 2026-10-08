@@ -25,11 +25,13 @@ def bind(value,content):
     """An explicit ID selects text, never fuzzy-match a model paraphrase."""
     result=copy.deepcopy(value)
     lookup={p['id']:p for p in passages(content)}
-    entries=result.get('claim_map')
-    if not isinstance(entries,list):return result
-    for item in entries:
-        if not isinstance(item,dict) or 'draft_excerpt_id' not in item:continue
-        key=item['draft_excerpt_id']
-        require(isinstance(key,str) and key in lookup,'MODEL_OUTPUT_INVALID','审核稿件片段编号无效或属于旧版')
-        item['excerpt']=lookup[key]['text']
+    for field in ('claim_map','issues'):
+        entries=result.get(field)
+        if not isinstance(entries,list):continue
+        for item in entries:
+            if not isinstance(item,dict) or 'draft_excerpt_id' not in item:continue
+            key=item['draft_excerpt_id']
+            require(isinstance(key,str) and key in lookup,'MODEL_OUTPUT_INVALID','审核稿件片段编号无效或属于旧版')
+            item['excerpt']=lookup[key]['text']
+            if field=='issues':item['location']=lookup[key]['location']
     return result

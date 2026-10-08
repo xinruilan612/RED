@@ -92,3 +92,46 @@ class ReviewPassageTests(unittest.TestCase):
         report=normalize(run,'review',raw)
         self.assertEqual(len(report['claim_map']),2)
         self.assertEqual(report['claim_map'][0]['excerpt'],report['claim_map'][1]['excerpt'])
+
+    def test_issue_id_binds_location_and_excerpt_without_changing_judgment(self):
+        run=self.fixture();content=run.drafts[-1]['content']
+        passage=next(p for p in passages(content) if p['location']=='tags')
+        issue={'issue_id':'i1','draft_excerpt_id':passage['id'],'location':'body',
+               'excerpt':'旧版不存在的标签','severity':'major','state':'open',
+               'reason':'标签过泛','suggestion':'使用具体标签'}
+        raw={'decision':'revision_required','next_action':'revise','issues':[issue]}
+        before=copy.deepcopy(raw)
+        result=bind(raw,content)
+        self.assertEqual(result['issues'][0],issue|{'location':'tags','excerpt':'鼠标'})
+        self.assertEqual(result['decision'],'revision_required')
+        self.assertEqual(result['next_action'],'revise')
+        self.assertEqual(raw,before)
+
+    def test_issue_ids_checked_even_without_claim_map(self):
+        run=self.fixture();content=run.drafts[-1]['content'];old=passages(content)[0]['id']
+        content['cta']='已修改的互动'
+        for bad in ('unknown',None,7,[],{},old):
+            with self.subTest(bad=bad):
+                raw={'issues':[{'draft_excerpt_id':bad,'location':'selected_title','excerpt':'鼠标选择'}]}
+                with self.assertRaises(DomainError):bind(raw,content)
+
+    def test_legacy_issues_are_not_silently_rewritten(self):
+        content=self.fixture().drafts[-1]['content']
+        raw={'issues':[{'location':'body','excerpt':'旧稿原句','reason':'原意见'}]}
+        self.assertEqual(bind(raw,content),raw)
+
+    def test_issue_id_only_normalizes_before_required_text_validation(self):
+        run=self.fixture();raw=schema('review');entry=self.entry(run)
+        raw['claim_map']=[entry]
+        raw.update(decision='revision_required',next_action='revise')
+        raw['issues']=[{'issue_id':'i1','draft_excerpt_id':entry['draft_excerpt_id'],
+                        'severity':'major','state':'open','reason':'句子没有说明使用场景',
+                        'suggestion':'补充开关的使用场景'}]
+        before=copy.deepcopy(raw)
+        report=normalize(run,'review',raw)
+        self.assertEqual(report['issues'][0]['excerpt'],'它有电源开关。')
+        self.assertEqual(report['issues'][0]['location'],'body')
+        self.assertEqual(report['issues'][0]['severity'],'major')
+        self.assertEqual(report['issues'][0]['state'],'open')
+        self.assertEqual(report['decision'],'revision_required')
+        self.assertEqual(raw,before)

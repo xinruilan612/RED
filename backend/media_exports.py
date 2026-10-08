@@ -4,6 +4,7 @@ from pathlib import Path
 import hashlib
 import json
 import os
+import re
 import subprocess
 import tempfile
 import zipfile
@@ -59,8 +60,9 @@ def confirmed_snapshot(run):
     return {'schema_version': 1, 'run_id': run.run_id, 'snapshot_id': run.snapshot_id,
             'draft_ref': draft['ref'], 'content_hash': draft['content_hash'],
             'mode': run.context.get('mode', 'simulation'), 'acceptance': acceptance,
-            'source_refs': [{k: source.get(k) for k in ('source_id', 'document_id', 'version', 'url', 'source_url', 'page')}
-                            for source in run.context.get('evidence', []) + run.context.get('web_research', {}).get('sources', [])],
+            'source_refs': [{k: source.get(k) for k in ('source_id', 'document_id', 'version', 'url', 'source_url', 'page', 'title')}
+                            for source in run.context.get('evidence', []) + run.context.get('web_research', {}).get('sources', [])] + _material_sources(run.context.get('material')),
+            'user_material_provided': bool(run.context.get('material')),
             'content': draft['content'],
             'notice': '排版导出不表示平台发布成功；图片仅为文字排版，无生成插画。'}
 
@@ -176,6 +178,8 @@ def _video(snapshot, pages=None):
 def _safe_source(source):
     from urllib.parse import urlsplit, urlunsplit
     result = {key: source.get(key) for key in ('source_id', 'document_id', 'version', 'page') if source.get(key) is not None}
+    if isinstance(source.get('title'), str):
+        result['title'] = ' '.join(source['title'].split())[:300]
     for key in ('url', 'source_url'):
         value = source.get(key)
         if not isinstance(value, str): continue
@@ -189,6 +193,44 @@ def _safe_source(source):
         except ValueError:
             pass
     return result
+
+
+
+def _material_sources(material):
+    """Extract explicitly labelled links only; never infer a source from copy."""
+    if not isinstance(material, str):
+        return []
+    sources = []
+    for line in material.splitlines():
+        match = re.match(r'^\s*(?:[-*]\s*)?(?:资料来源|来源|sources?)\s*[:：]\s*(.*)$', line, re.I)
+        if not match:
+            continue
+        for url in re.findall(r'https?://[^\s<>"\)\]]+', match.group(1)):
+            safe = _safe_source({'url': url.rstrip('。，；,;')})
+            if safe.get('url'):
+                sources.append({**safe, 'source_id': 'material-link-' + str(len(sources) + 1),
+                    'title': '用户提供的来源链接（未独立核验）'})
+    return sources
+
+
+def _source_instructions(sources, user_material_provided=False):
+    """List only saved task sources, not inferred brands or invented provenance."""
+    lines, seen = [], set()
+    for source in sources:
+        url = source.get('url') or source.get('source_url')
+        document = source.get('document_id')
+        identity = ('url', url) if url else ('document', document, source.get('version')) if document else ('source', source.get('source_id'))
+        if not any(identity[1:]) or identity in seen:
+            continue
+        seen.add(identity)
+        label = source.get('title') or ('任务资料 ' + str(document or source.get('source_id')))
+        detail = url
+        if not detail and source.get('version') is not None:
+            detail = '资料版本：' + str(source['version'])
+        lines.append('- ' + label + (' — ' + detail if detail else '（未记录公开链接）'))
+    return ('资料来源（本任务保存的证据快照，供核对）：\n' + '\n'.join(lines) if lines else
+            ('资料来源：用户提供素材未记录可列出的来源链接，请发布前补充核对。' if user_material_provided else
+             '资料来源：本任务未保存可列出的来源，请发布前补充核对。'))
 
 
 def execution_evidence(run, snapshot, execution=None):
@@ -269,6 +311,10 @@ def _complete_files(run, snapshot, execution):
 6. execution-evidence.json 可核对稿件版本、人工采用方式、真实调用统计和复审次数；缺少台账字段保持未知，不补造。
 7. manifest.json 记录每份文件的 SHA256，可用于核验下载后是否被改变。
 8. 人工检查完成后，由你登录平台发布。再回到网页“记录已发布”，填写实际链接和发布时间。
+
+{_source_instructions(snapshot['source_refs'], snapshot['user_material_provided'])}
+来源仅列在本说明中，不自动追加到已确认正文；有来源记录不等于已核实全部事实。
+品牌合作关系：由创作者按实际情况填写，系统不自动声明合作或非合作。
 
 本次媒体状态：
 {media_lines}

@@ -688,3 +688,38 @@ test('unreviewed latest draft offers explicit manual confirmation without claimi
  assert.equal(s.element('draftConfirm').disabled,false);assert.equal(s.element('draftDownload').disabled,true);assert.match(s.element('draftActionStatus').textContent,/人工确认采用，不代表 AI 审核通过/);
  await s.element('draftConfirm').onclick();assert.equal(s.eval('calls[0].action'),'adopt_manual');assert.equal(s.eval('calls[0].payload.draft_ref'),'draft-2');assert.equal(s.eval('calls[0].payload.content_hash'),'hash-2');assert.equal(s.eval('calls[0].payload.acknowledge'),true);
 });
+
+test('actual revision details expose literal before and after with escaped content, without unchanged fields',()=>{
+ const s=setup();
+ const html=s.eval(`draftChangeDetails({selected_title:'同一标题',body:'开头。旧建议。结尾',cta:'问题',tags:['鼠标']},{selected_title:'同一标题',body:'开头。<新建议>。结尾',cta:'问题',tags:['鼠标']})`);
+ assert.match(html,/<details class="revision-diff"><summary>展开查看实际修改前后/);
+ assert.match(html,/修改前：开头。<del>旧建议<\/del>。结尾/);
+ assert.match(html,/修改后：开头。<ins>&lt;新建议&gt;<\/ins>。结尾/);
+ assert.doesNotMatch(html,/<新建议>|同一标题|<b>标签<\/b>/);
+ assert.match(html,/是否解决审核问题，以当前版本复审结果为准/);
+});
+
+test('revision details handle additions, deletions and identical drafts honestly',()=>{
+ const s=setup();
+ assert.match(s.eval(`draftChangeDetails({body:'保留一句。删除这句。'},{body:'保留一句。'})`),/修改前：保留一句。<del>删除这句。<\/del>/);
+ assert.match(s.eval(`draftChangeDetails({cta:''},{cta:'你的接口够用吗？'})`),/<ins>你的接口够用吗？<\/ins>/);
+ assert.equal(s.eval(`draftChangeDetails({body:'相同',tags:['鼠标']},{body:'相同',tags:['鼠标']})`),'');
+});
+
+test('draft review summary separates current approval, failed review and historical versions',()=>{
+ const s=setup();seedDraftView(s,2);
+ s.eval("run.allowed_actions=['accept'];renderDraft()");
+ assert.match(s.element('draftView').innerHTML,/第 2 版：审核通过/);
+ s.eval("run.allowed_actions=['adopt_manual'];run.review=null;run.prior_review={decision:'approved'};renderDraft()");
+ assert.match(s.element('draftView').innerHTML,/第 2 版：复审未完成/);
+ assert.doesNotMatch(s.element('draftView').innerHTML,/第 2 版：审核通过/);
+ s.eval("run.review={decision:'revision_required',draft_ref:'draft-2',content_hash:run.drafts[1].content_hash};renderDraft()");
+ assert.match(s.element('draftView').innerHTML,/第 2 版：需要修改/);
+ s.eval("run.review.draft_ref='draft-1';renderDraft()");
+ assert.match(s.element('draftView').innerHTML,/第 2 版：复审未完成/);
+ s.eval("run.allowed_actions=['accept'];viewVersion=0;renderDraft()");
+ assert.match(s.element('draftView').innerHTML,/第 1 版：历史版本/);
+ assert.doesNotMatch(s.element('draftView').innerHTML,/第 1 版：审核通过/);
+ s.eval("viewVersion=null;run.run_status='SUCCEEDED';run.accepted_ref='draft-2';run.acceptance={mode:'manual_override'};renderDraft()");
+ assert.match(s.element('draftView').innerHTML,/已人工确认采用，不代表 AI 审核通过/);
+});

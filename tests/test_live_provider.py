@@ -34,6 +34,18 @@ class FixtureModel:
 
 
 class LiveTests(unittest.TestCase):
+    def test_promotion_policy_shared_by_writer_revision_and_review(self):
+        from backend.live import messages_for
+        for _ in range(6): self.step()
+        for stage in ('research','strategy','outline','hook','title','body','revise','review'):
+            with self.subTest(stage=stage):
+                prompt=messages_for(self.run,stage)[0][0]['content']
+                self.assertIn('资料来源由成品包说明承载',prompt)
+                self.assertIn('未填写就是未知',prompt)
+                self.assertIn('不能仅因缺少上述模板声明而要求返修',prompt)
+                self.assertIn('标称参数的限制不能因推广目的删除',prompt)
+                self.assertIn('用户明确要求保留的来源标注与真实合作披露应保留',prompt)
+
     def test_review_prompt_demands_contiguous_source_quotes(self):
         from backend.live import messages_for
         for _ in range(6): self.step()
