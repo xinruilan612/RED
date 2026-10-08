@@ -11,8 +11,7 @@ function setup(){
  vm.createContext(sandbox);vm.runInContext(fs.readFileSync('frontend/app.js','utf8'),sandbox);
  vm.runInContext(`run={run_id:'run-1',mode:'live',current_stage:'brief',status_version:1,run_status:'RUNNING',context:{topic:'护肤',tone:'清楚',audience:'新手',web_research:{enabled:true,status:'pending',queries:['护肤']}},usage:{},drafts:[],node_runs:[],artifacts:[],events:[],snapshot_id:'snapshot',allowed_actions:['next','cancel'],background:{status:'paused'},in_flight:false};
  actualRenderDetails=renderDetails; actualRenderHuman=renderHuman; actualRenderDraft=renderDraft; renderDetails=renderHuman=renderDraft=renderTimeline=renderCalls=()=>{};
- history=async()=>[]; currentAgent=()=> 'research'; calls=[]; confirmations=0;
- actualConfirmLiveBudget=confirmLiveBudget;confirmLiveBudget=()=>{confirmations++;return true;};
+ history=async()=>[]; currentAgent=()=> 'research'; calls=[];
  api=async(path,method,body)=>{calls.push(body);return run;};`,sandbox);
  return {sandbox,element,intervals,eval:code=>vm.runInContext(code,sandbox)};
 }
@@ -75,19 +74,18 @@ test('exhausted review slots hide execution even if stale allowed actions still 
  assert.match(s.element('humanMessage').textContent,/手动修改.*人工采用/);
 });
 
-test('blocked review execution does not request another budget confirmation or dispatch a command',async()=>{
- const s=setup();seedReviewQuota(s);s.element('liveBudgetConfirmation').hidden=true;
+test('blocked review execution cannot dispatch a command',async()=>{
+ const s=setup();seedReviewQuota(s);
  for(const action of ['start','step'])assert.equal(await s.eval(`backgroundCommand('${action}')`),false);
  assert.equal(await s.eval("act('next')"),false);
- assert.equal(s.eval('confirmations'),0);assert.equal(s.eval('calls.length'),0);
- assert.equal(s.element('liveBudgetConfirmation').hidden,true);
+ assert.equal(s.eval('calls.length'),0);
  assert.match(s.element('error').textContent,/复审次数已用完/);
 });
 
-test('exhausted quota also guards legacy sync and continuous execution before budget confirmation',async()=>{
+test('exhausted quota also guards legacy sync and continuous execution',async()=>{
  const s=setup();seedReviewQuota(s);s.eval('websiteSession.auth_required=false');
  assert.equal(await s.eval("act('next')"),false);await s.eval('autoRun()');
- assert.equal(s.eval('confirmations'),0);assert.equal(s.eval('calls.length'),0);
+ assert.equal(s.eval('calls.length'),0);
 });
 
 test('manual editing and candidate titles do not promise unavailable re-review',()=>{
@@ -118,15 +116,15 @@ test('a precisely replayable received review remains executable at the stage lim
  const s=setup();seedReviewQuota(s,false);
  assert.equal(s.element('next').hidden,false);
  assert.equal(await s.eval("backgroundCommand('step')"),true);
- assert.equal(s.eval('calls[0].action'),'step');assert.equal(s.eval('confirmations'),1);
+ assert.equal(s.eval('calls[0].action'),'step');
 });
 
-test('one remaining review slot keeps normal review execution and paid confirmation',async()=>{
+test('one remaining review slot keeps normal review execution without another confirmation',async()=>{
  const s=setup();seedReviewQuota(s,false);
  s.eval('run.review_execution={used:2,limit:3,remaining:1,exhausted:false,replayable:false,blocked:false,message:""};render()');
  assert.equal(s.element('next').hidden,false);assert.match(s.element('next').textContent,/复审当前版本/);
  assert.equal(await s.eval("act('next')"),true);
- assert.equal(s.eval('calls[0].action'),'step');assert.equal(s.eval('confirmations'),1);
+ assert.equal(s.eval('calls[0].action'),'step');
 });
 
 test('terminal tasks do not show an unreviewed-draft blocker after manual adoption or stopping',()=>{
@@ -147,24 +145,25 @@ test('cancel asks in a nonblocking panel and only dispatches after explicit conf
  assert.equal(s.eval('calls.length'),0);
  s.element('keepTask').onclick();assert.equal(s.element('cancelConfirmation').hidden,true);
  await s.element('cancel').onclick();await s.element('confirmCancel').onclick();
- assert.equal(s.eval('calls[0].action'),'cancel');assert.equal(s.eval('confirmations'),0);
+ assert.equal(s.eval('calls[0].action'),'cancel');
 });
 
-test('live budget panel blocks calls until approval and dispatches only once',async()=>{
- const s=setup();s.eval("confirmLiveBudget=actualConfirmLiveBudget;provider={run_attempts_max:16,run_tokens_max:80000,run_budget_usd:0.1,day_budget_usd:0.5};window.confirm=()=>{throw new Error('native dialog forbidden')};");
- await s.eval("backgroundCommand('start')");assert.equal(s.eval('calls.length'),0);assert.equal(s.element('liveBudgetConfirmation').hidden,false);
- assert.match(s.element('liveBudgetMessage').textContent,/80,000/);
- s.element('declineLiveBudget').onclick();assert.equal(s.eval('calls.length'),0);
- await s.element('approveLiveBudget').onclick();assert.equal(s.eval('calls.length'),0);
- await s.eval("backgroundCommand('start')");await s.element('approveLiveBudget').onclick();await s.element('approveLiveBudget').onclick();
- assert.equal(s.eval('calls.length'),1);assert.equal(s.eval('calls[0].action'),'start');
-});
-
-test('live budget approval rejects changed task or material snapshot',async()=>{
- for(const change of ["run.run_id='other'","run.snapshot_id='new-material'"]){
-  const s=setup();s.eval('confirmLiveBudget=actualConfirmLiveBudget;provider={}');await s.eval("backgroundCommand('start')");s.eval(change);
-  await s.element('approveLiveBudget').onclick();assert.equal(s.eval('calls.length'),0);assert.equal(s.eval('confirmedLiveRuns.size'),0);assert.match(s.element('error').textContent,/已变化/);
+test('live creation start, step and revision dispatch directly without fee dialogs',async()=>{
+ for(const action of ['start','step','revise_review']){
+  const s=setup();s.eval("provider={run_attempts_max:16,run_tokens_max:80000,run_budget_usd:0.1};window.confirm=()=>{throw new Error('unexpected dialog')};run.context.web_research.status='complete'");
+  assert.equal(await s.eval(`backgroundCommand('${action}')`),true);
+  assert.equal(s.eval('calls.length'),1);assert.equal(s.eval('calls[0].action'),action);
+  assert.equal(s.eval('calls[0].version'),1);assert.equal(s.eval('calls[0].key'),'test-key');
  }
+ const html=fs.readFileSync('frontend/index.html','utf8');
+ assert.doesNotMatch(html,/liveBudgetConfirmation|approveLiveBudget|执行前需再次确认/);
+ assert.doesNotMatch(fs.readFileSync('frontend/app.js','utf8'),/confirmLiveBudget|pendingLiveBudget/);
+});
+
+test('server budget rejection remains visible and does not retry automatically',async()=>{
+ const s=setup();s.eval("api=async(_p,method,body)=>{if(method==='POST'){calls.push(body);const error=new Error('预算已达到上限');error.code='BUDGET_EXCEEDED';throw error;}return run;}");
+ assert.equal(await s.eval("backgroundCommand('start')"),false);
+ assert.equal(s.eval('calls.length'),1);assert.match(s.element('error').textContent,/预算已达到上限/);
 });
 
 test('cancel confirmation cannot cancel a different task after navigation',async()=>{
@@ -204,9 +203,9 @@ test('free weekly plan uses existing rules command and AI mode rejects missing c
  assert.equal(s.eval('planCalls[0].action'),'create_plan');assert.equal(s.eval('planCalls[0].payload.source_type'),'simulation');assert.equal(s.eval('calls.length'),0);
  s.element('planMode').value='agent';await s.eval('submitWeeklyPlan({preventDefault(){}})');assert.equal(s.eval('planCalls.length'),1);assert.match(s.element('error').textContent,/API Key/);
 });
-test('next executes one background step and free research does not request model budget',async()=>{
- const s=setup();await s.eval("act('next')");assert.equal(s.eval('calls[0].action'),'step');assert.equal(s.eval('confirmations'),0);
- s.eval("run.context.web_research.status='complete'");await s.eval("act('next')");assert.equal(s.eval('confirmations'),1);
+test('next executes one background step for research and subsequent model work',async()=>{
+ const s=setup();await s.eval("act('next')");assert.equal(s.eval('calls[0].action'),'step');
+ s.eval("run.context.web_research.status='complete'");await s.eval("act('next')");
 });
 test('step button stays visible while paused and hides during execution',()=>{
  const s=setup();s.eval('render()');assert.equal(s.element('next').hidden,false);assert.match(s.element('next').textContent,/联网搜索/);
@@ -216,10 +215,10 @@ test('blocked research offers same-task retry rather than repeated start',async(
  const s=setup();s.eval("run.context.web_research.status='insufficient';render()");assert.equal(s.element('next').hidden,true);assert.equal(s.element('auto').hidden,true);
  assert.match(s.element('webResearchReport').innerHTML,/重新搜索这一步/);
  s.element('retryQuery1').value='新手 护肤 顺序';s.element('retryQuery2').value='';await s.element('retryWebResearch').onsubmit({preventDefault(){}});
- assert.equal(s.eval('calls[0].action'),'retry_research');assert.equal(s.eval('calls[0].queries[0]'),'新手 护肤 顺序');assert.equal(s.eval('confirmations'),0);
+ assert.equal(s.eval('calls[0].action'),'retry_research');assert.equal(s.eval('calls[0].queries[0]'),'新手 护肤 顺序');
 });
 test('continuous execution remains an explicit separate command',async()=>{
- const s=setup();await s.eval('autoRun()');assert.equal(s.eval('calls[0].action'),'start');assert.equal(s.eval('confirmations'),1);
+ const s=setup();await s.eval('autoRun()');assert.equal(s.eval('calls[0].action'),'start');
 });
 test('request errors remain visible instead of being replaced by stale job errors',async()=>{
  const s=setup();s.eval("run.context.web_research.status='insufficient';run.background.error='old failure';api=async(_p,method)=>{if(method==='POST')throw new Error('任务已更新，请刷新');return run;}");
@@ -253,7 +252,7 @@ test('question-only review recovery is labelled human handling instead of rewrit
 });
 test('free recovery dispatches repair action rather than approval or model execution',async()=>{
  const s=setup();await s.element('repairReview').onclick();
- assert.equal(s.eval('calls[0].action'),'repair_review');assert.equal(s.eval('confirmations'),0);
+ assert.equal(s.eval('calls[0].action'),'repair_review');
 });
 test('review recovery is hidden once final confirmation is available',()=>{
  const s=setup();s.eval("run.current_stage='reviewer';run.drafts=[{}];run.allowed_actions=['accept','edit'];renderRecovery()");
@@ -303,7 +302,7 @@ test('manual adoption sends exact draft acknowledgement without a model call',as
  assert.equal(s.eval('calls[0].payload.draft_ref'),'draft-v3');
  assert.equal(s.eval('calls[0].payload.content_hash'),'hash-v3');
  assert.equal(s.eval('calls[0].payload.acknowledge'),true);
- assert.equal(s.eval('confirmations'),0);
+
 });
 test('manual adopted result retains earlier issues and labels user choice',()=>{
  const s=setup();s.eval("run.run_status='SUCCEEDED';run.review=null;run.prior_review={issues:[{reason:'旧问题仍未复审'}]};run.acceptance={mode:'manual_override'};run.allowed_actions=['export'];actualRenderHuman()");
@@ -356,7 +355,7 @@ test('published record prefills adopted draft then archives actual edited text i
  assert.equal(s.eval('archiveCalls.length'),1);assert.equal(s.eval('archiveCalls[0].action'),'archive_published');
  assert.equal(s.eval('archiveCalls[0].payload.title'),'平台实际标题');
  assert.equal(s.eval('archiveCalls[0].payload.draft_ref'),'d1');
- assert.equal(s.eval('confirmations'),0);
+
 });
 test('external published work can be archived without an AI draft',async()=>{
  const s=setup();vm.runInContext(fs.readFileSync('frontend/operations.js','utf8'),s.sandbox);
@@ -510,12 +509,13 @@ test('AI revision submits feedback with current version through charged backgrou
  const s=setup();s.eval("run.ai_revision={available:true}");s.element('revisionFeedback').value='  保留三步结构  ';
  await s.element('revise').onclick();
  assert.equal(s.eval('calls[0].action'),'revise_review');assert.equal(s.eval('calls[0].feedback'),'保留三步结构');
- assert.equal(s.eval('calls[0].version'),1);assert.equal(s.eval('confirmations'),1);
+ assert.equal(s.eval('calls[0].version'),1);
  assert.equal(s.element('revisionFeedback').value,'');
 });
-test('declining budget cannot submit AI revision or erase feedback',async()=>{
- const s=setup();s.eval("run.ai_revision={available:true};confirmLiveBudget=()=>false");s.element('revisionFeedback').value='我的意见';
- await s.element('revise').onclick();assert.equal(s.eval('calls.length'),0);assert.equal(s.element('revisionFeedback').value,'我的意见');
+test('budget rejection preserves revision feedback for a later user decision',async()=>{
+ const s=setup();s.eval("run.ai_revision={available:true};api=async(_p,method,body)=>{if(method==='POST'){calls.push(body);throw new Error('预算已达到上限');}return run;}");s.element('revisionFeedback').value='我的意见';
+ await s.element('revise').onclick();assert.equal(s.eval('calls.length'),1);assert.equal(s.element('revisionFeedback').value,'我的意见');
+ assert.match(s.element('error').textContent,/预算已达到上限/);
 });
 test('unavailable and in-flight AI revision do not send a new request',async()=>{
  const s=setup();s.eval("run.ai_revision={available:false}");await s.element('revise').onclick();
@@ -536,8 +536,6 @@ test('switching tasks cannot carry someone elses revision feedback',()=>{
 test('hard budget copy never claims exceeding the target is allowed',()=>{
  const s=setup();s.eval("run.testing_budget={hard_limit:true,target_cny:5,target_runs:3,spent_cny:0.1};renderTestingBudget()");
  assert.match(s.element('testingBudget').textContent,/硬上限.*达到上限停止/);assert.doesNotMatch(s.element('testingBudget').textContent,/不影响继续/);
- s.eval('provider={};actualConfirmLiveBudget(()=>{})');
- assert.match(s.element('liveBudgetMessage').textContent,/总预算硬上限/);assert.doesNotMatch(s.element('liveBudgetMessage').textContent,/不影响继续/);
 });
 
 
@@ -650,7 +648,7 @@ test('approved revision requires a new opinion and preserves it before permissio
 test('free review reconciliation has its own action and does not request a model call',async()=>{
  const s=setup();s.eval("run.drafts=[{}];run.review={decision:'revision_required',issues:[]};run.allowed_actions=['reconcile_review'];run.wait_reason='revision_limit';actualRenderHuman()");
  assert.equal(s.element('reconcileReview').hidden,false);assert.match(s.element('humanTitle').textContent,/免费重新判定/);
- await s.element('reconcileReview').onclick();assert.equal(s.eval('calls[0].action'),'reconcile_review');assert.equal(s.eval('confirmations'),0);
+ await s.element('reconcileReview').onclick();assert.equal(s.eval('calls[0].action'),'reconcile_review');
 });
 
 test('draft diff displays only the feedback for its preceding version',()=>{
@@ -662,4 +660,18 @@ test('draft diff displays only the feedback for its preceding version',()=>{
 test('approved headline guidance leads to confirmation rather than compulsory revision',()=>{
  const s=setup();s.eval("run.review={decision:'approved'};run.allowed_actions=['accept'];run.ai_revision={available:true}");
  assert.match(s.eval('nextStepGuidance(run)'),/当前版本审核通过/);
+});
+
+test('prominent draft actions confirm only latest approved version and unlock download after acceptance',async()=>{
+ const s=setup();seedDraftView(s,2);s.eval("run.allowed_actions=['accept'];renderDraftActionState()");
+ assert.equal(s.element('draftConfirm').hidden,false);assert.equal(s.element('draftConfirm').textContent,'① 确认第 2 版');assert.equal(s.element('draftDownload').disabled,true);
+ s.eval("viewVersion=0;renderDraftActionState()");assert.equal(s.element('draftConfirm').disabled,true);
+ await s.element('draftConfirm').onclick();assert.equal(s.eval('calls.length'),0);
+ s.eval("viewVersion=null;run.run_status='SUCCEEDED';run.accepted_ref='draft-2';run.allowed_actions=['export'];renderDraftActionState()");
+ assert.equal(s.element('draftDownload').disabled,false);assert.match(s.element('draftActionTitle').textContent,/已确认/);
+ s.eval("editing=true;renderDraftActionState()");assert.equal(s.element('draftDownload').disabled,true);
+});
+test('prominent confirm delegates exact current review and draft references',async()=>{
+ const s=setup();seedDraftView(s,2);s.eval("run.allowed_actions=['accept'];run.review={ref:'review-2'}");
+ await s.element('draftConfirm').onclick();assert.equal(s.eval('calls[0].action'),'accept');assert.equal(s.eval('calls[0].payload.draft_ref'),'draft-2');assert.equal(s.eval('calls[0].payload.review_ref'),'review-2');
 });

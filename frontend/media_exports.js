@@ -1,4 +1,26 @@
 'use strict';
+const mediaDownloadsInFlight=new Set();
+async function downloadMediaBundle(run,kind,button,status){
+ if(run.workflow_type!=='creation'||run.run_status!=='SUCCEEDED'||!run.accepted_ref){
+  status.textContent='请先确认当前稿件，再下载成品包。';return false;
+ }
+ if(mediaDownloadsInFlight.has(run.run_id))return false;
+ mediaDownloadsInFlight.add(run.run_id);
+ const wasDisabled=button.disabled;button.disabled=true;
+ status.textContent=(kind==='video'||kind==='complete')?'正在生成视频，请稍等，通常需要十几秒…':'正在制作成品…';
+ try{
+  const result=await fetch(`/api/runs/${encodeURIComponent(run.run_id)}/media-export?kind=${encodeURIComponent(kind)}`,{credentials:'same-origin'});
+  if(!result.ok){let message='制作失败，请重试';try{const data=await result.json();message=data.error?.message||data.detail?.message||data.message||message;}catch{}throw new Error(message);}
+  const blob=await result.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=`youji-${kind}-${run.run_id.slice(0,8)}.zip`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
+  status.textContent=kind==='complete'?'完整成品包已下载。先看使用说明.txt；缺少的媒体会有明确说明。':'已下载。解压后可预览成品，caption.txt 是配套发布文案。';
+  return true;
+ }catch(error){status.textContent=error.message;return false;}
+ finally{mediaDownloadsInFlight.delete(run.run_id);button.disabled=wasDisabled;}
+}
+async function downloadCompleteBundle(run,button,status){
+ return downloadMediaBundle(run,'complete',button,status);
+}
 // Mount into the confirmed draft screen; all downloads use authenticated endpoints.
 async function mountMediaExports(run, container) {
  container.replaceChildren();
@@ -18,14 +40,7 @@ async function mountMediaExports(run, container) {
    const button=document.createElement('button');button.textContent=label;button.className=kind==='complete'?'primary media-export-primary':'secondary';button.disabled=!available;
    button.addEventListener('click',async()=>{
     buttons.querySelectorAll('button').forEach(b=>b.disabled=true);
-    status.textContent=(kind==='video'||kind==='complete')?'正在生成视频，请稍等，通常需要十几秒…':'正在制作成品…';
-    try{
-     const result=await fetch(`/api/runs/${encodeURIComponent(run.run_id)}/media-export?kind=${kind}`,{credentials:'same-origin'});
-     if(!result.ok){let message='制作失败，请重试';try{const data=await result.json();message=data.error?.message||data.detail?.message||data.message||message;}catch{}throw new Error(message);}
-     const blob=await result.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');
-     a.href=url;a.download=`youji-${kind}-${run.run_id.slice(0,8)}.zip`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
-     status.textContent=kind==='complete'?'完整成品包已下载。先看使用说明.txt；缺少的媒体会有明确说明。':'已下载。解压后可预览成品，caption.txt 是配套发布文案。';
-    }catch(error){status.textContent=error.message;}
+    try{await downloadMediaBundle(run,kind,button,status);}
     finally{buttons.querySelectorAll('button').forEach((b,i)=>b.disabled=!choices[i][2]);}
    });buttons.append(button);
   }

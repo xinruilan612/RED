@@ -5,11 +5,10 @@ const names={audience:'受众与竞品洞察',research:'素材与证据研究',c
 const stages={analysis:'分析',audience:'受众分析',research:'素材分析',strategy:'策略',outline:'提纲',hook:'开头',title:'标题',body:'正文',revise:'按意见改稿',review:'审核'};
 const states={QUEUED:'准备开始',RUNNING:'可以继续执行',WAITING_USER:'等待你的决定',SUCCEEDED:'已确认完成',CANCELLED:'已取消',FAILED:'执行失败',RETRY_WAIT:'等待重试',EXPIRED:'已过期'};
 const checks={brief_fit:'符合需求',audience_fit:'受众相关',usefulness_and_readability:'实用与易读',title_body_alignment:'标题与正文一致',evidence_integrity:'证据完整',experience_authenticity:'经历真实',originality_risk:'原创风险',privacy_and_policy:'隐私与规则'};
-let provider=null,polling=false,materialDocsCache=[],confirmedLiveRuns=new Set(),materialRefreshes=new Map();
+let provider=null,polling=false,materialDocsCache=[],materialRefreshes=new Map();
 let csrf='',run=null,selected='audience',busy=false,auto=false,editing=false,viewVersion=null,detailStage=null,toastTimer,chosenHypothesis=null;
 let cancellationRun=null;
 let creationSequence=0;
-let pendingLiveBudget=null;
 let revisionFeedbackRun=null;
 let renderedDraftKey=null;
 async function api(path,method='GET',body){
@@ -61,24 +60,6 @@ async function refreshMaterialDocuments(){
  materialRefreshes.set(account,request);
  try{await request;}finally{if(materialRefreshes.get(account)===request)materialRefreshes.delete(account);}
 }
-function confirmLiveBudget(resume){
- if(!run||run.mode!=='live'||!provider)return true;
- if(confirmedLiveRuns.has(run.run_id))return true;
- const calls=provider.run_attempts_max??16,tokens=provider.run_tokens_max??80000,runUsd=provider.run_budget_usd??0.10,dayUsd=provider.day_budget_usd??0.50;
- const experiment=run.testing_budget;
- const experimentNotice=experiment?`本轮参考预算：¥${Number(experiment.target_cny).toFixed(2)}，希望约写 ${experiment.target_runs} 轮；已计入约¥${Number(experiment.spent_cny).toFixed(4)}，已进行 ${experiment.run_count} 轮（包含未完成任务）。\n${experiment.hard_limit?'这是本轮总预算硬上限，达到上限会停止模型调用。':'参考目标用于查看用量，不影响继续创作。'}\n\n`:'';
- pendingLiveBudget={runId:run.run_id,snapshotId:run.snapshot_id,resume};
- $('liveBudgetMessage').textContent=`即将调用真实模型，可能产生费用。\n\n${experimentNotice}\n本任务硬上限：最多 ${calls} 次调用、${tokens.toLocaleString()} Token、$${Number(runUsd).toFixed(2)}；今日累计上限 $${Number(dayUsd).toFixed(2)}。\n上传资料最多 3 段，联网资料最多再加 3 段（每段最多 400 字）；达到任一上限会由服务器停止，不自动重试。`;
- $('liveBudgetConfirmation').hidden=false;$('liveBudgetConfirmation').scrollIntoView({behavior:'smooth',block:'center'});
- return false;
-}
-$('declineLiveBudget').onclick=()=>{pendingLiveBudget=null;$('liveBudgetConfirmation').hidden=true;};
-$('approveLiveBudget').onclick=async()=>{
- const pending=pendingLiveBudget;pendingLiveBudget=null;$('liveBudgetConfirmation').hidden=true;
- if(!pending)return;
- if(busy||run?.run_id!==pending.runId||run.snapshot_id!==pending.snapshotId){error(new Error('任务或素材已变化，请重新确认费用。'));return;}
- confirmedLiveRuns.add(pending.runId);await pending.resume();
-};
 let historyDeleted=false,historyRequest=0,historyMenuRun=null,historyMenuOpener=null;
 async function history(){
  const request=++historyRequest,deleted=historyDeleted,accountId=typeof activeAccountId==='undefined'?null:activeAccountId;
@@ -215,6 +196,7 @@ function render(){
  $('flow').innerHTML=`<div class="parallel">${node('audience','01','理解读者 · 明确假设')}${node('research','02','收录素材 · 标记缺口')}</div><div class="connector">同一份需求 · 并行分析<span>↓ 汇合 ↓</span></div>${node('content','03','策略与写作 · 同一角色负责返修')}<div class="stages">${contentStages}</div><div class="connector"><span>↓</span></div>${node('reviewer','04','问题定位 · 修改建议 · 再次审核')}<div class="connector">审核意见保留 ↓ 最后由你决定</div>${node('human','YOU','补资料 / 改稿 / 比较版本 / 最后确认')}`;
  renderDetails();renderHuman();renderRecovery();renderDraft();renderTimeline();renderCalls();
  document.querySelectorAll('#workbench button').forEach(b=>{if(!b.closest('#flow')&&b.id!=='auto')b.disabled=busy||(b.dataset.titleChoice!==undefined&&run.artifacts.find(a=>a.stage==='title')?.value.candidates[Number(b.dataset.titleChoice)]===run.drafts.at(-1)?.content.selected_title);});
+ renderDraftActionState();
  $('cancel').disabled=busy&&!run.in_flight;$('reviewConfirmUnavailable').disabled=true;$('confirmationPending').disabled=true;
  $('checkReaders').disabled=busy||editing||run.in_flight;
  if(background&&run.in_flight){for(const id of ['editButton','accept','adoptManual','revise','recover'])$(id).disabled=true;}
@@ -325,12 +307,28 @@ function reviewIssuesHTML(review){
   return `<div class="issue"><b>${esc(label)}${excerpt?' · '+esc(excerpt.length>180?excerpt.slice(0,180)+'…':excerpt):''}</b><p>${esc(i.reason)}</p><p>修改建议：${esc(i.suggestion)}</p></div>`;
  }).join('');
 }
+function renderDraftActionState(){
+ const draft=run?.drafts?.[viewVersion??run.drafts.length-1];
+ $('draftActions').hidden=!draft;if(!draft)return;
+ const latest=draft.ref===run.drafts.at(-1).ref;
+ const confirmed=run.run_status==='SUCCEEDED'&&draft.ref===run.accepted_ref;
+ const canConfirm=latest&&(run.allowed_actions||[]).includes('accept');
+ const locked=busy||editing||run.in_flight;
+ $('draftActionTitle').textContent=confirmed?'✓ 已确认，下一步下载全部成品包':canConfirm?'✓ 审核通过，满意就确认并下载':!latest?'正在查看历史版本':`第 ${run.drafts.length} 版暂不能确认`;
+ $('draftActionStatus').textContent=confirmed?'包含文案和可生成的媒体；不会自动发布。':canConfirm?'先点击①确认，再点击②下载。确认不会调用 AI。':!latest?'确认和导出必须对应最终版本，请先查看最新稿件。':(run.background?.error?`复审未完成：${run.background.error}。请点击“查看审核结果”处理。`:'完成审核后，①确认按钮会启用。');
+ $('draftConfirm').textContent=`① 确认第 ${run.drafts.indexOf(draft)+1} 版`;
+ $('draftConfirm').hidden=false;$('draftConfirm').disabled=locked||!canConfirm;
+ $('draftDownload').disabled=locked||!confirmed;
+ $('draftActionDetails').hidden=canConfirm||confirmed;
+ $('draftActionDetails').textContent=!latest?'查看最新稿件':'查看审核结果';
+}
 function draftHTML(d,index,changed=false){const c=d.content;return `<article class="draft-copy ${changed?'changed':''}"><span class="version-tag">版本 ${index+1} · ${d.actor==='user'?'你手动修改':run.mode==='live'?'AI 创作':'模拟创作'} · ${esc(d.ref.slice(0,8))}${run.accepted_ref===d.ref?' · 已确认':''}</span><h3>${esc(c.selected_title)}</h3><pre>${esc(c.body)}</pre><p>${esc(c.cta)}</p><div>${(c.tags||[]).map(t=>'<span class="tag">#'+esc(t)+'</span>').join('')}</div></article>`;}
 function renderDraft(){
  if(typeof mountMediaExports==='function'&&$('mediaExports'))mountMediaExports(run,$('mediaExports'));
- $('draftPanel').hidden=!run.drafts.length;if(!run.drafts.length)return;
+ $('draftPanel').hidden=!run.drafts.length;if(!run.drafts.length){renderDraftActionState();return;}
  // null follows new Worker drafts; only a user-selected older version is pinned.
  if(viewVersion!==null&&(!Number.isInteger(viewVersion)||viewVersion<0||viewVersion>=run.drafts.length))viewVersion=null;
+ renderDraftActionState();
  const latestKey=run.run_id+':'+run.drafts.at(-1).ref;
  if(renderedDraftKey!==latestKey){$('compareVersions').checked=false;renderedDraftKey=latestKey;}
  const i=viewVersion??run.drafts.length-1,d=run.drafts[i],prev=run.drafts[i-1];
@@ -367,7 +365,6 @@ function renderCalls(){
 async function act(action,payload={}){
  if(action==='next'&&websiteSession?.auth_required)return backgroundCommand('step');
  if(action==='next'&&run?.review_execution?.blocked){error(new Error(run.review_execution.message));return false;}
- if(action==='next'&&run?.mode==='live'&&!confirmLiveBudget(()=>act(action,payload)))return false;
  if(busy||!run)return false;busy=true;clearError();if(action==='next'&&run.mode==='live')run.in_flight=true;render();
  try{run=await api(`/api/runs/${run.run_id}/actions`,'POST',{action,version:run.status_version,key:crypto.randomUUID(),payload});clearError();viewVersion=null;selected=currentAgent();detailStage=null;if(action==='edit'){ops=await api('/api/operations');syncAccounts();}await history();return true;}
  catch(e){auto=false;error(e);try{run=await api('/api/runs/'+run.run_id);}catch(_){}return false;}
@@ -376,8 +373,6 @@ async function act(action,payload={}){
 async function backgroundCommand(action,extra={}){
  if(busy||!run)return false;
  if(['start','step','revise_review'].includes(action)&&run.review_execution?.blocked){error(new Error(run.review_execution.message));return false;}
- const searchOnly=action==='step'&&run.current_stage==='brief'&&run.context.web_research?.enabled&&run.context.web_research.status!=='complete';
- if(['start','step','revise_review'].includes(action)&&!searchOnly&&run.mode==='live'&&!confirmLiveBudget(()=>backgroundCommand(action,extra)))return false;
  let commandError=null;busy=true;clearError();render();
  try{run=action==='pause'?await pauseBackground(run.run_id):await api(`/api/runs/${run.run_id}/background`,'POST',{action,version:run.status_version,key:crypto.randomUUID(),...extra});if(action==='revise_review')$('revisionFeedback').value='';clearError();selected=currentAgent();detailStage=null;await history();return true;}
  catch(e){commandError=e;error(e);try{run=await api('/api/runs/'+run.run_id);}catch(_){}return false;}
@@ -395,7 +390,6 @@ async function pauseBackground(runId){
 async function autoRun(){
  if(websiteSession?.auth_required)return backgroundCommand(run.in_flight?'pause':'start');
  if(!auto&&run?.review_execution?.blocked){error(new Error(run.review_execution.message));return;}
- if(run?.mode==='live'&&!confirmLiveBudget(()=>autoRun()))return;
  if(auto){auto=false;render();return;}auto=true;render();
  while(auto&&run?.allowed_actions.includes('next')){
   if(!await act('next'))break;
@@ -448,6 +442,9 @@ $('revise').onclick=async()=>{
 $('editButton').onclick=()=>{auto=false;const c=run.drafts.at(-1).content;$('editTitle').value=c.selected_title;$('editBody').value=c.body;$('editCta').value=c.cta;$('editTags').value=c.tags.join('，');editing=true;$('editor').hidden=false;render();$('editor').scrollIntoView({behavior:'smooth',block:'center'});$('editTitle').focus();};
 $('discardEdit').onclick=()=>{editing=false;$('editor').hidden=true;render();};
 $('editor').onsubmit=async e=>{e.preventDefault();const data={selected_title:$('editTitle').value,body:$('editBody').value,cta:$('editCta').value,tags:$('editTags').value.split(/[,，]/).map(x=>x.trim()).filter(Boolean)};if(await act('edit',data)){editing=false;$('editor').hidden=true;render();toast('新版本已保存。可以申请复审，也可以知晓问题后人工采用。');}};
+$('draftConfirm').onclick=()=>{const draft=run?.drafts?.[viewVersion??run.drafts.length-1];if(busy||editing||run?.in_flight||draft?.ref!==run?.drafts?.at(-1)?.ref||!run?.allowed_actions.includes('accept'))return;return $('accept').onclick();};
+$('draftDownload').onclick=()=>{const draft=run?.drafts?.[viewVersion??run.drafts.length-1];if(busy||editing||run?.in_flight||run?.run_status!=='SUCCEEDED'||draft?.ref!==run.accepted_ref)return;return downloadCompleteBundle(run,$('draftDownload'),$('draftActionStatus'));};
+$('draftActionDetails').onclick=()=>{viewVersion=null;render();$('humanPanel').scrollIntoView({behavior:'smooth',block:'center'});};
 $('accept').onclick=async()=>{if(await act('accept',{draft_ref:run.drafts.at(-1).ref,review_ref:run.review.ref}))toast('已确认当前版本，可以下载。');};
 $('adoptManual').onclick=async()=>{const draft=run.drafts.at(-1);if(await act('adopt_manual',{draft_ref:draft.ref,content_hash:draft.content_hash,acknowledge:true})){clearError();toast('已人工采用当前版本，审核意见保留，可以下载。');}};
 $('supplyForm').onsubmit=async e=>{e.preventDefault();if(await act('supplement',{material:$('supply').value,allow_hypothesis:$('supplyHypothesis').checked}))toast('补充已保存，请启动运行重新分析。');};

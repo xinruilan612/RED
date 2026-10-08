@@ -21,13 +21,21 @@ class UserWalkthroughTests(unittest.TestCase):
             'frontend/index.html', 'frontend/app.js', 'frontend/knowledge.js',
             'frontend/account.js', 'frontend/media_exports.js'))
         for action in ('保存档案', '保存资料', '查看原文', '用这份资料创作',
-                       '查找原文', '保存需求，开始创作', '同意费用并开始本次执行',
+                       '查找原文', '保存需求，开始创作',
                        '我来修改文案', '保存为新版本（不调用 AI）',
                        '确认当前版本', '下载图文包', '下载分镜与字幕',
                        '下载全部成品包'):
             with self.subTest(action=action):
                 self.assertIn(action, text)
                 self.assertIn(action, ui)
+
+    def test_creation_tutorial_does_not_require_removed_fee_confirmation(self):
+        for path in (GUIDE, ROOT / 'docs/tutorials/skadis/00-先看这里-手把手教程.txt'):
+            text = path.read_text()
+            self.assertNotIn('同意费用并开始本次执行', text)
+            self.assertIn('不再弹出费用确认', text)
+            self.assertIn('预算上限', text)
+        self.assertNotIn('执行前确认费用', (ROOT / 'frontend/guidance.js').read_text())
 
     def test_tutorial_distinguishes_evidence_model_and_publication(self):
         text = GUIDE.read_text()
