@@ -227,14 +227,17 @@ test('request errors remain visible instead of being replaced by stale job error
 });
 test('rejected review shows a free recovery action and hides pointless repeat execution',()=>{
  const s=setup();s.eval("run.current_stage='reviewer';run.drafts=[{}];run.allowed_actions=['next','cancel','repair_review'];run.calls=[{stage:'review',status:'invalid',diagnostic_response:{issues:[{excerpt:'标题',reason:'没有依据',suggestion:'修正标题'}]}}];renderRecovery()");
- assert.equal(s.element('reviewRecovery').hidden,false);assert.equal(s.element('repairReview').hidden,false);
+ assert.equal(s.element('reviewRecovery').hidden,true);assert.equal(s.element('repairReview').hidden,false);
  assert.equal(s.element('next').hidden,true);assert.equal(s.element('auto').hidden,true);
- assert.match(s.element('reviewRecoveryIssues').innerHTML,/修正标题/);
+ s.eval('actualRenderHuman()');
+ assert.equal(s.element('humanPanel').hidden,false);
+ assert.match(s.element('issues').innerHTML,/修正标题/);
+ assert.equal(s.element('reviewRecoveryIssues').innerHTML,'');
 });
 
 test('manual-adoption availability does not hide free rejected-review recovery',()=>{
  const s=setup();s.eval("run.current_stage='reviewer';run.drafts=[{}];run.allowed_actions=['next','cancel','edit','adopt_manual','repair_review'];run.calls=[];renderRecovery()");
- assert.equal(s.element('reviewRecovery').hidden,false);
+ assert.equal(s.element('reviewRecovery').hidden,true);
  assert.equal(s.element('repairReview').hidden,false);
  assert.equal(s.element('next').hidden,true);
  assert.equal(s.element('auto').hidden,true);
@@ -490,4 +493,62 @@ test('current tool request failures survive background rendering of an unrelated
  s.eval("error({code:'INVALID_INPUT',message:'请填写本次读者意见'});render()");
  assert.equal(s.element('error').textContent,'请填写本次读者意见');
  assert.equal(s.element('error').className,'error');
+});
+
+
+test('AI revision is the main action and manual adoption stays in collapsed alternatives',()=>{
+ const s=setup();s.eval("run.drafts=[{}];run.ai_revision={available:true};run.review={decision:'revision_required',issues:[{excerpt:'原文',reason:'不清楚',suggestion:'写具体'}]};run.allowed_actions=['next','edit','adopt_manual'];actualRenderHuman()");
+ assert.equal(s.element('revise').hidden,false);assert.equal(s.element('revisionInput').hidden,false);
+ assert.equal(s.element('next').hidden,true);assert.equal(s.element('auto').hidden,true);
+ assert.match(s.element('humanTitle').textContent,/第 1 版需要修改/);
+ const html=fs.readFileSync('frontend/index.html','utf8');
+ assert.match(html,/<details id="manualAlternatives" hidden>/);
+ assert.ok(html.indexOf('id="manualAlternatives"')<html.indexOf('id="adoptManual"'));
+});
+test('AI revision submits feedback with current version through charged background command',async()=>{
+ const s=setup();s.eval("run.ai_revision={available:true}");s.element('revisionFeedback').value='  保留三步结构  ';
+ await s.element('revise').onclick();
+ assert.equal(s.eval('calls[0].action'),'revise_review');assert.equal(s.eval('calls[0].feedback'),'保留三步结构');
+ assert.equal(s.eval('calls[0].version'),1);assert.equal(s.eval('confirmations'),1);
+ assert.equal(s.element('revisionFeedback').value,'');
+});
+test('declining budget cannot submit AI revision or erase feedback',async()=>{
+ const s=setup();s.eval("run.ai_revision={available:true};confirmLiveBudget=()=>false");s.element('revisionFeedback').value='我的意见';
+ await s.element('revise').onclick();assert.equal(s.eval('calls.length'),0);assert.equal(s.element('revisionFeedback').value,'我的意见');
+});
+test('unavailable and in-flight AI revision do not send a new request',async()=>{
+ const s=setup();s.eval("run.ai_revision={available:false}");await s.element('revise').onclick();
+ s.eval("run.ai_revision.available=true;run.in_flight=true");await s.element('revise').onclick();assert.equal(s.eval('calls.length'),0);
+});
+test('approved second version still needs explicit human confirmation and does not claim publishing',()=>{
+ const s=setup();s.eval("run.drafts=[{},{}];run.run_status='WAITING_USER';run.review={decision:'approved'};run.allowed_actions=['accept','edit'];actualRenderHuman()");
+ assert.equal(s.element('accept').hidden,false);assert.equal(s.element('export').hidden,true);assert.equal(s.element('revise').hidden,true);
+ assert.match(s.element('humanTitle').textContent,/第 2 版 AI 审核通过/);assert.match(s.element('humanMessage').textContent,/尚未发布/);
+ assert.equal(s.element('accept').textContent,'确认第 2 版，准备发布');
+});
+
+
+test('switching tasks cannot carry someone elses revision feedback',()=>{
+ const s=setup();s.eval('actualRenderHuman()');s.element('revisionFeedback').value='只适用上一任务';
+ s.eval("run.run_id='run-2';actualRenderHuman()");assert.equal(s.element('revisionFeedback').value,'');
+});
+test('hard budget copy never claims exceeding the target is allowed',()=>{
+ const s=setup();s.eval("run.testing_budget={hard_limit:true,target_cny:5,target_runs:3,spent_cny:0.1};renderTestingBudget()");
+ assert.match(s.element('testingBudget').textContent,/硬上限.*达到上限停止/);assert.doesNotMatch(s.element('testingBudget').textContent,/不影响继续/);
+ s.eval('provider={};actualConfirmLiveBudget(()=>{})');
+ assert.match(s.element('liveBudgetMessage').textContent,/总预算硬上限/);assert.doesNotMatch(s.element('liveBudgetMessage').textContent,/不影响继续/);
+});
+
+
+test('recoverable review failure points to AI revision instead of hidden retry buttons',()=>{
+ const s=setup();s.eval("run.current_stage='reviewer';run.drafts=[{}];run.ai_revision={available:true};run.allowed_actions=['repair_review','next'];run.background={status:'blocked',error:'审核引用校验失败'};run.calls=[{agent:'reviewer',stage:'review',status:'invalid',tokens:12}];error(new Error('旧审核失败'),'run');render()");
+ assert.equal(s.element('error').hidden,true);
+ assert.match(s.element('workbenchGuide').textContent,/让 AI 按意见改稿并复审/);
+ assert.doesNotMatch(s.element('workbenchGuide').textContent,/重试未完成步骤/);
+});
+test('recoverable review does not erase fresh request errors or unrelated backend failures',()=>{
+ const s=setup();s.eval("run.ai_revision={available:true};run.allowed_actions=['repair_review'];run.background={status:'blocked',error:'审核引用校验失败'};error(new Error('任务已更新，请刷新'),'request');render()");
+ assert.equal(s.element('error').hidden,false);assert.equal(s.element('error').textContent,'任务已更新，请刷新');
+ s.eval("run.background.error='数据库连接失败';render()");assert.equal(s.element('error').hidden,false);assert.match(s.element('error').textContent,/数据库连接失败/);
+ s.eval("run.background.error='审核预算已耗尽';render()");assert.equal(s.element('error').hidden,false);assert.match(s.element('error').textContent,/预算/);
 });

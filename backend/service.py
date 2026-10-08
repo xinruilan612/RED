@@ -1,6 +1,6 @@
 """Application boundary shared by the production API and domain tests."""
 from uuid import uuid4
-from backend.contracts import require, integer
+from backend.contracts import require, integer, PARAMETERS
 from backend.demo import validate_brief, validate_edit, actions
 from backend.execution import Executor
 from backend.operations import Operations
@@ -56,6 +56,15 @@ class Service:
         if result.get('usage',{}).get('unknown_calls',0) and (run.run_status=='FAILED' or result['background']['status']=='blocked'):
             result['allowed_actions']=[a for a in result['allowed_actions'] if a not in ('next','recover')]
         if result['in_flight']:result['allowed_actions']=[a for a in result['allowed_actions'] if a=='cancel']
+        recovery=result['review_recovery']
+        can_revise=bool(run.workflow_type=='creation' and not result['in_flight'] and run.run_status=='RUNNING' and
+            ((run.review and run.current_stage=='content' and run.review['decision']=='revision_required') or
+             (recovery['available'] and recovery.get('next_action')=='revise' and run.iteration<PARAMETERS['revision_rounds_max'])) and
+            not result.get('usage',{}).get('unknown_calls',0) and
+            not (result.get('review_execution') or {}).get('blocked'))
+        result['ai_revision']={'available':can_revise,'reason':'' if can_revise else
+            ((result.get('review_execution') or {}).get('message') or '请先处理补料、执行中任务或调用限制；只有可修改的审核问题能交给 AI 改稿。')}
+
         return result
 
     def background(self, owner, run_id, data):

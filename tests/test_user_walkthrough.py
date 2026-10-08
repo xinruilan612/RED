@@ -24,7 +24,7 @@ class UserWalkthroughTests(unittest.TestCase):
                        '查找原文', '保存需求，开始创作', '同意费用并开始本次执行',
                        '我来修改文案', '保存为新版本（不调用 AI）',
                        '确认当前版本', '下载图文包', '下载分镜与字幕',
-                       '下载完整发布前成品包'):
+                       '下载全部成品包'):
             with self.subTest(action=action):
                 self.assertIn(action, text)
                 self.assertIn(action, ui)

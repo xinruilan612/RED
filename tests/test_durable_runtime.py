@@ -98,6 +98,53 @@ class DurableTests(unittest.TestCase):
         self.assertEqual(self.job()['status'],'blocked')
         self.assertEqual(self.run_value().current_stage,'reviewer')
 
+    def test_one_click_revision_recovers_queues_reaudits_and_requires_confirmation(self):
+        self.invalid_citation_review()
+        before=self.service.view(self.run_value())
+        self.assertTrue(before['ai_revision']['available'])
+        command=dict(action='revise_review',version=before['status_version'],key=str(uuid4()),feedback='结尾换成具体的问题；不要编造价格。')
+        queued=self.service.background(self.owner,self.run_id,command)
+        self.assertEqual(queued['background']['status'],'queued')
+        self.assertEqual(queued['calls'],before['calls'])
+        self.assertFalse(queued['ai_revision']['available'])
+        self.assertEqual(self.service.background(self.owner,self.run_id,command)['status_version'],queued['status_version'])
+        with self.assertRaises(DomainError):self.service.background(self.owner,self.run_id,dict(command,feedback='另一条意见'))
+        from backend.live import messages_for
+        data=json.loads(messages_for(self.run_value(),'revise')[0][1]['content'])
+        self.assertEqual(data['user_revision_feedback'],command['feedback'])
+        detached=self.run_value();detached.snapshot_id='new-snapshot'
+        self.assertNotIn('user_revision_feedback',json.loads(messages_for(detached,'revise')[0][1]['content']))
+        Worker(self.service).once()
+        ready=self.service.view(self.run_value())
+        self.assertEqual(ready['wait_reason'],'final_confirmation')
+        self.assertEqual(len(ready['drafts']),2)
+        self.assertEqual(self.model.calls.count('revise'),1)
+        self.assertEqual(self.model.calls.count('review'),2)
+        self.assertIn('accept',ready['allowed_actions'])
+        self.assertIsNone(self.run_value().accepted_ref)
+
+    def test_one_click_revision_rejects_stale_version_and_unknown_usage_atomically(self):
+        self.invalid_citation_review()
+        before=self.run_value()
+        with self.assertRaises(DomainError):
+            self.service.background(self.owner,self.run_id,dict(action='revise_review',version=before.status_version-1,key=str(uuid4())))
+        with self.store.connect() as db:
+            db.execute("UPDATE live_calls SET actual=NULL WHERE run_id=? AND stage='body'",(self.run_id,))
+        with self.assertRaises(DomainError) as error:self.step('revise_review')
+        self.assertEqual(error.exception.code,'USAGE_UNKNOWN')
+        self.assertEqual(self.run_value().status_version,before.status_version)
+        self.assertIsNone(self.run_value().review)
+        self.assertEqual(len(self.model.calls),8)
+
+    def test_one_click_revision_normal_review_and_feedback_validation(self):
+        self.invalid_citation_review();self.action('repair_review',{})
+        self.assertTrue(self.service.view(self.run_value())['ai_revision']['available'])
+        with self.assertRaises(DomainError):self.step('revise_review',feedback='长'*2001)
+        with self.assertRaises(DomainError):self.step('start',feedback='不能绕过专用操作')
+        self.step('revise_review');Worker(self.service).once()
+        self.assertEqual(self.run_value().wait_reason,'final_confirmation')
+        with self.assertRaises(DomainError):self.step('revise_review')
+
     def test_creator_notes_stop_for_human_without_rewriting_or_extra_model_calls(self):
         base=self.model.complete
         def notes(messages):
@@ -215,6 +262,7 @@ class DurableTests(unittest.TestCase):
         run=self.run_value();view=self.service.view(run)
         self.assertEqual(run.run_status,'WAITING_USER')
         self.assertEqual(run.wait_reason,'revision_limit')
+        with self.assertRaises(DomainError):self.step('revise_review')
         self.assertEqual(len(run.drafts),3)
         self.assertIsNone(run.accepted_ref)
         before_calls=len(self.model.calls)
@@ -302,6 +350,8 @@ class DurableTests(unittest.TestCase):
         recovered=self.action('repair_review',{})
         self.assertEqual(recovered['review']['decision'],'needs_human')
         self.assertEqual(recovered['wait_reason'],'missing_material')
+        self.assertFalse(recovered['ai_revision']['available'])
+        with self.assertRaises(DomainError):self.step('revise_review')
         self.assertNotIn('accept',recovered['allowed_actions'])
         self.assertEqual(recovered['usage'],before['usage'])
         self.assertEqual(recovered['calls'],before['calls'])

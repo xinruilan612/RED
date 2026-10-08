@@ -133,19 +133,24 @@ def repair(store, run_id, owner, version, key):
             require(old[0]==fingerprint,'IDEMPOTENCY_CONFLICT','幂等键已用于其他命令')
             return Run(**json.loads(old[1]))
         require(run.status_version==version,'VERSION_CONFLICT','任务已更新，请刷新')
-        call_id,report,removed,excluded=candidate(db,store,run)
-        run.reviewed(report,review_gates(run,report))
-        run.node_runs.append({'id':str(uuid4()),'agent':'reviewer','stage':'review','mode':'live',
-            'snapshot_id':run.snapshot_id,'input':{'recovered_call_id':call_id,'excluded_claim_map':removed,'excluded_previous_results':excluded},
-            'output':report,'model_calls':0,'tokens':0,'cost':0,'duration_ms':0,'tools':[],
-            'memory':'人工触发免费整理已有审核；原始调用响应和费用保持不变'})
-        run.event('agent.completed',agent='reviewer',stage='review',mode='live',
-                  recovery='invalid_citations_and_obsolete_previous_issue_ids' if removed and excluded else 'obsolete_previous_issue_ids' if excluded else 'inconsistent_revision_for_human' if report['decision']=='needs_human' and not removed else 'invalid_citations_for_manual_edit',
-                  call_id=call_id,excluded_claim_map=removed,excluded_previous_results=excluded)
-        db.execute("UPDATE runtime_jobs SET status=?,error=NULL,token=NULL,lease_until=NULL,thread_id=?,updated=? WHERE run_id=?",
-                   ('waiting' if run.run_status=='WAITING_USER' else 'paused',str(uuid4()),time.time(),run_id))
+        apply_repair(db,store,run)
         run.status_version+=1
         encoded=json.dumps(asdict(run),ensure_ascii=False)
         db.execute('UPDATE runs SET payload=? WHERE id=?',(encoded,run_id))
         db.execute('INSERT INTO commands VALUES(?,?,?,?)',(run_id,key,fingerprint,encoded))
         return run
+
+
+def apply_repair(db, store, run):
+    """Apply recovery inside the caller transaction; never commits or approves."""
+    call_id,report,removed,excluded=candidate(db,store,run)
+    run.reviewed(report,review_gates(run,report))
+    run.node_runs.append({'id':str(uuid4()),'agent':'reviewer','stage':'review','mode':'live',
+        'snapshot_id':run.snapshot_id,'input':{'recovered_call_id':call_id,'excluded_claim_map':removed,'excluded_previous_results':excluded},
+        'output':report,'model_calls':0,'tokens':0,'cost':0,'duration_ms':0,'tools':[],
+        'memory':'人工触发免费整理已有审核；原始调用响应和费用保持不变'})
+    run.event('agent.completed',agent='reviewer',stage='review',mode='live',
+              recovery='invalid_citations_and_obsolete_previous_issue_ids' if removed and excluded else 'obsolete_previous_issue_ids' if excluded else 'inconsistent_revision_for_human' if report['decision']=='needs_human' and not removed else 'invalid_citations_for_manual_edit',
+              call_id=call_id,excluded_claim_map=removed,excluded_previous_results=excluded)
+    db.execute("UPDATE runtime_jobs SET status=?,error=NULL,token=NULL,lease_until=NULL,thread_id=?,updated=? WHERE run_id=?",
+               ('waiting' if run.run_status=='WAITING_USER' else 'paused',str(uuid4()),time.time(),run.run_id))

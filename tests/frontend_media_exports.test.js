@@ -20,7 +20,7 @@ function setup(){
 test('confirmed draft gets a full bundle button using the authenticated endpoint',async()=>{
  const s=setup();await s.mount({workflow_type:'creation',run_status:'SUCCEEDED',accepted_ref:'v5',run_id:'run-1'});
  const section=s.host.children[0],buttons=section.children[2];
- assert.equal(buttons.children[0].textContent,'下载完整发布前成品包');
+ assert.equal(buttons.children[0].textContent,'下载全部成品包');
  assert.equal(buttons.children[0].className,'primary media-export-primary');
  assert.equal(buttons.children[1].className,'secondary');
  await buttons.children[0].click();

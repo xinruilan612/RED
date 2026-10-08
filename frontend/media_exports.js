@@ -13,7 +13,7 @@ async function mountMediaExports(run, container) {
   const response=await fetch(`/api/runs/${encodeURIComponent(run.run_id)}/media/capabilities`,{credentials:'same-origin'});
   if(!response.ok)throw new Error('导出工具暂不可用，请刷新后重试');
   const caps=await response.json();
-  const choices=[['complete','下载完整发布前成品包',caps.complete_available],['images','下载图文包',caps.images_available],['video','下载无声图文视频',caps.video_available],['storyboard','下载分镜与字幕',caps.storyboard_available]];
+  const choices=[['complete','下载全部成品包',caps.complete_available],['images','下载图文包',caps.images_available],['video','下载无声图文视频',caps.video_available],['storyboard','下载分镜与字幕',caps.storyboard_available]];
   for(const [kind,label,available] of choices){
    const button=document.createElement('button');button.textContent=label;button.className=kind==='complete'?'primary media-export-primary':'secondary';button.disabled=!available;
    button.addEventListener('click',async()=>{

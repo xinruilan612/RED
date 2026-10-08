@@ -98,6 +98,8 @@ def messages_for(run,stage):
             data['upstream']['strategy']={k:v for k,v in data['upstream']['strategy'].items() if k in ('angle','reader','promise','tone','assumptions','cta')}
     if stage in ('revise','review'):
         data['draft']=run.drafts[-1]['content']
+        if run.context.get('revision_request') and run.context['revision_request'].get('snapshot_id')==run.snapshot_id:
+            data['user_revision_feedback']=run.context['revision_request']['feedback']
         previous=run.review if stage=='revise' else run.prior_review
         # Only the immediately preceding issue list is this review's obligation.
         # Nested historical results otherwise invite the model to carry obsolete IDs forward.
@@ -116,8 +118,8 @@ def messages_for(run,stage):
         'hook':'只输出{"text":"开头文字"}，text必须是非空字符串。首句抓具体场景、读者痛点或有依据的反差，围绕upstream.strategy.promise进入主题，不写自我介绍、“这期只讲”或研究过程；开头应为后续标题的承诺服务，不编造读者经历。',
         'title':'输出5个不同的标题，candidates是字符串数组，selected是其中一个原样字符串，note为选择理由。reasons为五个与候选逐一对应的比较理由，比较账号匹配、具体性和同质化，并说明各自吸引目标读者点开的动机；不得输出传播概率。标题必须有吸引力：从明确问题、具体收益、有依据的对比或悬念选择适合题材的表达；五个候选在角度与句式上有实质区别，不套同一固定模板换词。selected的承诺必须由材料和计划正文兑现，与upstream.strategy.promise及hook一致。禁止夸张数字、制造恐惧、疗效保证、虚构亲历或爆款承诺；不能用空洞系统术语替代读者看点。',
         'body':'只输出selected_title/body/cta/tags四个字段。标题原样使用upstream.title.selected；cta为文字，tags为最多10个短字符串。正文首句承接选定标题的具体看点，可按标题调整upstream.hook措辞；正文必须兑现标题承诺，不能标题讲答案、正文只讲资料缺口。',
-        'revise':'按previous_review改稿，保留无须修改的内容。只输出selected_title/body/cta/tags四个字段，tags是文字数组。不能自行确认或发布；不可用“待确认”“多数流程”包装无依据的事实或步骤，不能制造来源。',
-        'review':('结合operations.profile检查账号风格、禁用表达与当前目标；以原始素材核对事实，不可用吸引力抵消重要问题。逐项核对示例中的8个检查项，每项包含name/result(pass/fail/unknown)/basis。严重问题不得通过。原创未比对则unknown并说明limitations。检查是否把给博主的内部沟通混入读者文案：如“素材里没有依据”“网页发布时间为空”“后续找到来源再补一版”。此类内容按usefulness_and_readability及标题与正文承诺的一致性审查，给出准确位置与改稿建议；不是删掉免责声明就视为事实问题已解决。不要误伤读者需要的适用条件、真实来源引用与必要的不确定性。'
+        'revise':'按previous_review和user_revision_feedback中的用户意见改稿，用户意见不能覆盖事实证据或审核规则；不能将意见中的新说法直接当作事实。保留无须修改的内容。只输出selected_title/body/cta/tags四个字段，tags是文字数组。不能自行确认或发布；不可用“待确认”“多数流程”包装无依据的事实或步骤，不能制造来源。',
+        'review':('user_revision_feedback 是用户修改偏好，不是新增事实证据，不能覆盖审核规则；检查是否合理落实。结合operations.profile检查账号风格、禁用表达与当前目标；以原始素材核对事实，不可用吸引力抵消重要问题。逐项核对示例中的8个检查项，每项包含name/result(pass/fail/unknown)/basis。严重问题不得通过。原创未比对则unknown并说明limitations。检查是否把给博主的内部沟通混入读者文案：如“素材里没有依据”“网页发布时间为空”“后续找到来源再补一版”。此类内容按usefulness_and_readability及标题与正文承诺的一致性审查，给出准确位置与改稿建议；不是删掉免责声明就视为事实问题已解决。不要误伤读者需要的适用条件、真实来源引用与必要的不确定性。'
           '检查标题是否给目标读者具体的点击动机（问题、收益、对比或悬念），是否只是空洞系统术语；核对正文首句承接与正文实际兑现标题承诺，不能只因措辞稳妥就忽略内容空泛，也不能为吸引力放过无依据承诺。可改写的标题空泛或承诺不匹配按title_body_alignment/usefulness_and_readability给具体改法。不通过用decision=revision_required,next_action=revise。issues每条包括issue_id,severity(blocker/major/minor),state(open),location(selected_title/body/cta/tags),excerpt,reason,suggestion。'
           '缺材料则decision=needs_human,next_action=request_human，human_questions给具体问题。通过则approved/await_user_confirmation。'
           'previous_issue_results必须严格覆盖required_previous_issue_ids且每项恰好一次，不得加入更早轮次的编号；只检查previous_review.issues，不追溯旧复核结果。每项给出result(resolved/unresolved/regressed)，无旧问题则[]；不得因为已改稿就推定resolved。'
