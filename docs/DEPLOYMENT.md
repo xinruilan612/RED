@@ -1,5 +1,7 @@
 # 网站后端运行与迁移
 
+云端前置文件、条件清单与 Linux 内测交接见 [云部署准备](PRODUCTION_PREPARATION.md)。这些模板尚未在云服务器执行，不代表公网部署完成。
+
 Windows 本机运行请使用 [Windows 安装与启动](WINDOWS.md) 的 `.cmd` 入口，以下 shell 示例面向 macOS/Linux。跨平台启动器 `scripts/local_dev.py` 支持 `setup`、`doctor`、`start`，启动时同时管理 API 和 Worker。
 
 适用于 v0.6。当前在本机 PostgreSQL 验证；尚未购买云服务、绑定域名或公网部署。前端布局沿用原 Demo。
