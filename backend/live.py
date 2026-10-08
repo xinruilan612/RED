@@ -223,6 +223,8 @@ def normalize(run,stage,value):
         require(all(len(t)<=200 for t in value['candidates']),'MODEL_OUTPUT_INVALID','标题过长')
         return {k:value[k] for k in schema(stage)}
     if stage in ('body','revise'):
+        from backend.copy_disclosures import clean
+        value,_=clean(stage,value,run.context)
         result=validate_edit(value)
         if stage=='body':
             selected=next(a['value']['selected'] for a in run.artifacts if a['stage']=='title')
@@ -281,7 +283,9 @@ def advance(run,call,on_validation=None):
             label={'audience':'受众分析','research':'素材研究','strategy':'策略','outline':'提纲','hook':'开头','title':'标题','body':'正文','revise':'改稿','review':'审核'}.get(stage,stage)
             raise DomainError(error.code,f'{label}输出校验失败：{error}；已停止，未自动重试') from None
         if on_validation:on_validation(call_id,None)
-        return {'id':str(uuid4()),'agent':agent,'stage':stage,'mode':'live','snapshot_id':run.snapshot_id,
+        from backend.copy_disclosures import clean
+        _,copy_adjustments=clean(stage,value,run.context)
+        return {'copy_adjustments':copy_adjustments,'id':str(uuid4()),'agent':agent,'stage':stage,'mode':'live','snapshot_id':run.snapshot_id,
                 'input':inputs,'output':result,'duration_ms':round((time.perf_counter()-started)*1000),
                 'model_calls':1,'tokens':tokens,'cost':None,'call_id':call_id,'tools':['knowledge_snapshot'] if run.context.get('evidence') else [],
                 'memory':'读取创建任务时的账号档案、历史、偏好与已接受经验快照；原始依据可在输入中查看'}

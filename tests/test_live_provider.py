@@ -34,6 +34,27 @@ class FixtureModel:
 
 
 class LiveTests(unittest.TestCase):
+    def test_writer_disclosure_normalized_before_review_and_audited(self):
+        from backend.workflow import digest
+        base=self.model.complete
+        seen=[]
+        def response(messages):
+            value,tokens=base(messages)
+            if self.model.calls[-1]=='body':
+                value['body']='用文件夹整理课程笔记。\n\n本文据官方公开资料整理，非亲测、非品牌合作。'
+            if self.model.calls[-1]=='review':
+                seen.append(json.loads(messages[1]['content'])['draft'])
+            return value,tokens
+        self.model.complete=response
+        for _ in range(7):self.step()
+        draft=self.run.drafts[-1]
+        self.assertEqual(draft['content']['body'],'用文件夹整理课程笔记。')
+        self.assertEqual(draft['content_hash'],digest(draft['content']))
+        self.assertEqual(seen,[draft['content']])
+        log=next(n for n in self.run.node_runs if n['stage']=='body')
+        self.assertEqual(log['copy_adjustments'][0]['rule'],'default_disclosure@1')
+        self.assertEqual(len(self.model.calls),8)
+
     def test_promotion_policy_shared_by_writer_revision_and_review(self):
         from backend.live import messages_for
         for _ in range(6): self.step()

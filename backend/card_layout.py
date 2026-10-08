@@ -66,34 +66,46 @@ def paginate(body, font, width=840, capacity=970, line_height=62):
     """Keep ordinary paragraphs together; split only paragraphs taller than a page."""
     paragraphs = re.split(r'\n\s*\n|\n(?=[①②③④⑤⑥⑦⑧⑨⑩]|\d+[.、])', body.replace('\r\n', '\n').replace('\r', '\n'))
     pages, blocks, used = [], [], 0
-    max_lines = (capacity - 48) // line_height
+    limit = lambda: capacity(len(pages)) if callable(capacity) else capacity
     for paragraph in paragraphs:
         if not paragraph.strip(): continue
         lines = wrap(paragraph, font, width)
-        parts = [lines[i:i + max_lines] for i in range(0, len(lines), max_lines)]
-        for part in parts:
-            height = len(part) * line_height + 48
-            if blocks and used + height > capacity:
+        # Move an intact paragraph to the next page when it fits there. Only
+        # oversized paragraphs split, and later no-photo pages use their full height.
+        while lines:
+            height = len(lines) * line_height + 48
+            if blocks and used + height > limit():
                 pages.append(blocks); blocks, used = [], 0
-            blocks.append(''.join(part)); used += height
+                continue
+            count = max(1, (limit() - used - 48) // line_height)
+            part, lines = lines[:count], lines[count:]
+            blocks.append(''.join(part)); used += len(part) * line_height + 48
+            if lines:
+                pages.append(blocks); blocks, used = [], 0
     if blocks: pages.append(blocks)
     return pages or [['']]
 
 def compose(snapshot, template, font_path, options, width=1080, height=1440):
     from PIL import Image, ImageDraw, ImageFont, ImageOps
     normalized, cover = normalize_options(options)
+    from backend.product_photos import catalog_images, photo_identity
+    photo = snapshot.get('product_photo')
+    pictures = catalog_images(photo) if photo and photo.get('photos') else ([cover] if cover else [])
+    photo_identity(normalized, photo)
     font = lambda n: ImageFont.truetype(font_path, n)
     c = snapshot['content']
     title, body = c['selected_title'], c['body'] + ('\n\n' + c['cta'] if c.get('cta') else '')
     require(len(title) <= 500 and len(body) <= 30000, 'INVALID_INPUT', '稿件太长，请缩短后再制作图片')
     # A dedicated photo band keeps text away from product imagery. Stable normal-size
     # pagination means changing one page's font never moves its image or paragraphs.
-    body_capacity = 700 if cover else 970
-    body_pages = paginate(body, font(40), capacity=body_capacity)
+    body_pages = paginate(body, font(40), capacity=lambda n: 700 if n + 1 < len(pictures) else 970)
     require(len(body_pages) + 1 <= 24, 'INVALID_INPUT', '正文超过24页，请先缩短稿件')
     require(all(int(k) < len(body_pages) + 1 for k in normalized['page_styles']), 'INVALID_INPUT', '页面已变化，请重新预览后调整')
     pages, metadata = [], []
     for index, blocks in enumerate([None] + body_pages):
+        cover = pictures[index] if index < len(pictures) else None
+        body_capacity = 700 if cover else 970
+        page_photo = ((photo.get('photos') or [photo])[index] if photo and index < len(pictures) else None)
         setting = normalized['page_styles'].get(str(index), {})
         accent, tint = PALETTES[setting.get('accent', 'green')]
         large = setting.get('size') == 'large'
@@ -161,7 +173,7 @@ def compose(snapshot, template, font_path, options, width=1080, height=1440):
                 im.paste(fitted, (90 + (410 - fitted.width) // 2, 235 + (260 - fitted.height) // 2))
                 # Topic labels are literal excerpts, never generated product claims.
                 match = re.match(r'\s*[①②③④⑤⑥⑦⑧⑨⑩]\s*([^：:\n]{1,12})[：:]', blocks[0])
-                label = match.group(1) if match else '产品图片'
+                label = page_photo.get('view_label', '产品图片') if page_photo else (match.group(1) if match else '产品图片')
                 draw.text((545, 275), f'{index:02d}', font=font(66), fill=accent)
                 for row, line in enumerate(wrap(label, font(38), 410)):
                     draw.text((545, 367 + row * 52), line, font=font(38), fill=accent)
@@ -179,10 +191,9 @@ def compose(snapshot, template, font_path, options, width=1080, height=1440):
                 y += 48
             page_title = f'正文 · {index}'
         draw.text((70, 1340), '滑动阅读  →' if index < len(body_pages) else '保存这份笔记，按需核对', font=small, fill=accent)
-        photo = snapshot.get('product_photo')
-        if cover and photo:
-            draw.text((70, 1390), f"图片：{photo['author']} / {photo['license']} · 等比缩放", font=font(20), fill=accent)
+        if cover and page_photo:
+            draw.text((70, 1390), f"图片：{page_photo['author']} / {page_photo['license']} · 等比缩放", font=font(20), fill=accent)
         data = BytesIO(); im.save(data, format='PNG')
         pages.append((f'{index + 1:02d}.png', data.getvalue()))
-        metadata.append({'title': page_title, 'notice': notice})
+        metadata.append({'title': page_title, 'notice': notice, 'photo_id': page_photo.get('id') if page_photo else ('user-upload' if cover else None), 'photo_sha256': page_photo.get('sha256') if page_photo else (normalized.get('image_sha256') if cover else None), 'photo_source_url': page_photo.get('source_url') if page_photo else None})
     return pages, metadata, normalized

@@ -24,7 +24,7 @@ class MediaTemplateTests(unittest.TestCase):
             with zipfile.ZipFile(BytesIO(data)) as archive:
                 manifest = json.loads(archive.read('manifest.json'))
                 self.assertEqual(manifest['template_id'], template)
-                self.assertEqual(manifest['template_version'], 2)
+                self.assertEqual(manifest['template_version'], 3)
                 for page in preview['pages']:
                     png = base64.b64decode(page['data_url'].split(',', 1)[1])
                     self.assertEqual(png, archive.read(page['name']))
@@ -135,7 +135,7 @@ class MediaTemplateTests(unittest.TestCase):
                 self.assertEqual(base64.b64decode(page['data_url'].split(',')[1]), archive.read(page['name']))
                 self.assertFalse(Image.open(BytesIO(archive.read(page['name']))).getexif())
 
-    def test_product_photo_is_mixed_into_every_page_without_losing_body(self):
+    def test_single_upload_is_only_on_cover_without_losing_body(self):
         source = BytesIO()
         Image.new('RGB', (600, 300), '#ed36c9').save(source, 'PNG')
         options = {'cover_image': 'data:image/png;base64,' + base64.b64encode(source.getvalue()).decode()}
@@ -157,10 +157,10 @@ class MediaTemplateTests(unittest.TestCase):
             with patch.object(ImageDraw.ImageDraw, 'text', record_text), patch.object(Image.Image, 'paste', record_paste):
                 preview = preview_run(run, template, options)
             self.assertGreater(preview['page_count'], 2)
-            self.assertEqual(len(placed), preview['page_count'])
+            self.assertEqual(len(placed), 1)
             self.assertTrue(all(w == 2 * h for (w, h), _ in placed))
             self.assertTrue(all(w <= 410 and h <= 260 for (w, h), _ in placed[1:]))
-            self.assertTrue(all(555 <= y < 1270 for y in baselines))
+            self.assertTrue(all(240 <= y < 1270 for y in baselines))
             for value in (content['body'], content['cta']):
                 self.assertIn(value.replace('\n', ''), ''.join(drawn))
             changed = preview_run(run, template, dict(options, page_styles={'1': {'size': 'large'}}))
@@ -174,7 +174,7 @@ class MediaTemplateTests(unittest.TestCase):
             with self.assertRaises(DomainError):
                 normalize_options({'product_photo': invalid})
 
-    def test_catalog_photo_attribution_on_every_page_but_not_user_upload(self):
+    def test_single_photo_attribution_only_on_cover_but_not_user_upload(self):
         from backend.card_layout import compose
         from backend.media_exports import font_path
         source = BytesIO()
@@ -190,7 +190,7 @@ class MediaTemplateTests(unittest.TestCase):
                 return original(draw, xy, text, *args, **kwargs)
             with patch.object(ImageDraw.ImageDraw, 'text', record):
                 pages, _, _ = compose(snapshot, 'classic', font_path(), options)
-            self.assertEqual(len(credits), len(pages) if photo else 0)
+            self.assertEqual(len(credits), 1 if photo else 0)
             if photo:
                 self.assertTrue(all('Hayden Schiff / CC BY 4.0' in credit for credit in credits))
 

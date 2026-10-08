@@ -12,14 +12,14 @@ import zipfile
 
 from backend.contracts import require
 from backend.workflow import digest
-from backend.product_photos import resolve_options, attribution
+from backend.product_photos import resolve_options, attribution, photo_identity
 
 WIDTH, HEIGHT = 1080, 1440
 MARGIN, BODY_SIZE, LINE_HEIGHT = 90, 42, 68
 MAX_PAGES = 24
 TEMPLATES = {
-    'classic': {'id': 'classic', 'version': 2, 'label': '清爽图文'},
-    'checklist': {'id': 'checklist', 'version': 2, 'label': '重点清单'},
+    'classic': {'id': 'classic', 'version': 3, 'label': '清爽图文'},
+    'checklist': {'id': 'checklist', 'version': 3, 'label': '重点清单'},
 }
 
 
@@ -101,6 +101,7 @@ def design_identity(snapshot, template, options):
     options, photo = resolve_options(snapshot, options)
     snapshot['product_photo'] = photo
     normalized, _ = normalize_options(options)
+    photo_identity(normalized, photo)
     style = template_config(template)
     return normalized, digest({'content_hash': snapshot['content_hash'], 'template': style, 'options': normalized})
 
