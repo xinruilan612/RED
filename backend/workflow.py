@@ -225,7 +225,7 @@ class Run:
         if self.wait_reason == 'missing_material':
             require(material.strip(), 'INVALID_INPUT', '请补充实际素材')
         if self.wait_reason == 'hypothesis_permission':
-            require(allow_hypothesis, 'INVALID_INPUT', '模拟版无历史导入，请允许假设模式或取消')
+            require(allow_hypothesis, 'INVALID_INPUT', '当前没有可用受众历史，请明确允许将受众判断作为待验证假设，或补充真实历史后重新开始')
         self.supplement(str(uuid4()))
         self.context['material'] = material
         self.context['allow_hypothesis'] = allow_hypothesis

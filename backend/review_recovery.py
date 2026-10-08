@@ -36,30 +36,12 @@ def candidate(db, store, run):
         error_kind=str(error)
         require(error_kind in ('模型引用无法匹配原始素材','审核引用无法匹配当前稿件','旧问题必须逐项复核','缺少改稿问题'),'INVALID_TRANSITION','此审核错误不能自动整理，请查看诊断')
     else:raise DomainError('INVALID_TRANSITION','审核不存在可整理的格式错误')
-    if error_kind=='缺少改稿问题':
-        require(raw.get('decision')=='revision_required' and raw.get('next_action')=='revise' and raw.get('issues')==[] and raw.get('human_questions'),
-                'INVALID_TRANSITION','不能推定审核通过或编造改稿问题')
-        clean=copy.deepcopy(raw)
-        clean.update(decision='needs_human',next_action='request_human')
-        clean['limitations'].append('原审核同时要求改稿、没有改稿问题且提出人工问题；免费整理仅转入人工处理，未判定通过，原响应与收费不变。')
-        return row[0],normalize(run,'review',clean),[],[]
-    if error_kind=='旧问题必须逐项复核':
-        clean=copy.deepcopy(raw)
-        required={i['issue_id'] for i in (run.prior_review or {}).get('issues',[])}
-        results=clean.get('previous_issue_results',[])
-        require(isinstance(results,list) and all(isinstance(i,dict) for i in results),'INVALID_TRANSITION','复核列表格式无效')
-        ids=[i.get('issue_id') for i in results]
-        require(all(isinstance(i,str) for i in ids) and len(ids)==len(set(ids)) and required.issubset(ids),
-                'INVALID_TRANSITION','缺少或重复本轮旧问题，不能推定复核结果')
-        historical={i['issue_id'] for report in run.reviews for i in report.get('issues',[])}
-        excluded=[i for i in results if i['issue_id'] not in required]
-        require(excluded and all(i['issue_id'] in historical and i.get('result') in ('resolved','unresolved','regressed') for i in excluded),
-                'INVALID_TRANSITION','未知历史问题编号，不能自动整理')
-        require(clean.get('decision') in ('revision_required','needs_human'),'INVALID_TRANSITION','整理格式不能自动通过审核')
-        clean['previous_issue_results']=[i for i in results if i['issue_id'] in required]
-        report=normalize(run,'review',clean)
+    if error_kind in ('旧问题必须逐项复核','缺少改稿问题'):
+        report,excluded=normalize_recovered(run,copy.deepcopy(raw))
         return row[0],report,[],excluded
-    clean=copy.deepcopy(raw);kept=[];removed=[];unlocated=False
+    from backend.citation_ids import repair as repair_citation_format
+    clean,_=repair_citation_format('review',raw,material_records(run.context))
+    kept=[];removed=[];unlocated=False
     for entry in clean['claim_map']:
         try:verify_quotes([entry],material_records(run.context),draft_text(draft['content']))
         except DomainError as error:
@@ -76,25 +58,66 @@ def candidate(db, store, run):
     require(isinstance(clean.get('issues'),list) and isinstance(clean.get('limitations'),list),'MODEL_OUTPUT_INVALID','审核字段无效')
     issue_id='citation-recovery-'+row[0]
     require(not any(i.get('issue_id')==issue_id for i in clean['issues'] if isinstance(i,dict)),'MODEL_OUTPUT_INVALID','恢复问题编号冲突')
-    clean['issues'].append({'issue_id':issue_id,'severity':'major','state':'open','location':'body',
+    excerpt=draft['content']['body'] if unlocated else removed[0]['excerpt']
+    location='body' if unlocated else next((name for name in ('selected_title','body','cta','tags')
+                   if excerpt in (draft['content'][name] if name!='tags' else '\n'.join(draft['content']['tags']))), 'body')
+    clean['issues'].append({'issue_id':issue_id,'severity':'major','state':'open','location':location,
         # An unlocated excerpt cannot be guessed. Flag the whole current body
         # as requiring re-audit, rather than claim a recovered factual mapping.
-        'excerpt':draft['content']['body'] if unlocated else removed[0]['excerpt'],
+        'excerpt':excerpt,
         'reason':f'{len(removed)} 条引用未同时匹配素材和当前稿件，相关事实映射尚未完成校验。',
-        'suggestion':'按保留的原审核意见改稿，并以当前稿件原文和素材原文分别重新建立引用映射；必须重新审核。'})
+        'suggestion':'核对被指出的事实和保留的原审核意见；只修改确有问题的文案。引用映射由审核角色在复审时重建，不要把 claim_map 写进正文；必须重新审核。'})
     for check in clean['checks']:
         if check.get('name')=='evidence_integrity':
             check.update(result='fail',basis='存在被排除的无效引用，当前稿件必须重新进行事实映射审核。')
     clean['limitations'].append(f'本审核由已收到的结果免费整理：排除 {len(removed)} 条无效引用，不猜测位置，不认定相关事实成立，保留原始响应审计；未通过审核，须改稿并重新审核。')
-    report=normalize(run,'review',clean)
-    return row[0],report,removed,[]
+    report,excluded=normalize_recovered(run,clean)
+    return row[0],report,removed,excluded
+
+
+def normalize_recovered(run, clean):
+    """Compose safe repairs without suppressing any remaining validation error."""
+    try:
+        return normalize_human_recovery(run,clean),[]
+    except DomainError as error:
+        if str(error)!='旧问题必须逐项复核':
+            raise
+    required={i['issue_id'] for i in (run.prior_review or {}).get('issues',[])}
+    results=clean.get('previous_issue_results',[])
+    require(isinstance(results,list) and all(isinstance(i,dict) for i in results),'INVALID_TRANSITION','复核列表格式无效')
+    ids=[i.get('issue_id') for i in results]
+    require(all(isinstance(i,str) for i in ids) and len(ids)==len(set(ids)) and required.issubset(ids),
+            'INVALID_TRANSITION','缺少或重复本轮旧问题，不能推定复核结果')
+    historical={i['issue_id'] for report in run.reviews for i in report.get('issues',[])}
+    excluded=[i for i in results if i['issue_id'] not in required]
+    require(excluded and all(i['issue_id'] in historical and i.get('result') in ('resolved','unresolved','regressed') for i in excluded),
+            'INVALID_TRANSITION','未知历史问题编号，不能自动整理')
+    require(clean.get('decision') in ('revision_required','needs_human'),'INVALID_TRANSITION','整理格式不能自动通过审核')
+    clean['previous_issue_results']=[i for i in results if i['issue_id'] in required]
+    return normalize_human_recovery(run,clean),excluded
+
+
+def normalize_human_recovery(run, clean):
+    try:
+        return normalize(run,'review',clean)
+    except DomainError as error:
+        if str(error)!='缺少改稿问题':
+            raise
+    require(clean.get('decision')=='revision_required' and clean.get('next_action')=='revise'
+            and clean.get('issues')==[] and clean.get('human_questions'),
+            'INVALID_TRANSITION','不能推定审核通过或编造改稿问题')
+    clean.update(decision='needs_human',next_action='request_human')
+    clean['limitations'].append('原审核同时要求改稿、没有改稿问题且提出人工问题；免费整理仅转入人工处理，未判定通过，原响应与收费不变。')
+    return normalize(run,'review',clean)
 
 
 def public(store, run):
     try:
         with store.connect() as db:call_id,report,removed,excluded=candidate(db,store,run)
         return {'available':True,'call_id':call_id,'invalid_quotes':removed,'excluded_previous_results':excluded,'next_action':report['next_action'],
-                'reason':('复审混入更早轮次的问题编号。可免费整理已收到的审核，保留本轮未解决问题；不会确认稿件或调用 AI。' if excluded else
+                'reason':('复审包含更早的问题编号且没有改稿问题。可免费整理并转入原审核提出的人工处理；不会判定通过或调用 AI。' if excluded and report['decision']=='needs_human' else
+                          '审核同时存在无效引用和更早轮次的问题编号。可免费整理并保留本轮问题；必须重新审核，不会确认稿件或调用 AI。' if removed and excluded else
+                          '复审混入更早轮次的问题编号。可免费整理已收到的审核，保留本轮未解决问题；不会确认稿件或调用 AI。' if excluded else
                           '原审核决定与人工问题不一致。可免费转入人工处理；不会判定通过、确认稿件或调用 AI。' if report['decision']=='needs_human' and not removed else
                           '稿件已保存，审核引用校验失败。可免费查看问题并进入改稿；不会确认稿件或调用 AI。')}
     except (DomainError,TypeError,ValueError,KeyError):return {'available':False}
@@ -117,7 +140,7 @@ def repair(store, run_id, owner, version, key):
             'output':report,'model_calls':0,'tokens':0,'cost':0,'duration_ms':0,'tools':[],
             'memory':'人工触发免费整理已有审核；原始调用响应和费用保持不变'})
         run.event('agent.completed',agent='reviewer',stage='review',mode='live',
-                  recovery='obsolete_previous_issue_ids' if excluded else 'inconsistent_revision_for_human' if report['decision']=='needs_human' and not removed else 'invalid_citations_for_manual_edit',
+                  recovery='invalid_citations_and_obsolete_previous_issue_ids' if removed and excluded else 'obsolete_previous_issue_ids' if excluded else 'inconsistent_revision_for_human' if report['decision']=='needs_human' and not removed else 'invalid_citations_for_manual_edit',
                   call_id=call_id,excluded_claim_map=removed,excluded_previous_results=excluded)
         db.execute("UPDATE runtime_jobs SET status=?,error=NULL,token=NULL,lease_until=NULL,thread_id=?,updated=? WHERE run_id=?",
                    ('waiting' if run.run_status=='WAITING_USER' else 'paused',str(uuid4()),time.time(),run_id))

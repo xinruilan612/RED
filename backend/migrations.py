@@ -69,6 +69,9 @@ CREATE TABLE run_visibility (
  deleted INTEGER NOT NULL DEFAULT 0 CHECK(deleted IN (0,1)),
  changed_at DOUBLE PRECISION NOT NULL);
 CREATE INDEX run_visibility_owner ON run_visibility(owner,deleted);
+'''), (8, '''
+CREATE TABLE testing_budget_limits (
+ owner TEXT PRIMARY KEY REFERENCES testing_budgets(owner));
 '''))
 
 

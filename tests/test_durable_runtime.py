@@ -474,6 +474,44 @@ class DurableTests(unittest.TestCase):
         self.assertEqual(repaired['usage'],before['usage']);self.assertEqual(self.model.calls,calls)
         self.assertEqual(repaired['node_runs'][-1]['input']['excluded_previous_results'][0]['issue_id'],historical)
 
+    def test_compound_review_recovery_command_is_free_idempotent_and_allows_edit(self):
+        historical=self.historical_extra_review()
+        # The third response has both an obsolete issue ID and invalid citation.
+        with self.store.connect() as db:
+            call_id,raw=db.execute(f"SELECT id,response_json FROM live_calls WHERE run_id=? AND stage='review' ORDER BY {self.store.order_column} DESC LIMIT 1",(self.run_id,)).fetchone()
+            value=json.loads(raw)
+            value['claim_map']=[{'excerpt':'完整正文','source_id':'user-material','quote':'不存在的资料引用'}]
+            db.execute('UPDATE live_calls SET response_json=? WHERE id=?',(json.dumps(value),call_id))
+            original=db.execute('SELECT response_json,actual,state FROM live_calls WHERE id=?',(call_id,)).fetchone()
+        before=self.service.view(self.run_value());calls=list(self.model.calls)
+        self.assertTrue(before['review_recovery']['available'])
+        command=dict(action='repair_review',payload={},version=self.run_value().status_version,key=str(uuid4()))
+        repaired=self.service.action(self.owner,self.run_id,command)
+        replay=self.service.action(self.owner,self.run_id,command)
+        self.assertEqual(repaired['status_version'],replay['status_version'])
+        self.assertEqual(repaired['review'],replay['review'])
+        self.assertEqual(repaired['usage'],before['usage'])
+        self.assertEqual(repaired['calls'],before['calls'])
+        self.assertEqual(self.model.calls,calls)
+        self.assertEqual(repaired['node_runs'][-1]['model_calls'],0)
+        self.assertEqual(repaired['node_runs'][-1]['input']['excluded_previous_results'],[{'issue_id':historical,'result':'unresolved'}])
+        self.assertEqual(len(repaired['node_runs'][-1]['input']['excluded_claim_map']),1)
+        self.assertEqual(repaired['review']['previous_issue_results'],[{'issue_id':'current','result':'unresolved'}])
+        self.assertNotIn('accept',repaired['allowed_actions'])
+        with self.store.connect() as db:
+            self.assertEqual(db.execute('SELECT response_json,actual,state FROM live_calls WHERE id=?',(call_id,)).fetchone(),original)
+        changed=dict(repaired['drafts'][-1]['content']);changed['body']='核对后修改的正文，仍须重新审核。'
+        edited=self.action('edit',changed)
+        self.assertEqual(edited['current_stage'],'reviewer')
+        self.assertIsNone(edited['review'])
+        self.assertEqual(edited['drafts'][-1]['content']['body'],changed['body'])
+        self.assertNotEqual(edited['drafts'][-1]['ref'],repaired['drafts'][-1]['ref'])
+        self.assertEqual(edited['prior_review']['ref'],repaired['review']['ref'])
+        self.assertNotIn('accept',edited['allowed_actions'])
+        with self.assertRaises(DomainError) as caught:self.start()
+        self.assertEqual(caught.exception.code,'STAGE_ATTEMPT_LIMIT')
+        self.assertEqual(self.model.calls,calls)  # Third-review cap still applies.
+
     def test_historical_recovery_rejects_missing_duplicate_unknown_and_approval(self):
         historical=self.historical_extra_review()
         with self.store.connect() as db:

@@ -1,0 +1,90 @@
+{
+  "python": {
+    "passed": 814,
+    "skipped": 0,
+    "seconds": 311.309,
+    "real_postgresql": true,
+    "models": "fixtures; SKAPP synthetic training only"
+  },
+  "frontend": {
+    "passed": 224,
+    "skipped": 0,
+    "syntax_files": 12
+  },
+  "role_cards": "generated outputs match",
+  "pip_check": "No broken requirements found",
+  "diff_check": "passed",
+  "browser": "Chrome confirmed version and downloaded actual ZIP; reload/narrow390 no overflow",
+  "exports": {
+    "zip_sha256": "71add2802f667d670051902df8370e9aa59967cab6123873d6e6b472b321ca16",
+    "zip_bytes": 949629,
+    "checks": [
+      {
+        "file": "images/01.png",
+        "size": [
+          1080,
+          1440
+        ]
+      },
+      {
+        "file": "images/02.png",
+        "size": [
+          1080,
+          1440
+        ]
+      },
+      {
+        "file": "images/03.png",
+        "size": [
+          1080,
+          1440
+        ]
+      },
+      {
+        "file": "video/video.mp4",
+        "full_decode_exit_code": 0
+      }
+    ]
+  },
+  "source_sha256": {
+    "backend/live.py": "d92e07c7c27d4b96a6629bf27907f5da088de523a6686f17243d490b4a606329",
+    "backend/review_recovery.py": "f400b00b23d6e94d611cc3fbf1a8358ad80052ce4184c813f3cc01c1cfe25a40",
+    "backend/testing_budget.py": "c4df5c7a362211bce7ff922f74adc673ebea7dd3a5ae83d02031fab71d8df162",
+    "backend/migrations.py": "d96ea2630ab145b10730cf9494b5800eb004257bace267ffd5c8ab34086841ae",
+    "backend/workflow.py": "34c35059b2963c0133bc5cee3dd5d29d25172d3725006698604a5b5f3b6abbf2"
+  },
+  "real_calls_separate": {
+    "date": "2026-10-08",
+    "baseline_commit": "023d0be0870d8b4d99ac74cf7480f7958b3a7825",
+    "final_run_id": "6b32250e-9029-45e7-a71c-995d76d682e5",
+    "status": "SUCCEEDED",
+    "review": "approved",
+    "accepted_ref": "a238a645-59eb-4a51-b4b4-cea73e8f5361@1",
+    "final_draft_hash": "2f2f9821d8a214a901ba9700824603cf088e7e76ec91afe0137258762e3da3a8",
+    "final_drafts": 1,
+    "manual_edits_final_sample": 0,
+    "final_sample_calls": 8,
+    "final_sample_tokens": 15406,
+    "final_sample_seconds_until_review": 17.146283,
+    "all_calls_including_failure_and_baseline": 22,
+    "all_tokens": 44037,
+    "estimated_cny_all": 0.13122,
+    "budget_cny": 5,
+    "budget_hard_limit": true,
+    "billing_basis": "官方峰值输入2元/百万、输出8元/百万；无缓存折扣，估价非供应商账单",
+    "source_url": "https://www.logitech.com/zh-cn/shop/p/m185-wireless-mouse",
+    "pricing_url": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing/",
+    "same_input_verified": true,
+    "comparison_input_hash": "4b72caecf0e8eed2ab3a5192f8a0ab32286d4e6a0acaf56bba37782a9ac53580",
+    "reader_count_prepared": 3,
+    "reader_responses": 0,
+    "length_non_whitespace_title_body": 378,
+    "first_failure_preserved": "失败样本-完整快照.json",
+    "limitations": [
+      "单个成功样本不是成功率保证",
+      "盲测为修复后系统与普通AI对比，不能据此证明优胜；失败调试成本另列",
+      "图卡固定模板、MP4无声翻页视频；未发布社媒",
+      "尚未收到真人回答"
+    ]
+  }
+}

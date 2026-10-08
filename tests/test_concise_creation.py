@@ -74,6 +74,68 @@ class ConciseCreationTests(unittest.TestCase):
         self.assertIn('150至250字',messages[0]['content'])
         self.assertIn('全部8项',messages[0]['content'])
 
+    def test_explicit_brief_length_survives_body_revision_and_review_context(self):
+        run=self.fixture()
+        run.context['topic']='罗技 M185 大学生使用场景，正文350至500字'
+        before=copy.deepcopy(run.__dict__)
+        for stage in ('body','revise','review'):
+            with self.subTest(stage=stage):
+                messages,data=messages_for(run,stage)
+                self.assertEqual(data['brief']['topic'],run.context['topic'])
+                self.assertEqual(json.loads(messages[1]['content'])['brief'],data['brief'])
+                self.assertIn('默认建议不得覆盖用户指定的正文长度',messages[0]['content'])
+                self.assertNotIn('作为可测试的简稿而非正式长文',messages[0]['content'])
+                if stage!='review':
+                    self.assertIn('仅当brief未指定正文长度时，body默认约150至250字',messages[0]['content'])
+                    self.assertIn('改稿也必须保持用户的长度要求',messages[0]['content'])
+        self.assertEqual(run.__dict__,before)
+
+    def test_review_length_mismatch_is_a_brief_failure_not_minor_style(self):
+        messages,_=messages_for(self.fixture(),'review')
+        instruction=messages[0]['content']
+        self.assertIn('brief_fit必须fail',instruction)
+        self.assertIn('severity=major、state=open',instruction)
+        self.assertIn('不得作为minor风格偏好放行',instruction)
+        self.assertIn('可依据现有材料改写时必须decision=revision_required,next_action=revise',instruction)
+        self.assertIn('不能为凑字数放过虚构事实',instruction)
+
+    def test_review_counts_current_draft_unicode_nonwhitespace_excluding_cta_tags(self):
+        run=self.fixture()
+        run.context['draft_counts']={'body':9999}
+        run.drafts.insert(0,{'content':{'selected_title':'旧标题','body':'旧正文'*100,'cta':'','tags':[]}})
+        run.drafts[-1]['content'].update(selected_title='标 题\n',body='中 A\t1。\u3000😀',cta='互动'*200,tags=['标签'*200])
+        before=copy.deepcopy(run.__dict__)
+        messages,data=messages_for(run,'review')
+        self.assertEqual(data['draft_counts']['selected_title'],2)
+        self.assertEqual(data['draft_counts']['body'],5)
+        self.assertEqual(data['draft_counts']['title_and_body'],7)
+        self.assertIn('非空白 Unicode 字符数',data['draft_counts']['counting_rule'])
+        self.assertEqual(json.loads(messages[1]['content'])['draft_counts'],data['draft_counts'])
+        self.assertIn('不能自行估算、沿用旧稿字数',messages[0]['content'])
+        self.assertIn('正文长度时使用draft_counts.body',messages[0]['content'])
+        self.assertIn('标题加正文时使用draft_counts.title_and_body',messages[0]['content'])
+        self.assertEqual(run.__dict__,before)
+        run.drafts[-1]['content']['body']='新正文'
+        self.assertEqual(messages_for(run,'review')[1]['draft_counts']['body'],3)
+
+    def test_review_missing_required_text_reports_exact_path_and_still_rejects(self):
+        for field in ('location','excerpt','reason','suggestion'):
+            with self.subTest(field=field):
+                value=schema('review')
+                value['issues']=[dict(location='body',excerpt='正文',reason='需要核对',suggestion='核对后修改')]
+                del value['issues'][0][field]
+                before=copy.deepcopy(value)
+                with self.assertRaises(DomainError) as caught:normalize(self.fixture(),'review',value)
+                self.assertEqual(caught.exception.code,'MODEL_OUTPUT_INVALID')
+                self.assertIn('issues[0].'+field,str(caught.exception))
+                self.assertEqual(value,before)
+        value=schema('review');value['checks'][2]['basis']=None
+        with self.assertRaises(DomainError) as caught:normalize(self.fixture(),'review',value)
+        self.assertIn('checks[2].basis',str(caught.exception))
+        value=schema('review');value['human_questions']=[None]
+        with self.assertRaises(DomainError) as caught:normalize(self.fixture(),'review',value)
+        self.assertIn('human_questions[0]',str(caught.exception))
+
     def test_reaudit_prompt_only_tracks_immediate_issue_ids(self):
         run=self.fixture()
         run.prior_review['previous_issue_results']=[{'issue_id':'obsolete','result':'unresolved'}]
