@@ -106,6 +106,33 @@ class ModelRouter:
 
 
 class Calls:
+    @staticmethod
+    def invoke_local_vision(store, run, page_data_url, feedback, text_blocks, adapter=None):
+        """Reserve one local call per owner; release the transaction before inference."""
+        from backend.local_vision import complete, inputs, MODEL
+        _,image_hash=inputs(page_data_url,feedback,text_blocks)
+        input_hash=digest({'image_hash':image_hash,'feedback':feedback,'text_blocks':text_blocks,'model':MODEL,'prompt_version':'local-vision.v1'})
+        call_id=str(uuid4()); now=time.time()
+        with store.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            store._get(db,run.run_id,run.owner_id)
+            db.execute("UPDATE local_media_calls SET status='abandoned',finished=?,error=? WHERE owner=? AND status='running' AND started<?",(now,'本地调用超过恢复期限，结果未知；没有自动重试',run.owner_id,now-180))
+            require(not db.execute("SELECT id FROM local_media_calls WHERE owner=? AND status='running'",(run.owner_id,)).fetchone(),'LOCAL_VISION_BUSY','已有图片正在分析，请等待完成')
+            db.execute('INSERT INTO local_media_calls(id,run_id,owner,model,input_hash,image_hash,feedback,status,started) VALUES(?,?,?,?,?,?,?,?,?)',(call_id,run.run_id,run.owner_id,MODEL,input_hash,image_hash,feedback,'running',now))
+        try:
+            result=(adapter or complete)(page_data_url,feedback,text_blocks)
+            require(isinstance(result,dict) and result.get('model')==MODEL,'LOCAL_VISION_INVALID','本地视觉模型返回无效')
+            require(all(type(result.get(k)) is int and result[k]>=0 for k in ('input_tokens','output_tokens')),'LOCAL_VISION_INVALID','本地视觉未报告实际用量')
+        except Exception as error:
+            public=error if isinstance(error,DomainError) else DomainError('LOCAL_VISION_FAILED','本地图片分析失败，未自动重试')
+            with store.connect() as db:
+                db.execute("UPDATE local_media_calls SET status='failed',error=?,input_tokens=?,output_tokens=?,finished=? WHERE id=? AND status='running'",(str(public),getattr(error,'input_tokens',None),getattr(error,'output_tokens',None),time.time(),call_id))
+            raise public
+        with store.connect() as db:
+            changed=db.execute("UPDATE local_media_calls SET status='succeeded',response_json=?,input_tokens=?,output_tokens=?,finished=? WHERE id=? AND status='running'",(json.dumps(result,ensure_ascii=False),result['input_tokens'],result['output_tokens'],time.time(),call_id))
+            require(changed.rowcount==1,'LOCAL_VISION_EXPIRED','本地分析结果已过期，请重新操作')
+        return {**result,'call_id':call_id}
+
     def __init__(self, store, config, router):
         self.store,self.config,self.router = store,config,router
 

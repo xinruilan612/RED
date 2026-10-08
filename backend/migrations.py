@@ -96,6 +96,13 @@ INSERT INTO media_templates(id,version,name,source_url,source_commit,license,sor
 ('xhs-f',1,'粉色王国','https://github.com/bozhouDev/xhs-article-to-images','79d2ccce32ff44236bf504a39b850637acacd950','MIT',5),
 ('xhs-g',1,'乙游夜境','https://github.com/bozhouDev/xhs-article-to-images','79d2ccce32ff44236bf504a39b850637acacd950','MIT',6),
 ('xhs-h',1,'自然手记','https://github.com/bozhouDev/xhs-article-to-images','79d2ccce32ff44236bf504a39b850637acacd950','MIT',7);
+'''), (10, '''
+CREATE TABLE local_media_calls (
+ id TEXT PRIMARY KEY, run_id TEXT NOT NULL REFERENCES runs(id), owner TEXT NOT NULL,
+ model TEXT NOT NULL, input_hash TEXT NOT NULL, image_hash TEXT NOT NULL,
+ feedback TEXT NOT NULL, status TEXT NOT NULL, response_json TEXT, error TEXT,
+ input_tokens INTEGER, output_tokens INTEGER, started REAL NOT NULL, finished REAL);
+CREATE INDEX local_media_calls_owner_status ON local_media_calls(owner,status);
 '''))
 
 

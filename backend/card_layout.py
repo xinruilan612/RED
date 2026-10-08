@@ -11,7 +11,7 @@ PALETTES = {'green': ('#205c4b', '#e7f0e9'), 'orange': ('#a54424', '#fae9db'), '
 def normalize_options(options):
     from PIL import Image, ImageOps
     options = {} if options is None else options
-    require(isinstance(options, dict) and not set(options) - {'page_styles', 'global_style', 'cover_image', 'product_photo'}, 'INVALID_INPUT', '图卡设置无效')
+    require(isinstance(options, dict) and not set(options) - {'page_styles', 'global_style', 'cover_image', 'product_photo', 'layout_plan'}, 'INVALID_INPUT', '图卡设置无效')
     styles = options.get('page_styles', {})
     require(isinstance(styles, dict) and len(styles) <= 24, 'INVALID_INPUT', '页面设置无效')
     normalized = {}
@@ -29,6 +29,23 @@ def normalize_options(options):
         size, accent = style.get('size', 'normal'), style.get('accent', 'green')
         require(isinstance(size, str) and size in ('normal', 'large') and isinstance(accent, str) and accent in (*PALETTES, 'default'), 'INVALID_INPUT', '字号或强调色无效')
         result['global_style'] = {'size': size, 'accent': accent}
+    if 'layout_plan' in options:
+        plan = options['layout_plan']
+        require(isinstance(plan, dict) and set(plan) == {'pages'}, 'INVALID_INPUT', '逐页排版方案结构无效')
+        rows = plan['pages']
+        require(isinstance(rows, list) and 2 <= len(rows) <= 24, 'INVALID_INPUT', '逐页排版方案需要封面和正文，最多24页')
+        clean, total = [], 0
+        for index, row in enumerate(rows):
+            require(isinstance(row, dict) and set(row) == {'text_blocks', 'photo_index'}, 'INVALID_INPUT', '逐页排版页面结构无效')
+            blocks, picture = row['text_blocks'], row['photo_index']
+            require(isinstance(blocks, list) and all(isinstance(text, str) and bool(text.strip()) for text in blocks), 'INVALID_INPUT', '逐页排版文字块无效')
+            require((index == 0 and not blocks) or (index > 0 and bool(blocks)), 'INVALID_INPUT', '封面不能包含正文，正文页不能为空')
+            require(picture is None or (type(picture) is int and 0 <= picture <= 23), 'INVALID_INPUT', '逐页排版图片索引无效')
+            require(index != 0 or picture in (None, 0), 'INVALID_INPUT', '封面只能使用第一张图片')
+            total += sum(len(text) for text in blocks)
+            require(total <= 30000, 'INVALID_INPUT', '逐页排版文字超过30000字')
+            clean.append({'text_blocks': list(blocks), 'photo_index': picture})
+        result['layout_plan'] = {'pages': clean}
     data = options.get('cover_image')
     if data is not None:
         require(isinstance(data, str) and len(data) <= 4200000 and re.match(r'^data:image/(png|jpeg);base64,', data), 'INVALID_INPUT', '产品图片只接受不超过3MB的PNG或JPEG图片')

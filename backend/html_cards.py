@@ -78,6 +78,14 @@ def compose(snapshot, theme, options):
     body=content['body']+ ('\n\n'+content['cta'] if content.get('cta') else '')
     tag_text=' '.join('#'+str(tag) for tag in content.get('tags',[]))
     require(len(title)<=500 and len(body)<=30000,'INVALID_INPUT','稿件太长，请缩短后制作图片')
+    plan=normalized.get('layout_plan')
+    if plan:
+        compact=lambda value: re.sub(r'\s+', '', value)
+        planned_text=''.join(block for row in plan['pages'][1:] for block in row['text_blocks'])
+        require(compact(planned_text)==compact(body),'INVALID_INPUT','排版方案改变或遗漏了已确认文案，请重新生成排版方案')
+        selected=[row['photo_index'] for row in plan['pages'] if row['photo_index'] is not None]
+        require(all(index < len(images) for index in selected),'INVALID_INPUT','排版方案引用的产品图片不可用')
+        require(len(set(selected))==len(selected),'INVALID_INPUT','排版方案不能重复使用同一张产品图片')
     css,classes,deco=_shell(theme,style)
     pages=[];metadata=[]
     try:
@@ -88,45 +96,54 @@ def compose(snapshot, theme, options):
                 page=browser.new_page(viewport={'width':1080,'height':1440},device_scale_factor=1)
                 page.route('**/*',lambda route:route.abort())
                 page.set_content('<!doctype html><html lang="zh"><meta charset="utf-8"><style>'+css+'</style><body></body></html>')
-                def add_page(cover_page=False):
-                    index=len(metadata);picture=images[index] if index<len(images) else None
+                def add_page(cover_page=False, photo_index='auto'):
+                    index=len(metadata)
+                    if photo_index == 'auto': photo_index=index if index<len(images) else None
+                    picture=images[photo_index] if photo_index is not None else None
                     info=(photo or {}).get('photos',[])
-                    item=info[index] if index<len(info) else {}
-                    metadata.append({'title':title if cover_page else f'正文 · 第{index}页','notice':'', 'photo_id':item.get('id') or ('user-upload' if picture else None),'photo_sha256':item.get('sha256') or (normalized.get('image_sha256') if picture else None),'photo_source_url':item.get('source_url'),'text_blocks':[]})
+                    item=info[photo_index] if photo_index is not None and photo_index<len(info) else {}
+                    metadata.append({'title':title if cover_page else f'正文 · 第{index}页','notice':'', 'photo_id':item.get('id') or ('user-upload' if picture else None),'photo_sha256':item.get('sha256') or (normalized.get('image_sha256') if picture else None),'photo_source_url':item.get('source_url'),'text_blocks':[], 'photo_index':photo_index})
                     attribution='图片：'+item['author']+' / '+item['license'] if item else ''
                     image='<img class="youji-image" src="'+_uri(picture)+'" />' if picture else ''
                     intro='<h1>'+html.escape(title)+'</h1>' if cover_page else '<div class="youji-sub">'+html.escape(title)+'</div>'
                     markup=f'<section id="p{index}" class="{classes} youji-page '+('youji-cover' if cover_page else '')+'">'+deco+'<div class="youji-header"><span>有迹 · '+THEMES[theme]+'</span><span class="page-number"></span></div><div class="youji-content">'+intro+image+'<div class="youji-flow"></div></div><div class="youji-footer"><span>'+attribution+'</span><span>有迹 · 图文笔记</span></div></section>'
                     page.evaluate('(s)=>document.body.insertAdjacentHTML("beforeend",s)',markup)
                     return index
-                add_page(True)
+                add_page(True, plan['pages'][0]['photo_index'] if plan else 'auto')
                 # Fit long titles visibly, without clipping or silently truncating.
                 cover_fits=page.evaluate('''()=>{const root=document.querySelector('.youji-cover .youji-content'),h=root.querySelector('h1');const fits=()=>root.scrollHeight<=root.clientHeight+1;while(!fits() && parseFloat(getComputedStyle(h).fontSize)>24)h.style.fontSize=(parseFloat(getComputedStyle(h).fontSize)-2)+'px';return fits()}''')
                 require(cover_fits,'INVALID_INPUT','标题过长，封面无法完整显示，请缩短标题')
-                index=add_page()
+                index=0 if plan else add_page()
                 def fits(text):
                     return page.evaluate('''({index,text})=>{let root=document.querySelector('#p'+index+' .youji-content'),flow=root.querySelector('.youji-flow'),p=document.createElement('p');p.textContent=text;flow.append(p);let fits=p.getBoundingClientRect().bottom<=root.getBoundingClientRect().bottom+0.5;p.remove();return fits}''',{'index':index,'text':text})
                 def append(text):
                     page.evaluate('''({index,text})=>{let p=document.createElement('p');p.textContent=text;document.querySelector('#p'+index+' .youji-flow').append(p)}''',{'index':index,'text':text})
                     metadata[index]['text_blocks'].append(text)
-                # Paragraphs stay intact where possible; long ones split on sentence boundaries.
-                queue=[s for s in re.split(r'\n\s*\n|\n(?=[①②③④⑤⑥⑦⑧⑨⑩])',body) if s.strip()]
-                while queue:
-                    text=queue.pop(0)
-                    if fits(text):append(text);continue
-                    if metadata[index]['text_blocks']:
-                        require(len(metadata)<24,'INVALID_INPUT','正文超过24页，请缩短稿件')
-                        index=add_page();queue.insert(0,text);continue
-                    pieces=re.findall(r'.*?[。！？；](?:[”’」』])?|.+$',text,re.S)
-                    if len(pieces)>1:
-                        queue=pieces+queue;continue
-                    lo,hi=1,len(text)
-                    while lo<hi:
-                        mid=(lo+hi+1)//2
-                        if fits(text[:mid]):lo=mid
-                        else:hi=mid-1
-                    require(fits(text[:lo]),'INVALID_INPUT','字号过大，当前页面无法容纳正文')
-                    append(text[:lo]);queue.insert(0,text[lo:]) if text[lo:] else None
+                if plan:
+                    for row in plan['pages'][1:]:
+                        index=add_page(photo_index=row['photo_index'])
+                        for text in row['text_blocks']:
+                            require(fits(text),'INVALID_INPUT',f'排版方案第{index+1}页放不下完整文字，请进一步拆页或减小字号')
+                            append(text)
+                else:
+                    # Paragraphs stay intact where possible; long ones split on sentence boundaries.
+                    queue=[s for s in re.split(r'\n\s*\n|\n(?=[①②③④⑤⑥⑦⑧⑨⑩])',body) if s.strip()]
+                    while queue:
+                        text=queue.pop(0)
+                        if fits(text):append(text);continue
+                        if metadata[index]['text_blocks']:
+                            require(len(metadata)<24,'INVALID_INPUT','正文超过24页，请缩短稿件')
+                            index=add_page();queue.insert(0,text);continue
+                        pieces=re.findall(r'.*?[。！？；](?:[”’」』])?|.+$',text,re.S)
+                        if len(pieces)>1:
+                            queue=pieces+queue;continue
+                        lo,hi=1,len(text)
+                        while lo<hi:
+                            mid=(lo+hi+1)//2
+                            if fits(text[:mid]):lo=mid
+                            else:hi=mid-1
+                        require(fits(text[:lo]),'INVALID_INPUT','字号过大，当前页面无法容纳正文')
+                        append(text[:lo]);queue.insert(0,text[lo:]) if text[lo:] else None
                 # Tags belong to the final card's compact footer, never a full body page.
                 # The 44px band is between the content bottom (1305) and footer top (1360).
                 if tag_text:

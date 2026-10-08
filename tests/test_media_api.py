@@ -77,6 +77,37 @@ class MediaPostgresApiTests(unittest.TestCase):
                 'content_hash':run['acceptance']['content_hash'],
                 'options':{'page_styles':{'0':{'size':'large','accent':'orange'}}}}
 
+    def test_local_vision_proposal_requires_auth_and_preserves_accepted_copy(self):
+        from unittest.mock import patch
+        self.register();run=self.confirm(self.create());base='/api/runs/'+run['run_id']
+        draft=next(d for d in run['drafts'] if d['ref']==run['accepted_ref'])
+        request={'template':'xhs-e','options':{},'draft_ref':draft['ref'],'content_hash':draft['content_hash']}
+        before=self.post(base+'/media-preview',request).json()
+        body={**request,'design_hash':before['design_hash'],'page_index':1,'feedback':'把这一页拆成两页，保留图片'}
+        with patch('backend.model_router.Calls.invoke_local_vision',return_value={'action':'split','observation':'正文文字较多','reason':'用户要求拆页','model':'fixture-vision'}) as call:
+            stale=self.post(base+'/media-adjust-preview',{**body,'design_hash':'old'})
+            self.assertEqual(stale.status_code,409);call.assert_not_called()
+            missing_csrf=self.client.post(base+'/media-adjust-preview',json=body)
+            self.assertEqual(missing_csrf.status_code,403);call.assert_not_called()
+            result=self.post(base+'/media-adjust-preview',body)
+            self.assertEqual(result.status_code,200,result.text)
+            data=result.json();self.assertEqual(data['mode'],'local_vision')
+            self.assertEqual(data['preview']['page_count'],before['page_count']+1)
+            self.assertTrue(call.call_args.args[2].startswith('data:image/png;base64,'))
+            self.assertEqual(call.call_args.args[3],body['feedback'])
+            self.assertEqual(self.client.get(base).json()['accepted_ref'],run['accepted_ref'])
+            unchanged=self.post(base+'/media-preview',request).json()
+            self.assertEqual(unchanged['design_hash'],before['design_hash'])
+            after=self.post(base+'/media-preview',{**request,'options':data['options']}).json()
+            self.assertEqual(after['design_hash'],data['preview']['design_hash'])
+            self.assertEqual(after['content_hash'],before['content_hash'])
+            # Returned layout cannot be used to silently replace the confirmed wording.
+            data['options']['layout_plan']['pages'][1]['text_blocks'][0]='编造的新卖点'
+            rejected=self.post(base+'/media-preview',{**request,'options':data['options']})
+            self.assertEqual(rejected.status_code,400,rejected.text)
+        other=TestClient(self.app);self.addCleanup(other.close)
+        self.assertIn(other.post(base+'/media-adjust-preview',json=body).status_code,(401,403))
+
     def test_template_catalog_rotation_authenticated_and_csrf(self):
         self.register()
         run=self.confirm(self.create())

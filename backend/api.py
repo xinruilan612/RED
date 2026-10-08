@@ -331,6 +331,30 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
         with media_slot():
             return preview_run(run,template=data.get('template','classic'),options=data.get('options'))
 
+    @app.post('/api/runs/{run_id}/media-adjust-preview')
+    def media_adjust_preview(run_id: str,data: dict,user=Depends(logged)):
+        require(isinstance(data,dict) and set(data)<={'template','options','draft_ref','content_hash','design_hash','page_index','feedback'},'INVALID_INPUT','图卡调整请求字段无效')
+        from backend.html_cards import THEMES
+        require(data.get('template') in THEMES,'INVALID_INPUT','请先选择当前模板库中的图卡')
+        target={key:data[key] for key in ('template','options','draft_ref','content_hash') if key in data}
+        run=media_target(run_id,target,user)
+        require(type(data.get('page_index')) is int and 0<=data['page_index']<24,'INVALID_INPUT','请选择一张图卡')
+        require(isinstance(data.get('feedback'),str) and 1<=len(data['feedback'].strip())<=1000,'INVALID_INPUT','请填写1至1000字修改意见')
+        auth.throttle('media-adjust:'+user['owner'],20,3600)
+        from backend.media_exports import preview_run
+        from backend.media_adjust import propose
+        from backend.model_router import Calls
+        with media_slot():
+            before=preview_run(run,template=data.get('template','classic'),options=data.get('options'))
+        require(data.get('design_hash')==before['design_hash'],'VERSION_CONFLICT','图片已变化，请重新预览后调整')
+        require(data['page_index']<len(before['pages']),'INVALID_INPUT','所选图卡不存在')
+        selected=before['pages'][data['page_index']]
+        result=Calls.invoke_local_vision(store,run,selected['data_url'],data['feedback'].strip(),selected.get('text_blocks',[]))
+        # The caller may have changed the confirmed draft while local inference was running.
+        current=media_target(run_id,target,user)
+        with media_slot():
+            return propose(current,data,before,result)
+
     @app.post('/api/runs/{run_id}/media-export')
     def media_export_design(run_id: str,data: dict,user=Depends(logged)):
         run=media_target(run_id,data,user,exporting=True)

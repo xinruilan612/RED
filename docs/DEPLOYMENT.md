@@ -128,3 +128,7 @@ LangGraph 1.2.11 + PostgreSQL checkpointer 3.1.2 在同数据库持久化检查�
 macOS 有可用的 Google Chrome 时可复用本机浏览器；Linux/Windows 使用 Playwright Chromium。也可用环境变量 YOUJI_CHROMIUM_EXECUTABLE 指定部署者管理的浏览器绝对路径。Linux 需按 Playwright 提示安装系统依赖。浏览器必须由 API 进程所在的运行用户访问。缺少渲染器应报错，不把纯文案包冒充图卡生成成功。
 
 升级前按本文件备份 PostgreSQL；新增模板目录、轮换位置和稿件选择使用追加式核心迁移，保留已确认正文及旧媒体版本。模板代码与许可在 backend/vendor/xhs_article，使用与人工验收见 [图卡模板说明](MEDIA_TEMPLATES.md)。
+
+## 本地看图交互试用
+
+追加核心迁移 10 建立本地图像调用台账，启动前备份数据库。Ollama 与 API 在同一台机器，模型固定为 qwen3-vl:4b；没有服务时普通模板预览和下载仍可使用。安装、使用及边界见 [本地看图交互说明](MULTIMODAL_TRIAL.md)。
