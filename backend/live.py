@@ -107,6 +107,8 @@ def messages_for(run,stage):
         reviewed_content=next((d['content'] for d in run.drafts if previous and d.get('ref')==previous.get('draft_ref') and previous.get('draft_ref')),None)
         data['previous_review']=project_previous(previous,reviewed_content,stage)
         if stage=='review':
+            from backend.review_passages import passages
+            data['draft_passages']=passages(data['draft'])
             data['required_previous_issue_ids']=[i['issue_id'] for i in previous['issues']] if previous else []
             counts={field:sum(not char.isspace() for char in data['draft'][field])
                     for field in ('selected_title','body')}
@@ -150,7 +152,7 @@ def messages_for(run,stage):
     if stage=='review':
         rules[stage]+=' draft_counts由程序针对当前draft计算，不能自行估算、沿用旧稿字数或采用稿件文字自报的字数。明确要求正文长度时使用draft_counts.body；明确要求标题加正文时使用draft_counts.title_and_body。按counting_rule口径使用已有计数，不能将CTA或标签加进标题与正文的长度。'
         rules[stage]+=' 核对brief中用户明确提出的正文长度要求；未满足明确长度要求时，brief_fit必须fail，并列出severity=major、state=open的具体问题，不得作为minor风格偏好放行或同时将brief_fit标pass。可依据现有材料改写时必须decision=revision_required,next_action=revise；确实缺必需材料时needs_human并请求补料。只有用户未指定正文长度时才参考默认简稿长度，不能用150至250字默认值覆盖用户要求；不能为凑字数放过虚构事实。'
-        rules[stage]+=' 引用有两个不同文本来源：excerpt必须逐字复制当前draft.selected_title/body/cta/tags中的连续原文，quote必须逐字复制materials里对应source_id的text。不能把素材quote直接填成稿件excerpt，不能概括、调换词序、补标点或复用旧稿片段；两段措辞可以不同，但必须支持同一陈述。输出前分别检查两个子串是否真的存在。claim_map每项只输出excerpt/source_id/quote，不输出来源元数据。issues.excerpt同样引用当前draft中location对应字段的原文。可依现有素材修正的文字问题用revision_required，不把可改写问题一律转成人工补资料。'
+        rules[stage]+=' 引用有两个不同文本来源：excerpt必须逐字复制当前draft.selected_title/body/cta/tags中的连续原文，quote必须逐字复制materials里对应source_id的text。不能把素材quote直接填成稿件excerpt，不能概括、调换词序、补标点或复用旧稿片段；两段措辞可以不同，但必须支持同一陈述。输出前分别检查两个子串是否真的存在。claim_map每项优先输出draft_excerpt_id/source_id/quote：从draft_passages选择支持该陈述的片段id，系统按该编号绑定精确稿件原文，无需自行转抄excerpt；一个片段对应多个事实时可重复使用同一编号，分别匹配来源。不能编造编号或使用旧版编号，不输出来源元数据。兼容无编号的excerpt/source_id/quote格式时，excerpt必须逐字匹配稿件。issues.excerpt同样引用当前draft中location对应字段的原文。可依现有素材修正的文字问题用revision_required，不把可改写问题一律转成人工补资料。'
         rules[stage]+=' issues只列当前确实存在且需要处理的问题，不为保留旧问题编号而复制旧问题。previous_issue_results中判为resolved的问题，不得以同一issue_id在issues中继续标open。经本次核对属于可保留的来源或身份披露、无需修改的内容，不是待处理问题；不得仅因它曾出现在旧审核中就阻断。若问题仍真实存在，previous_issue_results应如实unresolved或regressed，并说明当前稿件的具体缺陷；不要为了通过而伪造解决。'
         rules[stage]+=' claim_map由你在本次审核结果中建立，不是draft的字段。严禁以“稿件没有提供claim_map”为问题要求创作者补到正文；旧引用问题应根据你本次建立的有效映射及当前稿件事实实际复核。适用条件与样例属性不是重复CTA；轻微风格偏好不升级成重大事实问题，但不能为了通过将真实缺口标为resolved。'
     instruction=('你是社媒创作系统中负责 '+stage+' 的独立角色。只做当前阶段，中文输出一个JSON对象，严格按字段类型，禁止Markdown代码围栏。'
@@ -235,6 +237,8 @@ def normalize(run,stage,value):
         require(issue.get('severity') in ('blocker','major','minor') and issue.get('state') in ('open','resolved'),
                 'MODEL_OUTPUT_INVALID','问题严重度或状态无效')
     draft=run.drafts[-1]
+    from backend.review_passages import bind
+    value=bind(value,draft['content'])
     verify_quotes(value.get('claim_map'),material_records(run.context),draft_text(draft['content']))
     report={k:value[k] for k in schema('review')}
     report.update(ref=str(uuid4())+'@1',draft_ref=draft['ref'],snapshot_id=run.snapshot_id,

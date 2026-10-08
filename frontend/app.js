@@ -313,12 +313,13 @@ function renderDraftActionState(){
  const latest=draft.ref===run.drafts.at(-1).ref;
  const confirmed=run.run_status==='SUCCEEDED'&&draft.ref===run.accepted_ref;
  const canConfirm=latest&&(run.allowed_actions||[]).includes('accept');
+ const canManual=latest&&(run.allowed_actions||[]).includes('adopt_manual');
  const locked=busy||editing||run.in_flight;
- $('draftActionTitle').textContent=confirmed?'✓ 已确认，下一步下载全部成品包':canConfirm?'✓ 审核通过，满意就确认并下载':!latest?'正在查看历史版本':`第 ${run.drafts.length} 版暂不能确认`;
- $('draftActionStatus').textContent=confirmed?'包含文案和可生成的媒体；不会自动发布。':canConfirm?'先点击①确认，再点击②下载。确认不会调用 AI。':!latest?'确认和导出必须对应最终版本，请先查看最新稿件。':(run.background?.error?`复审未完成：${run.background.error}。请点击“查看审核结果”处理。`:'完成审核后，①确认按钮会启用。');
+ $('draftActionTitle').textContent=confirmed?'✓ 已确认，下一步下载全部成品包':canConfirm?'✓ 审核通过，满意就确认并下载':canManual?'核对稿件后，确认并下载':!latest?'正在查看历史版本':`第 ${run.drafts.length} 版还需处理审核意见`;
+ $('draftActionStatus').textContent=confirmed?'包含文案和可生成的媒体；不会自动发布。':canConfirm?'先点击①确认，再点击②下载。确认不会调用 AI。':canManual?'AI 复审尚未通过。点击①将记录为人工确认采用，不代表 AI 审核通过；确认后即可点击②下载。':!latest?'确认和导出必须对应最终版本，请先查看最新稿件。':(run.background?.error?`复审未完成：${run.background.error}。请点击“查看审核结果”处理。`:'请先按审核意见修改，复审通过后即可确认下载。');
  $('draftConfirm').textContent=`① 确认第 ${run.drafts.indexOf(draft)+1} 版`;
- $('draftConfirm').hidden=false;$('draftConfirm').disabled=locked||!canConfirm;
- $('draftDownload').disabled=locked||!confirmed;
+ $('draftConfirm').hidden=false;$('draftConfirm').disabled=locked||!(canConfirm||canManual);
+ $('draftDownload').hidden=false;$('draftDownload').disabled=locked||!confirmed;
  $('draftActionDetails').hidden=canConfirm||confirmed;
  $('draftActionDetails').textContent=!latest?'查看最新稿件':'查看审核结果';
 }
@@ -442,7 +443,7 @@ $('revise').onclick=async()=>{
 $('editButton').onclick=()=>{auto=false;const c=run.drafts.at(-1).content;$('editTitle').value=c.selected_title;$('editBody').value=c.body;$('editCta').value=c.cta;$('editTags').value=c.tags.join('，');editing=true;$('editor').hidden=false;render();$('editor').scrollIntoView({behavior:'smooth',block:'center'});$('editTitle').focus();};
 $('discardEdit').onclick=()=>{editing=false;$('editor').hidden=true;render();};
 $('editor').onsubmit=async e=>{e.preventDefault();const data={selected_title:$('editTitle').value,body:$('editBody').value,cta:$('editCta').value,tags:$('editTags').value.split(/[,，]/).map(x=>x.trim()).filter(Boolean)};if(await act('edit',data)){editing=false;$('editor').hidden=true;render();toast('新版本已保存。可以申请复审，也可以知晓问题后人工采用。');}};
-$('draftConfirm').onclick=()=>{const draft=run?.drafts?.[viewVersion??run.drafts.length-1];if(busy||editing||run?.in_flight||draft?.ref!==run?.drafts?.at(-1)?.ref||!run?.allowed_actions.includes('accept'))return;return $('accept').onclick();};
+$('draftConfirm').onclick=()=>{const draft=run?.drafts?.[viewVersion??run.drafts.length-1];if(busy||editing||run?.in_flight||draft?.ref!==run?.drafts?.at(-1)?.ref)return;if(run.allowed_actions.includes('accept'))return $('accept').onclick();if(run.allowed_actions.includes('adopt_manual'))return $('adoptManual').onclick();};
 $('draftDownload').onclick=()=>{const draft=run?.drafts?.[viewVersion??run.drafts.length-1];if(busy||editing||run?.in_flight||run?.run_status!=='SUCCEEDED'||draft?.ref!==run.accepted_ref)return;return downloadCompleteBundle(run,$('draftDownload'),$('draftActionStatus'));};
 $('draftActionDetails').onclick=()=>{viewVersion=null;render();$('humanPanel').scrollIntoView({behavior:'smooth',block:'center'});};
 $('accept').onclick=async()=>{if(await act('accept',{draft_ref:run.drafts.at(-1).ref,review_ref:run.review.ref}))toast('已确认当前版本，可以下载。');};

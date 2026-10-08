@@ -675,3 +675,16 @@ test('prominent confirm delegates exact current review and draft references',asy
  const s=setup();seedDraftView(s,2);s.eval("run.allowed_actions=['accept'];run.review={ref:'review-2'}");
  await s.element('draftConfirm').onclick();assert.equal(s.eval('calls[0].action'),'accept');assert.equal(s.eval('calls[0].payload.draft_ref'),'draft-2');assert.equal(s.eval('calls[0].payload.review_ref'),'review-2');
 });
+
+test('draft completion controls remain visible without covering the copy',()=>{
+ const s=setup();seedDraftView(s,2);s.eval("run.allowed_actions=[];run.background={error:'引用未匹配'};renderDraftActionState()");
+ assert.equal(s.element('draftConfirm').hidden,false);assert.equal(s.element('draftDownload').hidden,false);assert.equal(s.element('draftActionDetails').hidden,false);
+ const html=fs.readFileSync('frontend/index.html','utf8');assert.ok(html.indexOf('id="draftActions"')>html.indexOf('id="draftView"'));
+ const css=fs.readFileSync('frontend/style.css','utf8');assert.doesNotMatch(css.match(/\.draft-actions\{[^}]+/)[0],/position:sticky|position:fixed/);assert.match(css,/\.draft-actions button\{font-size:14px;min-height:44px;padding:8px 12px\}/);
+});
+
+test('unreviewed latest draft offers explicit manual confirmation without claiming AI approval',async()=>{
+ const s=setup();seedDraftView(s,2);s.eval("run.allowed_actions=['adopt_manual'];run.drafts[1].content_hash='hash-2';renderDraftActionState()");
+ assert.equal(s.element('draftConfirm').disabled,false);assert.equal(s.element('draftDownload').disabled,true);assert.match(s.element('draftActionStatus').textContent,/人工确认采用，不代表 AI 审核通过/);
+ await s.element('draftConfirm').onclick();assert.equal(s.eval('calls[0].action'),'adopt_manual');assert.equal(s.eval('calls[0].payload.draft_ref'),'draft-2');assert.equal(s.eval('calls[0].payload.content_hash'),'hash-2');assert.equal(s.eval('calls[0].payload.acknowledge'),true);
+});
