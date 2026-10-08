@@ -195,7 +195,7 @@ function render(){
  const contentStages=['strategy','outline','hook','title','body'].map(s=>`<button class="stage-chip ${run.artifacts.some(a=>a.stage===s)?'done':''}" data-stage="${s}">${stages[s]}</button>`).join('');
  $('flow').innerHTML=`<div class="parallel">${node('audience','01','理解读者 · 明确假设')}${node('research','02','收录素材 · 标记缺口')}</div><div class="connector">同一份需求 · 并行分析<span>↓ 汇合 ↓</span></div>${node('content','03','策略与写作 · 同一角色负责返修')}<div class="stages">${contentStages}</div><div class="connector"><span>↓</span></div>${node('reviewer','04','问题定位 · 修改建议 · 再次审核')}<div class="connector">审核意见保留 ↓ 最后由你决定</div>${node('human','YOU','补资料 / 改稿 / 比较版本 / 最后确认')}`;
  renderDetails();renderHuman();renderRecovery();renderDraft();renderTimeline();renderCalls();
- document.querySelectorAll('#workbench button').forEach(b=>{if(!b.closest('#flow')&&b.id!=='auto')b.disabled=busy||(b.dataset.titleChoice!==undefined&&run.artifacts.find(a=>a.stage==='title')?.value.candidates[Number(b.dataset.titleChoice)]===run.drafts.at(-1)?.content.selected_title);});
+ document.querySelectorAll('#workbench button').forEach(b=>{if(!b.closest('#flow')&&!b.closest('#mediaExports')&&b.id!=='auto')b.disabled=busy||(b.dataset.titleChoice!==undefined&&run.artifacts.find(a=>a.stage==='title')?.value.candidates[Number(b.dataset.titleChoice)]===run.drafts.at(-1)?.content.selected_title);});
  renderDraftActionState();
  $('cancel').disabled=busy&&!run.in_flight;$('reviewConfirmUnavailable').disabled=true;$('confirmationPending').disabled=true;
  $('checkReaders').disabled=busy||editing||run.in_flight;

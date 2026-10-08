@@ -3,6 +3,8 @@ import argparse
 import json
 import os
 import secrets
+from threading import BoundedSemaphore
+from contextlib import contextmanager
 from pathlib import Path
 from urllib.parse import urlsplit
 from fastapi import FastAPI, Request, Depends
@@ -40,6 +42,13 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
     auth, service = Auth(store), Service(store,config,client,allow_windtunnel_live=env.get('WINDTUNNEL_ALLOW_LIVE','').lower()=='true')
     app = FastAPI(title='有迹运营 API', version='0.7.0', docs_url=None, redoc_url=None)
     app.state.store,app.state.service,app.state.auth = store,service,auth
+    media_slots = BoundedSemaphore(2)
+
+    @contextmanager
+    def media_slot():
+        require(media_slots.acquire(blocking=False), 'RATE_LIMITED', '图卡正在制作，请稍后重试')
+        try: yield
+        finally: media_slots.release()
 
     def failure(error):
         code = {'RESOURCE_NOT_FOUND':404,'AUTH_REQUIRED':401,'FORBIDDEN':403,'INVALID_INPUT':400,'RATE_LIMITED':429}.get(error.code,409)
@@ -283,12 +292,45 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
         from backend.media_exports import capabilities
         return capabilities()
 
+    def media_target(run_id, data, user, exporting=False):
+        fields={'template','options','draft_ref','content_hash'} | ({'kind','design_hash'} if exporting else set())
+        require(isinstance(data,dict) and set(data)<=fields, 'INVALID_INPUT', '图卡请求字段无效')
+        run=store.get(run_id,user['owner'])
+        from backend.media_exports import confirmed_snapshot
+        snapshot=confirmed_snapshot(run)
+        require(data.get('draft_ref')==snapshot['draft_ref'] and data.get('content_hash')==snapshot['content_hash'],
+                'VERSION_CONFLICT', '稿件版本已变化，请重新打开预览')
+        if exporting:
+            require(isinstance(data.get('design_hash'),str) and len(data['design_hash'])==64,
+                    'INVALID_INPUT', '请先预览当前样式，再下载成品')
+        return run
+
+    @app.post('/api/runs/{run_id}/media-preview')
+    def media_preview(run_id: str,data: dict,user=Depends(logged)):
+        run=media_target(run_id,data,user)
+        auth.throttle('media-preview:'+user['owner'],120,3600)
+        from backend.media_exports import preview_run
+        with media_slot():
+            return preview_run(run,template=data.get('template','classic'),options=data.get('options'))
+
+    @app.post('/api/runs/{run_id}/media-export')
+    def media_export_design(run_id: str,data: dict,user=Depends(logged)):
+        run=media_target(run_id,data,user,exporting=True)
+        auth.throttle('media-export:'+user['owner'],20,3600)
+        from backend.media_exports import export_run
+        kind=data.get('kind','complete')
+        with media_slot():
+            body,media_type,filename=export_run(run,kind,execution=service.view(run) if kind=='complete' else None,
+                template=data.get('template','classic'),options=data.get('options'),expected_design_hash=data['design_hash'])
+        return Response(body,media_type=media_type,headers={'Content-Disposition':'attachment; filename='+filename})
+
     @app.get('/api/runs/{run_id}/media-export')
-    def media_export(run_id: str,kind: str='images',user=Depends(logged)):
+    def media_export(run_id: str,kind: str='images',template: str='classic',user=Depends(logged)):
         auth.throttle('media-export:'+user['owner'],20,3600)
         from backend.media_exports import export_run
         run=store.get(run_id,user['owner'])
-        body,media_type,filename=export_run(run,kind,execution=service.view(run) if kind=='complete' else None)
+        with media_slot():
+            body,media_type,filename=export_run(run,kind,execution=service.view(run) if kind=='complete' else None,template=template)
         return Response(body,media_type=media_type,headers={'Content-Disposition': 'attachment; filename='+filename})
 
     @app.get('/{asset}')

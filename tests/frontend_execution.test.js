@@ -723,3 +723,11 @@ test('draft review summary separates current approval, failed review and histori
  s.eval("viewVersion=null;run.run_status='SUCCEEDED';run.accepted_ref='draft-2';run.acceptance={mode:'manual_override'};renderDraft()");
  assert.match(s.element('draftView').innerHTML,/已人工确认采用，不代表 AI 审核通过/);
 });
+
+ test('workbench render preserves media editor download guards',()=>{
+ const s=setup();
+ const download={id:'mediaDownload',disabled:true,dataset:{},closest:selector=>selector==='#mediaExports'?{}:null};
+ s.sandbox.document.querySelectorAll=selector=>selector==='#workbench button'?[download]:[];
+ s.eval('render()');
+ assert.equal(download.disabled,true);
+ });
