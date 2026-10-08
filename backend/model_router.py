@@ -50,7 +50,7 @@ def review_execution(db, run):
         return None
     lineage=db.execute('SELECT budget_id FROM live_lineage WHERE run_id=?',(run.run_id,)).fetchone()
     used=stage_attempt_count(db,lineage[0], 'reviewer','review') if lineage else 0
-    limit=CONTRACT['runtime_extension']['stage_attempts_max']
+    limit=PARAMETERS['revision_rounds_max']+1
     pending_review=run.current_stage=='reviewer' and run.review is None
     needs_review=bool(run.drafts) and (pending_review or
         (run.current_stage=='content' and run.review and run.review.get('decision')=='revision_required')) and run.run_status in ('QUEUED','RUNNING','WAITING_USER')
@@ -131,9 +131,11 @@ class Calls:
             db.execute('INSERT INTO live_lineage VALUES(?,?) ON CONFLICT(run_id) DO NOTHING',(run.run_id,run.run_id))
             root=db.execute('SELECT budget_id FROM live_lineage WHERE run_id=?',(run.run_id,)).fetchone()[0]
             stage_count=stage_attempt_count(db,root,agent,stage)
-            require(stage_count<CONTRACT['runtime_extension']['stage_attempts_max'],'STAGE_ATTEMPT_LIMIT','同一步已达到3次调用上限（含首次）')
+            # body and revise share one counter: initial draft plus five revisions.
+            limit=PARAMETERS['revision_rounds_max']+1 if stage in ('review','revise') else CONTRACT['runtime_extension']['stage_attempts_max']
+            require(stage_count<limit,'STAGE_ATTEMPT_LIMIT',f'当前阶段已达到 {limit} 次调用上限（含首次）')
             if agent=='content' and stage=='revise':
-                require(stage_attempt_count(db,root,'reviewer','review')<CONTRACT['runtime_extension']['stage_attempts_max'],
+                require(stage_attempt_count(db,root,'reviewer','review')<PARAMETERS['revision_rounds_max']+1,
                         'STAGE_ATTEMPT_LIMIT','复审次数已用完，不能再调用 AI 改稿；请手动修改或知晓问题后人工采用')
             count,used=db.execute(f'SELECT COUNT(*),COALESCE(SUM(COALESCE(actual,reserved)),0) FROM live_calls WHERE run_id IN ({FAMILY})',(root,)).fetchone()
             cost_sql = 'SELECT COALESCE(SUM(COALESCE(c.actual,c.reserved)*COALESCE(a.rate,?)),0) FROM live_calls c LEFT JOIN model_audit a ON a.call_id=c.id '

@@ -45,7 +45,7 @@ class Worker:
                 Runtime(self.service,self.jobs,job,self.fault).execute()
             run=self.store.get(job['run_id'],job['owner'])
             self.jobs.finish(job,'waiting' if run.run_status=='WAITING_USER' else
-                             'paused' if run.run_status=='RUNNING' and run.context.get('runtime_execution',{}).get('mode')=='step' else 'done')
+                             'paused' if run.run_status=='RUNNING' and run.context.get('runtime_execution',{}).get('mode') in ('step','automatic','revision') else 'done')
         except Exception as error:
             run=self.store.get(job['run_id'],job['owner'])
             if run.run_status in ('SUCCEEDED','FAILED','CANCELLED','EXPIRED'):status='done'

@@ -71,7 +71,7 @@ class AgentContractTests(unittest.TestCase):
         self.assertLessEqual(p['model_timeout_s'], p['agent_attempt_timeout_s'])
         self.assertLess(p['agent_attempt_timeout_s'], p['run_active_timeout_s'])
         self.assertEqual(p['supplement_rounds_max'], 1)
-        self.assertEqual(p['revision_rounds_max'], 2)
+        self.assertEqual(p['revision_rounds_max'], 5)
         self.assertLessEqual(p['title_candidate_min'], p['title_candidate_count'])
         self.assertEqual(set(C['disabled_tools_default']), {'search_public_sources','fetch_source_text'})
         self.assertTrue(set(C['disabled_tools_default']) <= set(C['tool_permissions']['research']))

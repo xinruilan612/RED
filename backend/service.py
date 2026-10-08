@@ -49,6 +49,9 @@ class Service:
         from backend.review_recovery import public as recovery_public
         result['review_recovery']=recovery_public(self.store,run)
         if result['review_recovery']['available']:result['allowed_actions'].append('repair_review')
+        from backend.review_reconciliation import public as reconciliation_public
+        result['review_reconciliation']=reconciliation_public(self.store,run)
+        if result['review_reconciliation']['available']:result['allowed_actions'].append('reconcile_review')
         from backend.model_router import review_execution
         with self.store.connect() as db:result['review_execution']=review_execution(db,run)
         if result['review_execution'] and result['review_execution']['blocked']:
@@ -57,13 +60,16 @@ class Service:
             result['allowed_actions']=[a for a in result['allowed_actions'] if a not in ('next','recover')]
         if result['in_flight']:result['allowed_actions']=[a for a in result['allowed_actions'] if a=='cancel']
         recovery=result['review_recovery']
-        can_revise=bool(run.workflow_type=='creation' and not result['in_flight'] and run.run_status=='RUNNING' and
-            ((run.review and run.current_stage=='content' and run.review['decision']=='revision_required') or
-             (recovery['available'] and recovery.get('next_action')=='revise' and run.iteration<PARAMETERS['revision_rounds_max'])) and
-            not result.get('usage',{}).get('unknown_calls',0) and
-            not (result.get('review_execution') or {}).get('blocked'))
-        result['ai_revision']={'available':can_revise,'reason':'' if can_revise else
-            ((result.get('review_execution') or {}).get('message') or '请先处理补料、执行中任务或调用限制；只有可修改的审核问题能交给 AI 改稿。')}
+        used=sum(1 for node in run.node_runs if node.get('stage')=='revise')
+        limit=PARAMETERS['revision_rounds_max']
+        editable=bool(run.review and ((run.run_status=='RUNNING' and run.current_stage=='content' and run.review['decision']=='revision_required') or
+            (run.run_status=='WAITING_USER' and run.wait_reason in ('final_confirmation','revision_limit') and run.review['decision'] in ('approved','revision_required'))))
+        can_revise=bool(run.workflow_type=='creation' and not result['in_flight'] and used<limit and
+            (editable or (recovery['available'] and recovery.get('next_action')=='revise')) and
+            not result.get('usage',{}).get('unknown_calls',0) and not (result.get('review_execution') or {}).get('exhausted'))
+        result['ai_revision']={'available':can_revise,'used':used,'limit':limit,'remaining':max(0,limit-used),
+            'reason':'' if can_revise else ('已完成5次 AI 改稿' if used>=limit else '审核调用额度已用完（失败调用也计入），暂不能继续 AI 改稿' if (result.get('review_execution') or {}).get('exhausted') else
+            ((result.get('review_execution') or {}).get('message') or '请先处理补料、执行中任务或调用限制。'))}
 
         return result
 
@@ -111,7 +117,7 @@ class Service:
         data = parse(Command, data)
         require(set(data)=={'action','version','key','payload'}, 'INVALID_INPUT', '命令字段无效')
         action, payload = data['action'],data['payload']
-        require(isinstance(action,str) and action in ('next','edit','supplement','accept','adopt_manual','cancel','recover','repair_review'), 'INVALID_INPUT', '未知操作')
+        require(isinstance(action,str) and action in ('next','edit','supplement','accept','adopt_manual','cancel','recover','repair_review','reconcile_review'), 'INVALID_INPUT', '未知操作')
         integer(data['version'],'version')
         require(isinstance(data['key'],str) and 0<len(data['key'])<=100 and isinstance(payload,dict), 'INVALID_INPUT', '命令参数无效')
         run = self.store.get(run_id,owner)
@@ -119,8 +125,11 @@ class Service:
             job=self.jobs.public(run_id,owner)
             require(job['status'] not in ('queued','running','pausing'),'JOB_ACTIVE','任务正在后台执行，请等待或暂停')
             require(job['status']=='idle','INVALID_TRANSITION','此任务使用后台执行，请点击后台继续')
-        if action in ('next','cancel','recover','repair_review'):
+        if action in ('next','cancel','recover','repair_review','reconcile_review'):
             require(not payload,'INVALID_INPUT','此操作无需参数')
+        if action=='reconcile_review':
+            from backend.review_reconciliation import reconcile
+            return self.view(reconcile(self.store,run_id,owner,data['version'],data['key']))
         if action=='repair_review':
             from backend.review_recovery import repair
             return self.view(repair(self.store,run_id,owner,data['version'],data['key']))

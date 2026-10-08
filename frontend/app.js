@@ -153,6 +153,8 @@ function nextStepGuidance(task){
  if(task.in_flight)return '正在处理，结果会自动保存并更新。可以先阅读已有稿件；无需重复点击或刷新。';
  const currentFailure=currentRunFailure(task);
  if(currentFailure&&!isRecoverableReviewError(task,currentFailure))return modelFailureGuidance(task)||currentFailure;
+ if(allowed.includes('reconcile_review'))return '当前只有非阻断建议，可免费重新判定审核结果，无需重复付费改稿。';
+ if(allowed.includes('accept'))return task.ai_revision?.available?'当前版本审核通过。满意就确认并下载；不满意可填写新的意见，继续逐次调整。':'当前版本审核通过。请核对正文与事实，再确认当前版本并下载。';
  if(task.ai_revision?.available)return '查看审核意见，可补充你的要求，再点击“让 AI 按意见改稿并复审”。新版本通过后，由你确认并下载。';
  const failure=modelFailureGuidance(task);if(failure)return failure;
  if(task.review_execution?.blocked)return task.review_execution.message;
@@ -269,6 +271,11 @@ function renderHuman(){
  const revision=review?.decision==='revision_required';
  const canAI=Boolean(run.ai_revision?.available)&&Boolean(websiteSession?.auth_required);
  const canRepair=allowed.includes('repair_review');
+ const canReconcile=allowed.includes('reconcile_review')&&!run.in_flight;
+ $('reconcileReview').hidden=!canReconcile;
+ const rounds=run.ai_revision;
+ $('revisionRemaining').textContent=Number.isInteger(rounds?.remaining)?`初稿后最多调整 ${rounds.limit} 次，已使用 ${rounds.used} 次，还可调整 ${rounds.remaining} 次。每次只生成一版并复审，费用和 Token 上限仍适用。`:'';
+ $('revise').textContent=review?.decision==='approved'?'按我的新意见调整并复审':'让 AI 按意见改稿并复审';
  const visible=run.run_status==='WAITING_USER'||failedReview||revision||canRepair||canAI||allowed.includes('adopt_manual')||run.run_status==='SUCCEEDED';
  $('humanPanel').hidden=!visible;
  $('supplyForm').hidden=!allowed.includes('supplement');
@@ -288,8 +295,10 @@ function renderHuman(){
  if(run.run_status==='SUCCEEDED'){title=run.acceptance?.mode==='manual_override'?'稿件已确认 · 人工采用，无需再次确认':'稿件已确认，无需再次确认';message='下一步：下载确认稿，或到下方导出图文和视频素材，再前往平台发布。'+(run.acceptance?.mode==='manual_override'?'本版本由人工采用，不表示 AI 审核通过。':'')+'这里还没有实际发布；发布后再记录作品链接。';}
  else if(run.wait_reason==='missing_material'){title='资料还不够，请补充';message='请提供缺失的真实素材。保存后，两个分析角色会使用新快照重新执行。';}
  else if(run.wait_reason==='hypothesis_permission'){title='没有历史数据，需要你选择';message='本次账号快照没有可用的历史指标。可以允许明确标注的假设模式；也可取消任务，导入历史指标后新建创作。';}
+ else if(canReconcile){title='仅有非阻断建议，可免费重新判定';message='必需检查已通过，普通建议不应反复要求改稿。重新判定复用已有审核，不调用 AI；仍需你确认稿件。';}
+ else if(allowed.includes('accept')){title=`第 ${run.drafts.length} 版审核通过，待你确认`;message='可以确认后下载，也可以填写新的意见继续调整。可选建议不阻断确认；尚未发布。';}
  else if(run.review_execution?.blocked){title='复审次数已用完，由你处理';message=run.review_execution.message;}
- else if(run.wait_reason==='revision_limit'){title='已达到自动改稿上限';message='AI 自动改稿已停止。'+(run.review_execution?.exhausted?'复审次数也已用完。':'')+'你仍可手动修改，或知晓下方问题后采用当前版本；人工采用会单独记录，不表示 AI 审核通过。';}
+ else if(run.wait_reason==='revision_limit'&&!canAI){title='已达到自动改稿上限';message='AI 自动改稿已停止。'+(run.review_execution?.exhausted?'复审次数也已用完。':'')+'你仍可手动修改，或知晓下方问题后采用当前版本；人工采用会单独记录，不表示 AI 审核通过。';}
  else if(failedReview&&run.background?.error){title=`第 ${run.drafts.length} 版已保存，复审尚未完成`;message=run.background.error;}
  else if(canAI){title=`第 ${run.drafts.length} 版需要修改`;message='按下方审核意见修改，也可以补充你的要求。AI 会生成下一版并自动复审；通过后再由你确认。';}
  else if(canRepair){title='稿件已保存，审核意见需要处理';message=run.review_recovery?.reason||'审核结果未通过校验。可展开其他处理方式，先整理已有意见；不会自动确认稿件。';}
@@ -301,7 +310,7 @@ function renderHuman(){
  const currentIssues=reviewIssuesHTML(issueReview);
  const historyIssues=!review&&historicalReview?'<details><summary>查看上一版审核意见（历史记录，不代表当前问题）</summary><p class="helper">这些意见只对应之前版本，不代表还有待办；当前稿件的结论以本次复审为准。</p>'+reviewIssuesHTML(historicalReview)+'</details>':'';
  const failure=failedReview&&run.run_status!=='SUCCEEDED'?'<p class="issue">当前版本尚未完成有效复审：'+esc(run.review_failure?.message||run.review_recovery?.reason||run.background?.error||'审核结果未通过校验，请重新复审当前稿件。')+'</p>':'';
- $('issues').innerHTML=((run.run_status==='SUCCEEDED'||allowed.includes('accept'))&&currentIssues?'<details><summary>查看审核记录（仅供回看）</summary>'+currentIssues+'</details>':currentIssues)+failure+historyIssues;
+ $('issues').innerHTML=((run.run_status==='SUCCEEDED'||allowed.includes('accept'))&&currentIssues?'<details><summary>查看可选建议与审核记录</summary>'+currentIssues+'</details>':currentIssues)+failure+historyIssues;
 }
 function canReviewFailure(task){return Boolean(task.review_failure||task.review_recovery?.available||task.allowed_actions?.includes('repair_review'));}
 function reviewIssuesHTML(review){
@@ -333,7 +342,9 @@ function renderDraft(){
  let summary='';
  if(prev){
   const onlyTags=changes.length===1&&changes[0]==='标签';
-  summary='<p class="change-summary">与上一版相比：'+(onlyTags?'仅修改标签，标题和正文未变':changes.length?'修改了 '+changes.join('、'):'标题、正文、互动引导和标签均未变化')+'。'+(compare?'左侧旧稿，右侧当前所选稿。':'当前显示所选版本。')+'</p>';
+  const request=run.context?.revision_requests?.findLast(r=>r.draft_ref===prev.ref);
+  if(request?.feedback)summary='<p class="helper">本次修改意见：'+esc(request.feedback)+'</p>';
+  summary+='<p class="change-summary">与上一版相比：'+(onlyTags?'仅修改标签，标题和正文未变':changes.length?'修改了 '+changes.join('、'):'标题、正文、互动引导和标签均未变化')+'。'+(compare?'左侧旧稿，右侧当前所选稿。':'当前显示所选版本。')+'</p>';
   if(changes.includes('标签'))summary+='<p class="change-summary">标签：'+esc((prev.content.tags||[]).map(t=>'#'+t).join(' '))+' → '+esc((d.content.tags||[]).map(t=>'#'+t).join(' '))+'</p>';
  }
  $('draftView').innerHTML=summary+(compare?'<div class="draft-columns">'+draftHTML(prev,i-1)+draftHTML(d,i,true)+'</div>':draftHTML(d,i));
@@ -410,6 +421,7 @@ $('newRun').onclick=()=>startCreation();
 $('flow').onclick=e=>{const chip=e.target.closest('[data-stage]');const b=e.target.closest('[data-agent]');if(chip){selected='content';detailStage=chip.dataset.stage;render();}else if(b){selected=b.dataset.agent;detailStage=null;render();}};
 $('recover').onclick=()=>act('recover');
 $('repairReview').onclick=async()=>{if(await act('repair_review')){clearError();selected='human';render();$('humanPanel').scrollIntoView({behavior:'smooth',block:'center'});toast('已有审核意见已整理。请按提示补充资料或修改稿件；本次没有调用 AI。');}};
+$('reconcileReview').onclick=async()=>{if(busy||run?.in_flight||!run?.allowed_actions.includes('reconcile_review'))return;if(await act('reconcile_review')){clearError();selected='human';render();$('humanPanel').scrollIntoView({behavior:'smooth',block:'center'});toast('已按审核规则重新判定，未调用 AI。请查看结果并确认稿件。');}};
 $('next').onclick=()=>act('next');$('auto').onclick=autoRun;
 $('cancel').onclick=async()=>{
  cancellationRun=run.run_id;$('cancelConfirmation').hidden=false;$('cancelConfirmation').scrollIntoView({behavior:'smooth',block:'center'});
@@ -429,7 +441,9 @@ $('confirmCancel').onclick=async()=>{
 $('revise').onclick=async()=>{
  if(!websiteSession?.auth_required)return act('next');
  if(!run?.ai_revision?.available||run.in_flight||editing)return;
- if(await backgroundCommand('revise_review',{feedback:$('revisionFeedback').value.trim()})){$('revisionFeedback').value='';viewVersion=null;toast('已提交改稿和复审；新版本会自动显示，通过后请确认。');}
+ const feedback=$('revisionFeedback').value.trim();
+ if(run.review?.decision==='approved'&&!feedback){error(new Error('请填写这一次想调整的地方，再交给 AI 改稿。'));return;}
+ if(await backgroundCommand('revise_review',{feedback})){$('revisionFeedback').value='';viewVersion=null;toast('已提交改稿和复审；新版本会自动显示，通过后请确认。');}
 };
 $('editButton').onclick=()=>{auto=false;const c=run.drafts.at(-1).content;$('editTitle').value=c.selected_title;$('editBody').value=c.body;$('editCta').value=c.cta;$('editTags').value=c.tags.join('，');editing=true;$('editor').hidden=false;render();$('editor').scrollIntoView({behavior:'smooth',block:'center'});$('editTitle').focus();};
 $('discardEdit').onclick=()=>{editing=false;$('editor').hidden=true;render();};

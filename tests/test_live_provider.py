@@ -9,7 +9,7 @@ from unittest.mock import patch
 from uuid import uuid4
 from urllib.error import HTTPError
 
-from backend.contracts import DomainError
+from backend.contracts import DomainError, PARAMETERS
 from backend.provider import Config, DeepSeek, load_config, decode_response, NoRedirect
 from backend.execution import Executor
 from backend.live import schema, normalize, material_records
@@ -53,11 +53,13 @@ class LiveTests(unittest.TestCase):
                 for item in value['previous_issue_results']:item['result']='unresolved'
             return value,tokens
         self.model.complete=revision
-        for _ in range(11):self.step()
+        limit=PARAMETERS['revision_rounds_max']
+        self.assertEqual(limit,5)
+        for _ in range(7+2*limit):self.step()
         self.assertEqual(self.run.run_status,'WAITING_USER')
         self.assertEqual(self.run.wait_reason,'revision_limit')
-        self.assertEqual(len(self.run.drafts),3)
-        self.assertEqual(len(self.model.calls),12)
+        self.assertEqual(len(self.run.drafts),limit+1)
+        self.assertEqual(len(self.model.calls),8+2*limit)
         self.assertIsNone(self.run.accepted_ref)
 
     def setUp(self):
@@ -108,7 +110,7 @@ class LiveTests(unittest.TestCase):
         self.step();self.assertEqual(self.run.wait_reason,'final_confirmation')
         self.assertEqual(self.run.review['previous_issue_results'],[{'issue_id':'i1','result':'resolved'}])
 
-    def test_three_rejected_reviews_stop_for_editing_without_fourth_generation(self):
+    def test_five_revisions_stop_for_editing_without_seventh_generation(self):
         base=self.model.complete
         def reject(messages):
             value,tokens=base(messages)
@@ -119,12 +121,14 @@ class LiveTests(unittest.TestCase):
                 value['previous_issue_results']=[{'issue_id':'same','result':'unresolved'}] if self.model.calls.count('review')>1 else []
             return value,tokens
         self.model.complete=reject
-        for _ in range(11):self.step()
+        limit=PARAMETERS['revision_rounds_max']
+        self.assertEqual(limit,5)
+        for _ in range(7+2*limit):self.step()
         self.assertEqual(self.run.run_status,'WAITING_USER')
         self.assertEqual(self.run.wait_reason,'revision_limit')
-        self.assertEqual(self.model.calls.count('body')+self.model.calls.count('revise'),3)
-        self.assertEqual(self.model.calls.count('review'),3)
-        self.assertEqual(len(self.run.drafts),3)
+        self.assertEqual(self.model.calls.count('body')+self.model.calls.count('revise'),limit+1)
+        self.assertEqual(self.model.calls.count('review'),limit+1)
+        self.assertEqual(len(self.run.drafts),limit+1)
         self.assertEqual(self.run.review['decision'],'revision_required')
         calls=len(self.model.calls)
         with self.assertRaises(DomainError):self.step()
@@ -132,12 +136,13 @@ class LiveTests(unittest.TestCase):
 
     def test_manual_edit_cannot_bypass_review_call_cap(self):
         self.until_review()
-        for i in range(3):
+        limit=PARAMETERS['revision_rounds_max']
+        for i in range(limit+1):
             draft=dict(self.run.drafts[-1]['content']);draft['body']='用户修改版本'+str(i)
             self.run=self.store.command(self.run.run_id,'me',self.run.status_version,str(uuid4()),'edit',{'content':draft})
             self.step()
         self.assertEqual(self.run.run_status,'FAILED')
-        self.assertEqual(self.model.calls.count('review'),3)
+        self.assertEqual(self.model.calls.count('review'),limit+1)
 
     def test_missing_material_then_supplement_rebuilds_snapshot(self):
         base=self.model.complete

@@ -143,7 +143,7 @@ class Run:
         elif self.iteration >= PARAMETERS['revision_rounds_max']:
             if fail_on_limit:
                 self._transition('FAILED')
-                self.event('agent.failed',agent='reviewer',mode='live',message='初稿及两次改稿仍未通过审核，已达到3轮上限；停止调用')
+                self.event('agent.failed',agent='reviewer',mode='live',message='初稿及5次改稿仍未通过审核，已达到改稿上限；停止调用')
             else:
                 self._transition('WAITING_USER', 'revision_limit')
         else:

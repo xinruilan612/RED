@@ -64,6 +64,8 @@ class Runtime:
             from backend.jobs import next_creation_stage
             nxt=next_creation_stage(run)
             execution=run.context.get('runtime_execution',{})
+            if execution.get('mode') in ('automatic','revision') and len(run.reviews)>execution.get('review_count',len(run.reviews)) and nxt!='human':
+                nxt='end'
             if execution.get('mode')=='step' and nxt not in (execution.get('target'),'human'):
                 nxt='end'
             return {'snapshot':run.snapshot_id,'iteration':run.iteration,'draft':run.drafts[-1]['ref'] if run.drafts else '', 'next':nxt}

@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from uuid import uuid4
 
-from backend.contracts import DomainError
+from backend.contracts import DomainError, PARAMETERS
 from backend.live import messages_for, schema
 from backend.model_router import Route, review_execution, stage_attempt_count
 from backend.provider import Config
@@ -29,6 +29,8 @@ class ReviewPreflightTests(unittest.TestCase):
         self.prepare()
 
     def prepare(self):
+        self.review_limit=PARAMETERS['revision_rounds_max']+1
+        self.assertEqual(self.review_limit,6)
         self.owner='preflight-fixture'
         self.service=Service(self.store,Config('fixture-never-sent'),NoTransport())
         created=self.service.create(self.owner,dict(topic='资料步骤',audience='测试读者',tone='清楚',
@@ -60,23 +62,23 @@ class ReviewPreflightTests(unittest.TestCase):
             dict(action=action,version=self.run.status_version,key=str(uuid4())))
 
     def test_public_quota_counts_calls_not_revision_rounds_and_keeps_manual_actions(self):
-        self.seed(3);self.assertEqual(self.run.iteration,0)
+        self.seed(self.review_limit);self.assertEqual(self.run.iteration,0)
         viewed=self.service.view(self.run);quota=viewed['review_execution']
-        self.assertEqual((quota['used'],quota['limit'],quota['remaining']),(3,3,0))
+        self.assertEqual((quota['used'],quota['limit'],quota['remaining']),(self.review_limit,self.review_limit,0))
         self.assertTrue(quota['blocked']);self.assertNotIn('next',viewed['allowed_actions'])
         self.assertIn('edit',viewed['allowed_actions']);self.assertIn('adopt_manual',viewed['allowed_actions'])
         self.assertNotIn('accept',viewed['allowed_actions']);self.assertIn('复审次数已用完',quota['message'])
-        self.assertEqual(viewed['usage']['model_calls'],3)
+        self.assertEqual(viewed['usage']['model_calls'],self.review_limit)
 
     def test_legacy_revision_limit_wait_also_explains_exhausted_unreviewed_draft(self):
-        self.seed(3);self.run.run_status='WAITING_USER';self.run.wait_reason='revision_limit';self.save()
+        self.seed(self.review_limit);self.run.run_status='WAITING_USER';self.run.wait_reason='revision_limit';self.save()
         viewed=self.service.view(self.run)
         self.assertTrue(viewed['review_execution']['blocked'])
-        self.assertIn('3/3',viewed['review_execution']['message'])
+        self.assertIn(f'{self.review_limit}/{self.review_limit}',viewed['review_execution']['message'])
         self.assertIn('adopt_manual',viewed['allowed_actions']);self.assertNotIn('next',viewed['allowed_actions'])
 
     def test_start_and_step_reject_before_job_command_version_or_ledger_changes(self):
-        self.seed(3)
+        self.seed(self.review_limit)
         before=asdict(self.store.get(self.run.run_id,self.owner))
         for action in ('start','step'):
             with self.subTest(action=action),self.assertRaises(DomainError) as error:
@@ -86,28 +88,29 @@ class ReviewPreflightTests(unittest.TestCase):
         with self.store.connect() as db:
             self.assertEqual(db.execute('SELECT COUNT(*) FROM runtime_jobs').fetchone()[0],0)
             self.assertEqual(db.execute('SELECT COUNT(*) FROM runtime_commands').fetchone()[0],0)
-            self.assertEqual(db.execute('SELECT COUNT(*) FROM live_calls').fetchone()[0],3)
+            self.assertEqual(db.execute('SELECT COUNT(*) FROM live_calls').fetchone()[0],self.review_limit)
 
     def test_sync_next_also_rejects_before_claiming_a_step(self):
-        self.seed(3)
+        self.seed(self.review_limit)
         with self.assertRaises(DomainError) as error:
             self.service.action(self.owner,self.run.run_id,dict(action='next',payload={},version=self.run.status_version,key=str(uuid4())))
         self.assertEqual(error.exception.code,'STAGE_ATTEMPT_LIMIT')
         with self.store.connect() as db:self.assertEqual(db.execute('SELECT COUNT(*) FROM live_steps').fetchone()[0],0)
 
     def test_remaining_review_slot_is_not_hidden_or_blocked(self):
-        self.seed(2)
+        self.seed(self.review_limit-1)
         viewed=self.service.view(self.run)
         self.assertEqual(viewed['review_execution']['remaining'],1)
         self.assertFalse(viewed['review_execution']['blocked']);self.assertIn('next',viewed['allowed_actions'])
         self.assertEqual(self.command('step')['background']['status'],'queued')
 
     def test_inherited_failed_invalid_and_received_calls_all_count(self):
-        for state in ('failed','invalid','received'):self.seed(1,state=state)
+        states=('failed','invalid','received')
+        for i in range(self.review_limit):self.seed(1,state=states[i%len(states)])
         self.run.run_status='FAILED';self.save()
         child=self.service.executor.recover(self.run.run_id,self.owner,self.run.status_version)
         viewed=self.service.view(child)
-        self.assertEqual(viewed['review_execution']['used'],3)
+        self.assertEqual(viewed['review_execution']['used'],self.review_limit)
         self.assertTrue(viewed['review_execution']['blocked'])
         self.assertTrue(all(call['inherited'] for call in viewed['calls']))
         with self.assertRaises(DomainError) as error:
@@ -115,7 +118,7 @@ class ReviewPreflightTests(unittest.TestCase):
         self.assertEqual(error.exception.code,'STAGE_ATTEMPT_LIMIT')
 
     def test_matching_received_response_at_limit_replays_without_a_new_call(self):
-        messages=self.seed(3,state='received',replay=True)
+        messages=self.seed(self.review_limit,state='received',replay=True)
         with self.store.connect() as db:quota=review_execution(db,self.run)
         self.assertTrue(quota['replayable']);self.assertFalse(quota['blocked'])
         before=self.service.executor.public(self.run)['usage']
@@ -129,7 +132,7 @@ class ReviewPreflightTests(unittest.TestCase):
             with self.subTest(state=state):
                 with self.store.connect() as db:
                     db.execute('DELETE FROM model_audit');db.execute('DELETE FROM live_calls')
-                self.seed(3,state=state,actual=actual,replay=True)
+                self.seed(self.review_limit,state=state,actual=actual,replay=True)
                 viewed=self.service.view(self.run)
                 self.assertFalse(viewed['review_execution']['replayable'])
                 self.assertTrue(viewed['review_execution']['blocked'])
@@ -146,14 +149,14 @@ class ReviewPreflightTests(unittest.TestCase):
             self.assertEqual(stage_attempt_count(db,self.run.run_id,'reviewer','review'),0)
 
     def test_new_paid_revision_is_rejected_before_reservation_when_no_review_slot_remains(self):
-        self.seed(3)
+        self.seed(self.review_limit)
         self.run.current_stage='content';self.run.review={'decision':'revision_required','issues':[]}
         messages,_=messages_for(self.run,'revise')
         with self.assertRaises(DomainError) as error:
             self.service.executor.calls.invoke(self.run,'content','revise',messages,lambda _db:None,reuse=True)
         self.assertEqual(error.exception.code,'STAGE_ATTEMPT_LIMIT')
         with self.store.connect() as db:
-            self.assertEqual(db.execute('SELECT COUNT(*) FROM live_calls').fetchone()[0],3)
+            self.assertEqual(db.execute('SELECT COUNT(*) FROM live_calls').fetchone()[0],self.review_limit)
             self.assertEqual(stage_attempt_count(db,self.run.run_id,'content','revise'),0)
 
 

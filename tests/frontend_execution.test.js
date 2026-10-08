@@ -524,7 +524,7 @@ test('unavailable and in-flight AI revision do not send a new request',async()=>
 test('approved second version still needs explicit human confirmation and does not claim publishing',()=>{
  const s=setup();s.eval("run.drafts=[{},{}];run.run_status='WAITING_USER';run.review={decision:'approved'};run.allowed_actions=['accept','edit'];actualRenderHuman()");
  assert.equal(s.element('accept').hidden,false);assert.equal(s.element('export').hidden,true);assert.equal(s.element('revise').hidden,true);
- assert.match(s.element('humanTitle').textContent,/第 2 版 AI 审核通过/);assert.match(s.element('humanMessage').textContent,/尚未发布/);
+ assert.match(s.element('humanTitle').textContent,/第 2 版审核通过/);assert.match(s.element('humanMessage').textContent,/尚未发布/);
  assert.equal(s.element('accept').textContent,'确认第 2 版，准备发布');
 });
 
@@ -631,4 +631,35 @@ test('automatic result navigation reserves actual responsive sticky account head
  }
  const css=fs.readFileSync('frontend/style.css','utf8');
  assert.match(css,/#humanPanel,#draftPanel\{scroll-margin-top:var\(--result-scroll-offset,112px\)\}/);
+});
+
+
+test('approved draft keeps acceptance and five-round personal revision available',()=>{
+ const s=setup();s.eval("run.drafts=[{}, {}, {}];run.run_status='WAITING_USER';run.wait_reason='final_confirmation';run.review={decision:'approved',issues:[]};run.ai_revision={available:true,used:2,remaining:3,limit:5};run.allowed_actions=['accept','edit'];actualRenderHuman()");
+ assert.equal(s.element('accept').hidden,false);assert.equal(s.element('revise').hidden,false);
+ assert.match(s.element('humanTitle').textContent,/审核通过/);
+ assert.match(s.element('revisionRemaining').textContent,/最多调整 5 次，已使用 2 次，还可调整 3 次/);
+ assert.equal(s.element('revise').textContent,'按我的新意见调整并复审');
+});
+test('approved revision requires a new opinion and preserves it before permission',async()=>{
+ const s=setup();s.eval("run.review={decision:'approved'};run.ai_revision={available:true}");
+ await s.element('revise').onclick();assert.equal(s.eval('calls.length'),0);
+ s.element('revisionFeedback').value='把结尾改成一个具体问题';await s.element('revise').onclick();
+ assert.equal(s.eval('calls[0].feedback'),'把结尾改成一个具体问题');
+});
+test('free review reconciliation has its own action and does not request a model call',async()=>{
+ const s=setup();s.eval("run.drafts=[{}];run.review={decision:'revision_required',issues:[]};run.allowed_actions=['reconcile_review'];run.wait_reason='revision_limit';actualRenderHuman()");
+ assert.equal(s.element('reconcileReview').hidden,false);assert.match(s.element('humanTitle').textContent,/免费重新判定/);
+ await s.element('reconcileReview').onclick();assert.equal(s.eval('calls[0].action'),'reconcile_review');assert.equal(s.eval('confirmations'),0);
+});
+
+test('draft diff displays only the feedback for its preceding version',()=>{
+ const s=setup();seedDraftView(s,2);s.eval("run.context.revision_requests=[{draft_ref:'draft-1',feedback:'改成三个步骤'},{draft_ref:'other-version',feedback:'无关要求'}];renderDraft()");
+ assert.match(s.element('draftView').innerHTML,/本次修改意见：改成三个步骤/);
+ assert.doesNotMatch(s.element('draftView').innerHTML,/无关要求/);
+});
+
+test('approved headline guidance leads to confirmation rather than compulsory revision',()=>{
+ const s=setup();s.eval("run.review={decision:'approved'};run.allowed_actions=['accept'];run.ai_revision={available:true}");
+ assert.match(s.eval('nextStepGuidance(run)'),/当前版本审核通过/);
 });

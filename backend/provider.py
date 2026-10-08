@@ -20,7 +20,7 @@ RATE = 1.2 / 1_000_000
 class Config:
     api_key: str = field(default='', repr=False)
     model: str = MODEL
-    run_budget_usd: float = 0.10
+    run_budget_usd: float = 0.20
     day_budget_usd: float = 0.50
     routes: dict = field(default_factory=dict)
 
