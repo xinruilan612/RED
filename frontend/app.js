@@ -355,6 +355,25 @@ function draftReviewSummary(d,index){
  if(review?.decision==='needs_human')return prefix+'需要补充信息。请查看审核问题并补充真实资料。';
  return prefix+'复审未完成。请查看审核结果处理；文字发生变化不代表审核通过。';
 }
+function revisionIssueResults(d){
+ const prior=run.prior_review,issues=prior?.issues||[];
+ if(d.ref!==run.drafts.at(-1)?.ref||!issues.length)return '';
+ const review=run.review;
+ const priorDraft=run.drafts.find(x=>x.ref===prior.draft_ref);
+ const results=review?.previous_issue_results||[];
+ const ids=issues.map(x=>x.issue_id),resultIds=results.map(x=>x.issue_id);
+ const valid=!run.in_flight&&priorDraft&&priorDraft.ref!==d.ref&&prior.content_hash===priorDraft.content_hash&&prior.snapshot_id===priorDraft.snapshot_id&&
+  review?.draft_ref===d.ref&&review.content_hash===d.content_hash&&review.snapshot_id===d.snapshot_id&&d.snapshot_id===run.snapshot_id&&
+  ids.every(x=>typeof x==='string'&&x)&&new Set(ids).size===ids.length&&results.length===ids.length&&new Set(resultIds).size===ids.length&&
+  results.every(x=>ids.includes(x.issue_id)&&['resolved','unresolved','regressed'].includes(x.result));
+ const header='<section class="readable revision-results"><h3>本轮审核意见处理结果</h3>';
+ if(!valid)return header+'<p class="helper">待有效复审后显示逐条结果；文字有变化不代表问题已解决。</p></section>';
+ const labels={resolved:'复审判断已解决',unresolved:'仍需修改',regressed:'再次出现'};
+ return header+'<p class="helper">以下对应上一轮审核意见；你的补充要求请结合实际修改前后核对。</p>'+issues.map(i=>{
+  const result=results.find(x=>x.issue_id===i.issue_id).result;
+  return '<div class="issue"><b>'+labels[result]+'</b><p>'+esc(i.reason||i.excerpt||i.issue_id)+'</p></div>';
+ }).join('')+'</section>';
+}
 function renderDraft(){
  if(typeof mountMediaExports==='function'&&$('mediaExports'))mountMediaExports(run,$('mediaExports'));
  $('draftPanel').hidden=!run.drafts.length;if(!run.drafts.length){renderDraftActionState();return;}
@@ -378,7 +397,7 @@ function renderDraft(){
   summary+=draftChangeDetails(prev.content,d.content);
   if(changes.includes('标签'))summary+='<p class="change-summary">标签：'+esc((prev.content.tags||[]).map(t=>'#'+t).join(' '))+' → '+esc((d.content.tags||[]).map(t=>'#'+t).join(' '))+'</p>';
  }
- $('draftView').innerHTML='<p class="helper" role="status">'+esc(draftReviewSummary(d,i))+'</p>'+summary+(compare?'<div class="draft-columns">'+draftHTML(prev,i-1)+draftHTML(d,i,true)+'</div>':draftHTML(d,i));
+ $('draftView').innerHTML='<p class="helper" role="status">'+esc(draftReviewSummary(d,i))+'</p>'+revisionIssueResults(d)+summary+(compare?'<div class="draft-columns">'+draftHTML(prev,i-1)+draftHTML(d,i,true)+'</div>':draftHTML(d,i));
  $('checkReaders').hidden=!websiteSession?.auth_required;$('readerCheckHelp').hidden=$('checkReaders').hidden;
  $('checkReaders').textContent=`用版本 ${i+1} 做读者理解检查（可选） →`;
  $('checkReaders').disabled=busy||editing||run.in_flight;

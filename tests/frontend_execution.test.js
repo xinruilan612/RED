@@ -731,3 +731,25 @@ test('draft review summary separates current approval, failed review and histori
  s.eval('render()');
  assert.equal(download.disabled,true);
  });
+
+function seedIssueResults(s){
+ seedDraftView(s,2);
+ s.eval(`run.snapshot_id='snap';run.drafts.forEach(d=>d.snapshot_id='snap');run.in_flight=false;
+ run.prior_review={draft_ref:run.drafts[0].ref,content_hash:run.drafts[0].content_hash,snapshot_id:'snap',issues:[{issue_id:'a',reason:'<原意见>'},{issue_id:'b',reason:'第二条'},{issue_id:'c',reason:'第三条'}]};
+ run.review={draft_ref:run.drafts[1].ref,content_hash:run.drafts[1].content_hash,snapshot_id:'snap',previous_issue_results:[{issue_id:'a',result:'resolved'},{issue_id:'b',result:'unresolved'},{issue_id:'c',result:'regressed'}]};`);
+}
+test('revision issue results show three reviewer decisions and escape original issue',()=>{
+ const s=setup();seedIssueResults(s);s.eval('renderDraft()');
+ const html=s.element('draftView').innerHTML;
+ assert.match(html,/复审判断已解决/);assert.match(html,/仍需修改/);assert.match(html,/再次出现/);
+ assert.match(html,/&lt;原意见&gt;/);assert.doesNotMatch(html,/<原意见>/);
+ assert.match(html,/你的补充要求请结合实际修改前后核对/);
+});
+test('revision issue results reject stale, pending, missing and malformed reviews',()=>{
+ for(const mutation of ["run.in_flight=true","run.review=null","run.review.draft_ref='old'","run.review.content_hash='bad'","run.review.snapshot_id='old'","run.prior_review.content_hash='bad'","run.review.previous_issue_results[0].issue_id='unknown'","run.review.previous_issue_results[0].issue_id='b'","run.review.previous_issue_results.pop()","run.review.previous_issue_results[0].result='unknown'"]){
+  const s=setup();seedIssueResults(s);s.eval(mutation);
+  const html=s.eval('revisionIssueResults(run.drafts[1])');
+  assert.match(html,/待有效复审/);assert.doesNotMatch(html,/复审判断已解决/);
+ }
+ const s=setup();seedIssueResults(s);assert.equal(s.eval('revisionIssueResults(run.drafts[0])'),'');
+});

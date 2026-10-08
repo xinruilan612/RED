@@ -67,6 +67,16 @@ class LiveTests(unittest.TestCase):
                 self.assertIn('标称参数的限制不能因推广目的删除',prompt)
                 self.assertIn('用户明确要求保留的来源标注与真实合作披露应保留',prompt)
 
+    def test_writer_and_reviser_receive_direct_composition_and_self_check_rules(self):
+        from backend.live import messages_for
+        for _ in range(6): self.step()
+        for stage in ('body','revise'):
+            prompt=messages_for(self.run,stage)[0][0]['content']
+            self.assertIn('由content角色在生成时执行，不依赖后处理删句',prompt)
+            self.assertIn('即使上一版含有，也不要继承',prompt)
+            self.assertIn('直接在本次生成中去掉',prompt)
+            self.assertIn('用户明确要求的来源标注和真实合作披露仍按要求保留',prompt)
+
     def test_review_prompt_demands_contiguous_source_quotes(self):
         from backend.live import messages_for
         for _ in range(6): self.step()
