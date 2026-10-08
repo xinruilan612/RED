@@ -106,14 +106,14 @@ def messages_for(run,stage):
         from backend.review_grounding import project_previous
         reviewed_content=next((d['content'] for d in run.drafts if previous and d.get('ref')==previous.get('draft_ref') and previous.get('draft_ref')),None)
         data['previous_review']=project_previous(previous,reviewed_content,stage)
+        counts={field:sum(not char.isspace() for char in data['draft'][field])
+                for field in ('selected_title','body')}
+        data['draft_counts']={**counts,'title_and_body':sum(counts.values()),
+            'counting_rule':'非空白 Unicode 字符数（含标点、数字、英文字母）；标题加正文不含 CTA 和标签。'}
         if stage=='review':
             from backend.review_passages import passages
             data['draft_passages']=passages(data['draft'])
             data['required_previous_issue_ids']=[i['issue_id'] for i in previous['issues']] if previous else []
-            counts={field:sum(not char.isspace() for char in data['draft'][field])
-                    for field in ('selected_title','body')}
-            data['draft_counts']={**counts,'title_and_body':sum(counts.values()),
-                'counting_rule':'非空白 Unicode 字符数（含标点、数字、英文字母）；标题加正文不含 CTA 和标签。'}
     rules={
         'audience':'结合materials已读取的公开网页与operations.profile定位、history/metrics描述性记录、competitors公开观察和preferences表达偏好。observations逐项写source_id、quote逐字引用、interpretation分析；无相关观察则[]，不可虚构竞品账号、评论、粉丝画像或热度。无数据时明确标为待验证假设；不将相关性解释为因果。primary_audience,basis为文字；pain_points,content_opportunities为文字数组。',
         'research':'只分析materials原文片段及operations中的选题线索。materials中的web代表系统已读取的正文，仍未独立核实；其余只有链接的线索不能编造正文或热度。facts为source_id+quote对象数组，quote必须逐字引用，没素材则[]。gaps/prohibited_claims为文字数组。仅任务必须依赖缺失事实时core_gap=true。若教程或顺序整理的核心承诺依赖具体步骤，但材料只列产品名或背景、没有步骤依据，必须core_gap=true，并在gaps指出需要补充的正文；已有提纲、常见模板、模型常识与“多数流程”不能冒充材料依据。来源元数据、检索限制和给博主的补资料说明只写gaps/prohibited_claims，不拟成发布正文。',
@@ -150,6 +150,10 @@ def messages_for(run,stage):
     if stage=='title':
         rules[stage]+=' 只输出candidates、selected、note、reasons四个字段，不输出hook、outline、body、research或review等其他阶段字段。candidates和reasons必须各恰好5项（不是6项），按索引一一对应；输出前核对两个数组长度和selected是否原样属于candidates。'
         rules[stage]+=' 每个标题尽量12至24字，不超过30字；标题不是开头或整篇摘要，不放CTA和四步完整正文。只能提出问题或介绍材料支持的清单，不预设读者已发生的经历。'
+    if stage=='revise':
+        rules[stage]+=' 先逐项理解本次意见与未解决审核问题，再决定修改范围。draft_counts是当前旧稿的程序计数，不是新稿字数。未被用户明确撤销的篇幅要求仍有效；允许改正文时应一起解决长度缺口，用已有事实解释具体选择步骤，不重复句子凑字。若本次明确禁止修改正文而旧问题必须改正文才能解决，遵守修改范围并保留待处理问题，交复审说明冲突，不宣称全部解决。场景要求需兑现人物、动作和目的，不只是替换同义词。'
+    if stage in ('body','revise','review'):
+        rules[stage]+=' 区分产品限制与创作者资料缺口：续航受使用条件影响、手型适配需判断是读者有用的信息；“价格、按键声音、竞品对比暂无资料，不代为判断”是在汇报资料缺口。对于本文未承诺覆盖的维度，可不谈；确有选购价值时写成读者可执行的核对动作，不把缺资料说明当结尾。此为语义判断而非禁词表；来源标注按用户要求保留。审核应结合上下文判定是否仍有内部说明，不因有三步结构就笼统判可读性通过。'
     if stage in ('body','revise'):
         rules[stage]+=' 写作方式（由content角色在生成时执行，不依赖后处理删句）：先选资料支持的卖点，写成读者场景与选择依据，结尾只留一个互动问题。不要把研究过程或自己的写作限制写成发布文案。'
         rules[stage]+=' 输出前按含义自查：卖点和体验是否有证据，来源是否放在合适位置，合作关系是否由用户明确提供。根据依据与用途决定保留、改写或请求补充，不因出现某个词就删除整句。旧版说明也按同样原则判断；真实且相关的体验、来源和合作信息可以保留。'
@@ -232,6 +236,8 @@ def normalize(run,stage,value):
             require(result['selected_title']==selected,'MODEL_OUTPUT_INVALID','正文标题与选定标题不一致')
         return result
     draft=run.drafts[-1]
+    from backend.review_results import repair as repair_review_results
+    value,result_repairs=repair_review_results(value,run.prior_review)
     from backend.review_passages import bind
     value=bind(value,draft['content'])
     for k in ('limitations','human_questions'):strings(value.get(k),k)
@@ -249,6 +255,7 @@ def normalize(run,stage,value):
                 'MODEL_OUTPUT_INVALID','问题严重度或状态无效')
     verify_quotes(value.get('claim_map'),material_records(run.context),draft_text(draft['content']))
     report={k:value[k] for k in schema('review')}
+    if result_repairs:report['review_result_repairs']=result_repairs
     report.update(ref=str(uuid4())+'@1',draft_ref=draft['ref'],snapshot_id=run.snapshot_id,
                   content_hash=draft['content_hash'],policy_ref='text-review@1',mode='live')
     report['limitations']+=['来源匹配只验证引用存在，不能证明素材真实或检查完全；最终由用户确认。']

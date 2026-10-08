@@ -42,7 +42,7 @@ async function mountLegacyMediaExports(run, container) {
   const response=await fetch(`/api/runs/${encodeURIComponent(run.run_id)}/media/capabilities`,{credentials:'same-origin'});
   if(!response.ok)throw new Error('导出工具暂不可用，请刷新后重试');
   const caps=await response.json();
-  const choices=[['complete','下载全部成品包',caps.complete_available],['images','下载图文包',caps.images_available],['video','下载无声图文视频',caps.video_available],['storyboard','下载分镜与字幕',caps.storyboard_available]];
+  const choices=[['complete','下载全部成品包',caps.complete_available]];
   for(const [kind,label,available] of choices){
    const button=document.createElement('button');button.textContent=label;button.className=kind==='complete'?'primary media-export-primary':'secondary';button.disabled=!available;
    button.addEventListener('click',async()=>{
@@ -125,7 +125,7 @@ async function mountMediaExports(run,container){
  const [sizeLabel,size]=mediaSelect('字号',[['normal','标准'],['large','稍大']]),[accentLabel,accent]=mediaSelect('强调色',[['green','森林绿'],['orange','暖橙'],['blue','深蓝']]);e.size=size;e.accent=accent;pageTools.append(sizeLabel,accentLabel);e.notice=mediaElement('p',null,'media-editor-hint');pageTools.append(e.notice);
  const change=()=>{e.styles[String(e.page)]={size:size.value,accent:accent.value};mediaInvalidate(e);};size.onchange=change;accent.onchange=change;
  workspace.append(e.thumbs,main,pageTools);section.append(workspace);
- const buttons=mediaElement('div',null,'media-export-buttons');for(const [kind,label] of [['complete','下载全部成品包'],['images','下载图文包'],['video','下载无声图文视频'],['storyboard','下载分镜与字幕']]){
+ const buttons=mediaElement('div',null,'media-export-buttons');for(const [kind,label] of [['complete','下载全部成品包']]){
   const button=mediaElement('button',label,kind==='complete'?'primary media-export-primary':'secondary');button.type='button';button.disabled=true;button.onclick=async()=>{try{await downloadMediaBundle(e.run,kind,button,e.status);}finally{mediaSync(e);}};e.downloadButtons.push(button);buttons.append(button);
  }section.append(buttons);container.append(section);mediaSync(e);
 }

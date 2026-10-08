@@ -97,9 +97,17 @@ class Jobs:
                     # The old checkpoint may hold an interrupted tool cursor. Fresh graph,
                     # same durable run/budget, with the previous report retained above.
                     if row:db.execute('UPDATE runtime_jobs SET thread_id=? WHERE run_id=?',(str(uuid4()),run_id))
-                run.context['runtime_execution']={'mode':'revision' if data['action']=='revise_review' else 'automatic' if data['action']=='start' else 'step'}
-                if data['action'] in ('start','revise_review'):run.context['runtime_execution']['review_count']=len(run.reviews)
-                if data['action'] not in ('start','revise_review'):run.context['runtime_execution']['target']=next_creation_stage(run)
+                previous_execution=run.context.get('runtime_execution',{})
+                # A retry resumes the pipeline that failed, even for older clients
+                # sending step. Explicit step-mode sessions still pause per stage.
+                resume_pipeline=(data['action']=='step' and row and row[0]=='blocked' and
+                                 previous_execution.get('mode') in ('automatic','revision'))
+                if resume_pipeline:
+                    run.context['runtime_execution']=dict(previous_execution)
+                else:
+                    run.context['runtime_execution']={'mode':'revision' if data['action']=='revise_review' else 'automatic' if data['action']=='start' else 'step'}
+                    if data['action'] in ('start','revise_review'):run.context['runtime_execution']['review_count']=len(run.reviews)
+                    if data['action'] not in ('start','revise_review'):run.context['runtime_execution']['target']=next_creation_stage(run)
                 if row:
                     db.execute("UPDATE runtime_jobs SET status='queued',error=NULL,token=NULL,lease_until=NULL,updated=? WHERE run_id=?",(time.time(),run_id))
                 else:

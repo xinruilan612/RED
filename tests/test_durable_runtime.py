@@ -71,6 +71,29 @@ class DurableTests(unittest.TestCase):
         self.assertEqual(self.model.calls.count('audience'),1)
         self.assertEqual(self.service.view(self.run_value())['usage']['unknown_calls'],0)
 
+    def test_retry_at_title_resumes_whole_pipeline_not_just_title(self):
+        from backend.provider import ProviderOutputError
+        base=self.model.complete
+        failed=[]
+        def complete_result(messages):
+            if '负责 title 的' in messages[0]['content'] and not failed:
+                failed.append(True)
+                raise ProviderOutputError('模型正文格式无效',tokens=120)
+            value,tokens=base(messages)
+            return value,tokens,{}
+        self.model.complete_result=complete_result
+        self.start();Worker(self.service).once()
+        self.assertEqual(self.job()['status'],'blocked')
+        self.assertEqual(self.run_value().context['runtime_execution']['mode'],'automatic')
+        self.step();Worker(self.service).once()
+        run=self.run_value()
+        self.assertEqual(run.context['runtime_execution']['mode'],'automatic')
+        self.assertEqual(len(run.drafts),1)
+        self.assertIsNotNone(run.review)
+        self.assertEqual(run.run_status,'WAITING_USER')
+        for stage in ('audience','research','strategy','outline','hook','title','body','review'):
+            self.assertEqual(self.model.calls.count(stage),1,stage)
+
     def test_parse_failure_unknown_usage_blocks_resume_before_queue(self):
         from backend.provider import ProviderOutputError
         def failure(messages):raise ProviderOutputError('无法确认用量')

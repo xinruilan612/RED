@@ -68,7 +68,7 @@ function seedReviewQuota(s,blocked=true){
 test('exhausted review slots hide execution even if stale allowed actions still include next',()=>{
  const s=setup();seedReviewQuota(s);
  assert.equal(s.element('next').hidden,true);assert.equal(s.element('auto').hidden,true);
- assert.equal(s.element('editButton').hidden,false);assert.equal(s.element('adoptManual').hidden,false);
+ assert.equal(s.element('editButton').hidden,false);assert.equal(s.element('adoptManual').hidden,true);
  assert.equal(s.element('accept').hidden,true);
  assert.match(s.element('workbenchGuide').textContent,/3\/3.*复审次数已用完/);
  assert.match(s.element('humanMessage').textContent,/手动修改.*人工采用/);
@@ -91,7 +91,7 @@ test('exhausted quota also guards legacy sync and continuous execution',async()=
 test('manual editing and candidate titles do not promise unavailable re-review',()=>{
  const s=setup();seedReviewQuota(s);
  s.eval("run.artifacts=[{stage:'title',value:{candidates:['替代标题'],reasons:['标题与正文需自行核对']}}];renderDraft()");
- assert.match(s.element('draftView').innerHTML,/选用并另存/);assert.doesNotMatch(s.element('draftView').innerHTML,/选用并复审/);
+ assert.doesNotMatch(s.element('draftView').innerHTML,/比较候选标题|选用并另存/);assert.doesNotMatch(s.element('draftView').innerHTML,/选用并复审/);
  s.eval('editing=true;render()');
  assert.match(s.element('workbenchGuide').textContent,/不调用 AI.*复审次数已用完/);
  assert.match(s.element('#editor .editor-note').textContent,/复审次数已用完.*不能沿用旧审核/);
@@ -133,7 +133,7 @@ test('terminal tasks do not show an unreviewed-draft blocker after manual adopti
   s.eval(`run.run_status='${status}';run.allowed_actions=['export'];run.acceptance={mode:'manual_override'};render()`);
   assert.equal(s.element('reviewRecovery').hidden,true);
   if(status==='SUCCEEDED'){
-   assert.equal(s.element('export').hidden,false);
+   assert.equal(s.element('export').hidden,true);
    assert.match(s.element('humanMessage').textContent,/人工采用|知晓审核问题/);
   }
  }
@@ -208,7 +208,7 @@ test('next executes one background step for research and subsequent model work',
  s.eval("run.context.web_research.status='complete'");await s.eval("act('next')");
 });
 test('step button stays visible while paused and hides during execution',()=>{
- const s=setup();s.eval('render()');assert.equal(s.element('next').hidden,false);assert.match(s.element('next').textContent,/联网搜索/);
+ const s=setup();s.eval('render()');assert.equal(s.element('next').hidden,false);assert.match(s.element('next').textContent,/搜索资料/);
  s.eval("run.in_flight=true;run.background.status='running';render()");assert.equal(s.element('next').hidden,true);assert.equal(s.element('auto').textContent,'暂停执行');
 });
 test('blocked research offers same-task retry rather than repeated start',async()=>{
@@ -288,7 +288,7 @@ test('recovered review hides stale failure panel and explains current recovery',
 
 test('revision limit allows manual adoption and editing without claiming review approval',()=>{
  const s=setup();s.eval("run.run_status='WAITING_USER';run.wait_reason='revision_limit';run.review={decision:'revision_required',issues:[{excerpt:'原文',reason:'缺少依据',suggestion:'补充来源'}]};run.allowed_actions=['edit','adopt_manual','cancel'];actualRenderHuman()");
- assert.equal(s.element('adoptManual').hidden,false);
+ assert.equal(s.element('adoptManual').hidden,true);
  assert.equal(s.element('editButton').hidden,false);
  assert.equal(s.element('accept').hidden,true);
  assert.equal(s.element('confirmationPending').hidden,true);
@@ -311,9 +311,9 @@ test('manual adopted result retains earlier issues and labels user choice',()=>{
  assert.match(s.element('issues').innerHTML,/旧问题仍未复审/);
  assert.equal(s.element('adoptManual').hidden,true);
  assert.equal(s.element('accept').hidden,true);
- assert.equal(s.element('export').hidden,false);
+ assert.equal(s.element('export').hidden,true);
  assert.match(s.element('humanTitle').textContent,/稿件已确认.*无需再次确认/);
- assert.match(s.element('humanMessage').textContent,/下一步：下载确认稿/);
+ assert.match(s.element('humanMessage').textContent,/下一步：预览图片/);
  assert.match(s.element('issues').innerHTML,/^<details><summary>/);
  assert.doesNotMatch(s.element('issues').innerHTML,/<details[^>]*\bopen\b/);
  assert.match(s.element('issues').innerHTML,/不代表还有待办/);
@@ -322,14 +322,14 @@ test('confirmed reviewed draft gives download next step without an empty history
  const s=setup();s.eval("run.run_status='SUCCEEDED';run.review={decision:'approved',issues:[]};run.allowed_actions=['export'];actualRenderHuman()");
  assert.match(s.element('humanTitle').textContent,/稿件已确认，无需再次确认/);
  assert.equal(s.element('issues').innerHTML,'');
- assert.equal(s.element('export').hidden,false);
+ assert.equal(s.element('export').hidden,true);
  assert.match(s.element('humanMessage').textContent,/还没有实际发布/);
 });
 test('unconfirmed review issues remain visible as actionable feedback',()=>{
  const s=setup();s.eval("run.run_status='WAITING_USER';run.review={decision:'revision_required',issues:[{reason:'仍须核对事实'}]};run.allowed_actions=['edit','adopt_manual'];actualRenderHuman()");
  assert.match(s.element('issues').innerHTML,/仍须核对事实/);
  assert.doesNotMatch(s.element('issues').innerHTML,/<details>/);
- assert.equal(s.element('adoptManual').hidden,false);
+ assert.equal(s.element('adoptManual').hidden,true);
 });
 
 test('published archive shows actual records and hides prepublication approval queue',()=>{
@@ -444,7 +444,7 @@ test('malformed known-usage failure explains resumable progress and labels only 
  const s=setup();s.eval("run.background={status:'blocked',error:'模型返回格式不正确，未自动重试'};run.calls=[{agent:'audience',stage:'analysis',status:'failed',tokens:42}];run.usage.unknown_calls=0;render()");
  assert.match(s.element('workbenchGuide').textContent,/已完成的分析、资料和稿件都保留/);
  assert.match(s.element('error').textContent,/新的模型请求仍受原来的额度限制/);
- assert.equal(s.element('next').textContent,'重试未完成步骤 →');
+ assert.equal(s.element('next').textContent,'重试并继续到审核 →');
  assert.equal(s.element('next').hidden,false);assert.equal(s.eval('calls.length'),0);
 });
 
@@ -523,7 +523,7 @@ test('unavailable and in-flight AI revision do not send a new request',async()=>
 });
 test('approved second version still needs explicit human confirmation and does not claim publishing',()=>{
  const s=setup();s.eval("run.drafts=[{},{}];run.run_status='WAITING_USER';run.review={decision:'approved'};run.allowed_actions=['accept','edit'];actualRenderHuman()");
- assert.equal(s.element('accept').hidden,false);assert.equal(s.element('export').hidden,true);assert.equal(s.element('revise').hidden,true);
+ assert.equal(s.element('accept').hidden,true);assert.equal(s.element('export').hidden,true);assert.equal(s.element('revise').hidden,true);
  assert.match(s.element('humanTitle').textContent,/第 2 版审核通过/);assert.match(s.element('humanMessage').textContent,/尚未发布/);
  assert.equal(s.element('accept').textContent,'确认第 2 版，准备发布');
 });
@@ -634,7 +634,7 @@ test('automatic result navigation reserves actual responsive sticky account head
 
 test('approved draft keeps acceptance and five-round personal revision available',()=>{
  const s=setup();s.eval("run.drafts=[{}, {}, {}];run.run_status='WAITING_USER';run.wait_reason='final_confirmation';run.review={decision:'approved',issues:[]};run.ai_revision={available:true,used:2,remaining:3,limit:5};run.allowed_actions=['accept','edit'];actualRenderHuman()");
- assert.equal(s.element('accept').hidden,false);assert.equal(s.element('revise').hidden,false);
+ assert.equal(s.element('accept').hidden,true);assert.equal(s.element('revise').hidden,false);
  assert.match(s.element('humanTitle').textContent,/审核通过/);
  assert.match(s.element('revisionRemaining').textContent,/最多调整 5 次，已使用 2 次，还可调整 3 次/);
  assert.equal(s.element('revise').textContent,'按我的新意见调整并复审');
@@ -664,7 +664,7 @@ test('approved headline guidance leads to confirmation rather than compulsory re
 
 test('prominent draft actions confirm only latest approved version and unlock download after acceptance',async()=>{
  const s=setup();seedDraftView(s,2);s.eval("run.allowed_actions=['accept'];renderDraftActionState()");
- assert.equal(s.element('draftConfirm').hidden,false);assert.equal(s.element('draftConfirm').textContent,'① 确认第 2 版');assert.equal(s.element('draftDownload').disabled,true);
+ assert.equal(s.element('draftConfirm').hidden,false);assert.equal(s.element('draftConfirm').textContent,'确认第 2 版');assert.equal(s.element('draftDownload').disabled,true);
  s.eval("viewVersion=0;renderDraftActionState()");assert.equal(s.element('draftConfirm').disabled,true);
  await s.element('draftConfirm').onclick();assert.equal(s.eval('calls.length'),0);
  s.eval("viewVersion=null;run.run_status='SUCCEEDED';run.accepted_ref='draft-2';run.allowed_actions=['export'];renderDraftActionState()");
@@ -678,14 +678,14 @@ test('prominent confirm delegates exact current review and draft references',asy
 
 test('draft completion controls remain visible without covering the copy',()=>{
  const s=setup();seedDraftView(s,2);s.eval("run.allowed_actions=[];run.background={error:'引用未匹配'};renderDraftActionState()");
- assert.equal(s.element('draftConfirm').hidden,false);assert.equal(s.element('draftDownload').hidden,false);assert.equal(s.element('draftActionDetails').hidden,false);
+ assert.equal(s.element('draftConfirm').hidden,false);assert.equal(s.element('draftDownload').hidden,true);assert.equal(s.element('draftActionDetails').hidden,false);
  const html=fs.readFileSync('frontend/index.html','utf8');assert.ok(html.indexOf('id="draftActions"')>html.indexOf('id="draftView"'));
  const css=fs.readFileSync('frontend/style.css','utf8');assert.doesNotMatch(css.match(/\.draft-actions\{[^}]+/)[0],/position:sticky|position:fixed/);assert.match(css,/\.draft-actions button\{font-size:14px;min-height:44px;padding:8px 12px\}/);
 });
 
 test('unreviewed latest draft offers explicit manual confirmation without claiming AI approval',async()=>{
  const s=setup();seedDraftView(s,2);s.eval("run.allowed_actions=['adopt_manual'];run.drafts[1].content_hash='hash-2';renderDraftActionState()");
- assert.equal(s.element('draftConfirm').disabled,false);assert.equal(s.element('draftDownload').disabled,true);assert.match(s.element('draftActionStatus').textContent,/人工确认采用，不代表 AI 审核通过/);
+ assert.equal(s.element('draftConfirm').disabled,false);assert.equal(s.element('draftDownload').disabled,true);assert.match(s.element('draftActionStatus').textContent,/人工采用.*不代表 AI 审核通过/);
  await s.element('draftConfirm').onclick();assert.equal(s.eval('calls[0].action'),'adopt_manual');assert.equal(s.eval('calls[0].payload.draft_ref'),'draft-2');assert.equal(s.eval('calls[0].payload.content_hash'),'hash-2');assert.equal(s.eval('calls[0].payload.acknowledge'),true);
 });
 
@@ -742,7 +742,7 @@ test('revision issue results show three reviewer decisions and escape original i
  const s=setup();seedIssueResults(s);s.eval('renderDraft()');
  const html=s.element('draftView').innerHTML;
  assert.match(html,/复审判断已解决/);assert.match(html,/仍需修改/);assert.match(html,/再次出现/);
- assert.match(html,/&lt;原意见&gt;/);assert.doesNotMatch(html,/<原意见>/);
+ assert.match(html,/上一版问题：&lt;原意见&gt;/);assert.doesNotMatch(html,/<原意见>/);
  assert.match(html,/你的补充要求请结合实际修改前后核对/);
 });
 test('revision issue results reject stale, pending, missing and malformed reviews',()=>{
@@ -752,4 +752,45 @@ test('revision issue results reject stale, pending, missing and malformed review
   assert.match(html,/待有效复审/);assert.doesNotMatch(html,/复审判断已解决/);
  }
  const s=setup();seedIssueResults(s);assert.equal(s.eval('revisionIssueResults(run.drafts[0])'),'');
+});
+
+ test('confirmed export panel is separate and hides revision allowance while manual adoption stays explicit',()=>{
+ const s=setup();s.eval("run.run_status='SUCCEEDED';run.acceptance={mode:'manual_override'};run.ai_revision={available:false,used:2,remaining:3,limit:5};run.allowed_actions=['export'];actualRenderHuman()");
+ assert.equal(s.element('humanPanel').hidden,true);assert.equal(s.element('confirmedPanel').hidden,false);
+ assert.equal(s.element('revisionRemaining').textContent,'');assert.equal(s.element('revisionRemaining').hidden,true);
+ assert.match(s.element('confirmedTitle').textContent,/人工采用/);assert.match(s.element('confirmedMessage').textContent,/不表示 AI 审核通过/);
+ s.eval("run.run_status='WAITING_USER';run.allowed_actions=['edit'];actualRenderHuman()");
+ assert.equal(s.element('humanPanel').hidden,false);assert.equal(s.element('confirmedPanel').hidden,true);assert.equal(s.element('confirmedMessage').textContent,'');
+ });
+
+test('primary generation and explicit blocked retry both run through to human review once',async()=>{
+ const s=setup();s.eval("run.background={status:'blocked',error:'模型返回格式不正确'};run.usage.unknown_calls=0");
+ await s.element('next').onclick();assert.equal(s.eval('calls.length'),1);assert.equal(s.eval('calls[0].action'),'start');
+ s.eval("run.background.status='paused'");await s.element('next').onclick();assert.equal(s.eval('calls[1].action'),'start');
+ s.eval("run.background.status='blocked';run.usage.unknown_calls=1");await s.element('next').onclick();assert.equal(s.eval('calls.length'),2);
+ s.eval("run.usage.unknown_calls=0;run.allowed_actions=[]");await s.element('next').onclick();assert.equal(s.eval('calls.length'),2);
+});
+test('draft length reflects selected manuscript without CTA tags or whitespace',()=>{
+ const s=setup();seedDraftView(s);s.eval("run.drafts[0].content={selected_title:'A 鼠标',body:'正文\\n内容',cta:'很长的互动问题',tags:['标签']};renderDraft()");
+ assert.match(s.element('draftView').innerHTML,/标题与正文共 7 字/);
+});
+
+test('main creation keeps a single generation entry and hides optional reader and title controls',()=>{
+ const s=setup();seedDraftView(s);s.eval("run.artifacts=[{stage:'title',value:{candidates:['备选标题']}}];run.allowed_actions=['next','edit'];renderDraft=actualRenderDraft;render()");
+ assert.equal(s.element('next').hidden,false);assert.equal(s.element('auto').hidden,true);assert.equal(s.element('checkReaders').hidden,true);
+ assert.doesNotMatch(s.element('draftView').innerHTML,/比较候选标题|data-title-choice/);
+ s.eval("run.run_status='SUCCEEDED';run.accepted_ref=run.drafts[0].ref;actualRenderHuman();renderDraftActionState()");
+ assert.equal(s.element('draftActions').hidden,true);assert.equal(s.element('confirmedPanel').hidden,false);assert.equal(s.element('export').hidden,true);
+});
+
+test('brief submission saves once and starts background generation once with no extra user click',async()=>{
+ const s=setup();s.eval("currentAccount=()=>null;chosenTrend=null;chosenHypothesis=null");
+ await s.element('briefForm').listeners.submit({preventDefault(){},submitter:{disabled:false}});
+ assert.equal(s.eval('calls.length'),2);assert.equal(s.eval('calls[1].action'),'start');
+});
+
+test('failed brief submission never starts a previous saved task',async()=>{
+ const s=setup();s.eval("currentAccount=()=>null;chosenTrend=null;chosenHypothesis=null;api=async()=>{throw new Error('保存失败')}");
+ await s.element('briefForm').listeners.submit({preventDefault(){},submitter:{disabled:false}});
+ assert.equal(s.eval('calls.length'),0);assert.match(s.element('error').textContent,/保存失败/);
 });

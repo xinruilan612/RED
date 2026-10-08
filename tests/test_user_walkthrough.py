@@ -21,13 +21,27 @@ class UserWalkthroughTests(unittest.TestCase):
             'frontend/index.html', 'frontend/app.js', 'frontend/knowledge.js',
             'frontend/account.js', 'frontend/media_exports.js'))
         for action in ('保存档案', '保存资料', '查看原文', '用这份资料创作',
-                       '查找原文', '保存需求，开始创作',
+                       '查找原文', '生成稿件并审核',
+                       '这一次想怎么改？', '让 AI 按意见改稿并复审',
                        '我来修改文案', '保存为新版本（不调用 AI）',
-                       '确认当前版本', '下载图文包', '下载分镜与字幕',
+                       '图卡预览与下载', '预览图卡',
                        '下载全部成品包'):
             with self.subTest(action=action):
                 self.assertIn(action, text)
                 self.assertIn(action, ui)
+
+    def test_tutorial_matches_single_submit_and_bundle_flow(self):
+        for path in (GUIDE, ROOT / 'docs/tutorials/skadis/00-先看这里-手把手教程.txt'):
+            text = path.read_text()
+            for action in ('生成稿件并审核', '让 AI 按意见改稿并复审',
+                           '确认第 N 版', '知晓问题，人工采用第 N 版',
+                           '预览图卡', '下载全部成品包', '重试并继续到审核'):
+                self.assertIn(action, text)
+            for obsolete in ('保存需求，开始创作', '下载图文包', '下载分镜与字幕',
+                             '重试未完成步骤', '点“连续运行到人工处理”'):
+                self.assertNotIn(obsolete, text)
+            self.assertLess(text.index('预览图卡'), text.index('唯一的“下载全部成品包”'))
+            self.assertIn('再次失败会停止', text)
 
     def test_creation_tutorial_does_not_require_removed_fee_confirmation(self):
         for path in (GUIDE, ROOT / 'docs/tutorials/skadis/00-先看这里-手把手教程.txt'):

@@ -73,14 +73,20 @@ class DayOneReviewRecoveryTests(unittest.TestCase):
                 self.assertIn('引用映射由审核角色',issue['suggestion'])
                 self.assertIn('不要把 claim_map 写进正文',issue['suggestion'])
 
-    def test_missing_duplicate_unknown_or_invalid_current_result_remains_blocked(self):
-        variants=[[],[{'issue_id':'current','result':'unresolved'}]*2,
+    def test_missing_conflicting_unknown_or_invalid_current_result_remains_blocked(self):
+        variants=[[],[{'issue_id':'current','result':'unresolved'},{'issue_id':'current','result':'resolved'}],
                   [{'issue_id':'current','result':'unresolved'},{'issue_id':'unknown','result':'resolved'}],
                   [{'issue_id':'current','result':'invented'},{'issue_id':'historical','result':'resolved'}]]
         for results in variants:
             with self.subTest(results=results):
                 self.raw['previous_issue_results']=results
                 with self.assertRaises(DomainError):self.recover()
+
+    def test_identical_prior_result_duplicate_recovers_without_resolving_issue(self):
+        self.raw['previous_issue_results']=[{'issue_id':'current','result':'unresolved'}]*2
+        report=self.recover()[1]
+        self.assertEqual(report['previous_issue_results'],[{'issue_id':'current','result':'unresolved'}])
+        self.assertNotEqual(report['decision'],'approved')
 
     def test_compound_recovery_cannot_hide_malformed_checks_or_unknown_usage(self):
         self.raw['checks']=[]

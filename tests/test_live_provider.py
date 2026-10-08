@@ -77,6 +77,19 @@ class LiveTests(unittest.TestCase):
             self.assertIn('合作关系是否由用户明确提供',prompt)
             self.assertIn('用户明确要求的来源标注和真实合作披露仍按要求保留',prompt)
 
+    def test_reviser_gets_actual_counts_and_conflicting_scope_guidance(self):
+        from backend.live import messages_for
+        for _ in range(6): self.step()
+        messages,data=messages_for(self.run,'revise')
+        draft=self.run.drafts[-1]['content']
+        self.assertEqual(data['draft_counts']['title_and_body'],sum(not c.isspace() for k in ('selected_title','body') for c in draft[k]))
+        self.assertIn('若本次明确禁止修改正文',messages[0]['content'])
+        self.assertIn('不只是替换同义词',messages[0]['content'])
+        for stage in ('body','revise','review'):
+            prompt=messages_for(self.run,stage)[0][0]['content']
+            self.assertIn('区分产品限制与创作者资料缺口',prompt)
+            self.assertIn('此为语义判断而非禁词表',prompt)
+
     def test_review_prompt_demands_contiguous_source_quotes(self):
         from backend.live import messages_for
         for _ in range(6): self.step()

@@ -22,7 +22,7 @@ test('confirmed draft gets a full bundle button using the authenticated endpoint
  const section=s.host.children[0],buttons=section.children[2];
  assert.equal(buttons.children[0].textContent,'下载全部成品包');
  assert.equal(buttons.children[0].className,'primary media-export-primary');
- assert.equal(buttons.children[1].className,'secondary');
+ assert.equal(buttons.children.length,1);
  await buttons.children[0].click();
  assert.deepEqual(s.calls,['/api/runs/run-1/media/capabilities','/api/runs/run-1/media-export?kind=complete']);
  assert.deepEqual(s.downloads,['youji-complete-run-1.zip']);
@@ -33,7 +33,7 @@ test('unconfirmed creation does not expose full bundle or fetch',async()=>{
  assert.equal(s.host.children.length,0);assert.equal(s.calls.length,0);
 });
 
-test("export bundle sits beside confirmation and usage details are collapsed",()=>{const html=fs.readFileSync("frontend/index.html","utf8");assert.ok(html.indexOf('id="mediaExports"')<html.indexOf('id="draftPanel"'));assert.match(html,/<details id="usageDetails" class="usage-details" hidden>/);assert.doesNotMatch(html,/<details id="usageDetails"[^>]*\sopen/);});
+test("confirmed export bundle follows manuscript and editor and usage details are collapsed",()=>{const html=fs.readFileSync("frontend/index.html","utf8");assert.ok(html.indexOf('id="humanPanel"')<html.indexOf('id="draftPanel"'));assert.ok(html.indexOf('id="confirmedPanel"')>html.indexOf('id="editor"'));assert.ok(html.indexOf('id="mediaExports"')>html.indexOf('id="confirmedPanel"'));assert.equal((html.match(/id="mediaExports"/g)||[]).length,1);assert.match(html,/<details id="usageDetails" class="usage-details" hidden>/);assert.doesNotMatch(html,/<details id="usageDetails"[^>]*\sopen/);});
 
 test('prominent bundle action refuses unconfirmed drafts without requesting or downloading',async()=>{
  const s=setup(),button=new s.Element('button'),status=new s.Element('p');

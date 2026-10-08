@@ -9,7 +9,7 @@ function renderPageTools(page){
  if(page==='topics'){const host=$('pageTools');host.hidden=true;host.innerHTML='';return;}
  const groups={studio:[['studio','写内容'],['trends','选题与来源']],publish:[['publish','作品归档'],['metrics','数据复盘']]};
  const group=navigationGroup(page),links=groups[group]||[];
- if(group==='studio'&&websiteSession?.auth_required)links.push(['windtunnel','读者理解检查（可选）']);
+
  const host=$('pageTools');host.hidden=!links.length;
  host.innerHTML=links.map(([id,label])=>`<button class="${id===page?'active':'quiet'}" data-go-page="${id}" aria-current="${id===page?'page':'false'}">${label}</button>`).join('');
 }
