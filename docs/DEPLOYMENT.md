@@ -117,3 +117,14 @@ LangGraph 1.2.11 + PostgreSQL checkpointer 3.1.2 在同数据库持久化检查�
 每次请求前在事务锁内检查已计入费用和最高费率保守预留；未知用量不释放预留，已失败未知用量会阻断owner的新收费调用。费率仅支持deepseek-flash，按输入2元/百万、输出8元/百万（2026-10-08官方峰值）估算，模型或价格变化必须重新核对。账本不是供应商账单，不约束项目外部消费。实际本轮记录见[第一天验收](validation/DAY1_REVIEW_RECOVERY_20261008.md)。
 
 2026-10-08 五次改稿配套：当前创作最多 20 次模型调用、160,000 Token、默认每任务 $0.20，每日仍 $0.50。初稿与每次改稿在审核后等待用户，不自动连续改完五次；所有已有用量保留。以上是上限，先达到的限制优先生效。
+
+
+## MIT 图卡模板渲染（2026-10-09）
+
+新图卡使用固定版本的本地 HTML/CSS，通过 Playwright Chromium 渲染；不调用图片生成模型，不需要外网字体。先安装 requirements.txt，再用同一虚拟环境执行：
+
+    runtime/venv/bin/python -m playwright install chromium
+
+macOS 有可用的 Google Chrome 时可复用本机浏览器；Linux/Windows 使用 Playwright Chromium。也可用环境变量 YOUJI_CHROMIUM_EXECUTABLE 指定部署者管理的浏览器绝对路径。Linux 需按 Playwright 提示安装系统依赖。浏览器必须由 API 进程所在的运行用户访问。缺少渲染器应报错，不把纯文案包冒充图卡生成成功。
+
+升级前按本文件备份 PostgreSQL；新增模板目录、轮换位置和稿件选择使用追加式核心迁移，保留已确认正文及旧媒体版本。模板代码与许可在 backend/vendor/xhs_article，使用与人工验收见 [图卡模板说明](MEDIA_TEMPLATES.md)。

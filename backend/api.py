@@ -286,6 +286,24 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
     @app.get('/')
     def index(): return FileResponse(FRONTEND/'index.html')
 
+    @app.get('/api/media/templates')
+    def media_templates(run_id: str=None,user=Depends(logged)):
+        from backend.media_templates import catalog
+        return catalog(store,user['owner'],run_id)
+
+    @app.post('/api/runs/{run_id}/media/template-next')
+    def media_template_next(run_id: str,data: dict,user=Depends(logged)):
+        from backend.media_templates import choose
+        return choose(store,user['owner'],run_id,data)
+
+    @app.get('/assets/templates/{filename}')
+    def media_template_thumbnail(filename: str):
+        from backend.media_templates import TEMPLATE_IDS
+        require(filename in {identity+'.png' for identity in TEMPLATE_IDS},'RESOURCE_NOT_FOUND','模板预览不存在')
+        path=FRONTEND/'assets'/'templates'/filename
+        require(path.is_file(),'RESOURCE_NOT_FOUND','模板预览不存在')
+        return FileResponse(path,media_type='image/png')
+
     @app.get('/api/runs/{run_id}/media/capabilities')
     def media_capabilities(run_id: str,user=Depends(logged)):
         store.get(run_id,user['owner'])

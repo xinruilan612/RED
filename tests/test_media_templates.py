@@ -32,6 +32,38 @@ class MediaTemplateTests(unittest.TestCase):
                 outputs.append(archive.read('01.png'))
         self.assertNotEqual(*outputs)
 
+    def test_global_style_colors_every_page_and_export_matches_without_upload(self):
+        run=fixture('连接携带供电，逐项核对。' * 80)
+        normal=preview_run(run)
+        options={'global_style':{'accent':'orange','size':'large'}}
+        changed=preview_run(run,options=options)
+        self.assertEqual(len(normal['pages']),len(changed['pages']))
+        data,_,_=export_run(run,options=options)
+        with zipfile.ZipFile(BytesIO(data)) as archive:
+            for before,after in zip(normal['pages'],changed['pages']):
+                self.assertNotEqual(before['data_url'],after['data_url'])
+                png=base64.b64decode(after['data_url'].split(',',1)[1])
+                self.assertEqual(png,archive.read(after['name']))
+        self.assertNotEqual(normal['design_hash'],changed['design_hash'])
+
+    def test_original_theme_color_option_keeps_classic_compatible(self):
+        from backend.card_layout import normalize_options
+        normalized,_=normalize_options({'global_style':{'accent':'default'}})
+        self.assertEqual(normalized['global_style']['accent'],'default')
+        run=fixture()
+        original=preview_run(run, options={'global_style':{'accent':'default'}})
+        green=preview_run(run, options={'global_style':{'accent':'green'}})
+        self.assertEqual([p['data_url'] for p in original['pages']], [p['data_url'] for p in green['pages']])
+
+    def test_global_style_validation_and_priority_over_legacy_page_settings(self):
+        from backend.card_layout import normalize_options
+        for style in (None,[],{'accent':[]},{'size':'tiny'},{'unknown':True}):
+            with self.assertRaises(DomainError):normalize_options({'global_style':style})
+        run=fixture('明确的资料内容。' * 30)
+        a=preview_run(run,options={'global_style':{'accent':'blue'}})
+        b=preview_run(run,options={'global_style':{'accent':'blue'},'page_styles':{'0':{'accent':'orange'}}})
+        self.assertEqual([p['data_url'] for p in a['pages']],[p['data_url'] for p in b['pages']])
+
     def test_each_template_draws_all_content_without_rewriting(self):
         run = fixture('第一个要点：接口要匹配。\n\n第二个要点：电池续航因使用条件不同。' * 30)
         snapshot = confirmed_snapshot(run)

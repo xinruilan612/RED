@@ -77,6 +77,48 @@ class MediaPostgresApiTests(unittest.TestCase):
                 'content_hash':run['acceptance']['content_hash'],
                 'options':{'page_styles':{'0':{'size':'large','accent':'orange'}}}}
 
+    def test_template_catalog_rotation_authenticated_and_csrf(self):
+        self.register()
+        run=self.confirm(self.create())
+        route='/api/runs/'+run['run_id']+'/media/template-next'
+        request={'action':'init','idempotency_key':uuid4().hex,'draft_ref':run['accepted_ref'],
+                 'content_hash':run['acceptance']['content_hash']}
+        catalog=self.client.get('/api/media/templates',params={'run_id':run['run_id']})
+        self.assertEqual(catalog.status_code,200,catalog.text)
+        self.assertEqual(len(catalog.json()['templates']),8)
+        self.assertIsNone(catalog.json()['selection'])
+        denied=self.client.post(route,json=request)
+        self.assertEqual(denied.status_code,403,denied.text)
+        first=self.post(route,request)
+        self.assertEqual(first.status_code,200,first.text)
+        self.assertEqual(first.json()['template_id'],'xhs-e')
+        self.assertEqual(self.post(route,request).json(),first.json())
+        self.assertEqual(self.client.get('/api/media/templates',params={'run_id':run['run_id']}).json()['selection'],first.json())
+        manual=self.post(route,{**request,'action':'select','template_id':'xhs-h','idempotency_key':uuid4().hex})
+        self.assertEqual(manual.status_code,200,manual.text)
+        self.assertEqual(manual.json()['template_id'],'xhs-h')
+        next_result=self.post(route,{**request,'action':'next','idempotency_key':uuid4().hex})
+        self.assertEqual(next_result.json()['template_id'],'xhs-a')
+        stale=self.post(route,{**request,'draft_ref':'old','idempotency_key':uuid4().hex})
+        self.assertEqual(stale.status_code,409,stale.text)
+        other=TestClient(self.app);self.addCleanup(other.close)
+        self.assertEqual(other.get('/api/media/templates',params={'run_id':run['run_id']}).status_code,401)
+        self.assertEqual(self.client.get('/assets/templates/xhs-e.png').status_code,200)
+        self.assertEqual(self.client.get('/assets/templates/evil.png').status_code,404)
+
+    def test_global_style_roundtrip_through_authenticated_api(self):
+        self.register();run=self.confirm(self.create());base='/api/runs/'+run['run_id']
+        request=dict(self.design_request(run),template='classic',options={'global_style':{'size':'large','accent':'blue'}})
+        response=self.post(base+'/media-preview',request)
+        self.assertEqual(response.status_code,200,response.text[:200])
+        preview=response.json()
+        response=self.post(base+'/media-export',dict(request,kind='images',design_hash=preview['design_hash']))
+        self.assertEqual(response.status_code,200)
+        with zipfile.ZipFile(BytesIO(response.content)) as archive:
+            for page in preview['pages']:
+                self.assertEqual(archive.read(page['name']),base64.b64decode(page['data_url'].split(',',1)[1]))
+        self.assertEqual(self.client.get(base).json()['accepted_ref'],run['accepted_ref'])
+
     def test_preview_export_exact_png_design_binding_and_no_run_mutation(self):
         self.register();run=self.confirm(self.create());base='/api/runs/'+run['run_id']
         request=self.design_request(run)

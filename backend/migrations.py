@@ -72,6 +72,30 @@ CREATE INDEX run_visibility_owner ON run_visibility(owner,deleted);
 '''), (8, '''
 CREATE TABLE testing_budget_limits (
  owner TEXT PRIMARY KEY REFERENCES testing_budgets(owner));
+'''), (9, '''
+CREATE TABLE media_templates (
+ id TEXT PRIMARY KEY, version INTEGER NOT NULL, name TEXT NOT NULL,
+ source_url TEXT NOT NULL, source_commit TEXT NOT NULL, license TEXT NOT NULL,
+ sort_order INTEGER NOT NULL, enabled INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE media_template_rotation (
+ owner TEXT NOT NULL, account_id TEXT NOT NULL, position INTEGER NOT NULL,
+ PRIMARY KEY(owner,account_id));
+CREATE TABLE media_template_selection (
+ run_id TEXT PRIMARY KEY REFERENCES runs(id), owner TEXT NOT NULL,
+ draft_ref TEXT NOT NULL, content_hash TEXT NOT NULL,
+ template_id TEXT NOT NULL REFERENCES media_templates(id), template_version INTEGER NOT NULL);
+CREATE TABLE media_template_commands (
+ owner TEXT NOT NULL, key TEXT NOT NULL, fingerprint TEXT NOT NULL, response TEXT NOT NULL,
+ PRIMARY KEY(owner,key));
+INSERT INTO media_templates(id,version,name,source_url,source_commit,license,sort_order) VALUES
+('xhs-e',1,'雅刊','https://github.com/bozhouDev/xhs-article-to-images','79d2ccce32ff44236bf504a39b850637acacd950','MIT',0),
+('xhs-a',1,'暖杏奶咖','https://github.com/bozhouDev/xhs-article-to-images','79d2ccce32ff44236bf504a39b850637acacd950','MIT',1),
+('xhs-b',1,'雾松青','https://github.com/bozhouDev/xhs-article-to-images','79d2ccce32ff44236bf504a39b850637acacd950','MIT',2),
+('xhs-c',1,'黛墨描金','https://github.com/bozhouDev/xhs-article-to-images','79d2ccce32ff44236bf504a39b850637acacd950','MIT',3),
+('xhs-d',1,'夜读鎏金','https://github.com/bozhouDev/xhs-article-to-images','79d2ccce32ff44236bf504a39b850637acacd950','MIT',4),
+('xhs-f',1,'粉色王国','https://github.com/bozhouDev/xhs-article-to-images','79d2ccce32ff44236bf504a39b850637acacd950','MIT',5),
+('xhs-g',1,'乙游夜境','https://github.com/bozhouDev/xhs-article-to-images','79d2ccce32ff44236bf504a39b850637acacd950','MIT',6),
+('xhs-h',1,'自然手记','https://github.com/bozhouDev/xhs-article-to-images','79d2ccce32ff44236bf504a39b850637acacd950','MIT',7);
 '''))
 
 

@@ -11,7 +11,7 @@ PALETTES = {'green': ('#205c4b', '#e7f0e9'), 'orange': ('#a54424', '#fae9db'), '
 def normalize_options(options):
     from PIL import Image, ImageOps
     options = {} if options is None else options
-    require(isinstance(options, dict) and not set(options) - {'page_styles', 'cover_image', 'product_photo'}, 'INVALID_INPUT', '图卡设置无效')
+    require(isinstance(options, dict) and not set(options) - {'page_styles', 'global_style', 'cover_image', 'product_photo'}, 'INVALID_INPUT', '图卡设置无效')
     styles = options.get('page_styles', {})
     require(isinstance(styles, dict) and len(styles) <= 24, 'INVALID_INPUT', '页面设置无效')
     normalized = {}
@@ -23,6 +23,12 @@ def normalize_options(options):
     photo_mode = options.get('product_photo', 'auto')
     require(isinstance(photo_mode, str) and photo_mode in ('auto', 'none'), 'INVALID_INPUT', '产品图片设置无效')
     result, image = {'page_styles': normalized, 'product_photo': photo_mode}, None
+    if 'global_style' in options:
+        style = options['global_style']
+        require(isinstance(style, dict) and not set(style) - {'size', 'accent'}, 'INVALID_INPUT', '整套图片设置无效')
+        size, accent = style.get('size', 'normal'), style.get('accent', 'green')
+        require(isinstance(size, str) and size in ('normal', 'large') and isinstance(accent, str) and accent in (*PALETTES, 'default'), 'INVALID_INPUT', '字号或强调色无效')
+        result['global_style'] = {'size': size, 'accent': accent}
     data = options.get('cover_image')
     if data is not None:
         require(isinstance(data, str) and len(data) <= 4200000 and re.match(r'^data:image/(png|jpeg);base64,', data), 'INVALID_INPUT', '产品图片只接受不超过3MB的PNG或JPEG图片')
@@ -106,8 +112,8 @@ def compose(snapshot, template, font_path, options, width=1080, height=1440):
         cover = pictures[index] if index < len(pictures) else None
         body_capacity = 700 if cover else 970
         page_photo = ((photo.get('photos') or [photo])[index] if photo and index < len(pictures) else None)
-        setting = normalized['page_styles'].get(str(index), {})
-        accent, tint = PALETTES[setting.get('accent', 'green')]
+        setting = normalized.get('global_style', normalized['page_styles'].get(str(index), {}))
+        accent, tint = PALETTES['green' if setting.get('accent', 'green') == 'default' else setting.get('accent', 'green')]
         large = setting.get('size') == 'large'
         im = Image.new('RGB', (width, height), '#f8f6ef' if template == 'classic' else tint)
         draw = ImageDraw.Draw(im)

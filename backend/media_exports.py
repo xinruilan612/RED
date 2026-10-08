@@ -17,15 +17,20 @@ from backend.product_photos import resolve_options, attribution, photo_identity
 WIDTH, HEIGHT = 1080, 1440
 MARGIN, BODY_SIZE, LINE_HEIGHT = 90, 42, 68
 MAX_PAGES = 24
+from backend.html_cards import THEMES as HTML_THEMES
+
 TEMPLATES = {
     'classic': {'id': 'classic', 'version': 3, 'label': '清爽图文'},
     'checklist': {'id': 'checklist', 'version': 3, 'label': '重点清单'},
 }
 
 
+TEMPLATES.update({key: {'id': key, 'version': 1, 'label': label} for key, label in HTML_THEMES.items()})
+
+
 def template_config(template):
     require(isinstance(template, str) and template in TEMPLATES,
-            'INVALID_INPUT', '请选择清爽图文或重点清单模板')
+            'INVALID_INPUT', '请选择有效图卡模板')
     return dict(TEMPLATES[template])
 
 
@@ -55,7 +60,9 @@ def capabilities():
             video = result.returncode == 0
         except (ImportError, OSError, RuntimeError, subprocess.TimeoutExpired):
             pass
-    return {'templates': [dict(item) for item in TEMPLATES.values()], 'images_available': images, 'storyboard_available': True, 'complete_available': True, 'video_available': video,
+    from backend.html_cards import available as html_available
+    html_ready = html_available()
+    return {'templates': [{**item, 'available': html_ready if item['id'] in HTML_THEMES else images} for item in TEMPLATES.values() if item['id'] != 'checklist'], 'html_images_available': html_ready, 'images_available': images, 'storyboard_available': True, 'complete_available': True, 'video_available': video,
             'images_message': '下载封面和正文图片，无需模型费用。' if images else '图文导出需要 Pillow 和中文字体，请先配置运行环境。',
             'video_message': '生成无声图文翻页视频，可在剪辑软件中添加自己的配音。' if video else '视频成片暂不可用；可以先下载分镜与字幕。'}
 
@@ -86,11 +93,16 @@ def wrap_text(text, font, max_width):
 
 def render_images(snapshot, template='classic', options=None):
     template_config(template)
-    require(capabilities()['images_available'], 'MEDIA_UNAVAILABLE', '图文导出需要 Pillow 和可用的中文字体')
+    if template not in HTML_THEMES:
+        require(capabilities()['images_available'], 'MEDIA_UNAVAILABLE', '图文导出需要 Pillow 和可用的中文字体')
     from backend.card_layout import compose
     options, photo = resolve_options(snapshot, options)
     snapshot['product_photo'] = photo
-    pages, metadata, normalized = compose(snapshot, template, font_path(), options)
+    if template in HTML_THEMES:
+        from backend.html_cards import compose as html_compose
+        pages, metadata, normalized = html_compose(snapshot, template, options)
+    else:
+        pages, metadata, normalized = compose(snapshot, template, font_path(), options)
     snapshot['design_options'] = normalized
     snapshot['page_details'] = metadata
     return pages
@@ -259,7 +271,7 @@ def _complete_files(run, snapshot, execution, template='classic', options=None):
         files.extend(('images/' + name, data) for name, data in pages)
         media_status['images'] = {'status': 'generated', 'page_count': len(pages)}
     except DomainError as error:
-        if error.code != 'MEDIA_UNAVAILABLE': raise
+        if template in HTML_THEMES or error.code != 'MEDIA_UNAVAILABLE': raise
         media_status['images'] = {'status': 'unavailable', 'reason': str(error)}
         files.append(('images/未生成说明.txt', str(error).encode()))
     try:
@@ -320,6 +332,9 @@ def export_run(run, kind='images', execution=None, template='classic', options=N
     c = snapshot['content']
     caption = c['selected_title'] + '\n\n' + c['body'] + '\n\n' + c.get('cta', '') + '\n\n' + ' '.join('#' + t for t in c.get('tags', []))
     files.append(('caption.txt', caption.encode()))
+    if template in HTML_THEMES:
+        from backend.html_cards import VENDOR
+        files.extend(('模板许可/' + name, (VENDOR / name).read_bytes()) for name in ('LICENSE', 'MD2CARD_LICENSE', 'NOTICE.md'))
     if snapshot.get('product_photo'):
         files.append(('图片来源与许可.txt', attribution(snapshot['product_photo']).encode()))
     snapshot.update(export_kind=kind, files=[{'name': name, 'sha256': hashlib.sha256(data).hexdigest(), 'bytes': len(data)} for name, data in files])
