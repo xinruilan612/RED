@@ -40,3 +40,7 @@ body{background:#f5f6f2}main{max-width:1560px;padding:36px 40px 24px;margin-left
 .usage-details{font-size:12px;color:var(--muted);margin:8px 0 14px;background:transparent;border:0}.usage-details summary{cursor:pointer;width:fit-content}.usage-details p{margin:8px 0;line-height:1.6}
 
 .account-reference{align-self:start;padding:18px}
+
+/* Keep the result heading below the sticky account bar after automatic navigation. */
+#humanPanel,#draftPanel{scroll-margin-top:var(--result-scroll-offset,112px)}
+@media(max-width:720px){#humanPanel,#draftPanel{scroll-margin-top:var(--result-scroll-offset,128px)}}

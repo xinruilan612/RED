@@ -231,7 +231,8 @@ test('rejected review shows a free recovery action and hides pointless repeat ex
  assert.equal(s.element('next').hidden,true);assert.equal(s.element('auto').hidden,true);
  s.eval('actualRenderHuman()');
  assert.equal(s.element('humanPanel').hidden,false);
- assert.match(s.element('issues').innerHTML,/修正标题/);
+ assert.match(s.element('issues').innerHTML,/当前版本尚未完成有效复审/);
+ assert.doesNotMatch(s.element('issues').innerHTML,/修正标题/);
  assert.equal(s.element('reviewRecoveryIssues').innerHTML,'');
 });
 
@@ -551,4 +552,83 @@ test('recoverable review does not erase fresh request errors or unrelated backen
  assert.equal(s.element('error').hidden,false);assert.equal(s.element('error').textContent,'任务已更新，请刷新');
  s.eval("run.background.error='数据库连接失败';render()");assert.equal(s.element('error').hidden,false);assert.match(s.element('error').textContent,/数据库连接失败/);
  s.eval("run.background.error='审核预算已耗尽';render()");assert.equal(s.element('error').hidden,false);assert.match(s.element('error').textContent,/预算/);
+});
+
+
+test('completed background job reveals latest single draft and human result exactly once',async()=>{
+ const s=setup();seedDraftView(s,2);s.eval("renderHuman=actualRenderHuman;run.in_flight=true;run.current_stage='reviewer';run.allowed_actions=['edit','adopt_manual'];run.prior_review={issues:[{excerpt:'旧句子',reason:'旧问题'}]};run.background={status:'running'};api=async()=>({...run,in_flight:false,status_version:2,background:{status:'blocked',error:'Token预留不足'}})");
+ s.element('compareVersions').checked=true;s.eval('viewVersion=0');let scrolls=0;s.element('humanPanel').scrollIntoView=()=>scrolls++;
+ await s.intervals[0]();await s.intervals[0]();
+ assert.equal(scrolls,1);assert.equal(s.eval('viewVersion'),null);assert.equal(s.element('compareVersions').checked,false);
+ assert.match(s.element('draftView').innerHTML,/正文2/);assert.doesNotMatch(s.element('draftView').innerHTML,/正文1/);
+ assert.match(s.element('humanTitle').textContent,/第 2 版已保存，复审尚未完成/);
+ assert.match(s.element('issues').innerHTML,/Token预留不足/);
+ assert.match(s.element('issues').innerHTML,/<details><summary>查看上一版审核意见/);
+});
+
+test('background completion never pulls the user from another page or unsaved editor',async()=>{
+ for(const state of ["currentPage='library'",'editing=true']){
+  const s=setup();seedDraftView(s,2);s.eval(state+";viewVersion=0;run.in_flight=true;api=async()=>({...run,in_flight:false,status_version:2})");
+  let scrolls=0;s.element('humanPanel').scrollIntoView=s.element('draftPanel').scrollIntoView=()=>scrolls++;
+  await s.intervals[0]();assert.equal(scrolls,0);assert.equal(s.eval('viewVersion'),0);
+ }
+});
+
+test('tag-only revision clearly says body unchanged and shows exact tag change without comparison',()=>{
+ const s=setup();seedDraftView(s);s.eval("run.drafts.push({ref:'draft-2',content:{...run.drafts[0].content,tags:['学生党鼠标']}});run.drafts[0].content.tags=['选购思路'];renderDraft()");
+ assert.match(s.element('draftView').innerHTML,/仅修改标签，标题和正文未变/);
+ assert.match(s.element('draftView').innerHTML,/#选购思路 → #学生党鼠标/);
+ assert.doesNotMatch(s.element('draftView').innerHTML,/draft-columns/);
+});
+
+test('technical citation diagnostic never repeats a whole draft or internal schema in issue card',()=>{
+ const s=setup();s.eval("run.review={issues:[{location:'body',excerpt:'整篇正文不该复制'.repeat(200),reason:'引用映射错误',suggestion:'重建claim_map'}]};actualRenderHuman()");
+ assert.match(s.element('issues').innerHTML,/资料引用核对/);
+ assert.match(s.element('issues').innerHTML,/引用映射错误/);
+ assert.doesNotMatch(s.element('issues').innerHTML,/整篇正文不该复制|claim_map/);
+});
+
+test('a late background response cannot replace or scroll a different task',async()=>{
+ const s=setup();seedDraftView(s);s.eval("run.in_flight=true;let finishPoll;api=()=>new Promise(resolve=>{finishPoll=resolve})");
+ let scrolls=0;s.element('humanPanel').scrollIntoView=s.element('draftPanel').scrollIntoView=()=>scrolls++;
+ const pending=s.intervals[0]();s.eval("const oldRun=run;run={...run,run_id:'another-run',in_flight:false};finishPoll({...oldRun,in_flight:false,status_version:2})");
+ await pending;assert.equal(s.eval('run.run_id'),'another-run');assert.equal(scrolls,0);
+});
+
+test('current token reservation pause overrides historical invalid model call in all guidance',()=>{
+ const s=setup();seedDraftView(s,2);
+ s.eval("run.current_stage='reviewer';run.review=null;run.ai_revision={available:true};run.background={status:'blocked',error:'Token预留不足：上限80000'};run.calls=[{stage:'review',status:'invalid',tokens:100}];run.events=[{type:'agent.failed',payload:{message:'旧审核格式错误'}}];render()");
+ assert.equal(s.element('error').textContent,'Token预留不足：上限80000');
+ assert.equal(s.element('workbenchGuide').textContent,'Token预留不足：上限80000');
+ assert.equal(s.eval('modelFailureGuidance(run)'),'');
+});
+
+test('successful current review clears historical errors and invites confirmation',()=>{
+ const s=setup();seedDraftView(s,2);
+ s.eval("run.run_status='FAILED';run.events=[{type:'agent.failed',payload:{message:'旧审核格式错误'}}];render()");
+ assert.equal(s.element('error').hidden,false);
+ s.eval("run.run_status='WAITING_USER';run.current_stage='reviewer';run.allowed_actions=['accept'];run.review={decision:'approved',issues:[],checks:[]};run.background={status:'waiting'};run.calls=[{stage:'review',status:'invalid',tokens:100},{stage:'review',status:'completed',tokens:100}];render()");
+ assert.equal(s.element('error').hidden,true);
+ assert.match(s.element('workbenchGuide').textContent,/再确认当前版本/);
+ assert.doesNotMatch(s.element('workbenchGuide').textContent,/未能通过|失败/);
+});
+
+
+test('citation recovery issue retains actual reviewer resolution instead of inventing pending status',()=>{
+ const s=setup();s.eval("run.review={issues:[{id:'citation-recovery',location:'body',excerpt:'整篇正文',reason:'本次重建claim_map，旧引用映射问题实际已消解',suggestion:'保留当前表述'}]};actualRenderHuman()");
+ assert.match(s.element('issues').innerHTML,/旧引用映射问题实际已消解/);
+ assert.match(s.element('issues').innerHTML,/保留当前表述/);
+ assert.doesNotMatch(s.element('issues').innerHTML,/尚未完成|需要重新复审|整篇正文|claim_map/);
+});
+
+
+test('automatic result navigation reserves actual responsive sticky account header height',async()=>{
+ for(const height of [76,132]){
+  const s=setup();seedDraftView(s);s.eval("run.in_flight=true;api=async()=>({...run,in_flight:false,status_version:2})");
+  s.element('.account-bar').getBoundingClientRect=()=>({height});let margin;
+  s.element('humanPanel').style={setProperty(name,value){assert.equal(name,'--result-scroll-offset');margin=value;}};
+  await s.intervals[0]();assert.equal(margin,(height+16)+'px');
+ }
+ const css=fs.readFileSync('frontend/style.css','utf8');
+ assert.match(css,/#humanPanel,#draftPanel\{scroll-margin-top:var\(--result-scroll-offset,112px\)\}/);
 });

@@ -64,3 +64,34 @@ def enrich(stage, value, context):
         result['account_context'] = identity
         result['ranking_limit'] = '版本比较是内容评价；重要事实问题先阻断，不输出爆款概率。'
     return result
+
+
+def model_operations(operations, stage):
+    """Audit current copy against explicit account rules, not old full drafts.
+
+    User edits are evidence of a past edit, never a permanent preference rule.
+    Their full before/after text remains in the immutable task/account snapshot.
+    """
+    if stage not in ('review','revise'):
+        return copy.deepcopy(operations)
+    result={k:copy.deepcopy(v) for k,v in operations.items()
+            if k not in ('preferences','history','metrics','competitors')}
+    profile=result.get('profile')
+    if isinstance(profile,dict) and isinstance(profile.get('profile'),dict):
+        # Current rules matter; old profile revisions and aliases do not.
+        result['profile']={k:profile[k] for k in ('id','revision','profile') if k in profile}
+    if 'preferences' in operations:
+        result['preferences']=[]
+        edit_summary=None
+        for item in operations['preferences']:
+            if item.get('source_type')!='user_edit':
+                result['preferences'].append(copy.deepcopy(item))
+                continue
+            if edit_summary is None:
+                edit_summary={'source_type':'user_edit','record_count':0,'changed_fields':[],
+                    'limitation':'历史改稿仅为表达偏好信号，不是永久规则；本轮以账号档案和用户修改意见为准。'}
+                result['preferences'].append(edit_summary)
+            edit_summary['record_count']+=1
+            for field in item.get('changes',{}):
+                if field not in edit_summary['changed_fields']:edit_summary['changed_fields'].append(field)
+    return result

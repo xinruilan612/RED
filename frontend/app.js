@@ -11,6 +11,7 @@ let cancellationRun=null;
 let creationSequence=0;
 let pendingLiveBudget=null;
 let revisionFeedbackRun=null;
+let renderedDraftKey=null;
 async function api(path,method='GET',body){
  const r=await fetch(path,{method,headers:method==='POST'?{'Content-Type':'application/json','X-CSRF-Token':csrf}:{},body:body===undefined?undefined:JSON.stringify(body)});
  const data=await r.json(); if(!r.ok){const failure=new Error(data.error?.message||'请求失败');failure.code=data.error?.code;failure.status=r.status;throw failure;}return data;
@@ -125,12 +126,18 @@ function renderMode(mode){
 function unresolvedUsage(task){
  return Number(task.usage?.unknown_calls||0)>0||(task.calls||[]).some(c=>c.tokens===null);
 }
+function currentRunFailure(task){
+ if(task.in_flight||task.run_status==='SUCCEEDED'||(task.review?.decision==='approved'&&(task.allowed_actions||[]).includes('accept')))return '';
+ if(task.background?.status==='blocked'&&task.background.error)return task.background.error;
+ if(task.run_status==='FAILED')return (task.events||[]).filter(e=>e.type==='agent.failed').at(-1)?.payload?.message||'';
+ return '';
+}
 function modelFailureGuidance(task){
  if(task.in_flight||!['FAILED'].includes(task.run_status)&&task.background?.status!=='blocked')return '';
- const last=(task.events||[]).filter(e=>e.type==='agent.failed').at(-1);
- const message=task.background?.error||last?.payload?.message||'';
+ if(task.review?.decision==='approved'&&(task.allowed_actions||[]).includes('accept')||task.run_status==='SUCCEEDED')return '';
+ const message=currentRunFailure(task);
  const failed=[...(task.calls||[])].reverse().find(c=>['invalid','failed'].includes(c.status));
- if(!/格式|JSON|MODEL_OUTPUT_INVALID|模型返回|用量不确定|用量未知/.test(message)&&!failed)return '';
+ if(!/格式|JSON|MODEL_OUTPUT_INVALID|模型返回|用量不确定|用量未知/.test(message)&&(message||!failed))return '';
  const stage=(failed?.stage==='analysis'?stages[failed?.agent]:stages[failed?.stage])||stages[failed?.agent]||'当前步骤';
  const saved='已完成的分析、资料和稿件都保留，不用重新上传。';
  if(unresolvedUsage(task))return `${stage}暂时停止：这次调用未保存完整的结果或用量记录。${saved}为避免重复计费，当前不能直接重试，需要先核对这次调用的用量；不要另建任务反复提交。`;
@@ -144,6 +151,8 @@ function nextStepGuidance(task){
  if(editing&&task.review_execution?.exhausted)return '保存会创建新版本，不调用 AI。但本任务复审次数已用完，保存后只能继续手动修改，或知晓问题后人工采用；旧审核不会变成新版本通过。';
  if(editing)return '你正在修改稿件。保存会创建新版本，不调用 AI；之后可申请复审，或知晓问题后人工采用。';
  if(task.in_flight)return '正在处理，结果会自动保存并更新。可以先阅读已有稿件；无需重复点击或刷新。';
+ const currentFailure=currentRunFailure(task);
+ if(currentFailure&&!isRecoverableReviewError(task,currentFailure))return modelFailureGuidance(task)||currentFailure;
  if(task.ai_revision?.available)return '查看审核意见，可补充你的要求，再点击“让 AI 按意见改稿并复审”。新版本通过后，由你确认并下载。';
  const failure=modelFailureGuidance(task);if(failure)return failure;
  if(task.review_execution?.blocked)return task.review_execution.message;
@@ -174,14 +183,15 @@ function render(){
  document.querySelector('#editor .editor-note').textContent=run.review_execution?.exhausted?'保存会创建新版本，不覆盖旧稿，也不调用 AI。本任务复审次数已用完；保存后可继续手动修改，或知晓问题后人工采用，不能沿用旧审核。':'保存会创建新版本，不会覆盖旧稿，也不会自动调用 AI。保存后可点击“复审”，或知晓已有问题后人工采用；未保存修改不进入最终稿。';
  $('modelCalls').textContent=(run.usage?.model_calls||0)+' 次';
  $('modelCost').textContent=run.mode==='live'?'≤ $'+Number(run.usage.cost_upper_estimate_usd||0).toFixed(4)+' 估算':'¥0.00（模拟）';
- if(run.run_status==='FAILED'){const last=run.events.filter(e=>e.type==='agent.failed').at(-1);if(!isRecoverableReviewError(run,last?.payload.message))error(new Error(modelFailureGuidance(run)||last?.payload.message||'执行失败，请查看运行记录'),'run');}
+ const currentFailure=currentRunFailure(run);
+ if(currentFailure&&!isRecoverableReviewError(run,currentFailure))error(new Error(modelFailureGuidance(run)||currentFailure),'run');
  $('welcome').hidden=true;$('workbench').hidden=false;
  $('runTitle').textContent=run.context.topic;
  $('runSummary').textContent=`${run.context.operations?.platform==='douyin'?'抖音 · 口播脚本':'小红书 · 图文笔记'} · 写给 ${run.context.audience} · ${run.context.tone} · ${run.snapshot_id.slice(0,8)} 输入快照`;
  const background=run.background;
  const jobLabels={queued:background?.worker_online?'已排队，后台即将执行':'已排队，等待 Worker 启动',running:'正在执行 · 结果保存后自动更新',pausing:'正在暂停，等待当前节点保存',paused:'本步已停止 · 查看结果后继续',blocked:'后台等待处理',waiting:'等待你的审核'};
  $('statusLabel').textContent=jobLabels[background?.status]|| (run.in_flight?'AI 正在处理，请稍候':states[run.run_status]);
- if(background?.error&&!isRecoverableReviewError(run,background.error))error(new Error(['insufficient','searching'].includes(run.context.web_research?.status)?'联网调查未完成。请在上方修改关键词，点击“重新搜索这一步”；无需新建任务。':modelFailureGuidance(run)||background.error),'run');$('versionCount').textContent=run.drafts.length+' 个';
+ if(currentFailure&&['insufficient','searching'].includes(run.context.web_research?.status))error(new Error('联网调查未完成。请在上方修改关键词，点击“重新搜索这一步”；无需新建任务。'),'run');$('versionCount').textContent=run.drafts.length+' 个';
  const allowed=run.allowed_actions;
  $('recover').hidden=!allowed.includes('recover');$('next').hidden=!allowed.includes('next');$('auto').hidden=!allowed.includes('next');$('cancel').hidden=!allowed.includes('cancel');
  $('next').textContent=run.current_stage==='reviewer'?'执行复审 / 审核 →':run.review?.decision==='revision_required'?'按意见改稿 →':'执行下一步 →';
@@ -253,11 +263,13 @@ function renderRecovery(){
 function renderHuman(){
  const allowed=run.allowed_actions,review=run.review;
  if(revisionFeedbackRun!==run.run_id){$('revisionFeedback').value='';revisionFeedbackRun=run.run_id;}
- const issueReview=review||run.prior_review||[...(run.calls||[])].reverse().find(c=>c.stage==='review'&&c.status==='invalid'&&!c.inherited)?.diagnostic_response;
+ const historicalReview=run.prior_review;
+ const issueReview=review;
+ const failedReview=!review&&!run.in_flight&&run.drafts.length&&(run.current_stage==='reviewer'||canReviewFailure(run));
  const revision=review?.decision==='revision_required';
  const canAI=Boolean(run.ai_revision?.available)&&Boolean(websiteSession?.auth_required);
  const canRepair=allowed.includes('repair_review');
- const visible=run.run_status==='WAITING_USER'||revision||canRepair||canAI||allowed.includes('adopt_manual')||run.run_status==='SUCCEEDED';
+ const visible=run.run_status==='WAITING_USER'||failedReview||revision||canRepair||canAI||allowed.includes('adopt_manual')||run.run_status==='SUCCEEDED';
  $('humanPanel').hidden=!visible;
  $('supplyForm').hidden=!allowed.includes('supplement');
  $('revise').hidden=!(canAI||(!websiteSession?.auth_required&&revision&&allowed.includes('next')&&!run.review_execution?.blocked));
@@ -278,6 +290,7 @@ function renderHuman(){
  else if(run.wait_reason==='hypothesis_permission'){title='没有历史数据，需要你选择';message='本次账号快照没有可用的历史指标。可以允许明确标注的假设模式；也可取消任务，导入历史指标后新建创作。';}
  else if(run.review_execution?.blocked){title='复审次数已用完，由你处理';message=run.review_execution.message;}
  else if(run.wait_reason==='revision_limit'){title='已达到自动改稿上限';message='AI 自动改稿已停止。'+(run.review_execution?.exhausted?'复审次数也已用完。':'')+'你仍可手动修改，或知晓下方问题后采用当前版本；人工采用会单独记录，不表示 AI 审核通过。';}
+ else if(failedReview&&run.background?.error){title=`第 ${run.drafts.length} 版已保存，复审尚未完成`;message=run.background.error;}
  else if(canAI){title=`第 ${run.drafts.length} 版需要修改`;message='按下方审核意见修改，也可以补充你的要求。AI 会生成下一版并自动复审；通过后再由你确认。';}
  else if(canRepair){title='稿件已保存，审核意见需要处理';message=run.review_recovery?.reason||'审核结果未通过校验。可展开其他处理方式，先整理已有意见；不会自动确认稿件。';}
  else if(revision){title='当前稿件需要修改';message=run.ai_revision?.reason||'请按下方意见处理；也可以展开其他处理方式手动修改。';}
@@ -285,8 +298,23 @@ function renderHuman(){
  else if(allowed.includes('accept')){title=`第 ${run.drafts.length} 版 AI 审核通过，待你确认`;message='请核对正文与事实，确认后即可下载全部成品包，准备发布。AI 审核不等于平台审核，尚未发布。';}
  if(run.run_status==='WAITING_USER'&&['missing_material','hypothesis_permission'].includes(run.wait_reason)&&!allowed.includes('supplement')){title='已达到本轮补充上限';message=allowed.includes('adopt_manual')?'你仍可修改现有稿件，或知晓问题后人工采用。':'已有记录会保留。请取消本任务，带着完整资料新建创作。';}
  $('humanTitle').textContent=title;$('humanMessage').textContent=message;
- const issueHTML=(!review&&issueReview?'<p class="helper">以下为已有审核意见，仅供参考；当前版本尚未完成有效复审。</p>':'')+(issueReview?.human_questions||[]).map(q=>'<p class="issue">'+esc(q)+'</p>').join('')+(issueReview?.issues||[]).map(i=>`<div class="issue"><b>${esc(({selected_title:'标题',body:'正文',cta:'互动引导',tags:'标签'})[i.location]||i.location)} · ${esc(i.excerpt)}</b><p>${esc(i.reason)}</p><p>修改建议：${esc(i.suggestion)}</p></div>`).join('');
- $('issues').innerHTML=(run.run_status==='SUCCEEDED'||allowed.includes('accept'))&&issueHTML?'<details><summary>查看审核记录（仅供回看）</summary><p class="helper">'+(run.run_status==='SUCCEEDED'?'稿件确认已完成。此前意见保留供回看，不代表还有待办，也不表示这些问题已经通过 AI 复审。':'当前版本已通过 AI 审核，仍需你核对事实并确认。')+'</p>'+issueHTML+'</details>':issueHTML;
+ const currentIssues=reviewIssuesHTML(issueReview);
+ const historyIssues=!review&&historicalReview?'<details><summary>查看上一版审核意见（历史记录，不代表当前问题）</summary><p class="helper">这些意见只对应之前版本，不代表还有待办；当前稿件的结论以本次复审为准。</p>'+reviewIssuesHTML(historicalReview)+'</details>':'';
+ const failure=failedReview&&run.run_status!=='SUCCEEDED'?'<p class="issue">当前版本尚未完成有效复审：'+esc(run.review_failure?.message||run.review_recovery?.reason||run.background?.error||'审核结果未通过校验，请重新复审当前稿件。')+'</p>':'';
+ $('issues').innerHTML=((run.run_status==='SUCCEEDED'||allowed.includes('accept'))&&currentIssues?'<details><summary>查看审核记录（仅供回看）</summary>'+currentIssues+'</details>':currentIssues)+failure+historyIssues;
+}
+function canReviewFailure(task){return Boolean(task.review_failure||task.review_recovery?.available||task.allowed_actions?.includes('repair_review'));}
+function reviewIssuesHTML(review){
+ return (review?.human_questions||[]).map(q=>'<p class="issue">'+esc(q)+'</p>').join('')+(review?.issues||[]).map(i=>{
+  const technical=/claim_map|引用.*映射|事实映射/.test([i.reason,i.suggestion,i.id].join(' '));
+  const label=({selected_title:'标题',body:'正文',cta:'互动引导',tags:'标签'})[i.location]||i.location||'审核意见';
+  if(technical){
+   const plain=value=>String(value||'').replace(/claim_map/g,'资料引用对应关系');
+   return '<div class="issue"><b>资料引用核对</b><p>'+esc(plain(i.reason))+'</p>'+(i.suggestion?'<p>审核建议：'+esc(plain(i.suggestion))+'</p>':'')+'</div>';
+  }
+  const excerpt=String(i.excerpt||'');
+  return `<div class="issue"><b>${esc(label)}${excerpt?' · '+esc(excerpt.length>180?excerpt.slice(0,180)+'…':excerpt):''}</b><p>${esc(i.reason)}</p><p>修改建议：${esc(i.suggestion)}</p></div>`;
+ }).join('');
 }
 function draftHTML(d,index,changed=false){const c=d.content;return `<article class="draft-copy ${changed?'changed':''}"><span class="version-tag">版本 ${index+1} · ${d.actor==='user'?'你手动修改':run.mode==='live'?'AI 创作':'模拟创作'} · ${esc(d.ref.slice(0,8))}${run.accepted_ref===d.ref?' · 已确认':''}</span><h3>${esc(c.selected_title)}</h3><pre>${esc(c.body)}</pre><p>${esc(c.cta)}</p><div>${(c.tags||[]).map(t=>'<span class="tag">#'+esc(t)+'</span>').join('')}</div></article>`;}
 function renderDraft(){
@@ -294,13 +322,21 @@ function renderDraft(){
  $('draftPanel').hidden=!run.drafts.length;if(!run.drafts.length)return;
  // null follows new Worker drafts; only a user-selected older version is pinned.
  if(viewVersion!==null&&(!Number.isInteger(viewVersion)||viewVersion<0||viewVersion>=run.drafts.length))viewVersion=null;
+ const latestKey=run.run_id+':'+run.drafts.at(-1).ref;
+ if(renderedDraftKey!==latestKey){$('compareVersions').checked=false;renderedDraftKey=latestKey;}
  const i=viewVersion??run.drafts.length-1,d=run.drafts[i],prev=run.drafts[i-1];
  $('versionSelect').innerHTML=run.drafts.map((d,index)=>`<option value="${index}" ${index===i?'selected':''}>版本 ${index+1}${run.accepted_ref===d.ref?' · 已确认':''}</option>`).join('');
  $('compareVersionsWrap').hidden=!prev;
  if(!prev)$('compareVersions').checked=false;
  const compare=prev&&$('compareVersions').checked;
  const changes=prev?['selected_title','body','cta','tags'].filter(k=>JSON.stringify(prev.content[k])!==JSON.stringify(d.content[k])).map(k=>({selected_title:'标题',body:'正文',cta:'互动引导',tags:'标签'})[k]):[];
- $('draftView').innerHTML=(compare?'<p class="change-summary">与上一版相比：'+(changes.length?'修改了 '+changes.join('、'):'文字内容未变化')+'。左侧旧稿，右侧当前所选稿。</p><div class="draft-columns">'+draftHTML(prev,i-1)+draftHTML(d,i,true)+'</div>':draftHTML(d,i));
+ let summary='';
+ if(prev){
+  const onlyTags=changes.length===1&&changes[0]==='标签';
+  summary='<p class="change-summary">与上一版相比：'+(onlyTags?'仅修改标签，标题和正文未变':changes.length?'修改了 '+changes.join('、'):'标题、正文、互动引导和标签均未变化')+'。'+(compare?'左侧旧稿，右侧当前所选稿。':'当前显示所选版本。')+'</p>';
+  if(changes.includes('标签'))summary+='<p class="change-summary">标签：'+esc((prev.content.tags||[]).map(t=>'#'+t).join(' '))+' → '+esc((d.content.tags||[]).map(t=>'#'+t).join(' '))+'</p>';
+ }
+ $('draftView').innerHTML=summary+(compare?'<div class="draft-columns">'+draftHTML(prev,i-1)+draftHTML(d,i,true)+'</div>':draftHTML(d,i));
  $('checkReaders').hidden=!websiteSession?.auth_required;$('readerCheckHelp').hidden=$('checkReaders').hidden;
  $('checkReaders').textContent=`用版本 ${i+1} 做读者理解检查（可选） →`;
  $('checkReaders').disabled=busy||editing||run.in_flight;
@@ -434,6 +470,19 @@ $('mode').onchange=()=>{renderMode($('mode').value);$('scenario').disabled=$('mo
 setInterval(async()=>{
  if(!run?.in_flight||polling)return;
  polling=true;
- try{const latest=await api('/api/runs/'+run.run_id);if(run?.run_id===latest.run_id){const changed=run.status_version!==latest.status_version;run=latest;render();if(changed){if(!run.in_flight){selected=currentAgent();const last=run.node_runs.at(-1);if(last){selected=last.agent;detailStage=last.stage;}render();}await history();}}}
+ try{const watchedId=run.run_id;const latest=await api('/api/runs/'+watchedId);if(run?.run_id===watchedId&&latest.run_id===watchedId){
+  const changed=run.status_version!==latest.status_version;
+  const completed=run.in_flight&&!latest.in_flight;
+  run=latest;
+  const showResult=completed&&!editing&&(typeof currentPage==='undefined'||currentPage==='studio');
+  if(showResult){viewVersion=null;selected='human';detailStage=null;$('compareVersions').checked=false;}
+  render();
+  if(showResult){const target=$('humanPanel').hidden?$('draftPanel'):$('humanPanel');if(!target.hidden){
+   const headerHeight=document.querySelector('.account-bar')?.getBoundingClientRect?.().height||0;
+   if(headerHeight)target.style?.setProperty('--result-scroll-offset',Math.ceil(headerHeight+16)+'px');
+   target.scrollIntoView({behavior:'smooth',block:'start'});
+  }}
+  if(changed)await history();
+ }}
  catch(_){}finally{polling=false;}
 },1500);
