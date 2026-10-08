@@ -154,9 +154,6 @@ class Runtime:
             from backend.citation_ids import repair
             _,repairs=repair(stage,value,live.material_records(run.context))
             if repairs:log['citation_repairs']=repairs
-            from backend.copy_disclosures import clean
-            _,copy_adjustments=clean(stage,value,run.context)
-            if copy_adjustments:log['copy_adjustments']=copy_adjustments
         else:
             # Template execution shares graph persistence without pretending to call a model.
             if stage in ('audience','research'):

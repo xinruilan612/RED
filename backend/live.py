@@ -137,7 +137,7 @@ def messages_for(run,stage):
             '不能凭空替博主承诺后续更新，不能删去缺口说明后继续输出无依据的步骤。读者有用的适用条件、真实来源引用和必要的不确定性应保留，不把所有保留语都当作内部说明。')
     if stage in ('research','strategy','outline','hook','title','body','revise','review'):
         rules[stage]+= (' 推广文案的事实与披露规则：只写资料支持的卖点，不能根据产品资料虚构博主的使用经历；“我用过”“亲测”等经历须有用户明确提供的真实经历依据。'
-            '默认不在正文、标题、CTA或标签中自动添加“公开资料整理”“非亲测”“非品牌合作”等组合声明；资料来源由成品包说明承载，不要求正文重复来源声明。'
+            '按信息用途安排表达，不按词语判断好坏：正文写有依据的卖点与读者需要的限制；资料来源由成品包说明承载，用户需要时也可在文末简短标注，不把研究过程写成正文。'
             '合作关系以用户在创作需求中明确填写的信息为准，未填写就是未知，不能自动断言存在合作或非品牌合作；“推广”这个用途本身不能证明合作关系。'
             '用户明确要求保留的来源标注与真实合作披露应保留；产品适用条件、标称参数的限制不能因推广目的删除。审核不能仅因缺少上述模板声明而要求返修，也不能以加入声明替代事实核对。')
     if stage in ('revise','review'):
@@ -152,7 +152,7 @@ def messages_for(run,stage):
         rules[stage]+=' 每个标题尽量12至24字，不超过30字；标题不是开头或整篇摘要，不放CTA和四步完整正文。只能提出问题或介绍材料支持的清单，不预设读者已发生的经历。'
     if stage in ('body','revise'):
         rules[stage]+=' 写作方式（由content角色在生成时执行，不依赖后处理删句）：先选资料支持的卖点，写成读者场景与选择依据，结尾只留一个互动问题。不要把研究过程或自己的写作限制写成发布文案。'
-        rules[stage]+=' 输出前自查：正文是否混入“本文据某官网资料整理，非亲测、非品牌合作”等默认身份或来源声明？用户未明确要求时，直接在本次生成中去掉；改稿时即使上一版含有，也不要继承。不要向读者解释自己删除了什么。'
+        rules[stage]+=' 输出前按含义自查：卖点和体验是否有证据，来源是否放在合适位置，合作关系是否由用户明确提供。根据依据与用途决定保留、改写或请求补充，不因出现某个词就删除整句。旧版说明也按同样原则判断；真实且相关的体验、来源和合作信息可以保留。'
         rules[stage]+=' 表达示例（只有素材支持时才能使用，不得照抄产品事实）：写“先核对电脑有没有适用的USB接口”，不写“本文根据公开资料整理”；保留“标称最长12个月，实际随使用条件变化”，不自行加“非品牌合作”。用户明确要求的来源标注和真实合作披露仍按要求保留。'
         rules[stage]+=' brief中用户明确提出的正文长度要求优先；仅当brief未指定正文长度时，body默认约150至250字。改稿也必须保持用户的长度要求，不得退回默认简稿。字数约束不能通过虚构事实或重复免责声明凑齐；材料不足以支撑时保留事实边界，由审核请求具体补料。'
         rules[stage]+=' body只写正文，不重复cta；cta仅一个具体互动问题。不要写“不承诺效率提升或成绩变化”等面向创作者的禁止项清单；不许伪造效果，可保留读者需要的样例属性和适用条件。selected_title保持短标题，不把正文或互动问题放进标题。'
@@ -226,8 +226,6 @@ def normalize(run,stage,value):
         require(all(len(t)<=200 for t in value['candidates']),'MODEL_OUTPUT_INVALID','标题过长')
         return {k:value[k] for k in schema(stage)}
     if stage in ('body','revise'):
-        from backend.copy_disclosures import clean
-        value,_=clean(stage,value,run.context)
         result=validate_edit(value)
         if stage=='body':
             selected=next(a['value']['selected'] for a in run.artifacts if a['stage']=='title')
@@ -286,9 +284,7 @@ def advance(run,call,on_validation=None):
             label={'audience':'受众分析','research':'素材研究','strategy':'策略','outline':'提纲','hook':'开头','title':'标题','body':'正文','revise':'改稿','review':'审核'}.get(stage,stage)
             raise DomainError(error.code,f'{label}输出校验失败：{error}；已停止，未自动重试') from None
         if on_validation:on_validation(call_id,None)
-        from backend.copy_disclosures import clean
-        _,copy_adjustments=clean(stage,value,run.context)
-        return {'copy_adjustments':copy_adjustments,'id':str(uuid4()),'agent':agent,'stage':stage,'mode':'live','snapshot_id':run.snapshot_id,
+        return {'id':str(uuid4()),'agent':agent,'stage':stage,'mode':'live','snapshot_id':run.snapshot_id,
                 'input':inputs,'output':result,'duration_ms':round((time.perf_counter()-started)*1000),
                 'model_calls':1,'tokens':tokens,'cost':None,'call_id':call_id,'tools':['knowledge_snapshot'] if run.context.get('evidence') else [],
                 'memory':'读取创建任务时的账号档案、历史、偏好与已接受经验快照；原始依据可在输入中查看'}

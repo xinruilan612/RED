@@ -34,7 +34,7 @@ class FixtureModel:
 
 
 class LiveTests(unittest.TestCase):
-    def test_writer_disclosure_normalized_before_review_and_audited(self):
+    def test_writer_output_reaches_review_unchanged_without_phrase_filter(self):
         from backend.workflow import digest
         base=self.model.complete
         seen=[]
@@ -48,11 +48,11 @@ class LiveTests(unittest.TestCase):
         self.model.complete=response
         for _ in range(7):self.step()
         draft=self.run.drafts[-1]
-        self.assertEqual(draft['content']['body'],'用文件夹整理课程笔记。')
+        self.assertEqual(draft['content']['body'],'用文件夹整理课程笔记。\n\n本文据官方公开资料整理，非亲测、非品牌合作。')
         self.assertEqual(draft['content_hash'],digest(draft['content']))
         self.assertEqual(seen,[draft['content']])
         log=next(n for n in self.run.node_runs if n['stage']=='body')
-        self.assertEqual(log['copy_adjustments'][0]['rule'],'default_disclosure@1')
+        self.assertNotIn('copy_adjustments',log)
         self.assertEqual(len(self.model.calls),8)
 
     def test_promotion_policy_shared_by_writer_revision_and_review(self):
@@ -73,8 +73,8 @@ class LiveTests(unittest.TestCase):
         for stage in ('body','revise'):
             prompt=messages_for(self.run,stage)[0][0]['content']
             self.assertIn('由content角色在生成时执行，不依赖后处理删句',prompt)
-            self.assertIn('即使上一版含有，也不要继承',prompt)
-            self.assertIn('直接在本次生成中去掉',prompt)
+            self.assertIn('不因出现某个词就删除整句',prompt)
+            self.assertIn('合作关系是否由用户明确提供',prompt)
             self.assertIn('用户明确要求的来源标注和真实合作披露仍按要求保留',prompt)
 
     def test_review_prompt_demands_contiguous_source_quotes(self):
