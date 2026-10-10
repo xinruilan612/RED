@@ -77,7 +77,8 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
                 chunks=[]; size=0
                 async for chunk in request.stream():
                     size+=len(chunk)
-                    require(size<=8_000_000,'INVALID_INPUT','请求超过 8 MB')
+                    limit=16_000_000 if request.url.path=='/api/research/transcripts' else 8_000_000
+                    require(size<=limit,'INVALID_INPUT','请求文件过大')
                     chunks.append(chunk)
                 request._body=b''.join(chunks)
             response=await call_next(request)
@@ -216,6 +217,15 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
         from backend.research_cases import ResearchCases
         auth.throttle('case-save:'+user['owner'],40,3600)
         result=ResearchCases(store).save(user['owner'],data)
+        result.pop('original_base64',None)
+        result.pop('versions',None)
+        return result
+
+    @app.post('/api/research/transcripts')
+    def transcribe_media(data: dict,user=Depends(logged)):
+        from backend.media_cases import MediaCases
+        auth.throttle('local-transcript:'+user['owner'],6,3600)
+        result=MediaCases(store).create(user['owner'],data)
         result.pop('original_base64',None)
         result.pop('versions',None)
         return result

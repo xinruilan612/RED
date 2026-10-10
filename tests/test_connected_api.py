@@ -57,7 +57,7 @@ class ConnectedAPITests(ConnectedHarness,unittest.TestCase):
 
     def test_sync_csrf_owner_and_safe_status(self):
         from backend.xhs_sync import XHSSync
-        from test_xhs_sync import Fake
+        from tests.test_xhs_sync import Fake
         sync=XHSSync(self.store,lambda port:Fake());sync.bind(self.owner,self.account);sync.once()
         url='/api/social/sync?account_id='+self.account
         self.assertEqual(self.client.get(url).json()['counts']['note'],1)
@@ -68,6 +68,23 @@ class ConnectedAPITests(ConnectedHarness,unittest.TestCase):
         self.assertNotEqual(self.post('/api/social/sync/control',payload,other,csrf).status_code,200)
         self.assertEqual(self.post('/api/social/sync/control',payload).json()['status'],'paused')
         self.assertNotIn('bridge_port',self.client.get(url).text)
+
+    def test_media_transcription_requires_owner_csrf_and_review(self):
+        import base64
+        packet=dict(account_id=self.account,title='测试转写',filename='clip.wav',file_base64=base64.b64encode(b'audio').decode(),permission_confirmed=True)
+        result={'payload':dict(account_id=self.account,title='测试转写',text='机器转写待核对：合成唇釉案例描述，按标签顺序介绍三款颜色，比较可见特点。',content_kind='transcript',evidence_role='expression_reference',permission_confirmed=True),'provenance':{'source_sha256':'synthetic-source','model_id':'test'},'segments':[]}
+        url='/api/research/transcripts'
+        with patch('backend.media_cases.transcribe_upload',return_value=result) as transcriber:
+            self.assertEqual(self.client.post(url,json=packet).status_code,403)
+            other,csrf,_=self.register('media_other')
+            self.assertNotEqual(self.post(url,packet,other,csrf).status_code,200)
+            transcriber.assert_not_called()
+            response=self.post(url,packet)
+            self.assertEqual(response.status_code,200,response.text)
+            self.assertFalse(response.json()['metadata']['retrieval_eligible'])
+            self.assertTrue(response.json()['metadata']['research_case']['review_required'])
+            transcriber.assert_called_once()
+            self.assertNotIn('original_base64',response.json())
 
     def test_session_model_selection_revoke_csrf_and_owner_isolation(self):
         self.assertFalse(self.client.get('/api/session').json()['provider']['ready'])
@@ -175,6 +192,7 @@ class PostgresConnectedAPITests(ConnectedHarness,unittest.TestCase):
         target=base+('&' if '?' in base else '?')+'options=-csearch_path%3D'+schema
         self.store=Store(target);self.prepare()
 
+    test_media_transcription_requires_owner_csrf_and_review=ConnectedAPITests.test_media_transcription_requires_owner_csrf_and_review
     test_session_model_selection_revoke_csrf_and_owner_isolation=ConnectedAPITests.test_session_model_selection_revoke_csrf_and_owner_isolation
     test_cases_retrieve_export_and_cross_account_visibility=ConnectedAPITests.test_cases_retrieve_export_and_cross_account_visibility
     test_research_api_worker_persists_cases_and_report_no_paid_model=ConnectedAPITests.test_research_api_worker_persists_cases_and_report_no_paid_model

@@ -51,7 +51,7 @@ class ResearchCases:
     def __init__(self, store):
         self.knowledge = Knowledge(store)
 
-    def save(self, owner, data, *, source_method="manual_import", fetched_at=None, transaction_guard=None, transaction_saved=None):
+    def save(self, owner, data, *, source_method="manual_import", fetched_at=None, transaction_guard=None, transaction_saved=None, provenance=None, review_required=False):
         allowed = {'account_id','title','text','source_url','platform','author','published_at','observed_at',
                    'content_kind','evidence_role','metrics','permission_confirmed','policy','document_id','expected_version'}
         require(isinstance(data,dict) and set(data)<=allowed, 'INVALID_INPUT','案例字段无效')
@@ -83,9 +83,17 @@ class ResearchCases:
                 'permission':'user_attested','source_method':source_method,'fetched_at':fetched_at,
                 'assessment':candidate_assessment(metrics,published,observed,data.get('policy')),
                 'verification':'用户提供，尚未独立核验'}
+        if data.get('document_id'):
+            prior=self.knowledge.get(owner,data['account_id'],data['document_id'])['metadata'].get('research_case',{})
+            if prior.get('provenance') and provenance is None:
+                provenance=prior['provenance']
+                case['source_method']='human_reviewed_transcript' if prior.get('review_required') else prior.get('source_method','manual_import')
+                case['fetched_at']=prior.get('fetched_at')
+        if provenance is not None:case['provenance']=provenance
+        case['review_required']=bool(review_required)
         packet = {key:data[key] for key in ('account_id','title','text','document_id','expected_version') if key in data}
         result = self.knowledge.save(owner,packet,source_type='research_case',source_url=url,
-            metadata={'research_case':case,'evidence_role':role,'retrieval_eligible':kind!='lead'},
+            metadata={'research_case':case,'evidence_role':role,'retrieval_eligible':kind!='lead' and not review_required},
             transaction_guard=transaction_guard,transaction_saved=transaction_saved)
         return result
 
@@ -147,7 +155,7 @@ class ResearchCases:
                 '内容：'+case['content_kind']+'；来源：'+safe(full['source_url'] or '用户资料，无公开链接'),
                 '作者：'+safe(case['author'] or '未知'),
                 '发布时间：'+(case['published_at'] or '未知')+'；指标观察时间：'+(case['observed_at'] or '未知'),
-                '采集时间：'+case['collected_at'], '', '| 指标 | 数值 |','| --- | --- |']
+                '采集时间：'+case['collected_at'], '校对状态：'+('机器转写待校对，暂不参与检索' if case.get('review_required') else '可用于表达研究，事实仍需核验'), '', '| 指标 | 数值 |','| --- | --- |']
             lines += ['| '+key+' | '+('未知' if value is None else str(value))+' |' for key,value in case['metrics'].items()]
             assessment = case['assessment']
             lines += ['', '筛选：'+assessment['status']+'；规则：'+str(assessment['policy']['max_age_days'])+' 天内、已知互动至少 '+str(assessment['policy']['min_interactions'])+'。',
