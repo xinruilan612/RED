@@ -119,5 +119,5 @@ test('creator abbreviated displays remain approximate and growth metrics keep th
  const html=s.eval('creatorMetricsOverview(creator)');
  assert.match(html,/1.2万（页面显示，精确值未知）/);assert.match(html,/2千（页面显示，精确值未知）/);
  assert.doesNotMatch(html,/12000|2000/);assert.match(html,/页面周期：近7日/);
- for(const [label,value] of [['涨粉数',3],['新增关注',2],['掉粉数',1],['主页访客',4]])assert.ok(html.includes(`<td>${label}</td><td>${value}</td>`));
+ for(const [label,value] of [['净涨粉',3],['新增关注',2],['取消关注',1],['主页访客',4]])assert.ok(html.includes(`<td>${label}</td><td>${value}</td>`));
 });

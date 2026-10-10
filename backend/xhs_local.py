@@ -101,7 +101,11 @@ class LocalXHS:
                 failures.append({'note_id':note_id,'reason':exc.code})
         check();after=self.identity()
         require(after['id']==expected_id,'XHS_IDENTITY_CHANGED','采集期间账号发生变化，本轮不保存')
+        from backend.creator_reader import collect_creator
+        check();creator_metrics=collect_creator(expected_id);check()
+        require(self.identity()['id']==expected_id,'XHS_IDENTITY_CHANGED','创作者页面读取期间账号发生变化，本轮不保存')
         return {'identity':identity,'notes':records,'failures':failures,'listed_notes':len(feeds),
+                'creator_metrics':creator_metrics,
                 'observed_at':datetime.now(timezone.utc).isoformat(),
                 'coverage':'仅本轮主页返回的前5篇笔记及已加载评论，非全量历史或全部评论',
                 'source_method':'local_browser_mcp','official_api':False,'source_updated_at':None}
