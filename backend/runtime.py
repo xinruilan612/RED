@@ -89,7 +89,11 @@ class Runtime:
             self.write(db,run)
         def guard():
             with self.store.connect() as db:self.jobs.guard(db,self.job)
-        report=collect(web['queries'],before_request=guard)
+        searcher=None
+        if web.get('provider','bing')!='bing' or web.get('targets',['web'])!=['web']:
+            from backend.search_providers import SearchSettings
+            searcher=lambda query:SearchSettings(self.store).search(run.owner_id,query,web.get('provider','bing'),web.get('targets',['web']))
+        report=collect(web['queries'],before_request=guard,searcher=searcher)
         self.fault('after_web_response','web_research')
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')

@@ -100,7 +100,8 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
         if not current:
             auth.throttle('session:'+request.client.host,100,60)
             token=auth.issue(previous=token); current=auth.session(token)
-        response=JSONResponse({'csrf':current['csrf'],'user':current['user'],'auth_required':True,'invite_required':bool(invite),'provider':config.public()})
+        provider=service.models.effective_public(current['owner']) if current['user'] else config.public()
+        response=JSONResponse({'csrf':current['csrf'],'user':current['user'],'auth_required':True,'invite_required':bool(invite),'provider':provider})
         return set_cookie(response,token)
 
     @app.post('/api/auth/{action}')
@@ -122,6 +123,109 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
 
     @app.get('/api/operations')
     def operations(user=Depends(logged)): return service.operations.read(user['owner'])
+
+    @app.get('/api/models')
+    def models(user=Depends(logged)): return service.models.public(user['owner'])
+
+    @app.post('/api/models/connections')
+    def save_model(data: dict,user=Depends(logged)):
+        auth.throttle('model-settings:'+user['owner'],30,3600)
+        return service.models.save(user['owner'],data)
+
+    @app.post('/api/models/default')
+    def default_model(data: dict,user=Depends(logged)):
+        return service.models.select(user['owner'],data)
+
+    @app.post('/api/models/connections/{connection_id}/delete')
+    def delete_model(connection_id: str,data: dict,user=Depends(logged)):
+        return service.models.delete(user['owner'],connection_id,data)
+
+    @app.post('/api/models/connections/{connection_id}/test')
+    def test_model(connection_id: str,data: dict,user=Depends(logged)):
+        auth.throttle('model-test:'+user['owner'],6,3600)
+        return service.models.test(user['owner'],connection_id,data)
+
+    @app.get('/api/social/connection')
+    def social_connection(account_id: str,user=Depends(logged)):
+        from backend.social_connections import SocialConnections
+        return SocialConnections(service.operations).read(user['owner'],account_id)
+
+    @app.get('/api/search/settings')
+    def search_settings(user=Depends(logged)):
+        from backend.search_providers import SearchSettings
+        return SearchSettings(store).public(user['owner'])
+
+    @app.post('/api/search/settings')
+    def save_search_settings(data: dict,user=Depends(logged)):
+        from backend.search_providers import SearchSettings
+        auth.throttle('search-settings:'+user['owner'],30,3600)
+        return SearchSettings(store).save(user['owner'],data)
+
+    @app.get('/api/research/cases')
+    def cases(account_id: str,user=Depends(logged)):
+        from backend.research_cases import ResearchCases
+        return ResearchCases(store).list(user['owner'],account_id)
+
+    @app.post('/api/research/cases')
+    def save_case(data: dict,user=Depends(logged)):
+        from backend.research_cases import ResearchCases
+        auth.throttle('case-save:'+user['owner'],40,3600)
+        result=ResearchCases(store).save(user['owner'],data)
+        result.pop('original_base64',None)
+        result.pop('versions',None)
+        return result
+
+    @app.post('/api/research/cases/import-url')
+    def import_case(data: dict,user=Depends(logged)):
+        from backend.research_cases import ResearchCases
+        from backend.sources import read_article
+        require(set(data)=={'account_id','url','evidence_role','permission_confirmed'},'INVALID_INPUT','案例导入字段无效')
+        service.knowledge.account(user['owner'],data['account_id'])
+        require(data['permission_confirmed'] is True,'INVALID_INPUT','请确认有权将这份资料用于本项目研究')
+        # The source is checked before a network request, not after collection.
+        from backend.research_access import require_readable_source
+        require_readable_source(data['url'])
+        auth.throttle('case-import:'+user['owner'],20,3600)
+        article=read_article(data['url'])
+        result=ResearchCases(store).from_article(user['owner'],data['account_id'],article,
+                 evidence_role=data['evidence_role'],permission_confirmed=True)
+        result.pop('original_base64',None)
+        result.pop('versions',None)
+        return result
+
+    @app.get('/api/research/cases/export')
+    def export_cases(account_id: str,user=Depends(logged)):
+        from backend.research_cases import ResearchCases
+        result=ResearchCases(store).export(user['owner'],account_id)
+        return Response(result['content'],media_type='text/markdown',headers={'Content-Disposition':'attachment; filename="youji-case-research.md"'})
+
+    @app.get('/api/research/jobs')
+    def research_jobs(account_id: str,user=Depends(logged)):
+        from backend.research_jobs import ResearchJobs
+        return ResearchJobs(store).list(user['owner'],account_id)
+
+    @app.post('/api/research/jobs',status_code=202)
+    def start_research(data: dict,user=Depends(logged)):
+        from backend.research_jobs import ResearchJobs
+        auth.throttle('research-job:'+user['owner'],10,3600)
+        return ResearchJobs(store).create(user['owner'],data)
+
+    @app.get('/api/research/jobs/{job_id}')
+    def get_research(job_id: str,user=Depends(logged)):
+        from backend.research_jobs import ResearchJobs
+        return ResearchJobs(store).get(user['owner'],job_id)
+
+    @app.post('/api/research/jobs/{job_id}/cancel')
+    def cancel_research(job_id: str,data: dict,user=Depends(logged)):
+        from backend.research_jobs import ResearchJobs
+        require(not data,'INVALID_INPUT','取消操作无需额外参数')
+        return ResearchJobs(store).cancel(user['owner'],job_id)
+
+    @app.get('/api/research/jobs/{job_id}/export')
+    def export_research(job_id: str,user=Depends(logged)):
+        from backend.research_jobs import ResearchJobs
+        result=ResearchJobs(store).export(user['owner'],job_id)
+        return Response(result['content'],media_type='text/markdown',headers={'Content-Disposition':'attachment; filename="youji-research-report.md"'})
 
     @app.get('/api/knowledge')
     def documents(account_id: str,user=Depends(logged)): return service.knowledge.list(user['owner'],account_id)
@@ -152,17 +256,19 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
 
     @app.post('/api/sources/search')
     def search(data: dict,user=Depends(logged)):
-        from backend.sources import search_web
-        require({'query','account_id'}<=set(data)<={'query','account_id','provider'},'INVALID_INPUT','搜索字段无效')
+        from backend.search_providers import SearchSettings
+        require({'query','account_id'}<=set(data)<={'query','account_id','provider','targets'},'INVALID_INPUT','搜索字段无效')
         service.knowledge.account(user['owner'],data['account_id'])
         auth.throttle('search:'+user['owner'],30,3600)
-        return search_web(data['query'],provider=data.get('provider','bing'))
+        return SearchSettings(store).search(user['owner'],data['query'],provider=data.get('provider','bing'),targets=data.get('targets'))
 
     @app.post('/api/sources/import')
     def import_source(data: dict,user=Depends(logged)):
         from backend.sources import read_article
         require(set(data)=={'url','account_id'},'INVALID_INPUT','来源字段无效')
         service.knowledge.account(user['owner'],data['account_id'])
+        from backend.research_access import require_readable_source
+        require_readable_source(data['url'])
         auth.throttle('fetch:'+user['owner'],30,3600)
         article=read_article(data['url'])
         return service.knowledge.save(user['owner'],{'account_id':data['account_id'],'title':article['title'],'text':article['text']},
@@ -214,7 +320,7 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
 
     @app.get('/{asset}')
     def asset(asset: str):
-        require(asset in ('style.css','app.js','operations.js','account.js','account_profile.js','auth.js','knowledge.js','windtunnel.js','windtunnel.css','trials.js','trials.css'),'RESOURCE_NOT_FOUND','页面不存在')
+        require(asset in ('style.css','app.js','operations.js','account.js','account_profile.js','auth.js','knowledge.js','windtunnel.js','windtunnel.css','trials.js','trials.css','connections.js','research.js'),'RESOURCE_NOT_FOUND','页面不存在')
         require((FRONTEND/asset).is_file(),'RESOURCE_NOT_FOUND','页面不存在')
         # Do not inherit OS/Windows registry MIME associations: nosniff browsers
         # refuse JavaScript served as text/plain even when the file is valid.

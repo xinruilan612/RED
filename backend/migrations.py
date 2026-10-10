@@ -71,6 +71,21 @@ CREATE TABLE model_connection_tests (
 ALTER TABLE model_audit ADD COLUMN billing_source TEXT NOT NULL DEFAULT 'platform';
 ALTER TABLE model_audit ADD COLUMN billing_owner TEXT NOT NULL DEFAULT '';
 ALTER TABLE model_audit ADD COLUMN connection_id TEXT;
+'''), (7, '''
+CREATE TABLE search_connections (
+ owner TEXT PRIMARY KEY,secret TEXT NOT NULL,enabled INTEGER NOT NULL,
+ day_limit INTEGER NOT NULL,version INTEGER NOT NULL);
+CREATE TABLE search_requests (
+ id TEXT PRIMARY KEY,owner TEXT NOT NULL,created_at DOUBLE PRECISION NOT NULL);
+CREATE INDEX search_requests_budget ON search_requests(owner,created_at);
+CREATE TABLE research_jobs (
+ id TEXT PRIMARY KEY,owner TEXT NOT NULL,account_id TEXT NOT NULL,
+ key TEXT NOT NULL,fingerprint TEXT NOT NULL,status TEXT NOT NULL,
+ payload TEXT NOT NULL,token TEXT,lease_until DOUBLE PRECISION,
+ created_at DOUBLE PRECISION NOT NULL,updated_at DOUBLE PRECISION NOT NULL,
+ UNIQUE(owner,key));
+CREATE INDEX research_jobs_ready ON research_jobs(status,lease_until);
+CREATE INDEX research_jobs_scope ON research_jobs(owner,account_id,created_at);
 '''))
 
 

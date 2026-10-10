@@ -44,6 +44,7 @@ function showWebsiteUser(session){
  document.querySelector('[data-page="windtunnel"]').hidden=!session.auth_required;
  if(!session.auth_required)return;
  document.getElementById('websiteUser').hidden=false;
+ for(const id of ['connectionsNav','modelsNav','researchNav'])document.getElementById(id).hidden=false;
  document.getElementById('libraryNav').hidden=false;document.getElementById('knowledgeOption').hidden=false;
  document.getElementById('websiteUsername').textContent=session.user.username;
  document.getElementById('materialFileBox').hidden=false;

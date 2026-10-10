@@ -176,12 +176,12 @@ class DemoWebTests(unittest.TestCase):
                 if 'data-page' in attrs:self.pages.append(attrs['data-page'])
         parsed=Elements();parsed.feed(html)
         self.assertEqual(len(parsed.ids),len(set(parsed.ids)))
-        self.assertEqual(parsed.pages,['overview','accounts','library','trends','trials','windtunnel','studio','publish','metrics','memory'])
+        self.assertEqual(parsed.pages,['overview','accounts','connections','models','research','library','trends','trials','windtunnel','studio','publish','metrics','memory'])
         status,script=self.request('GET','/operations.js')
         self.assertEqual(status,200);self.assertIn('/api/operations',script)
 
     def test_static_assets_and_unknown_routes(self):
-        for path in ('/','/app.js','/style.css','/account_profile.js','/trials.js','/trials.css'):
+        for path in ('/','/app.js','/style.css','/connections.js','/research.js','/account_profile.js','/trials.js','/trials.css'):
             status,body=self.request('GET',path);self.assertEqual(status,200);self.assertTrue(body)
         status,html=self.request('GET','/')
         for label in ('协作流程','补充真实素材','保存新版本并等待复审','运行记录','模拟运行'):

@@ -30,6 +30,9 @@ function renderOperations(){
  if(currentPage==='trends')renderTrends();
  if(currentPage==='trials')renderTrials();
  if(currentPage==='library')renderLibrary();
+ if(currentPage==='models')renderModelSettings();
+ if(currentPage==='connections')renderConnections();
+ if(currentPage==='research')renderResearch();
  if(currentPage==='windtunnel')renderWindtunnel();
  if(currentPage==='publish')renderPublications();
  if(currentPage==='metrics')renderMetrics();

@@ -8,16 +8,22 @@ from backend.knowledge import tokens
 
 def selection(value, mode):
     if value is None: return {'enabled':False}
-    require(isinstance(value,dict) and set(value)=={'enabled','queries'} and type(value['enabled']) is bool,
+    require(isinstance(value,dict) and {'enabled','queries'}<=set(value)<={'enabled','queries','provider','targets'} and type(value['enabled']) is bool,
             'INVALID_INPUT','联网调查设置无效')
     queries=value['queries']
     require(isinstance(queries,list) and len(queries)<=2 and all(isinstance(q,str) and 2<=len(q.strip())<=120 for q in queries),
             'INVALID_INPUT','联网调查最多填写两个搜索词，每个 2–120 字')
     require(not value['enabled'] or (mode=='live' and queries),'INVALID_INPUT','请先选择真实 AI 并填写搜索词；模拟模式不联网')
-    return {'enabled':value['enabled'],'queries':list(dict.fromkeys(q.strip() for q in queries)),'status':'pending'}
+    from backend.search_providers import target_domains
+    provider=value.get('provider','bing');targets=value.get('targets',['web'])
+    require(provider in ('bing','wikipedia','baidu'),'INVALID_INPUT','搜索服务无效')
+    target_domains(targets)
+    require(provider!='wikipedia' or targets==['web'],'INVALID_INPUT','百科搜索不支持平台范围')
+    return {'enabled':value['enabled'],'queries':list(dict.fromkeys(q.strip() for q in queries)),
+            'provider':provider,'targets':targets,'status':'pending'}
 
 
-def collect(queries, before_request=lambda:None):
+def collect(queries, before_request=lambda:None, searcher=None):
     report={'status':'insufficient','queries':queries,'searches':[],'reads':[],'sources':[],
             'searched_at':datetime.now(timezone.utc).isoformat(),'model_calls':0,
             'limits':{'searches':2,'reads':6,'excerpt_chars':400},
@@ -26,7 +32,7 @@ def collect(queries, before_request=lambda:None):
     for query in queries[:2]:
         before_request()
         try:
-            result=sources.search_web(query)
+            result=(searcher or sources.search_web)(query)
             rows=result['results'][:8]
             report['searches'].append({'query':query,'provider':result['provider'],'effective_query':result.get('effective_query',query),'results':rows,'error':None})
             for row in rows:
@@ -39,6 +45,8 @@ def collect(queries, before_request=lambda:None):
         if len(report['sources'])>=3: break
         before_request()
         try:
+            from backend.research_access import require_readable_source
+            require_readable_source(candidate['url'])
             article=sources.read_article(candidate['url'])
             body=article['text'];matched=wanted & set(tokens(body))
             require(matched and not any(p in body[:600] for p in ('请完成安全验证','访问过于频繁','请输入验证码')),

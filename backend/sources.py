@@ -40,6 +40,8 @@ def fetch_public(url, maximum=1_500_000):
     """Resolve once per hop, connect to that IP, validate TLS against original host."""
     for _ in range(4):
         url=public_url(url);p=urlsplit(url)
+        from backend.research_access import require_readable_source
+        require_readable_source(url)
         port=p.port or (443 if p.scheme=='https' else 80)
         connection=None
         try:
@@ -118,6 +120,8 @@ class Article(HTMLParser):
 
 def read_article(url, fetch=None):
     url=public_url(url);parsed=urlsplit(url)
+    from backend.research_access import require_readable_source
+    require_readable_source(url)
     if fetch is None and parsed.scheme=='https' and parsed.netloc=='zh.wikipedia.org' and parsed.path.startswith('/wiki/'):
         response=fetch_search('https://zh.wikipedia.org/w/api.php?'+urlencode(dict(action='query',prop='extracts',explaintext='1',titles=unquote(parsed.path[6:]),format='json',redirects='1')))
         try:
