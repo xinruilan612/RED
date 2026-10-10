@@ -173,6 +173,14 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
         from backend.xhs_sync import XHSSync
         return XHSSync(store).comments(user['owner'],account_id,note_id,offset)
 
+    @app.post('/api/social/sync/import-case')
+    def import_social_sync_case(data: dict,user=Depends(logged)):
+        from backend.xhs_case_import import XHSCaseImport
+        auth.throttle('xhs-import-case:'+user['owner'],40,3600)
+        result=XHSCaseImport(store).save(user['owner'],data)
+        result.pop('versions',None)
+        return result
+
     @app.post('/api/social/sync/control')
     def control_social_sync(data: dict,user=Depends(logged)):
         from backend.xhs_sync import XHSSync

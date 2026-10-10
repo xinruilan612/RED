@@ -69,3 +69,7 @@ test('old comment response cannot write after account switch',async()=>{
  const pending=s.eval("loadSyncComments('mine','n',button,connectionLoad)");s.sandbox.activeAccountId='other';resolve({items:[{content:'OLD',first_seen:1,last_seen:2}],next_offset:null});await pending;
  assert.equal(s.sandbox.button.nextElementSibling.innerHTML,'');
 });
+test('note case import requires confirmation and binds selected account and note',async()=>{
+ const s=setup();await s.eval("importSyncCase('mine','n')");assert.equal(s.calls.length,0);
+ s.sandbox.window.confirm=()=>true;await s.eval("importSyncCase('mine','n')");assert.equal(s.calls[0][0],'/api/social/sync/import-case');assert.equal(s.calls[0][1],'POST');assert.equal(s.calls[0][2].account_id,'mine');assert.equal(s.calls[0][2].note_id,'n');assert.equal(s.calls[0][2].permission_confirmed,true);
+});
