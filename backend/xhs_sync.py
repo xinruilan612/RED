@@ -6,6 +6,10 @@ verification, and partial comment coverage is never interpreted as deletion.
 import hashlib
 import json
 import time
+import math
+import re
+from datetime import date, datetime, timezone
+from urllib.parse import urlsplit, urlunsplit
 from uuid import uuid4
 from backend.accounts import find_account
 from backend.contracts import DomainError, require
@@ -14,6 +18,81 @@ from backend.xhs_local import LocalXHS
 
 
 def encoded(value):return json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(',',':'))
+
+
+CREATOR_COUNTS=('exposure','views','likes','favorites','comments','shares','followers','new_followers','profile_visits',
+                'followers_gained','follows_added','unfollows','profile_visitors')
+CREATOR_RATES=('cover_ctr','video_completion_rate','avg_watch_seconds','avg_view_duration','total_watch_seconds')
+
+
+def creator_snapshot(raw,source_id):
+    """Validate the optional channel independently; never discard comment data."""
+    empty={'status':'unavailable','observed_at':None,'source_updated_at':None,'source_method':'creator_browser_dom',
+           'source_id':source_id,'official_api':False,'account':None,'notes':[],'error':None}
+    if raw is None:return empty
+    try:
+        require(isinstance(raw,dict),'XHS_CREATOR_RESPONSE','创作者数据格式无效')
+        status=raw.get('status')
+        require(status in ('synced','partial','failed','unavailable'),'XHS_CREATOR_RESPONSE','创作者状态无效')
+        observed=raw.get('observed_at')
+        if observed is not None:
+            require(isinstance(observed,str) and len(observed)<=50,'XHS_CREATOR_RESPONSE','观测时间无效')
+            parsed=datetime.fromisoformat(observed.replace('Z','+00:00'))
+            require(parsed.tzinfo is not None and parsed<=datetime.now(timezone.utc),'XHS_CREATOR_RESPONSE','观测时间无效')
+            observed=parsed.astimezone(timezone.utc).isoformat()
+        error=raw.get('error')
+        error=error if isinstance(error,str) and re.fullmatch(r'[A-Z][A-Z0-9_]{0,79}',error) else None
+        result={**empty,'status':status,'observed_at':observed,'error':error}
+        if status in ('failed','unavailable'):return result
+        require(raw.get('source_id')==source_id,'XHS_IDENTITY_CHANGED','创作者身份不匹配')
+        require(observed is not None,'XHS_CREATOR_RESPONSE','缺少观测时间')
+        creator_id=raw.get('creator_account_id')
+        require(creator_id is None or isinstance(creator_id,str) and re.fullmatch(r'[A-Za-z0-9_-]{1,100}',creator_id),'XHS_CREATOR_RESPONSE','创作者账号标识无效')
+        result['creator_account_id']=creator_id
+        def display(value,maximum=100):
+            return value if isinstance(value,str) and len(value)<=maximum else None
+        def displays(values):
+            if not isinstance(values,dict):return {}
+            return {key:display(values[key],120) for key in CREATOR_COUNTS+CREATOR_RATES if key in values}
+        def metrics(values):
+            require(isinstance(values,dict),'XHS_CREATOR_RESPONSE','指标结构无效')
+            clean={k:(values.get(k) if type(values.get(k)) is int and (-10**12 if k=='followers_gained' else 0)<=values[k]<=10**12 else None) for k in CREATOR_COUNTS}
+            for key in CREATOR_RATES:
+                value=values.get(key);maximum=100 if key in ('cover_ctr','video_completion_rate') else 10**12
+                clean[key]=value if type(value) in (int,float) and math.isfinite(value) and 0<=value<=maximum else None
+            return clean
+        account=raw.get('account')
+        if account is not None:
+            require(isinstance(account,dict),'XHS_CREATOR_RESPONSE','账号周期结构无效')
+            period={key:account.get(key) for key in ('period_start','period_end')}
+            for value in period.values():
+                if value is not None:
+                    require(isinstance(value,str) and re.fullmatch(r'\d{4}-\d{2}-\d{2}',value),'XHS_CREATOR_RESPONSE','周期日期无效')
+                    date.fromisoformat(value)
+            require(not all(period.values()) or period['period_start']<=period['period_end'],'XHS_CREATOR_RESPONSE','周期范围无效')
+            days=account.get('period_days')
+            require(days is None or type(days) is int and 1<=days<=3660,'XHS_CREATOR_RESPONSE','周期天数无效')
+            result['account']={**period,'period_days':days,'period_display':display(account.get('period_display')),
+                               'metrics':metrics(account.get('metrics',{})),'metric_displays':displays(account.get('metric_displays'))}
+        notes=raw.get('notes',[])
+        require(isinstance(notes,list) and len(notes)<=100,'XHS_CREATOR_RESPONSE','笔记数据超限')
+        seen=set()
+        for note in notes:
+            require(isinstance(note,dict) and isinstance(note.get('id'),str) and re.fullmatch(r'[A-Za-z0-9_-]{1,200}',note['id']),'XHS_CREATOR_RESPONSE','笔记标识无效')
+            if note['id'] in seen:continue
+            seen.add(note['id'])
+            url=note.get('source_url') or 'https://www.xiaohongshu.com/explore/'+note['id']
+            require(isinstance(url,str) and len(url)<=2048,'XHS_CREATOR_RESPONSE','来源链接无效')
+            parsed=urlsplit(url)
+            require(parsed.scheme=='https' and parsed.netloc in ('www.xiaohongshu.com','creator.xiaohongshu.com'),'XHS_CREATOR_RESPONSE','来源链接无效')
+            result['notes'].append({'id':note['id'],'title':display(note.get('title'),500),
+                'published_display':display(note.get('published_display')),
+                'metrics':metrics(note.get('metrics',{})),'metric_displays':displays(note.get('metric_displays')),
+                'source_url':urlunsplit((parsed.scheme,parsed.netloc,parsed.path,'',''))})
+        require(result['account'] is not None or bool(result['notes']),'XHS_CREATOR_RESPONSE','创作者结果为空')
+        return result
+    except (DomainError,ValueError,TypeError) as exc:
+        return {**empty,'status':'failed','error':exc.code if isinstance(exc,DomainError) else 'XHS_CREATOR_RESPONSE'}
 
 
 class XHSSync:
@@ -43,10 +122,14 @@ class XHSSync:
             if not row:return {'bound':False,'enabled':False,'status':'not_connected'}
             counts={kind:db.execute('SELECT COUNT(*) FROM xhs_sync_entities WHERE owner=? AND account_id=? AND kind=?',(owner,account_id,kind)).fetchone()[0] for kind in ('note','comment')}
             latest=db.execute('SELECT payload FROM xhs_sync_rounds WHERE owner=? AND account_id=? ORDER BY observed_at DESC LIMIT 1',(owner,account_id)).fetchone()
+            latest=json.loads(latest[0]) if latest else None
+            creator=db.execute("SELECT payload FROM xhs_sync_entities WHERE owner=? AND account_id=? AND kind='creator_account' AND id='snapshot'",(owner,account_id)).fetchone()
             return {'bound':True,'source_id':row[0],'interval_s':row[1],'enabled':bool(row[2]),'status':row[3],
                     'next_at':row[4] if row[2] else None,'last_at':row[5],'error':row[6],'counts':counts,
-                    'latest_round':json.loads(latest[0]) if latest else None,'official_api':False,'realtime_push':False,
-                    'limitation':'本机浏览器定时读取；前5篇笔记、每篇最多100条已加载评论，不保证全量。曝光/阅读暂无来源。'}
+                    'latest_round':latest,'official_api':False,'realtime_push':False,
+                    'creator_metrics':latest.get('creator_metrics') if latest else None,
+                    'creator_last_success':json.loads(creator[0]) if creator else None,
+                    'limitation':'本机浏览器定时读取；前5篇笔记、每篇最多100条已加载评论，不保证全量。创作者流量另列来源与周期，缺失保留未知。'}
 
     def control(self,owner,account_id,action):
         require(action in ('pause','resume','refresh'),'INVALID_INPUT','同步操作无效')
@@ -67,7 +150,9 @@ class XHSSync:
         find_account(Operations(self.store).read(owner),account_id)
         with self.store.connect() as db:
             rows=db.execute("SELECT payload FROM xhs_sync_entities WHERE owner=? AND account_id=? AND kind='note' ORDER BY last_seen DESC LIMIT 30",(owner,account_id)).fetchall()
-        return [json.loads(r[0]) for r in rows]
+            creator=db.execute("SELECT id,payload FROM xhs_sync_entities WHERE owner=? AND account_id=? AND kind='creator_note'",(owner,account_id)).fetchall()
+        creator={r[0]:json.loads(r[1]) for r in creator}
+        return [{**json.loads(r[0]),'creator_metrics':creator.get(json.loads(r[0])['id'])} for r in rows]
 
     def reconnect(self,owner,account_id):
         find_account(Operations(self.store).read(owner),account_id)
@@ -103,8 +188,9 @@ class XHSSync:
 
     @staticmethod
     def _guard(db,job):
-        row=db.execute('SELECT enabled,token,lease_until FROM xhs_sync_links WHERE owner=? AND account_id=?',(job['owner'],job['account'])).fetchone()
+        row=db.execute('SELECT enabled,token,lease_until,source_id FROM xhs_sync_links WHERE owner=? AND account_id=?',(job['owner'],job['account'])).fetchone()
         require(row and row[0] and row[1]==job['token'] and row[2]>time.time(),'XHS_STOPPED','同步已暂停或租约已失效')
+        require(row[3]==job['source'],'XHS_IDENTITY_CHANGED','账号绑定已变化，不保存迟到数据')
 
     def _heartbeat(self,job):
         with self.store.connect() as db:
@@ -135,21 +221,27 @@ class XHSSync:
         require(result['identity']['id']==job['source'],'XHS_IDENTITY_CHANGED','返回账号与绑定不符')
         require(bool(result['notes']) or not result['failures'],'XHS_RESPONSE','本轮所有笔记读取失败，暂停等待检查')
         now=time.time();stats={'new_notes':0,'changed_notes':0,'new_comments':0,'changed_comments':0}
+        creator=creator_snapshot(result.get('creator_metrics'),job['source'])
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE');self._guard(db,job)
             def save(kind,identity,value):
                 payload=encoded(value);digest=hashlib.sha256(payload.encode()).hexdigest()
                 old=db.execute('SELECT hash FROM xhs_sync_entities WHERE owner=? AND account_id=? AND kind=? AND id=?',(job['owner'],job['account'],kind,identity)).fetchone()
-                if not old or old[0]!=digest:stats[('new_' if not old else 'changed_')+kind+'s']+=1
+                if kind in ('note','comment') and (not old or old[0]!=digest):stats[('new_' if not old else 'changed_')+kind+'s']+=1
                 db.execute('INSERT INTO xhs_sync_entities VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(owner,account_id,kind,id) DO UPDATE SET payload=excluded.payload,hash=excluded.hash,last_seen=excluded.last_seen',
                            (job['owner'],job['account'],kind,identity,payload,digest,now,now))
             for note in result['notes']:
                 save('note',note['id'],{k:v for k,v in note.items() if k!='comments'})
                 for comment in note['comments']:save('comment',note['id']+':'+comment['id'],{**comment,'note_id':note['id']})
+            if creator['status'] in ('synced','partial'):
+                save('creator_account','snapshot',creator)
+                for note in creator['notes']:
+                    save('creator_note',note['id'],{**note,'observed_at':creator['observed_at'],'source_updated_at':None,
+                        'source_method':'creator_browser_dom','source_id':job['source'],'official_api':False})
             summary={**stats,'notes_read':len(result['notes']),'comments_read':sum(len(n['comments']) for n in result['notes']),
                      'failures':result['failures'],'observed_at':result['observed_at'],'source_updated_at':None,
                      'source_method':'local_browser_mcp','coverage':result['coverage'],'official_api':False}
-            db.execute('INSERT INTO xhs_sync_rounds VALUES(?,?,?,?,?)',(str(uuid4()),job['owner'],job['account'],now,encoded({'summary':summary,'notes':result['notes']})))
-            partial=bool(result['failures'])
+            db.execute('INSERT INTO xhs_sync_rounds VALUES(?,?,?,?,?)',(str(uuid4()),job['owner'],job['account'],now,encoded({'summary':summary,'notes':result['notes'],'creator_metrics':creator})))
+            partial=bool(result['failures']) or creator['status'] in ('partial','failed')
             db.execute('UPDATE xhs_sync_links SET status=?,last_at=?,next_at=?,error=NULL,failures=0,token=NULL,lease_until=NULL WHERE owner=? AND account_id=?',
                        ('partial' if partial else 'synced',now,now+job['interval'],job['owner'],job['account']))
