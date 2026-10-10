@@ -35,3 +35,31 @@ test('successful save clears key input',async()=>{
  const s=setup(),fields={id:'',version:'',provider:'vendor',label:'name',model:'model',base_url:'https://example.com',api_key:'PRIVATE',rate_usd_per_million:'2',run_budget_usd:'1',day_budget_usd:'5'};
  const form=s.element('modelConnectionForm');form.elements=Object.fromEntries(Object.entries(fields).map(([k,v])=>[k,{value:v}]));s.eval('bindModelForm([])');await form.onsubmit({preventDefault(){}});assert.equal(form.elements.api_key.value,'');
 });
+
+test('main form keeps credentials and endpoint visible while budgets stay collapsed',()=>{
+ const s=setup();const html=s.eval("modelConnectionForm([{id:'custom',name:'自定义',base_url:''}])");
+ const [main,advanced]=html.split('<details>');
+ for(const name of ['provider','model','api_key','base_url'])assert.match(main,new RegExp('name="'+name+'"'));
+ assert.doesNotMatch(main,/name="rate_usd_per_million"|name="run_budget_usd"/);
+ assert.match(advanced,/name="run_budget_usd"[^>]*value="1"/);
+ assert.match(advanced,/name="protocol"/);assert.match(advanced,/name="json_mode"/);
+ assert.doesNotMatch(html,/<details open/);assert.match(html,/保存和切换模型均不发起模型调用/);
+});
+test('switching provider clears key and model and resets advanced protocol',()=>{
+ const s=setup(),form=s.element('modelConnectionForm');
+ form.elements=Object.fromEntries(Object.entries({provider:'qwen',base_url:'old',model:'old-model',api_key:'PRIVATE',protocol:'responses'}).map(([k,v])=>[k,{value:v}]));form.elements.json_mode={checked:true};
+ s.eval("bindModelForm([{id:'qwen',base_url:'https://dashscope.aliyuncs.com/compatible-mode/v1',docs:'https://example.com'}])");form.elements.provider.onchange();
+ assert.equal(form.elements.api_key.value,'');assert.equal(form.elements.api_key.required,true);assert.equal(form.elements.model.value,'');assert.equal(form.elements.protocol.value,'');assert.equal(form.elements.json_mode.checked,false);
+});
+test('save sends only selected protocol and opted-in JSON mode without probing',async()=>{
+ const s=setup(),fields={id:'',version:'',provider:'custom',label:'',model:'gateway-model',base_url:'https://example.com/v1/responses',api_key:' KEY ',rate_usd_per_million:'',run_budget_usd:'',day_budget_usd:'',protocol:'responses'};
+ const form=s.element('modelConnectionForm');form.elements=Object.fromEntries(Object.entries(fields).map(([k,v])=>[k,{value:v}]));form.elements.json_mode={checked:false};s.eval('bindModelForm([])');await form.onsubmit({preventDefault(){}});
+ assert.equal(s.calls.length,1);assert.equal(s.calls[0][0],'/api/models/connections');assert.equal(s.calls[0][2].api_key,'KEY');assert.equal(s.calls[0][2].protocol,'responses');assert.equal(s.calls[0][2].json_mode,false);assert.equal('run_budget_usd' in s.calls[0][2],false);
+});
+
+ test('model candidates are editable and escape remote catalog values',()=>{
+ const s=setup();
+ const html=s.eval("modelConnectionForm([{id:'qwen',name:'Qwen',models:['qwen-plus','<unsafe>']}])");
+ assert.match(html,/list="modelSuggestions"/);assert.match(html,/<option value="qwen-plus">/);
+ assert.ok(!html.includes('<unsafe>'));assert.match(html,/自由填写其他模型 ID/);
+ });

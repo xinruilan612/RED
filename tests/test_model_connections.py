@@ -108,7 +108,7 @@ class ConnectionTests(unittest.TestCase):
         self.assertEqual(self.models.save('alice',data)['version'],2)
 
     def test_bad_urls_and_budgets_rejected(self):
-        for url in ('http://api.example.com','https://127.0.0.1','https://169.254.169.254','https://localhost','https://u:p@api.example.com','https://api.example.com?a=b','https://api.example.com:8080','https://api.example.com/v1/chat/completions'):
+        for url in ('http://api.example.com','https://127.0.0.1','https://169.254.169.254','https://localhost','https://u:p@api.example.com','https://api.example.com?a=b','https://api.example.com:8080'):
             with self.subTest(url=url),self.assertRaises(DomainError):base_url(url)
         for rate in (True,float('nan'),float('inf'),0,-1):
             with self.subTest(rate=rate),self.assertRaises(DomainError):self.save(rate_usd_per_million=rate)
@@ -139,7 +139,7 @@ class ConnectionTests(unittest.TestCase):
             value,tokens,meta=ConnectedModel(item,'user-key').complete_result([{'role':'user','content':'JSON please'}])
         self.assertEqual(request.call_args.args[0],'https://api.openai.com/v1/responses')
         payload=request.call_args.args[2]
-        self.assertEqual(payload['text']['format'],{'type':'json_object'})
+        self.assertNotIn('text',payload)
         self.assertFalse(payload['store']);self.assertIn('input',payload);self.assertNotIn('messages',payload)
         self.assertEqual((tokens,meta['input_tokens'],meta['output_tokens']),(19,10,9))
         for invalid in ({**response,'status':'incomplete'},{**response,'usage':None},
