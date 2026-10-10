@@ -114,10 +114,33 @@ class ResearchCases:
             chosen = set(document_ids)
             require(chosen<=set(doc['id'] for doc in docs),'RESOURCE_NOT_FOUND','案例不可访问或已失效')
             docs = [doc for doc in docs if doc['id'] in chosen]
-        lines = ['# '+safe(title),'','导出范围：当前账号选定的有效案例，共 '+str(len(docs))+' 条；不是全平台完整集合。',
+        return self._render([self.knowledge.get(owner,account_id,doc['id']) for doc in docs],title,
+                            '当前账号选定的有效案例')
+
+    def export_versions(self, owner, account_id, references, title='案例研究文档'):
+        """Export exact saved versions; later edits/removal cannot rewrite a job."""
+        title=validate_text(title,'文档标题',200)
+        self.knowledge.account(owner,account_id)
+        require(isinstance(references,list) and len(references)<=100,'INVALID_INPUT','历史案例列表无效')
+        docs=[];seen=set()
+        for ref in references:
+            require(isinstance(ref,dict) and set(ref)=={'document_id','version'} and
+                    isinstance(ref['document_id'],str) and ref['document_id'] and
+                    type(ref['version']) is int and ref['version']>0,'INVALID_INPUT','历史案例引用需包含资料ID与正整数版本')
+            key=(ref['document_id'],ref['version'])
+            if key in seen:continue
+            seen.add(key)
+            doc=self.knowledge.get_version(owner,account_id,*key)
+            require(doc['source_type']=='research_case' and isinstance(doc['metadata'].get('research_case'),dict),
+                    'INVALID_INPUT','指定版本不是研究案例')
+            docs.append(doc)
+        return self._render(docs,title,'本次任务保存的冻结案例版本（保留已移除资料用于历史回查，不参与新检索）')
+
+    @staticmethod
+    def _render(docs, title, scope):
+        lines = ['# '+safe(title),'','导出范围：'+scope+'，共 '+str(len(docs))+' 条；不是全平台完整集合。',
                  '指标未独立核验；未知保留为空。表达参考与商品事实分开，不移植他人体验或产品功效。','']
-        for doc in docs:
-            full = self.knowledge.get(owner,account_id,doc['id'])
+        for full in docs:
             case = full['metadata']['research_case']
             lines += ['## '+safe(full['title']),'',f"资料 ID：{full['id']}；版本：{full['version']}",
                 '类别：'+('商品事实（待核验）' if case['evidence_role']=='product_fact' else '表达参考'),

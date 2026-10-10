@@ -132,10 +132,12 @@ class Knowledge:
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             if transaction_guard is not None: transaction_guard(db)
-            row=db.execute('SELECT version,status FROM knowledge_documents WHERE id=? AND owner=? AND account_id=?',(identity,owner,account)).fetchone()
+            row=db.execute('SELECT version,status,source_type FROM knowledge_documents WHERE id=? AND owner=? AND account_id=?',(identity,owner,account)).fetchone()
             if data.get('document_id'):
                 require(row and row[1]=='active','RESOURCE_NOT_FOUND','资料不可访问')
                 require(type(data.get('expected_version')) is int and data['expected_version']==row[0],'VERSION_CONFLICT','资料已更新，请刷新')
+                require(row[2]!='research_case' or (source_type=='research_case' and isinstance(metadata,dict) and isinstance(metadata.get('research_case'),dict)),
+                        'CASE_EDIT_REQUIRED','研究案例必须使用案例专用编辑接口更新，以保留来源、资料用途和未读线索限制')
             else:
                 count=db.execute("SELECT COUNT(*) FROM knowledge_documents WHERE owner=? AND account_id=? AND status='active'",(owner,account)).fetchone()[0]
                 require(count<100,'QUOTA_EXCEEDED','每账号首版最多 100 份有效资料')
@@ -170,6 +172,23 @@ class Knowledge:
             parts=db.execute('SELECT id,page,offset_start,text FROM knowledge_chunks WHERE document_id=? AND version=? ORDER BY page,offset_start',(identity,row[1])).fetchall()
             versions=[dict(version=r[0],metadata=json.loads(r[1])) for r in db.execute('SELECT version,metadata FROM knowledge_versions WHERE document_id=? ORDER BY version DESC',(identity,))]
         return dict(id=identity,title=row[0],version=row[1],source_type=row[2],source_url=row[3],fingerprint=v[0],metadata=json.loads(v[1]),filename=v[2],versions=versions,chunks=[dict(zip(('id','page','offset','text'),p)) for p in parts])
+
+    def get_version(self, owner, account, identity, version):
+        """Read an immutable owned version for historical reports, even if removed.
+
+        This is not retrieval: deleted documents remain excluded from new RAG.
+        Return neither original file bytes nor unrelated version contents.
+        """
+        self.account(owner,account)
+        require(type(version) is int and version>0,'INVALID_INPUT','资料版本必须为正整数')
+        with self.store.connect() as db:
+            row=db.execute('SELECT v.fingerprint,v.metadata,v.filename FROM knowledge_versions v JOIN knowledge_documents d ON d.id=v.document_id WHERE d.owner=? AND d.account_id=? AND d.id=? AND v.version=?',(owner,account,identity,version)).fetchone()
+            require(row,'RESOURCE_NOT_FOUND','资料版本不可访问')
+            parts=db.execute('SELECT id,page,offset_start,text FROM knowledge_chunks WHERE document_id=? AND version=? ORDER BY page,offset_start',(identity,version)).fetchall()
+        metadata=json.loads(row[1])
+        return dict(id=identity,title=metadata['title'],version=version,source_type=metadata['source_type'],
+                    source_url=metadata['source_url'],fingerprint=row[0],metadata=metadata,filename=row[2],
+                    chunks=[dict(zip(('id','page','offset','text'),part)) for part in parts])
 
     def delete(self, owner, account, identity, version):
         self.account(owner,account)

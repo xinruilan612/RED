@@ -74,6 +74,42 @@ class ResearchCaseTests(unittest.TestCase):
         self.cases.knowledge.delete(self.owner,self.account,doc['id'],2)
         self.assertEqual(self.cases.export(self.owner,self.account)['count'],0)
 
+    def test_generic_update_cannot_upgrade_lead_or_erase_case_role(self):
+        for kind,role in (('lead','expression_reference'),('text','product_fact')):
+            packet=self.packet(content_kind=kind,evidence_role=role)
+            packet['text']+=' '+kind
+            doc=self.cases.save(self.owner,packet)
+            with self.assertRaises(DomainError) as caught:
+                self.cases.knowledge.save(self.owner,dict(account_id=self.account,title='仅改标题',
+                    text=packet['text'],document_id=doc['id'],expected_version=1))
+            self.assertEqual(caught.exception.code,'CASE_EDIT_REQUIRED')
+            unchanged=self.cases.knowledge.get(self.owner,self.account,doc['id'])
+            self.assertEqual(unchanged['version'],1)
+            self.assertEqual(unchanged['source_type'],'research_case')
+            self.assertEqual(unchanged['metadata']['evidence_role'],role)
+            self.assertEqual(unchanged['metadata']['retrieval_eligible'],kind!='lead')
+            # The typed case endpoint remains editable without changing the category.
+            packet.update(document_id=doc['id'],expected_version=1,title='案例专用修订')
+            updated=self.cases.save(self.owner,packet)
+            self.assertEqual(updated['version'],2)
+            self.assertEqual(updated['metadata']['research_case']['content_kind'],kind)
+
+    def test_frozen_report_survives_edits_and_removal_with_owner_isolation(self):
+        packet=self.packet();doc=self.cases.save(self.owner,packet)
+        refs=[{'document_id':doc['id'],'version':1}]
+        before=self.cases.export_versions(self.owner,self.account,refs)
+        packet.update(document_id=doc['id'],expected_version=1,title='修订后不同标题',text='新的材料不应改变旧研究报告。')
+        self.cases.save(self.owner,packet)
+        self.cases.knowledge.delete(self.owner,self.account,doc['id'],2)
+        self.assertEqual(self.cases.export_versions(self.owner,self.account,refs),before)
+        self.assertIn('冻结案例版本',before['content'])
+        self.assertNotIn('修订后不同标题',before['content'])
+        self.assertTrue(Knowledge(self.store,use_configured_embeddings=False).retrieve(self.owner,self.account,'护肤保湿乳液')['insufficient'])
+        other=Operations(self.store).read('other')['accounts'][0]['id']
+        with self.assertRaises(DomainError):self.cases.export_versions('other',other,refs)
+        with self.assertRaises(DomainError):self.cases.export_versions(self.owner,self.account,[{'document_id':doc['id'],'version':999}])
+        self.assertNotIn('original_base64',self.cases.knowledge.get_version(self.owner,self.account,doc['id'],1))
+
     def test_transaction_hooks_roll_back_document_and_versions(self):
         def reject(db):
             raise DomainError('CANCELLED','任务已取消')
