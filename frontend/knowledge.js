@@ -70,7 +70,7 @@ async function refreshRagJobs(account,request){
  const jobs=await api('/api/research/jobs?account_id='+encodeURIComponent(account));
  if(request!==libraryLoad||account!==activeAccountId||currentPage!=='library')return;
  const names={queued:'等待读取',running:'正在搜索与核对',done:'收录完成',partial:'部分完成',failed:'没有收录到资料',interrupted:'读取中断',cancelled:'已取消'};
- $('ragJobResult').innerHTML=jobs.slice(0,3).map(j=>`<article class="document-row"><div><b>${esc(j.queries.join(' / '))}</b><p class="helper">${esc(names[j.status]||j.status)} · 本次收录 ${j.documents.length} 篇${j.error?' · '+esc(j.error):''}</p></div>${['queued','running'].includes(j.status)?'<span>处理中…</span>':`<a class="button quiet" href="/api/research/jobs/${encodeURIComponent(j.id)}/export">导出本次资料</a>`}</article>`).join('');
+ $('ragJobResult').innerHTML=jobs.slice(0,3).map(j=>`<article class="document-row"><div><b>${esc(j.queries.join(' / '))}</b><p class="helper">${esc(names[j.status]||j.status)} · 本次收录 ${j.documents.length} 篇${j.error?' · '+esc(ragErrorText(j.error)):''}</p></div>${['queued','running'].includes(j.status)?'<span>处理中…</span>':`<a class="button quiet" href="/api/research/jobs/${encodeURIComponent(j.id)}/export">导出本次资料</a>`}</article>`).join('');
  if(jobs.some(j=>['queued','running'].includes(j.status)))setTimeout(()=>refreshRagJobs(account,request).catch(error),4000);
  else if(ragPendingAccounts.delete(account))await renderLibrary();
 }
@@ -79,4 +79,9 @@ function bindRagSearch(account,request){
  $('ragSearchForm').onsubmit=async e=>{e.preventDefault();const b=e.submitter;b.disabled=true;
  try{await api('/api/research/jobs','POST',{account_id:account,queries:[$('ragQuery').value.trim()],provider:'xhs_local',targets:['xiaohongshu'],evidence_role:'expression_reference',permission_confirmed:true,key:crypto.randomUUID(),style_filters:{min_likes:Number($('ragLikes').value),min_favorites:Number($('ragFavorites').value),sort_by:$('ragSort').value}});ragPendingAccounts.add(account);await refreshRagJobs(account,request);}catch(err){error(err);}finally{b.disabled=false;}};
  refreshRagJobs(account,request).catch(error);
+}
+
+function ragErrorText(code){
+ if(/^XHS_SEARCH_HTTP_[0-9]{3}$/.test(code))return '平台搜索页面读取失败，请核对小红书登录状态后再试';
+ return ({XHS_SEARCH_TIMEOUT:'平台页面读取超时，本次没有生成替代资料',XHS_SEARCH_CONNECTION:'本机搜索连接器未连通，请检查服务',XHS_TRANSPORT:'平台页面未能完成读取，请核对登录状态',XHS_LOGIN_REQUIRED:'需要本人重新登录小红书',XHS_STOPPED:'账号连接已暂停，请先恢复',XHS_BUSY:'账号正在同步，完成后可发起搜索',SOURCE_VISIBILITY_CHANGED:'资料的公开状态已变化，已隐藏相关内容'})[code]||'读取未完成，请检查来源状态后再试';
 }
