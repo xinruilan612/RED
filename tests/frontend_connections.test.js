@@ -52,3 +52,20 @@ test('sync observations escape text and mark missing metrics and partial comment
  const s=setup();s.sandbox.sync={status:'synced',interval_s:900,counts:{note:1,comment:0},latest_round:{notes:[{url:'https://example.com',title:'<script>',text:'<img>',metrics:{likes:0},comments:[]}]}};
  const html=s.eval('syncOverview(sync)');assert.doesNotMatch(html,/<script>|<img>/);assert.match(html,/点赞 0/);assert.match(html,/收藏 未知/);assert.match(html,/非全量/);
 });
+test('stored note history is shown even when latest round omitted it',()=>{
+ const s=setup();s.sandbox.sync={status:'synced',interval_s:900,counts:{note:1,comment:1},latest_round:{notes:[]}};
+ s.sandbox.notes=[{id:'n',url:'https://example.com',title:'OLDER',text:'body',metrics:{}}];
+ const html=s.eval('syncOverview(sync,notes)');assert.match(html,/OLDER/);assert.match(html,/data-note-comments="n"/);assert.match(html,/已保存评论/);
+});
+test('comment load escapes stored text and uses scoped read-only endpoint',async()=>{
+ const s=setup();s.sandbox.button={disabled:false,nextElementSibling:{innerHTML:''}};
+ s.sandbox.api=async url=>{s.calls.push([url]);return {items:[{content:'<script>',first_seen:1,last_seen:2}],next_offset:null};};
+ await s.eval("loadSyncComments('mine','n/x',button,connectionLoad)");
+ assert.equal(s.calls[0][0],'/api/social/sync/comments?account_id=mine&note_id=n%2Fx&offset=0');
+ assert.match(s.sandbox.button.nextElementSibling.innerHTML,/&lt;script&gt;/);assert.equal(s.sandbox.button.disabled,true);
+});
+test('old comment response cannot write after account switch',async()=>{
+ const s=setup();let resolve;s.sandbox.api=()=>new Promise(r=>resolve=r);s.sandbox.button={nextElementSibling:{innerHTML:''}};
+ const pending=s.eval("loadSyncComments('mine','n',button,connectionLoad)");s.sandbox.activeAccountId='other';resolve({items:[{content:'OLD',first_seen:1,last_seen:2}],next_offset:null});await pending;
+ assert.equal(s.sandbox.button.nextElementSibling.innerHTML,'');
+});

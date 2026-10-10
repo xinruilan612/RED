@@ -49,6 +49,23 @@ class SyncTests(unittest.TestCase):
         with self.assertRaises(DomainError):self.sync._save(job,snapshot())
         self.assertEqual(self.state()['counts']['note'],0)
         self.sync.control(self.owner,self.account,'resume');self.sync.once();self.assertEqual(self.state()['status'],'synced')
+    def test_saved_comments_survive_partial_round_and_are_scoped(self):
+        self.sync.once()
+        self.fake.result['notes'][0]['comments']=[];self.due();self.sync.once()
+        data=self.sync.comments(self.owner,self.account,'n')
+        self.assertEqual([c['content'] for c in data['items']],['comment'])
+        self.assertLessEqual(data['items'][0]['first_seen'],data['items'][0]['last_seen'])
+        self.assertIsNone(data['next_offset'])
+        with self.assertRaises(DomainError):self.sync.comments('other',self.account,'n')
+        with self.assertRaises(DomainError):self.sync.comments(self.owner,self.account,'missing')
+        with self.assertRaises(DomainError):self.sync.comments(self.owner,self.account,'n',-1)
+    def test_saved_comments_have_stable_bounded_pages(self):
+        self.fake.result['notes'][0]['comments']=[{'id':str(i),'content':str(i)} for i in range(53)]
+        self.sync.once()
+        first=self.sync.comments(self.owner,self.account,'n');second=self.sync.comments(self.owner,self.account,'n',first['next_offset'])
+        self.assertEqual(len(first['items']),50);self.assertEqual(len(second['items']),3)
+        self.assertEqual(len({c['id'] for c in first['items']+second['items']}),53)
+        self.assertIsNone(second['next_offset'])
     def test_expired_worker_lease_delays_retry_and_rejects_stale_save(self):
         job=self.sync._claim()
         with self.store.connect() as db:db.execute('UPDATE xhs_sync_links SET lease_until=0')

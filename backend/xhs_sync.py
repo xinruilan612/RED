@@ -69,6 +69,19 @@ class XHSSync:
             rows=db.execute("SELECT payload FROM xhs_sync_entities WHERE owner=? AND account_id=? AND kind='note' ORDER BY last_seen DESC LIMIT 30",(owner,account_id)).fetchall()
         return [json.loads(r[0]) for r in rows]
 
+    def comments(self,owner,account_id,note_id,offset=0):
+        find_account(Operations(self.store).read(owner),account_id)
+        require(isinstance(note_id,str) and 0<len(note_id)<=200,'INVALID_INPUT','笔记标识无效')
+        require(type(offset) is int and 0<=offset<=100000,'INVALID_INPUT','评论分页位置无效')
+        with self.store.connect() as db:
+            note=db.execute("SELECT id FROM xhs_sync_entities WHERE owner=? AND account_id=? AND kind='note' AND id=?",(owner,account_id,note_id)).fetchone()
+            require(note is not None,'RESOURCE_NOT_FOUND','未找到此账号的已保存笔记')
+            # IDs are composite; exact prefix comparison avoids LIKE wildcard input.
+            prefix=note_id+':'
+            rows=db.execute("SELECT payload,first_seen,last_seen FROM xhs_sync_entities WHERE owner=? AND account_id=? AND kind='comment' AND substr(id,1,?)=? ORDER BY first_seen DESC,id LIMIT 51 OFFSET ?",(owner,account_id,len(prefix),prefix,offset)).fetchall()
+        return {'items':[{**json.loads(r[0]),'first_seen':r[1],'last_seen':r[2]} for r in rows[:50]],
+                'next_offset':offset+50 if len(rows)>50 else None,'coverage':'historically_observed_not_complete'}
+
     def _claim(self):
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE');now=time.time()

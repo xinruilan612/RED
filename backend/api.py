@@ -160,6 +160,11 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
         from backend.xhs_sync import XHSSync
         return XHSSync(store).records(user['owner'],account_id)
 
+    @app.get('/api/social/sync/comments')
+    def social_sync_comments(account_id: str,note_id: str,offset: int=0,user=Depends(logged)):
+        from backend.xhs_sync import XHSSync
+        return XHSSync(store).comments(user['owner'],account_id,note_id,offset)
+
     @app.post('/api/social/sync/control')
     def control_social_sync(data: dict,user=Depends(logged)):
         from backend.xhs_sync import XHSSync
