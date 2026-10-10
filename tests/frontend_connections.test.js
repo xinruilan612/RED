@@ -9,7 +9,7 @@ function setup(){
  const calls=[];
  const sandbox={pageInfo:{},URL,currentPage:'connections',activeAccountId:'mine',$:element,
   esc:v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),
-  document:{querySelectorAll:()=>[]},window:{confirm:()=>false},dateText:v=>v,toast(){},error(){},refreshModelStatus:async()=>{},
+  document:{querySelectorAll:()=>[]},window:{confirm:()=>false},dateText:v=>v,toast(){},error(){},clearError(){},refreshModelStatus:async()=>{},
   api:async(...args)=>{calls.push(args);return {};}};
  vm.createContext(sandbox);vm.runInContext(fs.readFileSync('frontend/connections.js','utf8'),sandbox);
  return {sandbox,element,calls,eval:code=>vm.runInContext(code,sandbox)};
@@ -31,7 +31,7 @@ test('confirmed paid test binds version and cost acknowledgement',async()=>{
  assert.equal(s.calls[0][0],'/api/models/connections/a%2Fb/test');assert.equal(s.calls[0][2].version,2);assert.equal(s.calls[0][2].acknowledge_cost,true);
 });
 test('old account response cannot overwrite newly selected account',async()=>{
- const s=setup();let resolve;s.sandbox.api=()=>new Promise(r=>resolve=r);const pending=s.eval('renderConnections()');s.sandbox.activeAccountId='other';resolve({account_name:'OLD'});await pending;assert.doesNotMatch(s.element('operationsContent').innerHTML,/OLD/);
+ const s=setup();const resolves=[];s.sandbox.api=()=>new Promise(r=>resolves.push(r));const pending=s.eval('renderConnections()');s.sandbox.activeAccountId='other';resolves.forEach(r=>r({account_name:'OLD'}));await pending;assert.doesNotMatch(s.element('operationsContent').innerHTML,/OLD/);
 });
 test('missing metrics stay absent and zero stays zero',()=>{
  const s=setup();s.sandbox.data={account_name:'<script>',connection_status:'not_connected',reason:'no',fields:[{key:'views',label:'阅读'},{key:'likes',label:'点赞'}],local_records:{publication_count:0,metric_snapshot_count:1,latest_metric:{observed_at:'now',window:'24h',values:{views:null,likes:0}}}};
@@ -46,4 +46,9 @@ test('saving an existing model omits blank key and retains optimistic version',a
 test('successful save clears key input',async()=>{
  const s=setup(),fields={id:'',version:'',provider:'vendor',label:'name',model:'model',base_url:'https://example.com',api_key:'PRIVATE',rate_usd_per_million:'2',run_budget_usd:'1',day_budget_usd:'5'};
  const form=s.element('modelConnectionForm');form.elements=Object.fromEntries(Object.entries(fields).map(([k,v])=>[k,{value:v}]));s.eval('bindModelForm([])');await form.onsubmit({preventDefault(){}});assert.equal(form.elements.api_key.value,'');
+});
+
+test('sync observations escape text and mark missing metrics and partial comments',()=>{
+ const s=setup();s.sandbox.sync={status:'synced',interval_s:900,counts:{note:1,comment:0},latest_round:{notes:[{url:'https://example.com',title:'<script>',text:'<img>',metrics:{likes:0},comments:[]}]}};
+ const html=s.eval('syncOverview(sync)');assert.doesNotMatch(html,/<script>|<img>/);assert.match(html,/点赞 0/);assert.match(html,/收藏 未知/);assert.match(html,/非全量/);
 });

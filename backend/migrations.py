@@ -86,6 +86,21 @@ CREATE TABLE research_jobs (
  UNIQUE(owner,key));
 CREATE INDEX research_jobs_ready ON research_jobs(status,lease_until);
 CREATE INDEX research_jobs_scope ON research_jobs(owner,account_id,created_at);
+'''), (8, '''
+CREATE TABLE xhs_sync_links (
+ owner TEXT NOT NULL,account_id TEXT NOT NULL,source_id TEXT NOT NULL UNIQUE,
+ bridge_port INTEGER NOT NULL UNIQUE,interval_s INTEGER NOT NULL,enabled INTEGER NOT NULL,
+ status TEXT NOT NULL,next_at DOUBLE PRECISION NOT NULL,last_at DOUBLE PRECISION,
+ error TEXT,failures INTEGER NOT NULL DEFAULT 0,token TEXT,lease_until DOUBLE PRECISION,
+ PRIMARY KEY(owner,account_id));
+CREATE TABLE xhs_sync_entities (
+ owner TEXT NOT NULL,account_id TEXT NOT NULL,kind TEXT NOT NULL,id TEXT NOT NULL,
+ payload TEXT NOT NULL,hash TEXT NOT NULL,first_seen DOUBLE PRECISION NOT NULL,
+ last_seen DOUBLE PRECISION NOT NULL,PRIMARY KEY(owner,account_id,kind,id));
+CREATE TABLE xhs_sync_rounds (
+ id TEXT PRIMARY KEY,owner TEXT NOT NULL,account_id TEXT NOT NULL,
+ observed_at DOUBLE PRECISION NOT NULL,payload TEXT NOT NULL);
+CREATE INDEX xhs_sync_rounds_scope ON xhs_sync_rounds(owner,account_id,observed_at);
 '''))
 
 

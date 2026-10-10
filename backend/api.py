@@ -150,6 +150,23 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
         from backend.social_connections import SocialConnections
         return SocialConnections(service.operations).read(user['owner'],account_id)
 
+    @app.get('/api/social/sync')
+    def social_sync(account_id: str,user=Depends(logged)):
+        from backend.xhs_sync import XHSSync
+        return XHSSync(store).public(user['owner'],account_id)
+
+    @app.get('/api/social/sync/notes')
+    def social_sync_notes(account_id: str,user=Depends(logged)):
+        from backend.xhs_sync import XHSSync
+        return XHSSync(store).records(user['owner'],account_id)
+
+    @app.post('/api/social/sync/control')
+    def control_social_sync(data: dict,user=Depends(logged)):
+        from backend.xhs_sync import XHSSync
+        require(set(data)=={'account_id','action'},'INVALID_INPUT','同步操作字段无效')
+        auth.throttle('xhs-control:'+user['owner'],20,3600)
+        return XHSSync(store).control(user['owner'],data['account_id'],data['action'])
+
     @app.get('/api/search/settings')
     def search_settings(user=Depends(logged)):
         from backend.search_providers import SearchSettings

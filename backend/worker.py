@@ -25,7 +25,9 @@ class Worker:
         job=self.jobs.claim(self.lease)
         if not job:
             from backend.research_jobs import ResearchJobs
-            return ResearchJobs(self.store).once()
+            if ResearchJobs(self.store).once():return True
+            from backend.xhs_sync import XHSSync
+            return XHSSync(self.store).once()
         done=threading.Event()
         def keep_alive():
             previous=time.monotonic()

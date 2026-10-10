@@ -55,6 +55,20 @@ class ConnectedAPITests(ConnectedHarness,unittest.TestCase):
         temporary=tempfile.TemporaryDirectory();self.addCleanup(temporary.cleanup)
         self.store=Store(Path(temporary.name)/'api.sqlite');self.prepare()
 
+    def test_sync_csrf_owner_and_safe_status(self):
+        from backend.xhs_sync import XHSSync
+        from test_xhs_sync import Fake
+        sync=XHSSync(self.store,lambda port:Fake());sync.bind(self.owner,self.account);sync.once()
+        url='/api/social/sync?account_id='+self.account
+        self.assertEqual(self.client.get(url).json()['counts']['note'],1)
+        payload={'account_id':self.account,'action':'pause'}
+        self.assertEqual(self.client.post('/api/social/sync/control',json=payload).status_code,403)
+        other,csrf,_=self.register('sync_other')
+        self.assertNotEqual(other.get(url).status_code,200)
+        self.assertNotEqual(self.post('/api/social/sync/control',payload,other,csrf).status_code,200)
+        self.assertEqual(self.post('/api/social/sync/control',payload).json()['status'],'paused')
+        self.assertNotIn('bridge_port',self.client.get(url).text)
+
     def test_session_model_selection_revoke_csrf_and_owner_isolation(self):
         self.assertFalse(self.client.get('/api/session').json()['provider']['ready'])
         item=self.model();url='/api/models/default'
