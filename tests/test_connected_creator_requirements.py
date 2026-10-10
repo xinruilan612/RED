@@ -91,7 +91,9 @@ class CreatorDOMDocumentationTests(unittest.TestCase):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, sync)
         for phrase in ('08:06:33.190213Z', '24/17/7/8/30', '8.7%', 'Worker持久化',
-                       '联调仍待验收', '原MCP笔记及评论采集独立', '不提交Git'):
+                       '联调已验收', '原MCP笔记及评论采集独立', '不提交Git',
+                       'creator-integration.json', '16:12:07', '16:27:07', '900秒',
+                       '首屏最多30张', '平台源更新时间未知', '不点击切换周期'):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, status)
 
@@ -102,5 +104,7 @@ class CreatorDOMDocumentationTests(unittest.TestCase):
             with self.subTest(path=path):
                 self.assertNotIn('研究已排队', text)
                 self.assertNotIn('研究排队待结果', text)
+                self.assertNotIn('页面联调待验收', text)
+                self.assertNotIn('页面联调尚待验收', text)
                 self.assertNotIn('不读取创作者后台流量', text)
                 self.assertIn('3份', text)

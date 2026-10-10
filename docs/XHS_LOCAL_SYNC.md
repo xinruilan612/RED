@@ -46,14 +46,22 @@ runtime/venv/bin/python scripts/xhs_sync.py status --username 网站用户名 --
 
 用户已明确授权定时读取创作者首页和笔记管理。`scripts/xhs_creator_reader.py` 在独立浏览器profile中工作；本机管理员先核对已绑定的24位 `source_id` 和首页显示的 `creator_account_id`。私有绑定与profile保存在忽略提交的 `runtime/xhs-local/creator/<source_id>/`，绑定不可静默换号，文件权限限制为本机用户。凭据、个人指标原始记录和浏览器会话不进入Git。
 
-本机已有 `runtime/mediacrawler/.venv` 浏览器运行环境时，可按以下方式绑定并核对（替换占位值，不提交真实身份）：
+当前实际采集解释器是 `runtime/mediacrawler/.venv/bin/python`，Playwright 1.61.0及Chromium已安装；只复用该Python/Playwright环境，不依赖MediaCrawler采集代码。新环境可按固定依赖恢复（本机已安装，无需重复安装）：
+
+```sh
+python3 -m venv runtime/mediacrawler/.venv
+runtime/mediacrawler/.venv/bin/python -m pip install -r requirements-creator.txt
+runtime/mediacrawler/.venv/bin/python -m playwright install chromium
+```
+
+环境准备后，可按以下方式绑定并核对（替换占位值，不提交真实身份）：
 
 ```sh
 runtime/mediacrawler/.venv/bin/python scripts/xhs_creator_reader.py --source-id 平台24位ID --bind-account 首页小红书账号号
 ```
 
-读取器可从已绑定MCP会话bootstrap现有登录到独立profile；若该会话不足以登录，管理员按需在上述命令加 `--login`，由本人完成手动登录。正常Worker调用不加 `--login`，不自动申请数据权限、不发布、不修改评论。前后均检查公开账号ID与创作者首页账号号；身份不符、验证码、访问限制或未知指标图标时停止本次读数，错误独立显示，原MCP评论同步通道保持独立。
+读取器可从已绑定MCP会话bootstrap现有登录到独立profile；源Cookie文件fingerprint变化时可重新bootstrap。独立profile过期或该会话不足以登录时，管理员按需在上述命令加 `--login`，由本人完成手动登录。正常Worker调用不加 `--login`，不自动申请数据权限、不发布、不修改评论。前后均检查公开账号ID与创作者首页账号号；身份不符、验证码、访问限制或未知指标图标时停止本次读数，错误独立显示，原MCP评论同步通道保持独立。
 
-账号汇总保留 `period_start/end`、`period_days`、`period_display`，包括曝光、观看、封面点击率、视频完播率、互动、净涨粉、新增关注、取消关注、主页访客。笔记列表最多读取30张当前DOM卡片，按已核验SVG识别观看、评论、点赞、收藏、分享，单篇曝光仍为null；不按列位置猜测字段。百分比存百分数值，净涨粉可为负值；缩写数值只保留原始展示，不伪造成精确值。账号近7日汇总不能与单篇累计指标混用；`source_method=creator_browser_dom`、`source_updated_at=null`，不宣称官方API数据或准确延迟。
+账号汇总保留 `period_start/end`、`period_days`、`period_display`，包括曝光、观看、封面点击率、视频完播率、互动、净涨粉、新增关注、取消关注、主页访客。笔记列表只读首屏最多30张当前DOM卡片，按已核验SVG识别观看、评论、点赞、收藏、分享，单篇曝光仍为null；不按列位置猜测字段。百分比存百分数值，净涨粉可为负值；缩写数值只保留原始展示，不伪造成精确值。读取器不点击周期切换，只校验默认选中近7日并读取稳定快照。账号近7日汇总不能与单篇累计指标混用；`source_method=creator_browser_dom`、`source_updated_at=null`，不宣称官方API数据或准确延迟。
 
-真实读取器已于2026-10-10 16:06:33（北京时间）取得10-03至10-09汇总：曝光25、观看3、封面点击率8.7%；5篇笔记观看数分别24/17/7/8/30。已有MCP会话bootstrap及两种身份DOM校验通过，无需新二维码。证据存于忽略提交的 `runtime/connected_acceptance/creator-reader.json`。这是读取器实测；Worker持久化、API回传与页面联调尚待验收，不能标为完整自动回流已完成。
+真实读取器已于2026-10-10 16:06:33（北京时间）取得10-03至10-09汇总：曝光25、观看3、封面点击率8.7%；5篇笔记观看数分别24/17/7/8/30。已有MCP会话bootstrap及两种身份DOM校验通过，无需新二维码。证据存于忽略提交的 `runtime/connected_acceptance/creator-reader.json`。随后真实网页点击“立即核对”触发统一Worker，16:12:07完成PostgreSQL持久化、API回传与页面逐值核对；creator观测时间16:12:03，周期2026-10-03至2026-10-09，数值与上述读取器样本一致。下一轮16:27:07，间隔900秒；原MCP保持5篇唯一笔记、0条评论，无重复。完整链路证据为忽略提交的 `runtime/connected_acceptance/creator-integration.json`，含数据库与页面核对。本次本机链路已验收，不代表秒级实时、非空评论或全量历史已验证。
