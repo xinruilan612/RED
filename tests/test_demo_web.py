@@ -181,7 +181,7 @@ class DemoWebTests(unittest.TestCase):
         self.assertEqual(status,200);self.assertIn('/api/operations',script)
 
     def test_static_assets_and_unknown_routes(self):
-        for path in ('/','/app.js','/style.css','/connections.js','/research.js','/account_profile.js','/trials.js','/trials.css'):
+        for path in ('/','/app.js','/style.css','/connections.js','/models.js','/research.js','/account_profile.js','/trials.js','/trials.css'):
             status,body=self.request('GET',path);self.assertEqual(status,200);self.assertTrue(body)
         status,html=self.request('GET','/')
         for label in ('协作流程','补充真实素材','保存新版本并等待复审','运行记录','模拟运行'):
