@@ -1,7 +1,7 @@
-"""Account-scoped, versioned evidence and deterministic lexical RAG.
+"""Account-scoped versioned evidence with BM25 and optional real local semantic RAG.
 
-No fake embeddings: initial retrieval is BM25 over Chinese character bigrams
-and Latin words. Original files, page locations and immutable excerpts persist.
+No fake embeddings: local model absence is labelled as lexical-only retrieval.
+Original files, page locations and immutable excerpts persist.
 """
 import base64
 import hashlib
@@ -72,9 +72,21 @@ def chunks(pages):
     return result
 
 
+def evidence_metadata(metadata, document_id, version):
+    case=metadata.get('research_case',{})
+    return {'content_kind':case.get('content_kind','text'),
+            'source_scope':'current_account',
+            'case_ref':({'document_id':document_id,'version':version,'platform':case.get('platform'),
+                         'published_at':case.get('published_at'),'observed_at':case.get('observed_at'),
+                         'assessment_status':case.get('assessment',{}).get('status'),
+                         'verification':case.get('verification')} if case else None)}
+
+
 class Knowledge:
-    def __init__(self, store):
+    def __init__(self, store, embedding_provider=None, use_configured_embeddings=True):
         self.store=store
+        self.embedding_provider=embedding_provider
+        self.use_configured_embeddings=use_configured_embeddings
         with store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             db.executescript('''
@@ -101,7 +113,7 @@ class Knowledge:
     def account(self, owner, account_id):
         return find_account(Operations(self.store).read(owner),account_id)
 
-    def save(self, owner, data, source_type='text', source_url='', metadata=None):
+    def save(self, owner, data, source_type='text', source_url='', metadata=None, *, transaction_guard=None, transaction_saved=None):
         require(isinstance(data,dict) and set(data)<={'account_id','title','text','filename','file_base64','document_id','expected_version'},'INVALID_INPUT','资料字段无效')
         account=data.get('account_id');self.account(owner,account)
         title=validate_text(data.get('title'),'资料标题',200)
@@ -119,6 +131,7 @@ class Knowledge:
         identity=data.get('document_id') or str(uuid4())
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
+            if transaction_guard is not None: transaction_guard(db)
             row=db.execute('SELECT version,status FROM knowledge_documents WHERE id=? AND owner=? AND account_id=?',(identity,owner,account)).fetchone()
             if data.get('document_id'):
                 require(row and row[1]=='active','RESOURCE_NOT_FOUND','资料不可访问')
@@ -139,6 +152,7 @@ class Knowledge:
             db.execute('INSERT INTO knowledge_versions VALUES(?,?,?,?,?,?)',(identity,version,fingerprint,base64.b64encode(raw).decode(),name,json.dumps(meta,ensure_ascii=False)))
             for part in parts:
                 db.execute('INSERT INTO knowledge_chunks VALUES(?,?,?,?,?,?,?)',(str(uuid4()),identity,version,part['page'],part['offset'],part['text'],json.dumps(Counter(tokens(part['text'])),ensure_ascii=False)))
+            if transaction_saved is not None: transaction_saved(db,identity,version)
         return self.get(owner,account,identity)
 
     def list(self, owner, account):
@@ -169,6 +183,7 @@ class Knowledge:
 
     def retrieve(self, owner, account, query, limit=4, document_ids=None):
         self.account(owner,account);query=validate_text(query,'检索内容',300)
+        require(type(limit) is int and 1<=limit<=20,'INVALID_INPUT','检索条数需为 1–20')
         if document_ids is not None:
             require(isinstance(document_ids,list) and len(document_ids)<=3 and all(isinstance(x,str) and x for x in document_ids),'INVALID_INPUT','最多选择 3 份资料')
             document_ids=list(dict.fromkeys(document_ids))
@@ -184,6 +199,7 @@ class Knowledge:
                 if not document_ids: return {'engine':'bm25-zh-bigram-v1','query':query,'sources':[],'insufficient':True,'note':'没有选择资料'}
                 sql+=' AND d.id IN ('+','.join('?' for _ in document_ids)+')';args.extend(document_ids)
             rows=db.execute(sql,args).fetchall()
+        rows=[r for r in rows if json.loads(r[11]).get('retrieval_eligible',True)]
         documents=[(r,json.loads(r[6])) for r in rows]
         n=len(documents);avg=sum(sum(t.values()) for _,t in documents)/max(1,n)
         df={t:sum(t in terms for _,terms in documents) for t in wanted}
@@ -196,8 +212,34 @@ class Knowledge:
             # A lone accidental bigram in a long question is insufficient evidence.
             if len(wanted)>3 and len(matched)<2: continue
             metadata=json.loads(r[11])
-            results.append(dict(source_id='kb:'+r[0],document_id=r[1],version=r[2],page=r[3],offset=r[4],text=r[5],title=r[7],url=r[8],source_type=r[9],filename=r[10],location_type=metadata.get('location_type','page'),score=round(score,4),verification='原文片段匹配，来源真实性仍需核查'))
+            results.append(dict(source_id='kb:'+r[0],document_id=r[1],version=r[2],page=r[3],offset=r[4],text=r[5],title=r[7],url=r[8],source_type=r[9],filename=r[10],location_type=metadata.get('location_type','page'),evidence_role=metadata.get('evidence_role','source_material'),**evidence_metadata(metadata,r[1],r[2]),score=round(score,4),verification='原文片段匹配，来源真实性仍需核查'))
         results.sort(key=lambda x:(-x['score'],x['source_id']))
+        engine='bm25-zh-bigram-v1'
+        embedding_note='未启用本地语义模型，使用 BM25 关键词检索'
+        from backend.embeddings import configured_embeddings, semantic_ranks, EmbeddingUnavailable
+        provider=self.embedding_provider
+        if provider is None and self.use_configured_embeddings:
+            provider,embedding_note=configured_embeddings()
+        if provider is not None:
+            try:
+                order,semantic_scores=semantic_ranks(provider,query,rows)
+                semantic_positions={key:index+1 for index,key in enumerate(order)}
+                lexical_positions={item['source_id'][3:]:index+1 for index,item in enumerate(results)}
+                by_id={item['source_id'][3:]:item for item in results}
+                for r in rows:
+                    if r[0] not in semantic_positions or r[0] in by_id: continue
+                    metadata=json.loads(r[11])
+                    by_id[r[0]]=dict(source_id='kb:'+r[0],document_id=r[1],version=r[2],page=r[3],offset=r[4],text=r[5],title=r[7],url=r[8],source_type=r[9],filename=r[10],location_type=metadata.get('location_type','page'),evidence_role=metadata.get('evidence_role','source_material'),**evidence_metadata(metadata,r[1],r[2]),verification='语义相关片段，来源真实性仍需核查')
+                for key,item in by_id.items():
+                    item['lexical_rank']=lexical_positions.get(key)
+                    item['semantic_rank']=semantic_positions.get(key)
+                    item['semantic_score']=round(semantic_scores.get(key,0),6)
+                    item['score']=round(sum(1/(60+rank) for rank in (lexical_positions.get(key),semantic_positions.get(key)) if rank is not None),8)
+                results=sorted(by_id.values(),key=lambda x:(-x['score'],x['source_id']))
+                engine='hybrid-bm25-local-rrf-v1'
+                embedding_note='本地真实语义向量与 BM25 融合；相关度不是事实置信度'
+            except EmbeddingUnavailable as error:
+                embedding_note=str(error)
         selected=results[:limit]
         # Keep input costs bounded while preserving exact substrings and locations.
         for source in selected:
@@ -208,4 +250,4 @@ class Knowledge:
             source['offset']+=start
         with self.store.connect() as db:
             db.execute('INSERT INTO retrieval_events VALUES(?,?,?,?,?,?)',(str(uuid4()),owner,account,query,json.dumps([r['source_id'] for r in selected]),int(time.time())))
-        return {'engine':'bm25-zh-bigram-v1','query':query,'sources':selected,'insufficient':not selected,'note':'相关度用于排序，不是事实置信度；仅检索当前账号有效资料'}
+        return {'engine':engine,'embedding_note':embedding_note,'query':query,'sources':selected,'insufficient':not selected,'note':'相关度用于排序，不是事实置信度；仅检索当前账号有效资料'}
