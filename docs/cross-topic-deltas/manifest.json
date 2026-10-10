@@ -1,0 +1,26 @@
+[
+  {
+    "file": "backend/research_jobs.py",
+    "baseline_sha256": "818b25c54cd7b14a35508b7a1c04fff9b655ba9559b0cfe047f9f086df1eb8e4",
+    "verified_sha256": "393e0009f7c5eab307ff8b651c75ee4acebe535601447ce91582de8080de9fe6",
+    "patch": "backend__research_jobs.py.patch"
+  },
+  {
+    "file": "frontend/knowledge.js",
+    "baseline_sha256": "ab3430550731f7f9c47b9f5cddbae9bcaac7cab066225f706e45eec08d78056c",
+    "verified_sha256": "71b2991f5c00e6e55e518793006e7aa2309b80777244b38bf727fea8e0f02504",
+    "patch": "frontend__knowledge.js.patch"
+  },
+  {
+    "file": "tests/frontend_rag_library.test.js",
+    "baseline_sha256": "a6950b4d9b98deb2a64b87211104664f1f82a03a2e782fe5ea77e221b2315711",
+    "verified_sha256": "eea50908934a8cf1f8a14a7cd2c10a6673068b7beda2ff98865d9023b5c4bd0c",
+    "patch": "tests__frontend_rag_library.test.js.patch"
+  },
+  {
+    "file": "tests/test_research_confirmation.py",
+    "baseline_sha256": "976d7fdeb18140e83c3080e774928a9533834f106bddc95ce0df857f11de641a",
+    "verified_sha256": "8e72637ad7b5d168f21d9a9a960ac28a4f4d6617e6bbde0b0f03da5e836fd392",
+    "patch": "tests__test_research_confirmation.py.patch"
+  }
+]

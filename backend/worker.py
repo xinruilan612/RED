@@ -24,10 +24,22 @@ class Worker:
         self.online()
         job=self.jobs.claim(self.lease)
         if not job:
-            from backend.research_jobs import ResearchJobs
-            if ResearchJobs(self.store).once():return True
-            from backend.xhs_sync import XHSSync
-            return XHSSync(self.store).once()
+            # Research has its own fencing/deadline. Keep the process health
+            # signal fresh without extending the research execution budget.
+            done = threading.Event()
+            def auxiliary_heartbeat():
+                while not done.wait(self.lease / 3):
+                    try:self.online()
+                    except Exception:return
+            heart = threading.Thread(target=auxiliary_heartbeat, daemon=True)
+            heart.start()
+            try:
+                from backend.research_jobs import ResearchJobs
+                if ResearchJobs(self.store).once():return True
+                from backend.xhs_sync import XHSSync
+                return XHSSync(self.store).once()
+            finally:
+                done.set();heart.join(timeout=2)
         done=threading.Event()
         def keep_alive():
             previous=time.monotonic()

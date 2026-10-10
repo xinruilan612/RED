@@ -47,7 +47,7 @@ class SearchErrorTests(unittest.TestCase):
         response.read.return_value=b'SECRET invalid JSON'
         self.client.opener.open.return_value=response
         with self.assertRaises(DomainError) as caught:self.client.search('护肤')
-        self.assertEqual(caught.exception.code,'XHS_RESPONSE')
+        self.assertEqual(caught.exception.code,'XHS_PARSE')
         self.assertNotIn('SECRET',str(caught.exception))
         self.assertEqual(self.client.opener.open.call_count,1)
 
@@ -61,6 +61,16 @@ class SearchErrorTests(unittest.TestCase):
         response=Mock();response.__enter__=Mock(return_value=response);response.__exit__=Mock(return_value=False)
         response.read.return_value=b'{"success":true,"data":{"feeds":[]}}'
         self.client.opener.open.return_value=response
-        self.client.search('领子发黄',filters={'sort_by':'最多点赞'})
-        request=self.client.opener.open.call_args.args[0]
-        self.assertEqual(json.loads(request.data),{'keyword':'领子发黄'})
+        for query in ('领子发黄','口红 色号 秋冬','茶具','中'*120):
+            self.client.search(query,filters={'sort_by':'最多点赞'})
+            request=self.client.opener.open.call_args.args[0]
+            self.assertEqual(json.loads(request.data.decode('utf-8')),{'keyword':query})
+
+    def test_empty_http_500_keeps_status_and_origin_without_fake_timeout(self):
+        failure=urllib.error.HTTPError('http://127.0.0.1',500,'SECRET',{},io.BytesIO(b''))
+        self.client.opener.open.side_effect=failure
+        with self.assertRaises(DomainError) as caught:self.client.search('任意主题')
+        self.assertEqual(caught.exception.code,'XHS_SEARCH_HTTP_500')
+        self.assertEqual(caught.exception.mcp_http_status,500)
+        self.assertEqual(caught.exception.error_origin,'mcp_http')
+        self.assertNotIn('SECRET',str(caught.exception))

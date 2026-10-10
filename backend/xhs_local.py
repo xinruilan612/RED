@@ -4,6 +4,7 @@ import http.client
 import queue
 import socket
 import threading
+import time
 import base64
 import struct
 import zlib
@@ -24,23 +25,31 @@ def http_failure(exc, prefix='XHS'):
         signal=' '.join(str(value.get(k,'')) for k in ('code','error','message','details')).lower() if isinstance(value,dict) else ''
     except Exception:signal=''
     finally:exc.close()
+    def tagged(code,message):
+        error=DomainError(code,message)
+        error.error_origin='mcp_http'
+        error.mcp_http_status=status
+        return error
     if any(term in signal for term in ('context deadline exceeded','timed out','timeout')):
-        return DomainError(prefix+'_TIMEOUT','平台读取超时；已取得候选保留，可稍后手动重试')
+        return tagged(prefix+'_TIMEOUT','平台读取超时；已取得候选保留，可稍后手动重试')
     if any(term in signal for term in ('login_required','not_logged_in','登录已失效','未登录')):
-        return DomainError('XHS_LOGIN_REQUIRED','连接器登录会话失效，请点击重新连接')
+        return tagged('XHS_LOGIN_REQUIRED','连接器登录会话失效，请点击重新连接')
     if status==429 or any(term in signal for term in ('captcha','验证码','access_restricted')):
-        return DomainError('XHS_RESTRICTED','平台要求访问验证或限制访问；本次停止，不自动重试')
+        return tagged('XHS_RESTRICTED','平台要求访问验证或限制访问；本次停止，不自动重试')
     if any(term in signal for term in ('parse_error','json decode','invalid character')):
-        return DomainError('XHS_PARSE','平台响应解析失败；不表示登录失效')
+        return tagged('XHS_PARSE','平台响应解析失败；不表示登录失效')
     if any(term in signal for term in ('selector not found','element not found','页面结构')):
-        return DomainError('XHS_STRUCTURE','平台页面结构无法识别；不表示登录失效')
-    return DomainError(prefix+'_HTTP_'+str(status) if status is not None else prefix+'_HTTP_ERROR',
+        return tagged('XHS_STRUCTURE','平台页面结构无法识别；不表示登录失效')
+    return tagged(prefix+'_HTTP_'+str(status) if status is not None else prefix+'_HTTP_ERROR',
                        '本机接口返回错误状态；原因未确定，本次不自动重试')
 
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         raise DomainError('XHS_TRANSPORT', '本机连接器不允许重定向')
+
+
+REQUEST_TIMEOUT_SECONDS=65
 
 
 class LocalXHS:
@@ -58,16 +67,19 @@ class LocalXHS:
         """
         guard=getattr(self,'check',None)
         if guard is None:
-            with self.opener.open(req,timeout=85) as response:return response.read(8_000_001)
+            with self.opener.open(req,timeout=REQUEST_TIMEOUT_SECONDS) as response:return response.read(8_000_001)
         from urllib.parse import urlsplit
         parsed=urlsplit(req.full_url)
-        connection=http.client.HTTPConnection(parsed.hostname,parsed.port,timeout=85)
+        request_deadline=min(time.monotonic()+REQUEST_TIMEOUT_SECONDS,getattr(self,'deadline',float('inf')))
+        connection=http.client.HTTPConnection(parsed.hostname,parsed.port,timeout=REQUEST_TIMEOUT_SECONDS)
         result=queue.Queue(maxsize=1)
         sockets=[]
+        cancelled=threading.Event()
         def run():
             try:
                 connection.connect()
                 sockets.append(connection.sock)
+                if cancelled.is_set():return
                 connection.request(req.get_method(),parsed.path,body=req.data,headers=dict(req.header_items()))
                 response=connection.getresponse()
                 if 300<=response.status<400:raise DomainError('XHS_TRANSPORT','本机连接器不允许重定向')
@@ -82,12 +94,18 @@ class LocalXHS:
         try:
             while True:
                 guard()
+                if time.monotonic()>=request_deadline:
+                    error=DomainError('XHS_TIMEOUT','连接器请求达到绝对时限；停止该请求')
+                    error.error_origin='client_deadline'
+                    error.mcp_http_status=None
+                    raise error
                 try:success,value=result.get(timeout=0.25)
                 except queue.Empty:continue
                 guard()
                 if success:return value
                 raise value
         except BaseException:
+            cancelled.set()
             for active_socket in sockets:
                 try:active_socket.shutdown(socket.SHUT_RDWR)
                 except OSError:pass
@@ -105,8 +123,8 @@ class LocalXHS:
             body=self.read_response(req)
             require(len(body)<=8_000_000,'XHS_RESPONSE','连接器响应过大')
             value=json.loads(body)
-            require(value.get('success') is True and isinstance(value.get('data'),dict),
-                    'XHS_RESPONSE','连接器未返回有效资料；请查看本机连接状态')
+            require(isinstance(value,dict) and value.get('success') is True and isinstance(value.get('data'),dict),
+                    'XHS_PARSE','连接器响应结构异常；不能据此判断登录失效')
             return value['data']
         except DomainError:raise
         except urllib.error.HTTPError as exc:

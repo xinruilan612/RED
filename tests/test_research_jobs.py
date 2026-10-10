@@ -94,7 +94,8 @@ class ResearchJobsTests(unittest.TestCase):
         final = self.jobs.get('owner', job['id'])
         self.assertEqual(len(self.reads), 6)
         self.assertNotIn('credential', str(final))
-        self.assertEqual(final['status'], 'partial')
+        self.assertEqual(final['status'], 'failed')
+        self.assertEqual(final['outcome'], 'detail_failed')
 
     def test_cancel_while_reading_discards_late_body(self):
         job = self.jobs.create('owner', self.packet())

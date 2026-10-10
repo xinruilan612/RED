@@ -50,7 +50,7 @@ class RefactorDocumentationTests(unittest.TestCase):
         for phrase in ('第二轮具体修正', '无界面', '稳定笔记ID', '候选', '加入知识库', '不绕过登录、验证码或访问限制'):
             self.assertIn(phrase,text)
         status=(ROOT/'docs/CONNECTED_CREATOR_STATUS.md').read_text()
-        for phrase in ('站内搜索交互修复与数据库核验', 'current_database/current_schema', '不是本次 8775 业务数据源', '不保证全站最高', '部分失败与恢复为替身回归'):
+        for phrase in ('站内搜索交互修复与数据库核验', 'current_database/current_schema', '不是本次 8775 业务数据源', '不保证全站最高', '部分失败与恢复为替身回归', '跨主题通用修复', '未发出；保留输入', '同一搜索版本的三主题真实验收'):
             self.assertIn(phrase,status)
 
     def test_sensitive_boundaries_are_explicit(self):
