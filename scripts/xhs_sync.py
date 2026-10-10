@@ -2,7 +2,6 @@
 import argparse
 import os
 import sys
-import time
 from pathlib import Path
 from urllib.parse import urlencode
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
@@ -33,10 +32,11 @@ def main():
         os.execv(sys.executable,[sys.executable,'-m','backend.api','--port','8775'])
     store=Store(target);upgrade(store);sync=XHSSync(store)
     if args.action=='worker':
-        while True:
-            try:worked=sync.once()
-            except Exception:worked=False
-            if not worked:time.sleep(2)
+        from backend.worker import Worker
+        from backend.service import Service
+        from backend.provider import load_config
+        Worker(Service(store,load_config())).run()
+        return
     if args.action=='once':print({'claimed':sync.once()});return
     if not args.username:parser.error('--username required')
     with store.connect() as db:row=db.execute('SELECT owner FROM users WHERE username=?',(args.username.lower(),)).fetchone()
