@@ -41,6 +41,9 @@ def candidate(db, store, run):
         return row[0],report,[],excluded
     from backend.citation_ids import repair as repair_citation_format
     clean,_=repair_citation_format('review',raw,material_records(run.context))
+    # Bind versioned draft IDs before judging which factual mappings are invalid.
+    from backend.review_passages import bind
+    clean=bind(clean,draft['content'])
     kept=[];removed=[];unlocated=False
     for entry in clean['claim_map']:
         try:verify_quotes([entry],material_records(run.context),draft_text(draft['content']))

@@ -1,0 +1,249 @@
+{
+  "provenance": "Previously settled synthetic validation response; offline replay only, not a quality claim.",
+  "call_id": "890fb2e4-9657-4da3-b70f-62bf40d35117",
+  "actual_tokens": 4389,
+  "raw": {
+    "decision": "approved",
+    "next_action": "await_user_confirmation",
+    "checks": [
+      {
+        "name": "brief_fit",
+        "result": "pass",
+        "basis": "主题为纸舟TXT导出并定位result.txt；正文覆盖输入范围、步骤、结果与排查；brief未指定正文长度，142字符合默认简稿区间。"
+      },
+      {
+        "name": "audience_fit",
+        "result": "pass",
+        "basis": "面向导出课堂笔记的学生，以短句、编号步骤、明确目录与文件名呈现，未承诺“一分钟”，阻力低。"
+      },
+      {
+        "name": "usefulness_and_readability",
+        "result": "pass",
+        "basis": "三步结构清晰，含限制、成功路径与失败排查动作；无“素材里没有依据”等内部沟通混入读者文案。"
+      },
+      {
+        "name": "title_body_alignment",
+        "result": "pass",
+        "basis": "标题问结果文件在哪，正文结果节直接给出原TXT文件所在目录查看result.txt，承诺已兑现。"
+      },
+      {
+        "name": "evidence_integrity",
+        "result": "pass",
+        "basis": "版本1.0仅用于功能测试、UTF-8、步骤、result.txt、写入权限、离线免账号、不支持PDF与图片、无批量处理，均与user-material一致，未虚构事实。"
+      },
+      {
+        "name": "experience_authenticity",
+        "result": "pass",
+        "basis": "正文无“我用过”“亲测”等经历表述，未虚构使用体验或截图。"
+      },
+      {
+        "name": "originality_risk",
+        "result": "unknown",
+        "basis": "未进行全网内容比对，无法判断是否与既有内容重合；已在limitations说明。"
+      },
+      {
+        "name": "privacy_and_policy",
+        "result": "pass",
+        "basis": "未涉及账号信息、个人隐私或违规内容；未声称热门、爆款或正式长期可用产品。"
+      }
+    ],
+    "issues": [],
+    "previous_issue_results": [
+      {
+        "issue_id": "new-1",
+        "result": "resolved",
+        "result_basis": "标题已改为“纸舟1.0导出TXT：结果文件在哪”，正文结果节给出“成功后到原TXT文件所在目录查看result.txt”，查找路径可执行，承诺与正文匹配。"
+      }
+    ],
+    "limitations": [
+      "未联网核验，无法确认工具时效、可用性及全网原创性。",
+      "材料未提供“一分钟”找到结果文件的实测或计时数据，正文与标题均未承诺具体耗时。",
+      "未提供工具界面截图或真实操作演示素材。",
+      "来源核对只验证引用文本存在，不代表已独立核实工具事实或检查完全。"
+    ],
+    "human_questions": [],
+    "claim_map": [
+      {
+        "draft_excerpt_id": "dp-3c955ca9ab81-2",
+        "source_id": "user-material",
+        "quote": "合成验收工具“纸舟”版本1.0，只用于本次软件功能测试。"
+      },
+      {
+        "draft_excerpt_id": "dp-3c955ca9ab81-4",
+        "source_id": "user-material",
+        "quote": "支持UTF-8纯文本输入。"
+      },
+      {
+        "draft_excerpt_id": "dp-3c955ca9ab81-4",
+        "source_id": "user-material",
+        "quote": "不支持PDF和图片，也没有批量处理功能。"
+      },
+      {
+        "draft_excerpt_id": "dp-3c955ca9ab81-6",
+        "source_id": "user-material",
+        "quote": "操作步骤：打开工具，选择TXT文件，点击导出。"
+      },
+      {
+        "draft_excerpt_id": "dp-3c955ca9ab81-8",
+        "source_id": "user-material",
+        "quote": "成功时在原文件旁生成result.txt"
+      },
+      {
+        "draft_excerpt_id": "dp-3c955ca9ab81-8",
+        "source_id": "user-material",
+        "quote": "没有生成时检查原目录写入权限。"
+      },
+      {
+        "draft_excerpt_id": "dp-3c955ca9ab81-9",
+        "source_id": "user-material",
+        "quote": "工具完全离线，不需要账号。"
+      }
+    ]
+  },
+  "content": {
+    "selected_title": "纸舟1.0导出TXT：结果文件在哪",
+    "body": "纸舟1.0只用于本次软件功能测试。\n\n1. 输入范围\n支持UTF-8纯文本输入，不支持PDF和图片，也没有批量处理功能。\n\n2. 操作步骤\n打开工具，选择TXT文件，点击导出。\n\n3. 结果与排查\n成功后到原TXT文件所在目录查看result.txt；没有生成时检查原目录写入权限。\n\n工具完全离线，不需要账号。",
+    "cta": "你导出的result.txt是否出现在原TXT文件旁？",
+    "tags": [
+      "TXT",
+      "纸舟",
+      "文件导出"
+    ]
+  },
+  "material": "合成验收工具“纸舟”版本1.0，只用于本次软件功能测试。支持UTF-8纯文本输入。操作步骤：打开工具，选择TXT文件，点击导出。成功时在原文件旁生成result.txt；没有生成时检查原目录写入权限。工具完全离线，不需要账号；不支持PDF和图片，也没有批量处理功能。",
+  "prior_review": {
+    "decision": "revision_required",
+    "next_action": "revise",
+    "checks": [
+      {
+        "name": "brief_fit",
+        "result": "pass",
+        "basis": "主题为纸舟TXT导出与找到结果文件，面向需导出课堂笔记的学生，简洁准确；用户未指定正文长度，标题15字符、正文136字符符合简稿口径。"
+      },
+      {
+        "name": "audience_fit",
+        "result": "pass",
+        "basis": "正文给定输入范围、三步操作与失败排查，覆盖学生导出课堂笔记所需的关键动作。"
+      },
+      {
+        "name": "usefulness_and_readability",
+        "result": "pass",
+        "basis": "分节清晰，无“素材里没有依据”等内部沟通，未把资料缺口写进读者文案。"
+      },
+      {
+        "name": "title_body_alignment",
+        "result": "fail",
+        "basis": "标题承诺“找到TXT导出结果”，正文只说明成功时在原文件旁生成result.txt，未给出读者可执行的查找路径或位置提示，承诺未充分兑现。"
+      },
+      {
+        "name": "evidence_integrity",
+        "result": "pass",
+        "basis": "正文各事实句均可在user-material中找到对应连续原文，无无依据补充结论。"
+      },
+      {
+        "name": "experience_authenticity",
+        "result": "pass",
+        "basis": "正文无“我用过”“亲测”等第一人称使用经历表述。"
+      },
+      {
+        "name": "originality_risk",
+        "result": "pass",
+        "basis": "未出现热搜、爆款等平台指标宣称；未联网比对全网原创，具体见limitations。"
+      },
+      {
+        "name": "privacy_and_policy",
+        "result": "pass",
+        "basis": "未出现个人信息、账号或违规引导内容。"
+      }
+    ],
+    "issues": [
+      {
+        "issue_id": "new-1",
+        "severity": "major",
+        "state": "open",
+        "location": "selected_title",
+        "draft_excerpt_id": "dp-3e8345d64ef4-1",
+        "reason": "标题向学生承诺“找到TXT导出结果”，但正文只说明成功时在原文件旁生成result.txt，未给出“到原文件所在目录查看result.txt”等可执行查找路径，承诺与正文兑现不匹配。",
+        "suggestion": "标题改为“纸舟1.0导出TXT：结果文件在哪”，并在正文结果节补一句“成功后到原TXT文件所在目录查看result.txt”，使承诺与步骤对应。",
+        "excerpt": "纸舟1.0：找到TXT导出结果"
+      }
+    ],
+    "previous_issue_results": [
+      {
+        "issue_id": "issue-1",
+        "result": "resolved"
+      },
+      {
+        "issue_id": "issue-2",
+        "result": "resolved"
+      },
+      {
+        "issue_id": "issue-3",
+        "result": "resolved"
+      }
+    ],
+    "limitations": [
+      "未联网核验，无法确认工具时效、可用性及全网原创性。",
+      "材料未提供“一分钟”找到结果文件的实测或计时数据；正文与标题均未承诺具体耗时，若后续需要保留“一分钟”表述，需用户补充计时依据。",
+      "未提供工具界面截图或真实操作演示素材。",
+      "来源核对只验证引用文本存在，不代表已独立核实工具事实或检查完全。",
+      "来源匹配只验证引用存在，不能证明素材真实或检查完全；最终由用户确认。"
+    ],
+    "human_questions": [],
+    "claim_map": [
+      {
+        "draft_excerpt_id": "dp-3e8345d64ef4-2",
+        "source_id": "user-material",
+        "quote": "合成验收工具“纸舟”版本1.0，只用于本次软件功能测试。",
+        "excerpt": "纸舟1.0只用于本次软件功能测试。"
+      },
+      {
+        "draft_excerpt_id": "dp-3e8345d64ef4-4",
+        "source_id": "user-material",
+        "quote": "支持UTF-8纯文本输入。",
+        "excerpt": "支持UTF-8纯文本输入，不支持PDF和图片，也没有批量处理功能。"
+      },
+      {
+        "draft_excerpt_id": "dp-3e8345d64ef4-4",
+        "source_id": "user-material",
+        "quote": "不支持PDF和图片，也没有批量处理功能。",
+        "excerpt": "支持UTF-8纯文本输入，不支持PDF和图片，也没有批量处理功能。"
+      },
+      {
+        "draft_excerpt_id": "dp-3e8345d64ef4-6",
+        "source_id": "user-material",
+        "quote": "打开工具，选择TXT文件，点击导出。",
+        "excerpt": "打开工具，选择TXT文件，点击导出。"
+      },
+      {
+        "draft_excerpt_id": "dp-3e8345d64ef4-8",
+        "source_id": "user-material",
+        "quote": "成功时在原文件旁生成result.txt",
+        "excerpt": "成功时在原文件旁生成result.txt；没有生成时检查原目录写入权限。"
+      },
+      {
+        "draft_excerpt_id": "dp-3e8345d64ef4-8",
+        "source_id": "user-material",
+        "quote": "没有生成时检查原目录写入权限。",
+        "excerpt": "成功时在原文件旁生成result.txt；没有生成时检查原目录写入权限。"
+      },
+      {
+        "draft_excerpt_id": "dp-3e8345d64ef4-9",
+        "source_id": "user-material",
+        "quote": "工具完全离线，不需要账号",
+        "excerpt": "工具完全离线，不需要账号。"
+      }
+    ],
+    "ref": "5a5cc725-a35b-410b-8ca0-0239aa1e75c6@1",
+    "draft_ref": "8c94e982-e93a-47b9-bfc8-ab88c831b9af@1",
+    "snapshot_id": "33f5f1d3-2b80-4e6a-ba15-28d72edf4d18",
+    "content_hash": "3e8345d64ef4a1ac50172fdda5eaa7f4842219efc3b9e6548b8f3fb150cd9e14",
+    "policy_ref": "text-review@1",
+    "mode": "live",
+    "account_context": {
+      "account_id": "fe78d1b1-1a04-5287-baf4-3219023f8e83",
+      "profile_revision": 1
+    },
+    "ranking_limit": "版本比较是内容评价；重要事实问题先阻断，不输出爆款概率。"
+  }
+}

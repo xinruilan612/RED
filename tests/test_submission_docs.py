@@ -63,6 +63,41 @@ class SubmissionDocumentsTests(unittest.TestCase):
         self.assertNotIn('当前不提供视频生成或图片包自动导出', manual)
         self.assertIn('无声图文MP4', manual)
 
+    def test_official_outline_has_six_unique_chapters_and_subsections(self):
+        proposal = (DOCS / '01_技术方案.md').read_text()
+        chapters = re.findall(r'^## (.+)$', proposal, re.M)
+        self.assertEqual(chapters, ['一 产品概述与定位', '二 技术架构与创新', '三 功能设计与实现',
+                                    '四 开发测试与部署', '五 应用价值与展望', '六 附录与依据'])
+        for section in ('1.1 背景与目标', '1.2 产品定位', '2.1 整体架构', '2.2 技术选型',
+                        '2.3 创新应用', '3.1 核心功能', '3.2 辅助功能', '3.3 扩展性设计',
+                        '4.1 开发流程', '4.2 代码实现', '4.3 测试方案', '4.4 本地安装',
+                        '5.1 实际应用场景', '5.2 市场分析', '5.3 成果总结', '5.4 未来规划',
+                        '6.1 软件设计资料', '6.2 核心代码', '6.3 测试数据', '6.4 参考文献', '6.5 其他佐证'):
+            self.assertIn('### ' + section, proposal)
+        self.assertEqual(proposal.count('[[architecture]]'), 1)
+        self.assertEqual(proposal.count('[[workflow]]'), 1)
+        self.assertIn('260506-1.pdf', proposal)
+
+    def test_current_proposal_separates_package_quality_and_pending_acceptance(self):
+        proposal = (DOCS / '01_技术方案.md').read_text()
+        for fact in ('27a184d', 'paid_model_calls=0', '各导出2张1080×1440 PNG',
+                     '正文与PDF专项11项验证完成', 'CI及实际包结果待验收', 'SKAPP/ChineseCLIP',
+                     '生产库写入为false', '本文同步提供可编辑正文与对应技术方案PDF', '不证明真实模型质量'):
+            self.assertIn(fact, proposal)
+        self.assertIn('SKAPP/ChineseCLIP实验模块不随本次包安装', proposal)
+        self.assertIn('DeepSeek创作、读者检查、改稿复审、单张与全文导出', proposal)
+        self.assertIn('现有Mac实验环境不受影响', proposal)
+        self.assertIn('没有可信市场规模', proposal)
+        self.assertIn('团队实名及具体分工待团队确认', proposal)
+        self.assertIn('未训练新基础模型', proposal)
+
+    def test_current_feedback_is_not_erased_or_reassigned_to_new_package(self):
+        proposal = (DOCS / '01_技术方案.md').read_text()
+        for fact in ('三位真实读者', '无需重复收集', '4.00 | 2.67', '4.33 | 3.00',
+                     '排除P03后前两人可信均为4', '绑定旧稿', 'Codex代理不是这三位真人',
+                     '描述10月4日历史案例'):
+            self.assertIn(fact, proposal)
+
     def test_real_case_preserves_manual_adoption_and_comparison_limits(self):
         record = json.loads((DOCS / 'evidence/current-case.json').read_text())
         self.assertEqual(record['acceptance_mode'], 'manual_override')

@@ -33,7 +33,7 @@ def validate_payload(payload):
 
 def decode_image(value):
     from PIL import Image, ImageOps
-    Image.MAX_IMAGE_PIXELS = MAX_PIXELS
+    # Bound each decoded header below; never mutate Pillow process-global limits.
     try:
         if value.startswith('data:'):
             header, value = value.split(',', 1)

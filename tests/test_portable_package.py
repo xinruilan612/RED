@@ -16,6 +16,24 @@ class ProvisionTests(unittest.TestCase):
             self.assertTrue(json.loads((root/'private-distribution.json').read_text())['credential_included'])
             self.assertNotIn('synthetic-test-key',(root/'使用说明.txt').read_text())
 
+    def test_private_instructions_follow_bundle_system_and_architecture(self):
+        cases=[('win32','AMD64','启动有迹.cmd','%LOCALAPPDATA%\\Youji'),
+               ('darwin','arm64','启动有迹.command','~/Library/Application Support/Youji'),
+               ('linux','x86_64','./start-youji.sh','$XDG_DATA_HOME/youji')]
+        for system,architecture,startup,directory in cases:
+            with self.subTest(system=system),tempfile.TemporaryDirectory() as folder:
+                root=Path(folder);(root/('Youji.exe' if system=='win32' else 'Youji')).touch()
+                (root/'build-manifest.json').write_text(json.dumps({'platform':system,'architecture':architecture}))
+                provision(root,'synthetic-private-key')
+                text=(root/'使用说明.txt').read_text()
+                for required in (startup,directory,architecture,'launcher.log','本机账号','一次性恢复码','需要联网','关闭窗口结束API和Worker','未随本包安装','现有Mac独立实验环境不受影响'):
+                    self.assertIn(required,text)
+                self.assertNotIn('synthetic-private-key',text)
+                self.assertNotIn('Windows 10实测',text)
+                self.assertNotIn('所有Linux已通过',text)
+                if system=='linux':self.assertIn('chmod +x start-youji.sh Youji',text)
+                if system=='darwin':self.assertIn('勿关闭全局安全检查',text)
+
     def test_unbuilt_and_invalid_keys_rejected(self):
         with tempfile.TemporaryDirectory() as folder:
             root=Path(folder)

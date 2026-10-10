@@ -314,6 +314,22 @@ def launch(args):
     return 0
 
 
+def record_offline_failure(output, error):
+    """Full exception chain only for explicit synthetic self-test, never user runs."""
+    import traceback
+    output=Path(output);output.mkdir(parents=True,exist_ok=True)
+    detail=''.join(traceback.format_exception(type(error),error,error.__traceback__))
+    for name,value in os.environ.items():
+        if value and any(part in name.upper() for part in ('KEY','TOKEN','PASSWORD','COOKIE','SECRET')):
+            detail=detail.replace(value,'[REDACTED]')
+    (output/'self-test-error.log').write_text(detail,encoding='utf-8')
+    chain=[];current=error;seen=set()
+    while current is not None and id(current) not in seen:
+        seen.add(id(current));chain.append(type(current).__name__)
+        current=current.__cause__ or current.__context__
+    (output/'self-test-error.json').write_text(json.dumps({'stage':'offline_media','error_chain':chain,'fixture':'synthetic_offline','paid_model_calls':0},indent=2)+'\n',encoding='utf-8')
+
+
 def main(argv=None):
     # Frozen Windows console pipes may default to a legacy code page; Chinese
     # readiness/log messages must not crash the parent after services are ready.
@@ -344,7 +360,11 @@ def main(argv=None):
             run_service(args)
             return 0
         return launch(args)
-    except Exception:
+    except Exception as error:
+        if args.service == 'self-test' and args.self_test_output:
+            record_offline_failure(args.self_test_output,error)
+            print('Offline synthetic self-test failed ('+type(error).__name__+'); inspect self-test-error.log.',file=sys.stderr)
+            return 1
         # Deliberately omit exception strings and config; neither stderr nor UI may expose secrets.
         location = Path(args.data_dir or user_data_dir()).expanduser().absolute() / 'launcher.log'
         print('启动失败，两个服务已停止。请查看本机日志：' + str(location), file=sys.stderr)

@@ -49,6 +49,37 @@ class PortableSmokeTests(unittest.TestCase):
                     smoke.start(Path('/installed/app'),Path(folder),Path(folder)/'config',ready,io.StringIO())
                 stop.assert_called_once_with(process)
 
+    def test_offline_failure_preserves_redacted_exception_chain(self):
+        import os
+        def fail(*_):
+            try:raise OSError('Chromium missing DLL synthetic-private-key')
+            except OSError as error:raise RuntimeError('media unavailable') from error
+        with tempfile.TemporaryDirectory() as folder,patch.dict(os.environ,{'DEEPSEEK_API_KEY':'synthetic-private-key'}),patch.object(launcher,'offline_self_test',side_effect=fail):
+            self.assertEqual(launcher.main(['--service','self-test','--self-test-output',folder]),1)
+            root=Path(folder);log=(root/'self-test-error.log').read_text()
+            self.assertIn('Chromium missing DLL',log);self.assertIn('RuntimeError',log)
+            self.assertNotIn('synthetic-private-key',log)
+            packet=json.loads((root/'self-test-error.json').read_text())
+            self.assertEqual(packet['error_chain'],['RuntimeError','OSError'])
+            self.assertEqual(packet['paid_model_calls'],0)
+    def test_media_driver_uses_synthetic_directory_and_keeps_failure_log(self):
+        import os
+        def execute(argv,**kwargs):
+            self.assertIn('--data-dir',argv)
+            self.assertEqual(kwargs['env']['DEEPSEEK_API_KEY'],'')
+            self.assertNotIn('SOME_SECRET_TOKEN',kwargs['env'])
+            media=Path(argv[argv.index('--self-test-output')+1]);media.mkdir()
+            (media/'self-test-error.log').write_text('synthetic Chromium DLL error')
+            (media/'self-test-error.json').write_text('{"error_chain":["DomainError","Error"]}')
+            return subprocess.CompletedProcess(argv,1,b'chromium step\n',b'self-test failed\n')
+        with tempfile.TemporaryDirectory() as folder,patch.dict(os.environ,{'SOME_SECRET_TOKEN':'never-pass'}),patch.object(smoke.subprocess,'run',side_effect=execute):
+            root=Path(folder);output=root/'output';output.mkdir()
+            with self.assertRaises(smoke.MediaFailure) as caught:
+                smoke.run_media(Path('/installed/app'),root,output/'media',output)
+            self.assertEqual(caught.exception.diagnostic['stage'],'offline_media')
+            self.assertEqual(caught.exception.diagnostic['error_chain'],['DomainError','Error'])
+            self.assertIn('synthetic Chromium DLL error',(output/'offline-media-smoke.log').read_text())
+
     def test_fixture_media_service_dispatch_is_explicit(self):
         with patch.object(launcher,'offline_self_test') as execute:
             result=launcher.main(['--service','self-test','--self-test-output','/tmp/offline-only'])

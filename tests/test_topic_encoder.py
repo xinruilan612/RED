@@ -115,6 +115,26 @@ class TopicEncoderTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, '图片无效'):
                 topic_encode.decode_image(value)
 
+    def test_image_decode_pixel_bound_does_not_poison_later_pillow_consumers(self):
+        from PIL import Image
+        original_limit = Image.MAX_IMAGE_PIXELS
+        buffer = io.BytesIO()
+        Image.new('RGB', (3, 4)).save(buffer, format='PNG')
+        value = base64.b64encode(buffer.getvalue()).decode()
+        with patch.object(topic_encode, 'MAX_PIXELS', 5):
+            with self.assertRaisesRegex(ValueError, '图片无效'):
+                topic_encode.decode_image(value)
+        self.assertEqual(Image.MAX_IMAGE_PIXELS, original_limit)
+        with patch.object(topic_encode, 'MAX_PIXELS', 12):
+            self.assertEqual(topic_encode.decode_image(value).size, (3, 4))
+        self.assertEqual(Image.MAX_IMAGE_PIXELS, original_limit)
+        # A later product photo remains readable after this module's tight bound.
+        photo = io.BytesIO()
+        Image.new('RGB', (720, 720)).save(photo, format='PNG')
+        with Image.open(io.BytesIO(photo.getvalue())) as decoded:
+            decoded.load()
+            self.assertEqual(decoded.size, (720, 720))
+
     def test_pixels_bound_and_exif_orientation(self):
         from PIL import Image
         buffer = io.BytesIO()

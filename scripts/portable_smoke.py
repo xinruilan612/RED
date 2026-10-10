@@ -96,6 +96,32 @@ def stop(process):
     except subprocess.TimeoutExpired:process.kill();process.wait(timeout=5)
 
 
+class MediaFailure(RuntimeError):
+    def __init__(self,diagnostic):
+        self.diagnostic=diagnostic
+        super().__init__('Packaged offline media self-test failed; no model was called.')
+
+
+def run_media(executable,root,media,output):
+    # Explicit independent synthetic data directory; never use AppData real user state.
+    data=root/'offline-media-user';data.mkdir()
+    allowed={'PATH','SYSTEMROOT','WINDIR','COMSPEC','PATHEXT','HOME','USERPROFILE','LOCALAPPDATA','APPDATA','LANG','LC_ALL','TMP','TEMP','TMPDIR'}
+    env={k:v for k,v in os.environ.items() if k in allowed}
+    env.update(PYTHONUTF8='1',PYTHONIOENCODING='utf-8',YOUJI_IGNORE_PROJECT_ENV='1',DEEPSEEK_API_KEY='')
+    result=subprocess.run(command(executable,['--service','self-test','--data-dir',str(data),'--self-test-output',str(media)]),cwd=root,env=env,capture_output=True,timeout=180)
+    raw=result.stdout+result.stderr
+    error_log=media/'self-test-error.log'
+    if error_log.exists():raw+=b'\n--- synthetic self-test exception chain ---\n'+error_log.read_bytes()
+    (output/'offline-media-smoke.log').write_bytes(raw)
+    if result.returncode:
+        diagnostic={'stage':'offline_media','return_code':result.returncode,'error_type':'MediaFailure'}
+        error_packet=media/'self-test-error.json'
+        if error_packet.exists():
+            packet=json.loads(error_packet.read_text())
+            diagnostic['error_chain']=packet.get('error_chain',[])
+        raise MediaFailure(diagnostic)
+
+
 def run(executable,output):
     executable=Path(executable).absolute();output=Path(output).absolute();output.mkdir(parents=True,exist_ok=True)
     checks={};process=None
@@ -144,9 +170,7 @@ def run(executable,output):
                 if service_log.exists():
                     log.write('\n--- packaged service logs (synthetic empty-key fixture) ---\n'+service_log.read_text(encoding='utf-8',errors='replace'));log.flush()
         media=output/'offline-media'
-        result=subprocess.run(command(executable,['--service','self-test','--self-test-output',str(media)]),cwd=root,capture_output=True,timeout=180)
-        (output/'offline-media-smoke.log').write_bytes(result.stdout+result.stderr)
-        if result.returncode:raise RuntimeError('Packaged offline media self-test failed; no model was called.')
+        run_media(executable,root,media,output)
         report=json.loads((media/'self-test-report.json').read_text());ensure(report['paid_model_calls']==0 and report['production_writes'] is False)
         ensure(all(report['checks'][name]['valid'] for name in ('pillow','chromium','ffmpeg')))
         checks['packaged_chinese_pillow_chromium_ffmpeg']=True
@@ -160,7 +184,7 @@ def main():
     try:
         run(args.executable,args.output);print('Packaged offline smoke passed; no paid model calls.');return 0
     except Exception as error:
-        diagnostic=error.diagnostic if isinstance(error,HTTPFailure) else {'stage':'smoke','error_type':type(error).__name__}
+        diagnostic=error.diagnostic if isinstance(error,(HTTPFailure,MediaFailure)) else {'stage':'smoke','error_type':type(error).__name__}
         output=Path(args.output);output.mkdir(parents=True,exist_ok=True)
         (output/'diagnostic.json').write_text(json.dumps(diagnostic,indent=2)+'\n')
         detail=str(error) if isinstance(error,HTTPFailure) else type(error).__name__
