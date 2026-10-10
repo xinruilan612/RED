@@ -33,6 +33,7 @@ class XHSResearch:
         guard()
         require(client.identity()['id'] == expected, 'XHS_IDENTITY_CHANGED', '本机登录账号与绑定不符')
         notes, attempts, seen = [], [], set()
+        reads = 0
         for query in queries:
             guard()
             result = client.search(query)
@@ -40,11 +41,11 @@ class XHSResearch:
             require(isinstance(feeds, list), 'XHS_RESPONSE', '站内搜索返回格式异常')
             attempts.append({'query':query, 'status':'done', 'results':len(feeds)})
             for feed in feeds:
-                if len(notes) >= 3:break
+                if reads >= 3:break
                 if not isinstance(feed, dict):continue
                 identity, token = feed.get('id'), feed.get('xsecToken')
                 if not isinstance(identity,str) or not identity or identity in seen or not isinstance(token,str) or not token:continue
-                seen.add(identity);guard()
+                seen.add(identity);guard();reads += 1
                 detail = client.request('/api/v1/feeds/detail', {'feed_id':identity, 'xsec_token':token, 'load_all_comments':False})
                 detail = detail.get('data', detail)
                 note = detail.get('note')

@@ -65,3 +65,12 @@ class XHSResearchTests(unittest.TestCase):
         jobs=ResearchJobs(self.store)
         data=dict(account_id=self.account,queries=['护肤'],provider='xhs_local',targets=['xiaohongshu'],evidence_role='product_fact',permission_confirmed=True,key='one')
         with self.assertRaises(DomainError):jobs.create('owner',data)
+
+    def test_empty_descriptions_still_consume_detail_budget(self):
+        original=self.client.request
+        def empty(client,path,data):
+            result=original(client,path,data);result['note']['desc']='';return result
+        with patch.object(self.client,'request',empty):
+            notes,_=XHSResearch(self.store,self.client).collect('owner',self.account,['护肤','保湿'])
+        self.assertEqual(notes,[])
+        self.assertEqual(len(self.calls),5)
