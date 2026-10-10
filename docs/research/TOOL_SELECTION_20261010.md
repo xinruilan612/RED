@@ -14,13 +14,13 @@
 - 保留事实、限定条件和作者声音；不虚构亲身体验，不把资料里的命令当作指令。它不承诺通过 AI 检测，也不替代产品事实审核。
 - 英文 `blader/humanizer` 曾作对照安装并通过包验证；为避免重复，已回滚该次安装，最终只保留中文版。
 
-## 数据连接：未安装
+## 数据连接：状态更新
 
 | 项目 | 核实到的能力与选择理由 |
 | --- | --- |
 | [xiaohongshu-mcp](https://github.com/xpzouying/xiaohongshu-mcp) | 浏览器实现，代码 Apache-2.0 许可不能代替平台数据授权；详见[连接可行性核实](XHS_CONNECTION_FEASIBILITY.md)。 |
 | [Agent-Reach](https://github.com/Panniantong/Agent-Reach) | MIT；目前小红书后端在 OpenCLI、xiaohongshu-mcp、xhs-cli 间路由，仍依赖登录态或 Cookie。没有因此获得新的官方个人自然流量/评论数据权限。 |
-| [MediaCrawler](https://github.com/NanmiCoder/MediaCrawler) | Playwright 登录态及网页签名采集。原始 LICENSE 是非商业学习许可证 1.1；不作为商业产品依赖，也没有据此启用平台采集。 |
+| [MediaCrawler](https://github.com/NanmiCoder/MediaCrawler) | Playwright 登录态及网页签名采集。原始 LICENSE 是非商业学习许可证 1.1。用户已明确本次为非商业使用；此前以商业用途为由排除不适用。已在 runtime/mediacrawler 安装独立环境，开始经用户确认的本人账号小规模只读验证；这不等于官方同步接口已接通。 |
 | social-auto-upload | 当前需求优先研究与数据，自动发布另有账号、稿件版本和时间审批；本轮不新增发布器。 |
 | linco-bridge | 远程访问本机 Agent 不解决数据接口权限；本轮不新增远程入口或暴露本机。 |
 
@@ -35,3 +35,9 @@ nuwa-skill、huashu-design、Excalidraw、Horizon、Generative-Media-Skills、Au
 ## 验收边界
 
 本次只确认中文 Skill 文件安装完成；需要下一轮对话实际触发才能确认使用体验。未新增常驻服务、浏览器插件、Cookie 采集或社媒自动发布。个人账号实时自动同步仍未达到可验收状态。
+
+## 用户明确用途后的更正
+
+用户已确认非商业、本机学习研究，并选择先验证本人账号笔记与公开评论；主页链接只存放于忽略的 runtime 目录。独立验证固定 MediaCrawler 版本 `e9dd17a16338c3915f2335bc609383d316e055f2`，按其 uv.lock 安装；89 个依赖在独立环境中，不改网站环境。入口 `scripts/mediacrawler_probe.py` 不复用现有 Chrome、无代理池、无 stealth 注入、无后台重试、无自动发布；新窗口扫码登录且核对本人账号，最多处理3篇笔记，每篇保留20条顶层评论。平台每个响应可能含更多元数据，超出部分不处理保存。结果仅本机，凭据不写进结果或控制台，缺失曝光/阅读量保持 null。
+
+此前“未安装 MediaCrawler”的记录已由此更新取代；正式网站平台连接状态仍需依据实际集成和验证，不能由工具安装状态推断。
