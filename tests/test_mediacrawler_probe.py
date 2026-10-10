@@ -28,3 +28,26 @@ class MediaCrawlerProbeTests(unittest.TestCase):
             path=Path(root)/'result.json';private_json(path,{'status':'done'})
             self.assertEqual(path.stat().st_mode&0o777,0o600)
             self.assertEqual(json.loads(path.read_text())['status'],'done')
+
+
+class RequestBudgetTests(unittest.IsolatedAsyncioTestCase):
+    async def test_upstream_keyword_url_signature_and_stop_after_first_failure(self):
+        from scripts.mediacrawler_probe import ReadBudget
+        from types import SimpleNamespace,MethodType
+        from unittest.mock import AsyncMock
+        raw=AsyncMock(return_value={'notes':[]});report={'requests':0};client=SimpleNamespace()
+        budget=ReadBudget(raw,report,delay=0);client.request=MethodType(budget.send,client)
+        result=await client.request(method='GET',url='https://example.com',headers={})
+        self.assertEqual(result,{'notes':[]});self.assertEqual(report['requests'],1)
+        raw.side_effect=RuntimeError('secret provider detail')
+        with self.assertRaisesRegex(ProbeStopped,'SOURCE_STOPPED_RuntimeError'):
+            await client.request(method='GET',url='https://example.com')
+        with self.assertRaisesRegex(ProbeStopped,'REQUEST_LIMIT_OR_STOP'):
+            await client.request(method='GET',url='https://example.com')
+        self.assertEqual(raw.call_count,2)
+    async def test_budget_stops_before_additional_request(self):
+        from scripts.mediacrawler_probe import ReadBudget,MAX_REQUESTS
+        from unittest.mock import AsyncMock
+        raw=AsyncMock();budget=ReadBudget(raw,{'requests':MAX_REQUESTS},delay=0)
+        with self.assertRaises(ProbeStopped):await budget.send(None,'GET','https://example.com')
+        raw.assert_not_called()

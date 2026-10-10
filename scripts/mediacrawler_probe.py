@@ -21,6 +21,23 @@ class ProbeStopped(Exception):
     pass
 
 
+class ReadBudget:
+    def __init__(self, raw_request, report, delay=5):
+        self.raw_request,self.report,self.delay=raw_request,report,delay
+        self.stopped=False
+
+    async def send(self, client, method, url, **kwargs):
+        if self.stopped or self.report['requests']>=MAX_REQUESTS:
+            raise ProbeStopped('REQUEST_LIMIT_OR_STOP')
+        self.report['requests']+=1
+        await asyncio.sleep(self.delay)
+        try:
+            return await self.raw_request(client,method,url,**kwargs)
+        except Exception as exc:
+            self.stopped=True
+            raise ProbeStopped('SOURCE_STOPPED_'+type(exc).__name__) from None
+
+
 def profile_id(url):
     p = urlsplit(url)
     match = re.fullmatch(r'/user/profile/([a-f0-9]{24})/?', p.path)
@@ -109,19 +126,8 @@ async def run(url):
             crawler.browser_context,crawler.context_page=context,page
             client = await crawler.create_xhs_client(None)
             raw_request=XiaoHongShuClient.request.__wrapped__
-            stopped=False
-            async def single_request(self,method,target,**kwargs):
-                nonlocal stopped
-                if stopped or report['requests']>=MAX_REQUESTS:
-                    raise ProbeStopped('REQUEST_LIMIT_OR_STOP')
-                report['requests']+=1
-                await asyncio.sleep(5)
-                try:
-                    return await raw_request(self,method,target,**kwargs)
-                except Exception as exc:
-                    stopped=True
-                    raise ProbeStopped('SOURCE_STOPPED_'+type(exc).__name__) from None
-            client.request=MethodType(single_request,client)
+            budget=ReadBudget(raw_request,report)
+            client.request=MethodType(budget.send,client)
             scope=parse_creator_info_from_url(url)
             report['status']='running';save()
             # One list page only. The server may return more metadata; only 3 are processed.
