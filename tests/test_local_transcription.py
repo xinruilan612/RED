@@ -76,3 +76,19 @@ class LocalTranscriptionTests(unittest.TestCase):
             paths.append(source.parent);raise DomainError('MEDIA_INVALID','invalid')
         with patch.object(asr,'_decode',side_effect=fail),self.assertRaises(DomainError):self.call()
         self.assertFalse(paths[0].exists())
+
+    def test_whisper_uses_structured_output_to_preserve_eos(self):
+        import numpy as np
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+        model=Mock()
+        model.generation_config.eos_token_id=50257
+        model.generate.return_value=SimpleNamespace(sequences=np.array([[50258,33,50257]]))
+        features=SimpleNamespace(input_features='features',attention_mask='mask')
+        ids=asr._generate(model,features)
+        self.assertEqual(ids[0,-1],50257)
+        self.assertTrue(model.generate.call_args.kwargs['return_dict_in_generate'])
+        self.assertFalse(model.generate.call_args.kwargs['return_timestamps'])
+        self.assertEqual(model.generate.call_args.kwargs['attention_mask'],'mask')
+        model.generate.return_value=SimpleNamespace(sequences=np.array([[50258,33,44]]))
+        with self.assertRaises(DomainError):asr._generate(model,features)

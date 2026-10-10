@@ -114,6 +114,19 @@ def transcribe_upload(data, *, filename, account_id, title, permission_confirmed
             'method':'local_whisper_audio_only','verification':'machine_transcript_unverified'}}
 
 
+def _generate(model, features):
+    # Whisper's default tensor output strips EOS during postprocessing. The
+    # structured short-form output retains decoder prompt and EOS, allowing a
+    # genuine truncation check without rejecting complete transcripts.
+    output=model.generate(features.input_features,attention_mask=features.attention_mask,
+                          language='zh',task='transcribe',max_new_tokens=440,
+                          do_sample=False,return_timestamps=False,return_dict_in_generate=True)
+    ids=output.sequences
+    require(int(ids[0,-1])==model.generation_config.eos_token_id,
+            'TRANSCRIPTION_FAILED','转写输出不完整，未保存案例')
+    return ids
+
+
 def _worker(path):
     import numpy as np
     import torch
@@ -127,11 +140,8 @@ def _worker(path):
         for start in range(0,len(audio),30*SAMPLE_RATE):
             chunk=audio[start:start+30*SAMPLE_RATE]
             if float(np.sqrt(np.mean(chunk**2)))<.0001:continue
-            features=processor(chunk,sampling_rate=SAMPLE_RATE,return_tensors='pt')
-            ids=model.generate(features.input_features,language='zh',task='transcribe',max_new_tokens=440,
-                               do_sample=False,return_timestamps=False)
-            if int(ids[0,-1]) != model.generation_config.eos_token_id:
-                raise RuntimeError('Transcription output truncated')
+            features=processor(chunk,sampling_rate=SAMPLE_RATE,return_tensors='pt',return_attention_mask=True)
+            ids=_generate(model,features)
             text=processor.batch_decode(ids,skip_special_tokens=True)[0].strip()
             if text:segments.append({'start':start/SAMPLE_RATE,'end':(start+len(chunk))/SAMPLE_RATE,'text':text})
     print(json.dumps(segments,ensure_ascii=False))
