@@ -31,6 +31,19 @@ ICON_PREFIXES = {
     'shares': 'M8.28672 5.15797',
 }
 
+# Filter private cards before extracting any identifier, title, or metric.
+NOTE_CARDS_EXTRACT = """els => els.slice(0,30)
+ .filter(e => !e.innerText.includes('仅自己可见'))
+ .map(e=>({
+   id:JSON.parse(e.getAttribute('data-impression')||'{}')?.noteTarget?.value?.noteId,
+   visibility:'public',visibility_source:'creator_note_card_no_private_label',
+   title:e.querySelector('.note-card__title')?.innerText || '',
+   time:e.querySelector('.note-card__time')?.innerText || '',
+   stats:Array.from(e.querySelectorAll('.note-card__stat')).map(s=>({
+     icon:s.querySelector('svg path')?.getAttribute('d') || '',value:s.querySelector('span')?.innerText || ''
+   }))
+ }))"""
+
 
 class ReaderStopped(Exception):
     pass
@@ -124,7 +137,9 @@ async def home_data(page, account, login=False, folder=None):
     extract = """() => ({
       account_label: document.body.innerText.match(/小红书账号\\s*[:：]\\s*[0-9A-Za-z_-]+/)[0],
       period: document.querySelector('.time-scope').innerText, period_days: 7,
-      blocks: Array.from(document.querySelectorAll('.creator-block')).map(e=>({
+      blocks: Array.from(document.querySelectorAll('.creator-block'))
+       .filter(e=>!['净涨粉','新增关注','取消关注','主页访客'].includes(e.querySelector('.title')?.innerText || ''))
+       .map(e=>({
         label:e.querySelector('.title')?.innerText || '',
         value:e.querySelector('.number')?.innerText || '',
         unit:e.querySelector('.number-container')?.innerText.includes('%') ? '%' : ''
@@ -165,14 +180,7 @@ async def read_pages(args, folder, binding):
                 await page.goto(NOTES, wait_until='domcontentloaded', timeout=35000)
                 await check_page(page)
                 await page.locator('.note-card').first.wait_for(state='visible', timeout=12000)
-                cards = await page.locator('.note-card').evaluate_all("""els => els.slice(0,30).map(e=>({
-              id:JSON.parse(e.getAttribute('data-impression')||'{}')?.noteTarget?.value?.noteId,
-              title:e.querySelector('.note-card__title')?.innerText || '',
-              time:e.querySelector('.note-card__time')?.innerText || '',
-              stats:Array.from(e.querySelectorAll('.note-card__stat')).map(s=>({
-                icon:s.querySelector('svg path')?.getAttribute('d') || '',value:s.querySelector('span')?.innerText || ''
-              }))
-                }))""")
+                cards = await page.locator('.note-card').evaluate_all(NOTE_CARDS_EXTRACT)
             except ReaderStopped:
                 raise
             except Exception:
@@ -194,7 +202,7 @@ async def read_pages(args, folder, binding):
                 source_id=args.source_id, creator_account_id=binding['creator_account_id'], observed_at=observed)
             if notes_error:
                 result.update(status='partial', error=notes_error)
-            result['coverage'] = '首页近7日汇总；笔记管理首屏已加载最多30篇，非全部历史；评论正文由原连接器读取'
+            result['coverage'] = '笔记管理首屏已加载最多30篇中已核对的公开笔记；仅自己可见条目不采集，不代表全部历史'
             return result
         finally:
             await context.close()

@@ -12,9 +12,9 @@ ACCOUNT_LABELS = {
     '曝光数': 'exposure', '观看数': 'views',
     '封面点击率': 'cover_ctr', '视频完播率': 'video_completion_rate',
     '点赞数': 'likes', '评论数': 'comments', '收藏数': 'favorites', '分享数': 'shares',
-    '净涨粉': 'followers_gained', '新增关注': 'follows_added',
-    '取消关注': 'unfollows', '主页访客': 'profile_visitors',
 }
+IGNORED_ACCOUNT_LABELS = {'净涨粉','新增关注','取消关注','主页访客'}
+PUBLIC_VISIBILITY_SOURCE = 'creator_note_card_no_private_label'
 ACCOUNT_METRICS = tuple(dict.fromkeys(ACCOUNT_LABELS.values()))
 RATE_METRICS = ('cover_ctr', 'video_completion_rate')
 NOTE_METRICS = ('views', 'comments', 'likes', 'favorites', 'shares')
@@ -102,6 +102,8 @@ def parse_creator_metrics(payload, *, source_id, creator_account_id, observed_at
         _check(isinstance(block, dict), 'home block invalid')
         label = block.get('label')
         _check(isinstance(label, str), 'home metric label invalid')
+        if label in IGNORED_ACCOUNT_LABELS:
+            continue
         key = ACCOUNT_LABELS.get(label)
         _check(key is not None and key not in seen, 'unknown or duplicate home metric')
         seen.add(key)
@@ -113,6 +115,8 @@ def parse_creator_metrics(payload, *, source_id, creator_account_id, observed_at
     notes, seen = [], set()
     for card in cards:
         _check(isinstance(card, dict), 'note card invalid')
+        if card.get('visibility') != 'public' or card.get('visibility_source') != PUBLIC_VISIBILITY_SOURCE:
+            continue
         identity = card.get('id')
         _check(isinstance(identity, str) and re.fullmatch(r'[A-Za-z0-9_-]{1,200}', identity) and identity not in seen, 'note identity invalid or duplicate')
         seen.add(identity)
@@ -130,6 +134,7 @@ def parse_creator_metrics(payload, *, source_id, creator_account_id, observed_at
             raw[key] = display
             values[key] = exact_metric(display)
         notes.append({'id': identity, 'title': title, 'published_display': published,
+                      'visibility':'public','visibility_source':PUBLIC_VISIBILITY_SOURCE,
                       'metrics': values, 'metric_displays': raw,
                       'source_url': 'https://www.xiaohongshu.com/explore/' + identity})
     return {'status': 'synced', 'source_id': source_id, 'creator_account_id': creator_account_id,

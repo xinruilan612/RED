@@ -11,7 +11,7 @@ def fixture():
                      'period_days': 7, 'blocks': [{'label': '曝光数', 'value': '25', 'unit': ''},
                                                {'label': '封面点击率', 'value': '12.5', 'unit': '%'},
                                                {'label': '观看数', 'value': '1.2万', 'unit': ''}]},
-            'notes': [{'id': 'note-1', 'title': '我的笔记', 'time': '2026-10-02 12:30',
+            'notes': [{'id': 'note-1', 'visibility':'public','visibility_source':'creator_note_card_no_private_label', 'title': '我的笔记', 'time': '2026-10-02 12:30',
                        'stats': [{'kind': kind, 'value': str(value)} for kind, value in
                                  [('shares', 0), ('views', 24), ('likes', 3), ('favorites', 1), ('comments', 2)]]}]}
 
@@ -40,8 +40,8 @@ class CreatorMetricsTests(unittest.TestCase):
         packet['home']['blocks'] = [{'label': '净涨粉', 'value': '-2', 'unit': ''},
                                    {'label': '取消关注', 'value': '3', 'unit': ''}]
         result = parse(packet)
-        self.assertEqual(result['account']['metrics']['followers_gained'], -2)
-        self.assertEqual(result['account']['metrics']['unfollows'], 3)
+        self.assertNotIn('followers_gained',result['account']['metrics'])
+        self.assertNotIn('unfollows',result['account']['metrics'])
         self.assertEqual(exact_metric('-1,234', signed=True), -1234)
         self.assertIsNone(exact_metric('-1.2万', signed=True))
         self.assertIsNone(exact_metric('-2'))
@@ -62,7 +62,7 @@ class CreatorMetricsTests(unittest.TestCase):
         self.assertEqual(account['metrics']['cover_ctr'], 12.5)
         self.assertIsNone(account['metrics']['views'])
         self.assertEqual(account['metric_displays']['views'], '1.2万')
-        self.assertIsNone(account['metrics']['profile_visitors'])
+        self.assertNotIn('profile_visitors',account['metrics'])
         note = result['notes'][0]
         self.assertEqual(note['metrics'], {'exposure': None, 'shares': 0, 'views': 24, 'likes': 3, 'favorites': 1, 'comments': 2})
         self.assertEqual(note['source_url'], 'https://www.xiaohongshu.com/explore/note-1')
@@ -96,6 +96,16 @@ class CreatorMetricsTests(unittest.TestCase):
             elif change == 'id': packet['notes'][0]['id'] = '../../other'
             else: packet['notes'].append(packet['notes'][0])
             with self.subTest(change=change), self.assertRaises(CreatorMetricsError): parse(packet)
+
+    def test_private_or_unknown_cards_never_reach_parser_output(self):
+        packet=fixture()
+        private=copy.deepcopy(packet['notes'][0]);private.update(id='private',title='PRIVATE TITLE',visibility='private')
+        unknown=copy.deepcopy(packet['notes'][0]);unknown.update(id='legacy',title='UNKNOWN TITLE');unknown.pop('visibility')
+        packet['notes'] += [private,unknown]
+        result=parse(packet)
+        self.assertEqual([n['id'] for n in result['notes']],['note-1'])
+        self.assertNotIn('PRIVATE TITLE',str(result));self.assertNotIn('UNKNOWN TITLE',str(result))
+        self.assertEqual(result['notes'][0]['visibility'],'public')
 
     def test_year_boundary_inference_is_validated(self):
         packet = fixture(); packet['home']['period'] = '统计周期 12-29 至 01-04'

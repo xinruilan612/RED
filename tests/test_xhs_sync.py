@@ -15,8 +15,10 @@ from backend.xhs_sync import XHSSync
 
 
 def snapshot():
-    note=normalize_detail({'note':{'noteId':'n','user':{'userId':'source'},'title':'title','desc':'body','interactInfo':{'likedCount':'0','collectedCount':'1.2万'}},'comments':{'list':[{'id':'c','content':'comment','userInfo':{'nickname':'private'}}]}},'source','n')
-    return dict(identity={'id':'source'},notes=[note],failures=[],observed_at='2026-10-10T00:00:00Z',coverage='partial')
+    note=normalize_detail({'note':{'noteId':'n','user':{'userId':'source'},'title':'title','desc':'body','interactInfo':{'likedCount':'0','collectedCount':'1.2万'}},'comments':{'list':[{'id':'c','content':'comment','userInfo':{'nickname':'SENSITIVE_NICKNAME'}}]}},'source','n')
+    return dict(identity={'id':'source'},notes=[note],failures=[],observed_at='2026-10-10T00:00:00Z',coverage='partial',
+                creator_metrics={'status':'synced','source_id':'source','observed_at':'2026-01-01T00:00:00Z','account':None,
+                    'notes':[{'id':'n','visibility':'public','visibility_source':'creator_note_card_no_private_label','metrics':{}}]})
 
 class Fake:
     def __init__(self):self.result=snapshot();self.failure=None
@@ -85,7 +87,7 @@ class SyncTests(unittest.TestCase):
     def test_unknown_counts_and_sensitive_fields(self):
         self.sync.once();n=self.sync.records(self.owner,self.account)[0]
         self.assertEqual(n['metrics']['likes'],0);self.assertIsNone(n['metrics']['favorites']);self.assertIsNone(n['metrics']['views'])
-        self.assertNotIn('private',str(self.state()))
+        self.assertNotIn('SENSITIVE_NICKNAME',str(self.state()))
     def test_round_identity_mismatch_saves_nothing(self):
         self.fake.result['identity']['id']='other';self.sync.once();self.assertEqual(self.state()['counts']['note'],0)
     def test_client_rejects_write_route_without_network(self):

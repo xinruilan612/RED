@@ -8,6 +8,7 @@ import json
 from datetime import datetime, timezone
 from backend.contracts import DomainError, require
 from backend.research_cases import ResearchCases, METRICS
+from backend.xhs_sync import XHSSync
 
 
 class XHSCaseImport:
@@ -28,6 +29,7 @@ class XHSCaseImport:
         require(isinstance(note_id,str) and 0<len(note_id)<=200,'INVALID_INPUT','笔记标识无效')
         for _ in range(3):
             with self.store.connect() as db:
+                XHSSync.require_public_note(db,owner,account,note_id)
                 row=db.execute("SELECT payload,hash,last_seen FROM xhs_sync_entities WHERE owner=? AND account_id=? AND kind='note' AND id=?",(owner,account,note_id)).fetchone()
                 require(row is not None,'RESOURCE_NOT_FOUND','未找到此账号的已保存笔记')
                 note=json.loads(row[0])
@@ -39,7 +41,10 @@ class XHSCaseImport:
             require(body,'INVALID_INPUT','笔记没有可导入的文字正文')
             fingerprint=hashlib.sha256(body.encode()).hexdigest()
             if existing and existing[2]==fingerprint:
-                return {**self.cases.knowledge.get_version(owner,account,existing[0],existing[1]),'reused':True}
+                result=self.cases.knowledge.get_version(owner,account,existing[0],existing[1])
+                with self.store.connect() as db:
+                    db.execute('BEGIN IMMEDIATE');XHSSync.require_public_note(db,owner,account,note_id)
+                    return {**result,'reused':True}
             observed=datetime.fromtimestamp(row[2],timezone.utc).isoformat()
             packet={'account_id':account,'title':(note['title'].strip() or '本人笔记表达参考')[:200],
                     'text':body,'source_url':note['url'],'platform':'xiaohongshu','author':note['author_id'],
@@ -47,6 +52,7 @@ class XHSCaseImport:
                     'evidence_role':'expression_reference','permission_confirmed':True}
             if existing:packet.update(document_id=existing[0],expected_version=existing[1])
             def guard(db):
+                XHSSync.require_public_note(db,owner,account,note_id)
                 current=db.execute("SELECT hash FROM xhs_sync_entities WHERE owner=? AND account_id=? AND kind='note' AND id=?",(owner,account,note_id)).fetchone()
                 require(current and current[0]==row[1] and self._existing(db,owner,account,note['url'])==existing,
                         'VERSION_CONFLICT','笔记或案例已更新，请重试')

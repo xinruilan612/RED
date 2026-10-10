@@ -15,13 +15,13 @@ from backend.accounts import find_account
 from backend.contracts import DomainError, require
 from backend.operations import Operations
 from backend.xhs_local import LocalXHS
+from backend.creator_metrics import PUBLIC_VISIBILITY_SOURCE
 
 
 def encoded(value):return json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(',',':'))
 
 
-CREATOR_COUNTS=('exposure','views','likes','favorites','comments','shares','followers','new_followers','profile_visits',
-                'followers_gained','follows_added','unfollows','profile_visitors')
+CREATOR_COUNTS=('exposure','views','likes','favorites','comments','shares')
 CREATOR_RATES=('cover_ctr','video_completion_rate','avg_watch_seconds','avg_view_duration','total_watch_seconds')
 
 
@@ -78,6 +78,8 @@ def creator_snapshot(raw,source_id):
         require(isinstance(notes,list) and len(notes)<=100,'XHS_CREATOR_RESPONSE','笔记数据超限')
         seen=set()
         for note in notes:
+            if not isinstance(note,dict) or note.get('visibility')!='public' or note.get('visibility_source')!=PUBLIC_VISIBILITY_SOURCE:
+                continue
             require(isinstance(note,dict) and isinstance(note.get('id'),str) and re.fullmatch(r'[A-Za-z0-9_-]{1,200}',note['id']),'XHS_CREATOR_RESPONSE','笔记标识无效')
             if note['id'] in seen:continue
             seen.add(note['id'])
@@ -86,6 +88,7 @@ def creator_snapshot(raw,source_id):
             parsed=urlsplit(url)
             require(parsed.scheme=='https' and parsed.netloc in ('www.xiaohongshu.com','creator.xiaohongshu.com'),'XHS_CREATOR_RESPONSE','来源链接无效')
             result['notes'].append({'id':note['id'],'title':display(note.get('title'),500),
+                'visibility':'public','visibility_source':PUBLIC_VISIBILITY_SOURCE,
                 'published_display':display(note.get('published_display')),
                 'metrics':metrics(note.get('metrics',{})),'metric_displays':displays(note.get('metric_displays')),
                 'source_url':urlunsplit((parsed.scheme,parsed.netloc,parsed.path,'',''))})
@@ -98,6 +101,36 @@ def creator_snapshot(raw,source_id):
 class XHSSync:
     def __init__(self,store,client_factory=None):
         self.store=store;self.factory=client_factory or (lambda port:LocalXHS(port=port))
+
+    @staticmethod
+    def public_note_ids(db,owner,account_id):
+        """Only the latest verified creator snapshot can grant public visibility.
+
+        Old observations without an explicit DOM visibility marker remain stored
+        for audit but never authorize API responses, comments, or case imports.
+        """
+        row=db.execute("SELECT e.payload,l.source_id FROM xhs_sync_entities e JOIN xhs_sync_links l ON l.owner=e.owner AND l.account_id=e.account_id WHERE e.owner=? AND e.account_id=? AND e.kind='creator_account' AND e.id='snapshot'",(owner,account_id)).fetchone()
+        if not row:return set()
+        snapshot=json.loads(row[0])
+        if snapshot.get('source_id')!=row[1] or snapshot.get('status') not in ('synced','partial'):return set()
+        return {n['id'] for n in snapshot.get('notes',[]) if isinstance(n,dict) and isinstance(n.get('id'),str)
+                and n.get('visibility')=='public' and n.get('visibility_source')==PUBLIC_VISIBILITY_SOURCE}
+
+    @staticmethod
+    def require_public_note(db,owner,account_id,note_id):
+        require(note_id in XHSSync.public_note_ids(db,owner,account_id),'RESOURCE_NOT_FOUND','笔记尚未核实为公开内容，不能读取或导入')
+
+    @staticmethod
+    def _public_creator(snapshot,visible):
+        if not isinstance(snapshot,dict):return None
+        # Home aggregates include private posts and cannot be attributed to a
+        # public post. Historical aggregates remain only in persisted audit data.
+        notes=[]
+        for note in snapshot.get('notes',[]):
+            if not isinstance(note,dict) or note.get('id') not in visible or note.get('visibility')!='public' or note.get('visibility_source')!=PUBLIC_VISIBILITY_SOURCE:continue
+            notes.append({**note,'metrics':{k:v for k,v in note.get('metrics',{}).items() if k in CREATOR_COUNTS+CREATOR_RATES},
+                          'metric_displays':{k:v for k,v in note.get('metric_displays',{}).items() if k in CREATOR_COUNTS+CREATOR_RATES}})
+        return {**snapshot,'account':None,'notes':notes}
 
     def bind(self,owner,account_id,port=18061,interval_s=900):
         account=find_account(Operations(self.store).read(owner),account_id)
@@ -120,16 +153,28 @@ class XHSSync:
         with self.store.connect() as db:
             row=db.execute('SELECT source_id,interval_s,enabled,status,next_at,last_at,error FROM xhs_sync_links WHERE owner=? AND account_id=?',(owner,account_id)).fetchone()
             if not row:return {'bound':False,'enabled':False,'status':'not_connected'}
-            counts={kind:db.execute('SELECT COUNT(*) FROM xhs_sync_entities WHERE owner=? AND account_id=? AND kind=?',(owner,account_id,kind)).fetchone()[0] for kind in ('note','comment')}
+            visible=self.public_note_ids(db,owner,account_id)
+            entities=db.execute("SELECT kind,id,payload FROM xhs_sync_entities WHERE owner=? AND account_id=? AND kind IN ('note','comment')",(owner,account_id)).fetchall()
+            counts={'note':sum(r[0]=='note' and r[1] in visible for r in entities),
+                    'comment':sum(r[0]=='comment' and json.loads(r[2]).get('note_id') in visible for r in entities)}
             latest=db.execute('SELECT payload FROM xhs_sync_rounds WHERE owner=? AND account_id=? ORDER BY observed_at DESC LIMIT 1',(owner,account_id)).fetchone()
             latest=json.loads(latest[0]) if latest else None
             creator=db.execute("SELECT payload FROM xhs_sync_entities WHERE owner=? AND account_id=? AND kind='creator_account' AND id='snapshot'",(owner,account_id)).fetchone()
+            if latest:
+                all_visible=all(n.get('id') in visible for n in latest.get('notes',[]))
+                latest['notes']=[{**n,'visibility':'public','visibility_source':PUBLIC_VISIBILITY_SOURCE} for n in latest.get('notes',[]) if n.get('id') in visible]
+                latest['creator_metrics']=self._public_creator(latest.get('creator_metrics'),visible)
+                summary=latest.get('summary',{})
+                latest['summary']={**summary,'notes_read':len(latest['notes']),
+                    'comments_read':sum(len(n.get('comments',[])) for n in latest['notes']),
+                    'failures':[f for f in summary.get('failures',[]) if f.get('note_id') in visible],
+                    **{key:summary.get(key) if all_visible else None for key in ('new_notes','changed_notes','new_comments','changed_comments')}}
             return {'bound':True,'source_id':row[0],'interval_s':row[1],'enabled':bool(row[2]),'status':row[3],
                     'next_at':row[4] if row[2] else None,'last_at':row[5],'error':row[6],'counts':counts,
                     'latest_round':latest,'official_api':False,'realtime_push':False,
                     'creator_metrics':latest.get('creator_metrics') if latest else None,
-                    'creator_last_success':json.loads(creator[0]) if creator else None,
-                    'limitation':'本机浏览器定时读取；前5篇笔记、每篇最多100条已加载评论，不保证全量。创作者流量另列来源与周期，缺失保留未知。'}
+                    'creator_last_success':self._public_creator(json.loads(creator[0]),visible) if creator else None,
+                    'limitation':'仅返回经创作者笔记管理页面核实的公开笔记；私密与可见性未核实记录不展示。逐篇指标缺失保留未知。'}
 
     def control(self,owner,account_id,action):
         require(action in ('pause','resume','refresh'),'INVALID_INPUT','同步操作无效')
@@ -149,10 +194,16 @@ class XHSSync:
     def records(self,owner,account_id):
         find_account(Operations(self.store).read(owner),account_id)
         with self.store.connect() as db:
+            visible=self.public_note_ids(db,owner,account_id)
             rows=db.execute("SELECT payload FROM xhs_sync_entities WHERE owner=? AND account_id=? AND kind='note' ORDER BY last_seen DESC LIMIT 30",(owner,account_id)).fetchall()
             creator=db.execute("SELECT id,payload FROM xhs_sync_entities WHERE owner=? AND account_id=? AND kind='creator_note'",(owner,account_id)).fetchall()
-        creator={r[0]:json.loads(r[1]) for r in creator}
-        return [{**json.loads(r[0]),'creator_metrics':creator.get(json.loads(r[0])['id'])} for r in rows]
+        creator={r[0]:json.loads(r[1]) for r in creator if json.loads(r[1]).get('visibility')=='public'
+                 and json.loads(r[1]).get('visibility_source')==PUBLIC_VISIBILITY_SOURCE}
+        creator={identity:self._public_creator({'notes':[value]},visible)['notes'][0]
+                 for identity,value in creator.items() if identity in visible}
+        return [{**json.loads(r[0]),'creator_metrics':creator.get(json.loads(r[0])['id']),
+                 'visibility':'public','visibility_source':PUBLIC_VISIBILITY_SOURCE}
+                for r in rows if json.loads(r[0])['id'] in visible]
 
     def reconnect(self,owner,account_id):
         find_account(Operations(self.store).read(owner),account_id)
@@ -168,6 +219,7 @@ class XHSSync:
         require(isinstance(note_id,str) and 0<len(note_id)<=200,'INVALID_INPUT','笔记标识无效')
         require(type(offset) is int and 0<=offset<=100000,'INVALID_INPUT','评论分页位置无效')
         with self.store.connect() as db:
+            self.require_public_note(db,owner,account_id,note_id)
             note=db.execute("SELECT id FROM xhs_sync_entities WHERE owner=? AND account_id=? AND kind='note' AND id=?",(owner,account_id,note_id)).fetchone()
             require(note is not None,'RESOURCE_NOT_FOUND','未找到此账号的已保存笔记')
             # IDs are composite; exact prefix comparison avoids LIKE wildcard input.
