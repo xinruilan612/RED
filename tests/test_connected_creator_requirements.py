@@ -31,10 +31,10 @@ class ConnectedCreatorRequirementsTests(unittest.TestCase):
 
     def test_platform_permission_gate_and_runtime_truth_are_explicit(self):
         text = (ROOT/"docs/design"/BASELINE).read_text()
-        for requirement in ("用户明确授权非商业本人账号读取及有限公开案例研究", "不实施绕限制采集",
-                            "轮询标注自动同步与实际间隔", "BYOK 失败不静默回退",
+        for requirement in ("用户授权和平台官方接口许可分别记录", "不绕过验证码",
+                            "真实间隔", "BYOK 失败不静默消耗平台额度",
                             "backend/live.py", "backend/operations_planner.py", "backend/windtunnel.py",
-                            "文档不会自动改变运行时", "搜索摘要", "混合 RAG"):
+                            "Markdown 角色卡不是运行时自动加载源", "搜索摘要", "混合检索"):
             with self.subTest(requirement=requirement):
                 self.assertIn(requirement, text)
 
@@ -42,9 +42,10 @@ class ConnectedCreatorRequirementsTests(unittest.TestCase):
 class ConnectedCreatorDeliveryDocumentationTests(unittest.TestCase):
     def test_delivery_distinguishes_isolated_acceptance_and_external_gates(self):
         text=(ROOT/'docs/CONNECTED_CREATOR_STATUS.md').read_text()
-        for phrase in ('8775', 'SCHEMA_TOO_NEW', '另一 worktree', '18570', 'partial',
-                       '1 份知乎正文', '未知互动指标不能称为爆款', '未提取 Cookie',
-                       '未进行公网部署', '$0.0184536', '15378 tokens', 'WAITING_USER'):
+        self.assertIn('历史记录（保留，不代表本轮复验）', text)
+        for phrase in ('8775', 'SCHEMA_TOO_NEW', '当前可用性', '18570', 'partial',
+                       '1 份知乎正文', '本轮没有启动/重启', '未提取 Cookie',
+                       '$0.0184536', '15378 tokens', 'WAITING_USER'):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase,text)
         for path in ('README.md','AGENTS.md','docs/DEPLOYMENT.md','docs/IMPLEMENTATION_STATUS.md',
@@ -63,10 +64,11 @@ class ConnectedCreatorDeliveryDocumentationTests(unittest.TestCase):
 class ConnectedCreatorLatestAcceptanceTests(unittest.TestCase):
     def test_current_state_does_not_confuse_qr_video_description_and_completed_capture(self):
         text=(ROOT/'docs/CONNECTED_CREATOR_STATUS.md').read_text()
-        for phrase in ('扫码重连后', '不是视频音轨转写', '视频文字描述',
-                       '本人笔记', '评论不随', '冻结版本', '15分钟定时读取',
+        self.assertIn('历史计数不覆盖当前未提交代码', text)
+        for phrase in ('扫码重连后', '视频只是文字描述', '视频文字描述',
+                       '本人笔记', '导入本人笔记明确不含评论', '冻结版本', '15分钟定时读取',
                        '非空评论和逐笔流量仍未实测', '待校对原始版本不参与检索',
-                       '8次真实调用', '$0.05', '不构成官方API许可'):
+                       '8次真实调用', '$0.05', '私有证据未在本轮打开'):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase,text)
 
@@ -107,4 +109,4 @@ class CreatorDOMDocumentationTests(unittest.TestCase):
                 self.assertNotIn('页面联调待验收', text)
                 self.assertNotIn('页面联调尚待验收', text)
                 self.assertNotIn('不读取创作者后台流量', text)
-                self.assertIn('3份', text)
+                self.assertIn('CONNECTED_CREATOR_REQUIREMENTS.md' if path != 'docs/design/CONNECTED_CREATOR_REQUIREMENTS.md' else 'CONNECTED_CREATOR_STATUS.md', text)
