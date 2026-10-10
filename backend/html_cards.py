@@ -40,8 +40,8 @@ def _shell(theme, style):
     letter=theme[-1]
     classes={'a':'card skin-a','b':'card skin-b','c':'card skin-c','d':'dcard','e':'ecard',
              'f':'femcard t-pink','g':'femcard t-otome','h':'femcard t-ghibli'}[letter]
-    deco=(VENDOR/f'deco-{letter}.html').read_text() if letter in 'fgh' else ('<div class="d-frame"></div>' if letter=='d' else '<div class="cv-frame"></div>' if letter=='c' else '<div class="cv-deco"></div>' if letter=='a' else '')
-    css='\n'.join((VENDOR/name).read_text() for name in ('styles.css','styles-d.css','styles-e.css','styles-fem.css'))
+    deco=(VENDOR/f'deco-{letter}.html').read_text(encoding='utf-8') if letter in 'fgh' else ('<div class="d-frame"></div>' if letter=='d' else '<div class="cv-frame"></div>' if letter=='c' else '<div class="cv-deco"></div>' if letter=='a' else '')
+    css='\n'.join((VENDOR/name).read_text(encoding='utf-8') for name in ('styles.css','styles-d.css','styles-e.css','styles-fem.css'))
     accent=style.get('accent','default')
     palette = {'green':'#86c9aa','orange':'#edac7d','blue':'#8cbcef'} if letter in 'dg' else {'green':'#39755f','orange':'#a95228','blue':'#326ba6'}
     color=palette.get(accent)

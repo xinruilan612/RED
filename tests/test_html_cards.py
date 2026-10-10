@@ -1,6 +1,7 @@
 """Real browser rendering acceptance for the vendored MIT themes (no model calls)."""
 import base64
 from io import BytesIO
+from pathlib import Path
 import unittest
 import zipfile
 from unittest.mock import patch
@@ -20,6 +21,20 @@ def product_run(body=None):
 
 
 class HtmlCardTests(unittest.TestCase):
+    def test_all_theme_resources_decode_on_windows_ansi_locale(self):
+        from backend.html_cards import _shell
+        original_read_text = Path.read_text
+        def windows_read_text(path, encoding=None, errors=None):
+            return original_read_text(path, encoding=encoding or 'cp1252', errors=errors)
+        with patch.object(Path, 'read_text', windows_read_text):
+            for theme in THEMES:
+                with self.subTest(theme=theme):
+                    css, classes, deco = _shell(theme, {})
+                    self.assertIn('.youji-page', css)
+                    self.assertTrue(classes)
+                    if theme[-1] in 'fgh':
+                        self.assertTrue(deco.strip())
+
     def test_eight_themes_real_png_all_content_and_distinct_photos(self):
         outputs=[]
         for theme in THEMES:
