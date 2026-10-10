@@ -34,6 +34,14 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
     local = parsed.hostname in ('127.0.0.1','localhost','testserver')
     invite = env.get('REGISTRATION_INVITE','') if invite is None else invite
     require(local or (parsed.scheme=='https' and len(invite)>=16), 'CONFIG_INVALID','公网运行需 HTTPS 和至少16位注册邀请码')
+    if not local:
+        master_key = env.get('MODEL_CREDENTIAL_KEY','').strip()
+        require(master_key, 'CONFIG_INVALID','公网运行必须显式配置 MODEL_CREDENTIAL_KEY 加密主密钥')
+        from cryptography.fernet import Fernet
+        try:
+            Fernet(master_key.encode())
+        except (ValueError,TypeError):
+            raise DomainError('CONFIG_INVALID','MODEL_CREDENTIAL_KEY 格式无效；需要 Fernet 主密钥') from None
     store = store or Store(env.get('DATABASE_URL','runtime/web.sqlite'))
     config = config if config is not None else load_config()
     auth, service = Auth(store), Service(store,config,client,allow_windtunnel_live=env.get('WINDTUNNEL_ALLOW_LIVE','').lower()=='true')

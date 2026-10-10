@@ -178,3 +178,28 @@ class PostgresConnectedAPITests(ConnectedHarness,unittest.TestCase):
     test_session_model_selection_revoke_csrf_and_owner_isolation=ConnectedAPITests.test_session_model_selection_revoke_csrf_and_owner_isolation
     test_cases_retrieve_export_and_cross_account_visibility=ConnectedAPITests.test_cases_retrieve_export_and_cross_account_visibility
     test_research_api_worker_persists_cases_and_report_no_paid_model=ConnectedAPITests.test_research_api_worker_persists_cases_and_report_no_paid_model
+
+
+class PublicCredentialConfigurationTests(unittest.TestCase):
+    def test_explicit_public_origin_cannot_inherit_local_vault_mode(self):
+        # origin argument wins over a local PUBLIC_ORIGIN from .env/settings.
+        for master in ('', '   '):
+            with self.subTest(master=repr(master)),patch('backend.api.settings',return_value={
+                    'PUBLIC_ORIGIN':'http://127.0.0.1:8765','MODEL_CREDENTIAL_KEY':master}),self.assertRaises(DomainError) as error:
+                create_app(config=Config(),origin='https://public.example',invite='test-invite-long-enough')
+            self.assertEqual(error.exception.code,'CONFIG_INVALID')
+            self.assertIn('MODEL_CREDENTIAL_KEY',str(error.exception))
+
+    def test_invalid_master_key_rejected_without_exposing_it(self):
+        with patch('backend.api.settings',return_value={'MODEL_CREDENTIAL_KEY':'secret-invalid-master'}),self.assertRaises(DomainError) as error:
+            create_app(config=Config(),origin='https://public.example',invite='test-invite-long-enough')
+        self.assertEqual(error.exception.code,'CONFIG_INVALID')
+        self.assertNotIn('secret-invalid-master',str(error.exception))
+
+    def test_explicit_public_origin_accepts_valid_configured_master(self):
+        with tempfile.TemporaryDirectory() as directory:
+            store=Store(Path(directory)/'public.sqlite')
+            with patch('backend.api.settings',return_value={'PUBLIC_ORIGIN':'http://127.0.0.1:8765',
+                    'MODEL_CREDENTIAL_KEY':Fernet.generate_key().decode()}):
+                app=create_app(store,Config(),origin='https://public.example',invite='test-invite-long-enough')
+            self.assertIs(app.state.store,store)
