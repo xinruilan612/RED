@@ -2,6 +2,8 @@
 
 当前需求入口：[小红书连接、研究资料库与多模型](design/CONNECTED_CREATOR_REQUIREMENTS.md)。本功能不提供未获许可的小红书自动采集通道。
 
+实际完整验收及环境冲突见 [2026-10-10 状态说明](CONNECTED_CREATOR_STATUS.md)：本轮使用8775独立schema，原默认库触发SCHEMA_TOO_NEW，不把隔离测试成功当成默认启动成功。
+
 ## 安装和运行
 
 使用已有项目虚拟环境，显式下载一次；应用运行时不自动下载、不调用收费向量 API：
