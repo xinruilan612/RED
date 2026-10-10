@@ -112,3 +112,12 @@ test('sync includes independent creator metrics without replacing stored comment
  const s=setup();s.sandbox.sync={status:'synced',interval_s:900,counts:{note:1,comment:2},creator_metrics:{status:'synced',account:{metrics:{views:900}},notes:[]},latest_round:{notes:[{id:'n',url:'https://example.com',title:'N',text:'body',metrics:{comments:2}}]}};
  const html=s.eval('syncOverview(sync)');assert.match(html,/账号周期汇总/);assert.match(html,/评论数 2/);assert.match(html,/data-note-comments="n"/);assert.match(html,/创作中心观测见上方/);
 });
+
+
+test('creator abbreviated displays remain approximate and growth metrics keep their labels',()=>{
+ const s=setup();s.sandbox.creator={status:'synced',account:{period_display:'近7日',metrics:{views:null,followers_gained:3,follows_added:2,unfollows:1,profile_visitors:4},metric_displays:{views:'1.2万'}},notes:[{id:'n',metrics:{views:null},metric_displays:{views:'2千'}}]};
+ const html=s.eval('creatorMetricsOverview(creator)');
+ assert.match(html,/1.2万（页面显示，精确值未知）/);assert.match(html,/2千（页面显示，精确值未知）/);
+ assert.doesNotMatch(html,/12000|2000/);assert.match(html,/页面周期：近7日/);
+ for(const [label,value] of [['涨粉数',3],['新增关注',2],['掉粉数',1],['主页访客',4]])assert.ok(html.includes(`<td>${label}</td><td>${value}</td>`));
+});
