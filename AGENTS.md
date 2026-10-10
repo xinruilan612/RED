@@ -53,3 +53,10 @@
 正式网页通过 /api/runs/{id}/background 提交，backend.worker 独立领取 PostgreSQL 队列；backend.runtime 使用 LangGraph 与持久检查点。SQL Run 仍是权限、预算和批准依据，图输入不可信。runtime_nodes 与业务产物同事务，重放复用；未知付费用量阻断，禁止自动重发。租约 fencing 必须覆盖调用预留与产物提交，取消不能被迟到结果覆盖。
 
 新模型调用统一通过 model_router.Calls，保留 provider/model/route/prompt/input/snapshot/sources/usage；不补造旧台账。新核心 SQL 只追加 migrations.py 的迁移版本，已应用 SQL 不改。验证增加 test_durable_runtime.py 的真实 PostgreSQL 检查点与进程重启用例；依赖固定在 requirements.txt。真实收费测试须有明确预算；本轮已授权本人真实小红书账号的只读连接验证，由用户完成官方登录，不包含发布或互动。
+
+
+## 2026-10-10 后续用户授权与当前实现
+
+用户已授权非商业本人读取及有限公开案例研究，不等同官方API许可。保留不绕验证码/访问限制、不发布互动、按账号隔离和未知指标为null的边界。本人MCP有限轮询、网页已绑定账号二维码重连、持久评论分页、本人笔记显式导入表达参考、案例专用编辑及冻结版本导出已接入；xhs_local站内视频来源只有文字描述和可见互动，已扫码重连并排队研究，结果待验收，不称音轨转写或已完成真实案例采集。
+
+scripts/xhs_sync.py worker使用统一Worker处理创作、研究和同步。一次真实资料到四角色验收在明确$0.05授权内完成：8调用、15378 tokens、保守账本$0.0184536，停在WAITING_USER人工确认。后续收费仍受独立授权与预算约束。阶段测试计数及边界统一见 [当前状态](docs/CONNECTED_CREATOR_STATUS.md)。

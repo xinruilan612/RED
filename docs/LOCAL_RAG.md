@@ -43,3 +43,12 @@ runtime/venv/bin/python -m unittest discover -s tests -p 'test_research_cases.py
 ```
 
 案例测试设置 TEST_DATABASE_URL 后还运行真实 PostgreSQL 临时 schema。未设置数据库或未安装本地模型时相应用例会跳过，跳过不得计为该能力验收。词法回归测试显式使用 YOUJI_EMBEDDING_MODEL_PATH=off；真实语义用例单独验证无共享中文bigram的查询仍能召回相关资料、排除无关样本。该小样本只证明真实模型和检索接线，不证明通用检索质量改善。
+
+
+## 后续案例编辑、本人笔记与冻结报告
+
+普通资料更新禁止将research_case变成text以绕过lead限制。使用案例页的“编辑案例”，保留来源、用途、类型、指标null、规则和时间，提交document_id/expected_version；取消编辑不保存。正文按Unicode字符位置去除重叠片段。
+
+研究任务使用export_versions按资料ID和版本生成冻结报告，资料更新或移除后仍可审计旧版本，但不恢复已移除资料的新检索资格。本人持久笔记经用户显式确认可桥接为expression_reference案例；评论不进入这一导入路径。
+
+真实资料→四Agent→新稿→审核已在明确$0.05预算内完成一次验收，最终WAITING_USER等待人工确认；详细用量与阶段测试范围见 [当前状态](CONNECTED_CREATOR_STATUS.md)。xhs_local站内视频来源只读文字描述，不是音轨转写，已扫码恢复会话并排队，采集结果仍待验收。

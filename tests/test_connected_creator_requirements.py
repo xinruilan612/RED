@@ -31,7 +31,7 @@ class ConnectedCreatorRequirementsTests(unittest.TestCase):
 
     def test_platform_permission_gate_and_runtime_truth_are_explicit(self):
         text = (ROOT/"docs/design"/BASELINE).read_text()
-        for requirement in ("自动同步仅在获得适用平台授权渠道后启用", "不实施绕限制采集",
+        for requirement in ("用户明确授权非商业本人账号读取及有限公开案例研究", "不实施绕限制采集",
                             "轮询标注自动同步与实际间隔", "BYOK 失败不静默回退",
                             "backend/live.py", "backend/operations_planner.py", "backend/windtunnel.py",
                             "文档不会自动改变运行时", "搜索摘要", "混合 RAG"):
@@ -44,7 +44,7 @@ class ConnectedCreatorDeliveryDocumentationTests(unittest.TestCase):
         text=(ROOT/'docs/CONNECTED_CREATOR_STATUS.md').read_text()
         for phrase in ('8775', 'SCHEMA_TOO_NEW', '另一 worktree', '18570', 'partial',
                        '1 份知乎正文', '未知互动指标不能称为爆款', '未提取 Cookie',
-                       '未进行公网部署', '未进行收费模型真实调用'):
+                       '未进行公网部署', '$0.0184536', '15378 tokens', 'WAITING_USER'):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase,text)
         for path in ('README.md','AGENTS.md','docs/DEPLOYMENT.md','docs/IMPLEMENTATION_STATUS.md',
@@ -58,3 +58,24 @@ class ConnectedCreatorDeliveryDocumentationTests(unittest.TestCase):
         for phrase in ('用户已亲自', '按小时更新', '上传 Skill', '不等于',
                        'automatic_sync_available=false', '未提取 Cookie'):
             self.assertIn(phrase,text)
+
+
+class ConnectedCreatorLatestAcceptanceTests(unittest.TestCase):
+    def test_current_state_does_not_confuse_qr_video_description_and_completed_capture(self):
+        text=(ROOT/'docs/CONNECTED_CREATOR_STATUS.md').read_text()
+        for phrase in ('扫码重连成功', '二维码已实际生成', '不是视频音轨转写',
+                       '本人笔记', '评论不随', '冻结版本', '585', '56', '4876323',
+                       '8次真实调用', '$0.05', '不构成官方API许可'):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase,text)
+
+    def test_sync_worker_and_rag_docs_describe_current_entrypoints(self):
+        sync=(ROOT/'docs/XHS_LOCAL_SYNC.md').read_text()
+        self.assertIn('统一工作进程',sync)
+        self.assertNotIn('网页内尚无自助扫码重连流程',sync)
+        self.assertNotIn('仅允许 login/status、user/me、feeds/detail 三个',sync)
+        self.assertIn('每页50条',sync)
+        rag=(ROOT/'docs/LOCAL_RAG.md').read_text()
+        self.assertIn('export_versions',rag)
+        self.assertIn('document_id/expected_version',rag)
+        self.assertIn('评论不进入',rag)
