@@ -3,10 +3,20 @@ import json
 import unittest
 from unittest.mock import patch
 
-from backend.provider import Config, DeepSeek, ProviderOutputError, decode_response
+from backend.provider import Config, DeepSeek, ProviderOutputError, decode_response, load_config
 
 
 class ProviderResponseTests(unittest.TestCase):
+    def test_five_revision_budget_defaults_preserve_explicit_lower_limits(self):
+        from pathlib import Path
+        from backend.contracts import PARAMETERS
+        self.assertEqual(PARAMETERS['run_tokens_max'],160000)
+        for config in (Config(),load_config(Path('/nonexistent-red-budget-test'),{})):
+            self.assertEqual(config.run_budget_usd,0.20)
+            self.assertEqual(config.day_budget_usd,0.50)
+        explicit=Config(run_budget_usd=0.01,day_budget_usd=0.02)
+        self.assertEqual((explicit.run_budget_usd,explicit.day_budget_usd),(0.01,0.02))
+
     def packet(self, content='{"answer":"可继续"}', **overrides):
         packet = {'id': 'request-123', 'choices': [{'finish_reason': 'stop',
                   'message': {'content': content}}],

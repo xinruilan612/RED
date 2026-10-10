@@ -33,7 +33,8 @@ def with_torch(test):
     def wrapped(self):
         if importlib.util.find_spec("torch"):
             return test(self)
-        python=pipeline.ROOT/"runtime/skapp/venv/bin/python"
+        from backend.python_runtime import venv_python
+        python=venv_python(pipeline.ROOT/"runtime/skapp/venv")
         if not python.exists():
             self.fail("SKAPP test runtime missing: install the declared optional environment")
         result=subprocess.run([str(python),"-m","unittest","tests.test_skapp_personal."+type(self).__name__+"."+self._testMethodName,"-v"],cwd=pipeline.ROOT,capture_output=True,text=True,timeout=180)

@@ -1,5 +1,7 @@
 # 网站后端运行与迁移
 
+云端前置文件、条件清单与 Linux 内测交接见 [云部署准备](PRODUCTION_PREPARATION.md)。这些模板尚未在云服务器执行，不代表公网部署完成。
+
 Windows 本机运行请使用 [Windows 安装与启动](WINDOWS.md) 的 `.cmd` 入口，以下 shell 示例面向 macOS/Linux。跨平台启动器 `scripts/local_dev.py` 支持 `setup`、`doctor`、`start`，启动时同时管理 API 和 Worker。
 
 适用于 v0.6。当前在本机 PostgreSQL 验证；尚未购买云服务、绑定域名或公网部署。前端布局沿用原 Demo。
@@ -64,7 +66,7 @@ git diff --check
 
 登录后进入“资料库”，上传 UTF-8 TXT、Markdown、文本型 PDF、Word DOCX 或粘贴资料。DOCX 与 PDF 正文在服务端解析，不调用模型；扫描 PDF 不做 OCR。每份最多 3 MB、10 万提取字符，PDF 最多 50 页。选择更新时创建新版本，移出后不再用于新检索。原文件及历史版本仍在私有数据库中保留审计；这是检索停用，不是彻底擦除个人数据。正式数据删除策略需在公网阶段补齐。
 
-首版使用 BM25 中文关键词检索，不需要额外 embedding Key，不宣称语义相似检索。创作页可上传或从当前账号资料中选择最多 3 份文件；后端只把最多 3 段、每段不超过 400 字符的相关原文放入任务快照，保留文件名、版本和页码/段落号。真实模型启动前会提示每任务最多 16 次、80,000 Token、$0.10 预算以及每日 $0.50 上限；后端预留预算，超限停止且不自动重试。上传、解析和检索均不调用付费模型。
+首版使用 BM25 中文关键词检索，不需要额外 embedding Key，不宣称语义相似检索。创作页可上传或从当前账号资料中选择最多 3 份文件；后端只把最多 3 段、每段不超过 400 字符的相关原文放入任务快照，保留文件名、版本和页码/段落号。真实模型启动前会提示每任务最多 20 次、160,000 Token、$0.20 预算以及每日 $0.50 上限；后端预留预算，超限停止且不自动重试。上传、解析和检索均不调用付费模型。
 
 热点页提供百科背景资料（维基百科公开 API）与公开网页（Bing RSS 实验接口），关键词会发送给所选服务；搜索摘要不可作为已读正文。点击读取正文并保存后，由后端校验链接、读取文本并入库。网站或网络阻断可能导致失败，结果也可能不相关，需要人工筛选。公开网页读取不发送用户模型 Key、账号 Cookie 或资料正文；不读取需要登录的平台后台。任意 URL 的固定 IP 连接与固定搜索服务客户端分开，后者只允许 www.bing.com/search 与 zh.wikipedia.org/w/api.php，禁止重定向。百科正文通过其公开文本接口读取，保留文章来源 URL；百科用于背景知识，不标记为新闻或平台热度。相关接口说明：[MediaWiki Search](https://www.mediawiki.org/wiki/API:Search)、[TextExtracts](https://www.mediawiki.org/wiki/Extension:TextExtracts#API)。
 
@@ -109,3 +111,26 @@ LangGraph 1.2.11 + PostgreSQL checkpointer 3.1.2 在同数据库持久化检查�
 当前估价限定 deepseek-flash，按官方高峰价输入 2 元/百万 Token、输出 8 元/百万 Token，不假定缓存折扣；价格依据：https://api-docs.deepseek.com/zh-cn/quick_start/pricing/ 。账本估算不等于供应商账单。未决调用按输入 UTF-8 字节加余量和最大输出预估占用，返回后按输入/输出用量结算；未知用量保守占用。预估与调用台账在同一事务，金额或轮数超过目标不阻止新调用。
 
 创作 Token 安全上限从 40,000 调为 80,000，原 16 次调用、任务/日美元安全上限继续适用。约 3 轮是期望，实际费用受输入和返修影响。没有触发自动收费测试。
+
+## 2026-10-08 显式实验硬预算
+
+需要人民币硬上限时，由管理员对指定owner调用 `backend.testing_budget.initialize(store, owner, 5, hard_limit=True)`。需先由正常启动流程应用迁移8；不要直接修改旧迁移。省略hard_limit保留原软目标。硬模式不可通过重复初始化降级或清零；轮数仍为参考目标，人民币金额才是硬限。所有本轮调用须经同一数据库、同一owner的Calls入口，创作、返修、恢复与明确授权的对照共享。
+
+每次请求前在事务锁内检查已计入费用和最高费率保守预留；未知用量不释放预留，已失败未知用量会阻断owner的新收费调用。费率仅支持deepseek-flash，按输入2元/百万、输出8元/百万（2026-10-08官方峰值）估算，模型或价格变化必须重新核对。账本不是供应商账单，不约束项目外部消费。实际本轮记录见[第一天验收](validation/DAY1_REVIEW_RECOVERY_20261008.md)。
+
+2026-10-08 五次改稿配套：当前创作最多 20 次模型调用、160,000 Token、默认每任务 $0.20，每日仍 $0.50。初稿与每次改稿在审核后等待用户，不自动连续改完五次；所有已有用量保留。以上是上限，先达到的限制优先生效。
+
+
+## MIT 图卡模板渲染（2026-10-09）
+
+新图卡使用固定版本的本地 HTML/CSS，通过 Playwright Chromium 渲染；不调用图片生成模型，不需要外网字体。先安装 requirements.txt，再用同一虚拟环境执行：
+
+    runtime/venv/bin/python -m playwright install chromium
+
+macOS 有可用的 Google Chrome 时可复用本机浏览器；Linux/Windows 使用 Playwright Chromium。也可用环境变量 YOUJI_CHROMIUM_EXECUTABLE 指定部署者管理的浏览器绝对路径。Linux 需按 Playwright 提示安装系统依赖。浏览器必须由 API 进程所在的运行用户访问。缺少渲染器应报错，不把纯文案包冒充图卡生成成功。
+
+升级前按本文件备份 PostgreSQL；新增模板目录、轮换位置和稿件选择使用追加式核心迁移，保留已确认正文及旧媒体版本。模板代码与许可在 backend/vendor/xhs_article，使用与人工验收见 [图卡模板说明](MEDIA_TEMPLATES.md)。
+
+## 本地看图交互试用
+
+追加核心迁移 10 建立本地图像调用台账，启动前备份数据库。Ollama 与 API 在同一台机器，模型固定为 qwen3-vl:4b；没有服务时普通模板预览和下载仍可使用。安装、使用及边界见 [本地看图交互说明](MULTIMODAL_TRIAL.md)。

@@ -167,7 +167,7 @@ def advance(run):
         return
     if run.current_stage=='content':
         run.event('agent.started',agent='content',mode='simulation')
-        if run.review and run.review['decision']=='revision_required':
+        if run.review and (run.review['decision']=='revision_required' or run.context.get('runtime_execution',{}).get('mode')=='revision'):
             content=copy.deepcopy(run.drafts[-1]['content'])
             for issue in run.review['issues']:
                 field=issue['location']
@@ -203,7 +203,7 @@ def actions(run):
     if run.run_status=='WAITING_USER':
         if run.wait_reason=='final_confirmation': result+=['edit','accept']
         if run.wait_reason in ('missing_material','hypothesis_permission') and run.supplements < 1: result+=['supplement']
-    if run.run_status=='RUNNING' and run.review and run.review['decision']=='revision_required': result+=['edit']
+    if run.run_status=='RUNNING' and run.review and (run.review['decision']=='revision_required' or run.context.get('runtime_execution',{}).get('mode')=='revision'): result+=['edit']
     if run.can_manual_adopt():
         if 'edit' not in result:result.append('edit')
         if not (run.review and run.review.get('decision')=='approved'):result.append('adopt_manual')

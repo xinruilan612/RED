@@ -1,5 +1,6 @@
 """Build offline blinded questionnaires from two existing drafts; no API calls."""
 import argparse
+from copy import deepcopy
 import hashlib
 import html
 import json
@@ -65,6 +66,36 @@ def generate(case, ordinary, system, output, count=5, seed=None, production=None
         (output / (pid + '-试读.html')).write_text(page(pid, drafts, case), encoding='utf-8')
     (output / '主持人专用-不要发给试读者.json').write_text(json.dumps(mapping, ensure_ascii=False, indent=2), encoding='utf-8')
     return mapping
+
+
+
+def normalize_response_identity(mapping, response, target_participant, confirmation):
+    """Copy an explicitly confirmed questionnaire mix-up without changing answers.
+
+    Returns (normalized_response, audit). The caller preserves the original file
+    and audit; this helper does not infer identity from a filename or timestamps.
+    """
+    participants = mapping['participants']
+    original_participant = response.get('participant')
+    if (not isinstance(original_participant, str)
+            or original_participant not in participants
+            or not isinstance(target_participant, str)
+            or target_participant not in participants):
+        raise ValueError('未知试读编号')
+    if original_participant == target_participant:
+        raise ValueError('原编号与目标编号必须不同')
+    if not isinstance(confirmation, str) or not confirmation.strip():
+        raise ValueError('需要明确的身份更正确认理由')
+    if response.get('draft_hashes') != participants[target_participant]['draft_hashes']:
+        raise ValueError('目标问卷稿件版本或顺序不一致')
+    normalized = deepcopy(response)
+    normalized['participant'] = target_participant
+    audit = {
+        'original_participant': original_participant,
+        'target_participant': target_participant,
+        'confirmation': confirmation,
+    }
+    return normalized, audit
 
 
 def summarize(mapping, responses):

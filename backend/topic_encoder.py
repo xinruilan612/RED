@@ -5,8 +5,10 @@ from pathlib import Path
 import subprocess
 import threading
 
+from backend.python_runtime import venv_python
+
 ROOT = Path(__file__).resolve().parents[1]
-PYTHON = ROOT / 'runtime/skapp/venv/bin/python'
+PYTHON = venv_python(ROOT / 'runtime/skapp/venv')
 SCRIPT = ROOT / 'scripts/topic_encode.py'
 MODEL_PATH = ROOT / 'runtime/skapp/chinese-clip'
 MODEL_NAME = 'OFA-Sys/chinese-clip-vit-base-patch16'

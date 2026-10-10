@@ -6,3 +6,7 @@ docs/submission/evidence/baseline-source/** -text
 *.command text eol=lf
 # Native command prompts use CRLF, without changing historical snapshots.
 *.cmd text eol=crlf
+
+# Exact official HTML evidence keeps upstream whitespace and download hashes.
+docs/windtunnel/public_samples/license.html -whitespace
+docs/windtunnel/public_samples/sources/*.html -whitespace

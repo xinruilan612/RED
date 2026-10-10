@@ -71,6 +71,29 @@ class DurableTests(unittest.TestCase):
         self.assertEqual(self.model.calls.count('audience'),1)
         self.assertEqual(self.service.view(self.run_value())['usage']['unknown_calls'],0)
 
+    def test_retry_at_title_resumes_whole_pipeline_not_just_title(self):
+        from backend.provider import ProviderOutputError
+        base=self.model.complete
+        failed=[]
+        def complete_result(messages):
+            if '负责 title 的' in messages[0]['content'] and not failed:
+                failed.append(True)
+                raise ProviderOutputError('模型正文格式无效',tokens=120)
+            value,tokens=base(messages)
+            return value,tokens,{}
+        self.model.complete_result=complete_result
+        self.start();Worker(self.service).once()
+        self.assertEqual(self.job()['status'],'blocked')
+        self.assertEqual(self.run_value().context['runtime_execution']['mode'],'automatic')
+        self.step();Worker(self.service).once()
+        run=self.run_value()
+        self.assertEqual(run.context['runtime_execution']['mode'],'automatic')
+        self.assertEqual(len(run.drafts),1)
+        self.assertIsNotNone(run.review)
+        self.assertEqual(run.run_status,'WAITING_USER')
+        for stage in ('audience','research','strategy','outline','hook','title','body','review'):
+            self.assertEqual(self.model.calls.count(stage),1,stage)
+
     def test_parse_failure_unknown_usage_blocks_resume_before_queue(self):
         from backend.provider import ProviderOutputError
         def failure(messages):raise ProviderOutputError('无法确认用量')
@@ -97,6 +120,91 @@ class DurableTests(unittest.TestCase):
         self.start();Worker(self.service).once()
         self.assertEqual(self.job()['status'],'blocked')
         self.assertEqual(self.run_value().current_stage,'reviewer')
+
+    def test_one_click_revision_recovers_queues_reaudits_and_requires_confirmation(self):
+        self.invalid_citation_review()
+        before=self.service.view(self.run_value())
+        self.assertTrue(before['ai_revision']['available'])
+        command=dict(action='revise_review',version=before['status_version'],key=str(uuid4()),feedback='结尾换成具体的问题；不要编造价格。')
+        queued=self.service.background(self.owner,self.run_id,command)
+        self.assertEqual(queued['background']['status'],'queued')
+        self.assertEqual(queued['calls'],before['calls'])
+        self.assertFalse(queued['ai_revision']['available'])
+        self.assertEqual(self.service.background(self.owner,self.run_id,command)['status_version'],queued['status_version'])
+        with self.assertRaises(DomainError):self.service.background(self.owner,self.run_id,dict(command,feedback='另一条意见'))
+        from backend.live import messages_for
+        data=json.loads(messages_for(self.run_value(),'revise')[0][1]['content'])
+        self.assertEqual(data['user_revision_feedback'],command['feedback'])
+        detached=self.run_value();detached.snapshot_id='new-snapshot'
+        self.assertNotIn('user_revision_feedback',json.loads(messages_for(detached,'revise')[0][1]['content']))
+        Worker(self.service).once()
+        ready=self.service.view(self.run_value())
+        self.assertEqual(ready['wait_reason'],'final_confirmation')
+        self.assertEqual(len(ready['drafts']),2)
+        self.assertEqual(self.model.calls.count('revise'),1)
+        self.assertEqual(self.model.calls.count('review'),2)
+        self.assertIn('accept',ready['allowed_actions'])
+        self.assertIsNone(self.run_value().accepted_ref)
+
+    def test_five_user_revisions_use_latest_feedback_and_stop_after_each_review(self):
+        self.start();Worker(self.service).once()
+        for index in range(5):
+            before=self.service.view(self.run_value())
+            self.assertTrue(before['ai_revision']['available'])
+            self.assertEqual(before['ai_revision']['remaining'],5-index)
+            feedback=f'本次调整 {index+1}：修改结尾问题'
+            self.step('revise_review',feedback=feedback)
+            from backend.live import messages_for
+            data=json.loads(messages_for(self.run_value(),'revise')[0][1]['content'])
+            self.assertEqual(data['user_revision_feedback'],feedback)
+            self.assertEqual(data['draft'],self.run_value().drafts[-1]['content'])
+            Worker(self.service).once()
+            self.assertEqual(self.model.calls.count('revise'),index+1)
+            self.assertEqual(self.model.calls.count('review'),index+2)
+            self.assertIsNone(self.run_value().accepted_ref)
+        report=self.service.view(self.run_value())
+        self.assertEqual(report['ai_revision']['remaining'],0)
+        self.assertFalse(report['ai_revision']['available'])
+        with self.assertRaises(DomainError):self.step('revise_review',feedback='第六次')
+
+    def test_one_revision_click_stops_even_when_review_still_requests_changes(self):
+        self.start();Worker(self.service).once()
+        base=self.model.complete
+        def unresolved(messages):
+            value,tokens=base(messages)
+            if self.model.calls[-1]=='review':
+                value.update(decision='revision_required',next_action='revise',issues=[{
+                    'issue_id':'new-issue','severity':'major','state':'open','location':'body',
+                    'excerpt':'完整正文','reason':'缺少具体说明','suggestion':'增加具体说明'}])
+            return value,tokens
+        self.model.complete=unresolved
+        self.step('revise_review',feedback='增加具体说明');Worker(self.service).once()
+        self.assertEqual(self.model.calls.count('revise'),1)
+        self.assertEqual(self.model.calls.count('review'),2)
+        self.assertEqual(self.run_value().review['decision'],'revision_required')
+        self.assertEqual(self.job()['status'],'paused')
+
+    def test_one_click_revision_rejects_stale_version_and_unknown_usage_atomically(self):
+        self.invalid_citation_review()
+        before=self.run_value()
+        with self.assertRaises(DomainError):
+            self.service.background(self.owner,self.run_id,dict(action='revise_review',version=before.status_version-1,key=str(uuid4())))
+        with self.store.connect() as db:
+            db.execute("UPDATE live_calls SET actual=NULL WHERE run_id=? AND stage='body'",(self.run_id,))
+        with self.assertRaises(DomainError) as error:self.step('revise_review')
+        self.assertEqual(error.exception.code,'USAGE_UNKNOWN')
+        self.assertEqual(self.run_value().status_version,before.status_version)
+        self.assertIsNone(self.run_value().review)
+        self.assertEqual(len(self.model.calls),8)
+
+    def test_one_click_revision_normal_review_and_feedback_validation(self):
+        self.invalid_citation_review();self.action('repair_review',{})
+        self.assertTrue(self.service.view(self.run_value())['ai_revision']['available'])
+        with self.assertRaises(DomainError):self.step('revise_review',feedback='长'*2001)
+        with self.assertRaises(DomainError):self.step('start',feedback='不能绕过专用操作')
+        self.step('revise_review');Worker(self.service).once()
+        self.assertEqual(self.run_value().wait_reason,'final_confirmation')
+        with self.assertRaises(DomainError):self.step('revise_review')
 
     def test_creator_notes_stop_for_human_without_rewriting_or_extra_model_calls(self):
         base=self.model.complete
@@ -180,11 +288,11 @@ class DurableTests(unittest.TestCase):
 
     def test_review_attempt_limit_keeps_draft_for_human_without_error_or_approval(self):
         self.start();Worker(self.service).once()
-        for i in range(2):
+        for i in range(5):
             content=dict(self.run_value().drafts[-1]['content']);content['body']='用户改稿'+str(i)
             self.action('edit',content)
             self.start();Worker(self.service).once()
-        content=dict(self.run_value().drafts[-1]['content']);content['body']='用户改稿2'
+        content=dict(self.run_value().drafts[-1]['content']);content['body']='用户改稿最终新版本'
         self.action('edit',content)
         version=self.run_value().status_version
         with self.assertRaises(DomainError) as error:self.start()
@@ -195,10 +303,10 @@ class DurableTests(unittest.TestCase):
         self.assertTrue(self.service.view(run)['review_execution']['blocked'])
         self.assertIsNone(run.review)
         self.assertIsNone(run.accepted_ref)
-        self.assertEqual(len(self.model.calls),10)
+        self.assertEqual(len(self.model.calls),13)
         self.assertEqual(self.job()['status'],'waiting')
         self.assertFalse(self.job().get('error'))
-        self.assertEqual(run.drafts[-1]['content']['body'],'用户改稿2')
+        self.assertEqual(run.drafts[-1]['content']['body'],'用户改稿最终新版本')
 
     def test_valid_revision_limit_preserves_manual_edit_and_model_call_caps(self):
         base=self.model.complete
@@ -212,15 +320,17 @@ class DurableTests(unittest.TestCase):
                 for item in value['previous_issue_results']:item['result']='unresolved'
             return value,tokens
         self.model.complete=revision;self.start();Worker(self.service).once()
+        for _ in range(5):self.step('revise_review');Worker(self.service).once()
         run=self.run_value();view=self.service.view(run)
         self.assertEqual(run.run_status,'WAITING_USER')
         self.assertEqual(run.wait_reason,'revision_limit')
-        self.assertEqual(len(run.drafts),3)
+        with self.assertRaises(DomainError):self.step('revise_review')
+        self.assertEqual(len(run.drafts),6)
         self.assertIsNone(run.accepted_ref)
         before_calls=len(self.model.calls)
-        self.assertEqual(before_calls,12)
-        self.assertEqual(len(run.reviews),3)
-        self.assertEqual(self.model.calls.count('review'),3)
+        self.assertEqual(before_calls,18)
+        self.assertEqual(len(run.reviews),6)
+        self.assertEqual(self.model.calls.count('review'),6)
         self.assertEqual(self.job()['status'],'waiting')
         self.assertIn('edit',view['allowed_actions']);self.assertNotIn('accept',view['allowed_actions'])
         changed=dict(run.drafts[-1]['content']);changed['body']='人工核对后保留的新稿。'
@@ -229,7 +339,7 @@ class DurableTests(unittest.TestCase):
         with self.assertRaises(DomainError) as error:self.start()
         self.assertEqual(error.exception.code,'STAGE_ATTEMPT_LIMIT')
         self.assertEqual(len(self.model.calls),before_calls)
-        self.assertLessEqual(self.model.calls.count('review'),3)
+        self.assertLessEqual(self.model.calls.count('review'),6)
         current=self.service.view(self.run_value())
         self.assertTrue(current['review_execution']['blocked'])
         self.assertNotIn('next',current['allowed_actions'])
@@ -239,6 +349,7 @@ class DurableTests(unittest.TestCase):
         base=self.model.complete
         def later_revision(messages):
             value,tokens=base(messages)
+            if self.model.calls[-1]=='revise':value['body']='完整正文 · 改稿'+str(self.model.calls.count('revise'))
             if self.model.calls[-1]=='review' and self.model.calls.count('review')>1:
                 value.update(decision='revision_required',next_action='revise',issues=[{
                     'issue_id':'still-open','severity':'major','state':'open','location':'body',
@@ -250,11 +361,11 @@ class DurableTests(unittest.TestCase):
         self.assertEqual(self.run_value().wait_reason,'final_confirmation')
         content=dict(self.run_value().drafts[-1]['content']);content['body']='完整正文 · 人工修改'
         self.action('edit',content)
-        for _ in range(3):self.step();Worker(self.service).once()
+        for _ in range(9):self.step();Worker(self.service).once()
         run=self.run_value();view=self.service.view(run)
-        self.assertEqual(self.model.calls.count('review'),3)
-        self.assertEqual((run.run_status,run.current_stage,run.iteration),('RUNNING','content',2))
-        self.assertEqual(view['review_execution']['used'],3)
+        self.assertEqual(self.model.calls.count('review'),6)
+        self.assertEqual((run.run_status,run.current_stage,run.iteration),('RUNNING','content',5))
+        self.assertEqual(view['review_execution']['used'],6)
         self.assertTrue(view['review_execution']['blocked']);self.assertFalse(view['review_execution']['replayable'])
         self.assertNotIn('next',view['allowed_actions']);self.assertIn('adopt_manual',view['allowed_actions'])
         before_calls=len(self.model.calls);before_version=run.status_version
@@ -268,6 +379,7 @@ class DurableTests(unittest.TestCase):
         base=self.model.complete
         def later_revision(messages):
             value,tokens=base(messages)
+            if self.model.calls[-1]=='revise':value['body']='完整正文 · 改稿'+str(self.model.calls.count('revise'))
             if self.model.calls[-1]=='review' and self.model.calls.count('review')>1:
                 value.update(decision='revision_required',next_action='revise',issues=[{
                     'issue_id':'still-open','severity':'major','state':'open','location':'body',
@@ -278,11 +390,12 @@ class DurableTests(unittest.TestCase):
         self.start();Worker(self.service).once()
         content=dict(self.run_value().drafts[-1]['content']);content['body']='完整正文 · 人工修改'
         self.action('edit',content);self.start();Worker(self.service).once()
+        for _ in range(4):self.step('revise_review');Worker(self.service).once()
         run=self.run_value()
-        self.assertEqual((run.run_status,run.wait_reason),('WAITING_USER','revision_limit'))
-        self.assertEqual(self.model.calls.count('review'),3)
-        self.assertEqual(self.model.calls.count('revise'),1)
-        self.assertEqual(len(self.model.calls),11)
+        self.assertEqual((run.run_status,run.wait_reason),('RUNNING',None))
+        self.assertEqual(self.model.calls.count('review'),6)
+        self.assertEqual(self.model.calls.count('revise'),4)
+        self.assertEqual(len(self.model.calls),17)
         self.assertIsNone(run.accepted_ref)
         view=self.service.view(run)
         self.assertIn('edit',view['allowed_actions']);self.assertIn('adopt_manual',view['allowed_actions'])
@@ -302,6 +415,8 @@ class DurableTests(unittest.TestCase):
         recovered=self.action('repair_review',{})
         self.assertEqual(recovered['review']['decision'],'needs_human')
         self.assertEqual(recovered['wait_reason'],'missing_material')
+        self.assertFalse(recovered['ai_revision']['available'])
+        with self.assertRaises(DomainError):self.step('revise_review')
         self.assertNotIn('accept',recovered['allowed_actions'])
         self.assertEqual(recovered['usage'],before['usage'])
         self.assertEqual(recovered['calls'],before['calls'])
@@ -469,10 +584,47 @@ class DurableTests(unittest.TestCase):
         repaired=self.action('repair_review',{})
         self.assertEqual(repaired['review']['previous_issue_results'],[{'issue_id':'current','result':'unresolved'}])
         self.assertEqual(repaired['review']['decision'],'revision_required')
-        self.assertEqual(repaired['wait_reason'],'revision_limit')
+        self.assertEqual(repaired['run_status'],'RUNNING')
         self.assertNotIn('accept',repaired['allowed_actions'])
         self.assertEqual(repaired['usage'],before['usage']);self.assertEqual(self.model.calls,calls)
         self.assertEqual(repaired['node_runs'][-1]['input']['excluded_previous_results'][0]['issue_id'],historical)
+
+    def test_compound_review_recovery_command_is_free_idempotent_and_allows_edit(self):
+        historical=self.historical_extra_review()
+        # The third response has both an obsolete issue ID and invalid citation.
+        with self.store.connect() as db:
+            call_id,raw=db.execute(f"SELECT id,response_json FROM live_calls WHERE run_id=? AND stage='review' ORDER BY {self.store.order_column} DESC LIMIT 1",(self.run_id,)).fetchone()
+            value=json.loads(raw)
+            value['claim_map']=[{'excerpt':'完整正文','source_id':'user-material','quote':'不存在的资料引用'}]
+            db.execute('UPDATE live_calls SET response_json=? WHERE id=?',(json.dumps(value),call_id))
+            original=db.execute('SELECT response_json,actual,state FROM live_calls WHERE id=?',(call_id,)).fetchone()
+        before=self.service.view(self.run_value());calls=list(self.model.calls)
+        self.assertTrue(before['review_recovery']['available'])
+        command=dict(action='repair_review',payload={},version=self.run_value().status_version,key=str(uuid4()))
+        repaired=self.service.action(self.owner,self.run_id,command)
+        replay=self.service.action(self.owner,self.run_id,command)
+        self.assertEqual(repaired['status_version'],replay['status_version'])
+        self.assertEqual(repaired['review'],replay['review'])
+        self.assertEqual(repaired['usage'],before['usage'])
+        self.assertEqual(repaired['calls'],before['calls'])
+        self.assertEqual(self.model.calls,calls)
+        self.assertEqual(repaired['node_runs'][-1]['model_calls'],0)
+        self.assertEqual(repaired['node_runs'][-1]['input']['excluded_previous_results'],[{'issue_id':historical,'result':'unresolved'}])
+        self.assertEqual(len(repaired['node_runs'][-1]['input']['excluded_claim_map']),1)
+        self.assertEqual(repaired['review']['previous_issue_results'],[{'issue_id':'current','result':'unresolved'}])
+        self.assertNotIn('accept',repaired['allowed_actions'])
+        with self.store.connect() as db:
+            self.assertEqual(db.execute('SELECT response_json,actual,state FROM live_calls WHERE id=?',(call_id,)).fetchone(),original)
+        changed=dict(repaired['drafts'][-1]['content']);changed['body']='核对后修改的正文，仍须重新审核。'
+        edited=self.action('edit',changed)
+        self.assertEqual(edited['current_stage'],'reviewer')
+        self.assertIsNone(edited['review'])
+        self.assertEqual(edited['drafts'][-1]['content']['body'],changed['body'])
+        self.assertNotEqual(edited['drafts'][-1]['ref'],repaired['drafts'][-1]['ref'])
+        self.assertEqual(edited['prior_review']['ref'],repaired['review']['ref'])
+        self.assertNotIn('accept',edited['allowed_actions'])
+        self.start()
+        self.assertEqual(self.model.calls,calls)  # Queueing does not call the model; remaining review slots are preserved.
 
     def test_historical_recovery_rejects_missing_duplicate_unknown_and_approval(self):
         historical=self.historical_extra_review()
@@ -699,6 +851,7 @@ class DurableTests(unittest.TestCase):
         self.action('cancel',{})
         self.run_id=self.service.create(self.owner,{**data,'scenario':'revision'})['run_id']
         self.start();Worker(self.service).once()
+        self.step('revise_review');Worker(self.service).once()
         self.assertEqual(self.run_value().wait_reason,'final_confirmation',self.job())
         self.assertEqual(len(self.run_value().drafts),2)
         self.assertEqual(self.model.calls,[])

@@ -8,6 +8,7 @@ import time
 import unittest
 from pathlib import Path
 from uuid import uuid4
+from unittest.mock import patch
 
 from backend.contracts import DomainError
 from backend.provider import Config
@@ -21,16 +22,30 @@ class Fixture:
     def __init__(self, store, owner):
         self.store, self.owner, self.calls = store, owner, []
         self.failure = None
+        self.boundary_patch = False
 
     def complete(self, messages):
         run = next(r for r in self.store.list_runs(self.owner) if r.workflow_type=='windtunnel' and r.run_status=='RUNNING')
         self.calls.append((run.current_stage, messages))
         if self.failure: raise self.failure
-        output=wt.simulate(run,run.current_stage)
-        if run.current_stage=='wt_patch':
-            source=next(s for s in run.windtunnel['sources'] if s['kind']=='material')
-            output['patches'][0].update(replacement='\n\n'+source['text'],citations=[{'source_id':source['id'],'quote':source['text']}])
-        return output, 100
+        if run.current_stage == 'wt_read':
+            output = wt.simulate(run, run.current_stage)
+            for row in output['results']:
+                row.pop('excerpt')
+                row['excerpt_id'] = ''
+            return output, 100
+        if run.current_stage == 'wt_patch':
+            text = wt.draft(run)['text']
+            source = next(s for s in run.windtunnel['sources'] if s['kind'] == 'material')
+            items = [dict(span_id=wt.edit_spans(text)[-1]['span_id'], original='', replacement='\n\n需要版本 3.12。',
+                                     condition_ids=[run.windtunnel['patch_condition_ids'][0]], reason='补充材料支持的版本要求',
+                                     citations=[dict(evidence_id=wt.evidence_passages([source])[0]['evidence_id'])])]
+            if self.boundary_patch:
+                replacement = {**items[0], 'start': 0, 'end': len(text), 'original': text, 'replacement': '使用版本 3.12。'}
+                replacement.pop('span_id')
+                items.append(replacement)
+            return {'patches': items}, 100
+        return wt.simulate(run,run.current_stage), 100
 
 
 class WindtunnelRuntimeTests(unittest.TestCase):
@@ -99,6 +114,9 @@ class WindtunnelRuntimeTests(unittest.TestCase):
         self.report();before=wt.draft(self.value());cs=wt.conditions(self.value())
         self.action('propose_patch',{'condition_ids':[cs['conditions'][0]['id']]});self.work()
         patch=self.value().windtunnel['patches'][-1]
+        self.assertNotIn('span_id', patch['items'][0])
+        self.assertEqual(patch['items'][0]['start'], len(before['text']))
+        self.assertEqual(set(patch['items'][0]['citations'][0]), {'source_id', 'quote'})
         self.action('apply_patch',{'patch_id':patch['id'],'item_ids':[patch['items'][0]['id']],'base_hash':before['hash']})
         self.assertEqual(self.value().windtunnel['drafts'][0],before)
         self.assertTrue(wt.draft(self.value())['text'].startswith(before['text']))
@@ -142,6 +160,39 @@ class WindtunnelRuntimeTests(unittest.TestCase):
             source=db.execute("SELECT sources FROM model_audit WHERE run_id=? AND stage='wt_read'",(self.run_id,)).fetchone()[0]
         self.assertNotIn('ONLY_VERIFY_SECRET_SENTINEL',source)
         self.assertNotIn('material',source)
+
+    def test_invalid_boundary_response_revalidates_cache_without_new_model_call(self):
+        self.report()
+        cs = wt.conditions(self.value())
+        self.action('propose_patch', {'condition_ids': [cs['conditions'][0]['id']]})
+        self.fixture.boundary_patch = True
+        original_normalize = wt.normalize
+        def legacy_overlap(run, stage, value):
+            result = original_normalize(run, stage, value)
+            if stage == 'wt_patch':
+                raise DomainError('MODEL_OUTPUT_INVALID', '旧边界冲突检查')
+            return result
+        with patch('backend.windtunnel.normalize', side_effect=legacy_overlap):
+            self.work()
+        self.assertEqual(self.job()['status'], 'blocked')
+        with self.store.connect() as db:
+            before = db.execute("SELECT id,state,response_json FROM live_calls WHERE run_id=? AND stage='wt_patch'", (self.run_id,)).fetchone()
+        self.assertEqual(before[1], 'invalid')
+        count = len(self.fixture.calls)
+        with patch('backend.windtunnel.normalize', side_effect=legacy_overlap):
+            self.work()
+        self.assertEqual(self.job()['status'], 'blocked')
+        self.assertEqual(len(self.fixture.calls), count)
+        self.work()
+        self.assertEqual(len(self.fixture.calls), count)
+        self.assertEqual(self.value().wait_reason, 'wt_patch')
+        with self.store.connect() as db:
+            after = db.execute("SELECT id,state,response_json FROM live_calls WHERE run_id=? AND stage='wt_patch'", (self.run_id,)).fetchone()
+        self.assertEqual(after[0], before[0])
+        self.assertEqual(after[1], 'validated')
+        self.assertEqual(after[2], before[2])
+        proposal = self.value().windtunnel['patches'][-1]
+        self.assertEqual(len(proposal['items']), 2)
 
     def test_response_reuse_and_committed_node_replay(self):
         self.work();self.confirm();tripped=[]

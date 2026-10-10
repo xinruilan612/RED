@@ -15,6 +15,7 @@ from backend.accounts import find_account
 from backend.contracts import require
 from backend.demo import validate_text
 from backend.operations import Operations
+from backend.python_runtime import module_command
 
 MAX_FILE = 3_000_000
 MAX_TEXT = 100_000
@@ -36,10 +37,9 @@ def parse_file(name, data):
         except UnicodeDecodeError: raise ValueError('请将文本文件保存为 UTF-8') from None
     elif suffix=='pdf':
         import subprocess
-        import sys
         from pathlib import Path
         try:
-            proc=subprocess.run([sys.executable,'-m','backend.document_parser'],input=data,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,timeout=12,cwd=Path(__file__).resolve().parents[1])
+            proc=subprocess.run(module_command('backend.document_parser'),input=data,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,timeout=12,cwd=Path(__file__).resolve().parents[1])
             packet=json.loads(proc.stdout)
             require('pages' in packet,'INVALID_INPUT',packet.get('error','无法读取 PDF'))
             pages=packet['pages']
@@ -47,10 +47,9 @@ def parse_file(name, data):
             raise ValueError('无法读取 PDF、解析超时或超出限制；扫描件暂不支持 OCR') from None
     elif suffix=='docx':
         import subprocess
-        import sys
         from pathlib import Path
         try:
-            proc=subprocess.run([sys.executable,'-m','backend.word_parser'],input=data,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,timeout=12,cwd=Path(__file__).resolve().parents[1])
+            proc=subprocess.run(module_command('backend.word_parser'),input=data,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,timeout=12,cwd=Path(__file__).resolve().parents[1])
             packet=json.loads(proc.stdout)
             require('paragraphs' in packet,'INVALID_INPUT',packet.get('error','无法读取 Word 文档'))
             pages=packet['paragraphs']

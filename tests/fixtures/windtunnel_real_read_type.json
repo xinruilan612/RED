@@ -1,0 +1,115 @@
+{
+  "provenance": {
+    "source": "three-arm-validation/study.sqlite live_calls.response_json",
+    "call_id": "f379b8ec-6359-445c-997e-2161984a5670",
+    "sample": "keychron_buying",
+    "stage": "wt_read",
+    "model_alias": "deepseek-flash",
+    "note": "Actual previously charged response; replay is offline and does not send requests."
+  },
+  "response": {
+    "type": "json_object",
+    "results": [
+      {
+        "condition_id": "q1",
+        "status": "pass",
+        "answer": "支持 2.4GHz、蓝牙 5.2 和 Type-C 有线三种方式连接电脑。",
+        "excerpt_id": "reading:370613b80524a35e519ebbcf785e1026288677e687f77bf40f1ca272ee03b4f9:P3",
+        "reason": "稿件明确列出三种连接方式。"
+      },
+      {
+        "condition_id": "q2",
+        "status": "pass",
+        "answer": "重量 425g，尺寸 296×130mm，前缘 5.2mm、后缘 14.5mm，77键75%布局。",
+        "excerpt_id": "reading:370613b80524a35e519ebbcf785e1026288677e687f77bf40f1ca272ee03b4f9:P4",
+        "reason": "稿件给出带出门涉及的尺寸与重量。"
+      },
+      {
+        "condition_id": "q3",
+        "status": "pass",
+        "answer": "不符合；稿件写明非背光，不支持 NKRO（多键无冲）。",
+        "excerpt_id": "reading:370613b80524a35e519ebbcf785e1026288677e687f77bf40f1ca272ee03b4f9:P5",
+        "reason": "稿件直接说明背光与多键无冲取舍。"
+      },
+      {
+        "condition_id": "q4",
+        "status": "pass",
+        "answer": "不是；官方最长 8 个月是实验室结果，实际可能不同，且资料没有每天写稿条件下的续航数据，不能当成个人必然结果。",
+        "excerpt_id": "reading:370613b80524a35e519ebbcf785e1026288677e687f77bf40f1ca272ee03b4f9:P6",
+        "reason": "稿件明确限定续航数据与实际使用不同。"
+      },
+      {
+        "condition_id": "q5",
+        "status": "unclear",
+        "answer": "稿件没有国内实时到手价，也没有主观键感描述，因此无法判断具体到手价和是否适合个人键感。",
+        "excerpt_id": "",
+        "reason": "价格与手感信息在稿件中明确缺失。"
+      }
+    ]
+  },
+  "windtunnel": {
+    "drafts": [
+      {
+        "id": "12b2158d-0ef1-4cd0-8412-6882c3a17323",
+        "version": 1,
+        "title": "Keychron B1 Pro写稿选购：连接与尺寸",
+        "text": "Keychron B1 Pro写稿选购：连接与尺寸\n\n如果你经常带电脑写稿，Keychron B1 Pro 的资料可以帮你快速判断连接方式、便携尺寸和功能取舍。以下整理官方规格，供选购参考。\n\n1. **连接方式**\n   支持 2.4GHz、蓝牙 5.2 和 Type-C 有线三种。2.4GHz 和蓝牙可无线连接，Type-C 有线则同时充电。官方列出的兼容系统包括 macOS、iOS、Windows、Android、Linux，覆盖常见写稿设备。\n\n2. **尺寸与重量**\n   77键75%布局，重量 425g，尺寸 296×130mm，前缘 5.2mm、后缘 14.5mm。这个体积和重量放进包里不算负担，具体是否适合你的包，建议对照内袋尺寸再决定。\n\n3. **功能取舍**\n   非背光，不支持 NKRO（多键无冲）。如果你需要夜间背光或大量快捷键组合，这款可能不符合。它更适合看重无线连接和便携、对背光与全键无冲需求不高的写稿场景。\n\n4. **续航说明**\n   官方标称无线续航最长 8 个月，属于实验室结果，实际使用可能不同；充电时间约 2.5 小时。需要留意：资料没有每天写稿条件下的续航数据，因此不能把 8 个月当成你个人使用的必然结果。\n\n5. **价格与手感**\n   目前资料没有国内实时到手价，也没有主观键感描述。建议你查看电商平台近期报价，并尽量找机会试按或参考可靠评测，再判断是否适合自己。\n\n你平时带键盘出门，更在意包内厚度还是连接稳定性？\n\n你平时带键盘出门，更在意包内厚度还是连接稳定性？\n\n#Keychron #键盘选购 #创作者装备 #无线键盘",
+        "hash": "370613b80524a35e519ebbcf785e1026288677e687f77bf40f1ca272ee03b4f9",
+        "source": null,
+        "parent_id": null
+      }
+    ],
+    "condition_sets": [
+      {
+        "id": "84b25d36-9905-469d-aad7-01b67eae7ee8",
+        "version": 1,
+        "conditions": [
+          {
+            "id": "q1",
+            "question": "它能通过哪几种方式连接电脑？",
+            "scene": "读者只依据这篇文章决定下一步，不要求猜测未提供的事实。",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "id": "q2",
+            "question": "带出门时它多大、多重？",
+            "scene": "读者只依据这篇文章决定下一步，不要求猜测未提供的事实。",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "id": "q3",
+            "question": "如果我要夜间背光和多键无冲，这款符合吗？",
+            "scene": "读者只依据这篇文章决定下一步，不要求猜测未提供的事实。",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "id": "q4",
+            "question": "官方最长续航意味着我每天写稿也必定能用那么久吗？",
+            "scene": "读者只依据这篇文章决定下一步，不要求猜测未提供的事实。",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "id": "q5",
+            "question": "我现在在国内买的到手价是多少，键感适不适合我？",
+            "scene": "读者只依据这篇文章决定下一步，不要求猜测未提供的事实。",
+            "source_ids": [],
+            "origin": "author"
+          }
+        ],
+        "hash": "1c2596d6d248be4143a959d3b9db56f0bcd4b371701dcc7dd343b6b1e28b2095",
+        "confirmed": true,
+        "confirmed_at": 1791566296.067486,
+        "provenance": {
+          "method": "manual_author",
+          "model_calls": 0
+        }
+      }
+    ],
+    "current_set_id": "84b25d36-9905-469d-aad7-01b67eae7ee8",
+    "reading": []
+  }
+}

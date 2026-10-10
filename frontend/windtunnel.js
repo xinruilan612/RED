@@ -138,7 +138,7 @@ function wtExecution(){
 
 function wtReportView(){
  const report=wtReport(),results=report?.results||report?.checks||[],patches=wtData().patches||[];
- return `<section class="panel"><div class="wt-heading"><div><span class="wt-kicker">03 / 检查、修改、再检查</span><h2>读者能从稿件找到答案吗？</h2><p>先看稿件有没有回答问题，再看答案有没有材料支持。</p></div></div>${wtExecution()}${report?`${wtReportIsCurrent(report)?'<p class="wt-inline-message">这是当前稿件与条件对应的检查记录。</p>':'<p class="wt-inline-message wt-inline-error">正在查看历史报告。稿件、材料或检查批次已有变化，当前版本需要重新检查。</p>'}${wtReportIsCurrent(report)?wtNextAdvice(results):'<p class="helper">以下结论只对应旧版本；请先复查当前稿件，再决定下一步。</p>'}<details class="wt-reuse"><summary>查看版本与检查记录编号</summary><p class="wt-status-line">任务 ${esc(wt.run.run_id)}<br>稿件 ${esc(report.draft_id||report.draft_ref||report.draft_version||'')} · 问题组 ${esc(report.condition_set_id||report.set_id||'')} · ${esc(wtTime(report.created_at))}</p></details>${results.map(wtResult).join('')||'<p class="helper">这份报告尚未产生逐项结果。</p>'}${wtNewIssues(report)}`:wtEmpty('报告还没有生成','先确认问题卡，再启动检查。失败或等待中的任务不会显示为通过。')}${wtAllowed('recheck')?'<div class="wt-action-bar"><button class="primary" data-wt="recheck">使用原条件复查当前稿件</button><p class="helper">保留原条件与支持材料快照，不会删除困难条件以提高通过率。</p></div>':''}${wtAllowed('finish')?'<div class="buttons"><button class="secondary" data-wt="finish">结束本次流程并保存报告</button></div>':''}</section>${wtAllowed('propose_patch')&&!wt.run.in_flight?wtPatchForm():''}${patches.length?`<section class="panel"><div class="wt-heading"><div><span class="wt-kicker">PATCH / 局部修改</span><h2>查看修改与补充建议</h2><p>有材料依据的修改可以预览并采用；缺材料的提醒只留给你，不会写入正文。</p></div></div>${patches.map(wtPatch).join('')}</section>`:''}${wtReports().length?wtHistoryView():''}`;
+ return `<section class="panel"><div class="wt-heading"><div><span class="wt-kicker">03 / 检查、修改、再检查</span><h2>读者能从稿件找到答案吗？</h2><p>先看稿件有没有回答问题，再看答案有没有材料支持。</p></div></div>${wtExecution()}${wtReturnView()}${report?`${wtReportIsCurrent(report)?'<p class="wt-inline-message">这是当前稿件与条件对应的检查记录。</p>':'<p class="wt-inline-message wt-inline-error">正在查看历史报告。稿件、材料或检查批次已有变化，当前版本需要重新检查。</p>'}${wtReportIsCurrent(report)?wtNextAdvice(results):'<p class="helper">以下结论只对应旧版本；请先复查当前稿件，再决定下一步。</p>'}<details class="wt-reuse"><summary>查看版本与检查记录编号</summary><p class="wt-status-line">任务 ${esc(wt.run.run_id)}<br>稿件 ${esc(report.draft_id||report.draft_ref||report.draft_version||'')} · 问题组 ${esc(report.condition_set_id||report.set_id||'')} · ${esc(wtTime(report.created_at))}</p></details>${results.map(wtResult).join('')||'<p class="helper">这份报告尚未产生逐项结果。</p>'}${wtNewIssues(report)}`:wtEmpty('报告还没有生成','先确认问题卡，再启动检查。失败或等待中的任务不会显示为通过。')}${wtAllowed('recheck')?'<div class="wt-action-bar"><button class="primary" data-wt="recheck">使用原条件复查当前稿件</button><p class="helper">保留原条件与支持材料快照，不会删除困难条件以提高通过率。</p></div>':''}${wtAllowed('finish')?'<div class="buttons"><button class="secondary" data-wt="finish">结束本次流程并保存报告</button></div>':''}</section>${wtAllowed('propose_patch')&&!wt.run.in_flight?wtPatchForm():''}${patches.length?`<section class="panel"><div class="wt-heading"><div><span class="wt-kicker">PATCH / 局部修改</span><h2>查看修改与补充建议</h2><p>有材料依据的修改可以预览并采用；缺材料的提醒只留给你，不会写入正文。</p></div></div>${patches.map(wtPatch).join('')}</section>`:''}${wtReports().length?wtHistoryView():''}`;
 }
 function wtNextAdvice(results){
  const unclear=results.filter(r=>r.reading?.status==='unclear').length;
@@ -218,6 +218,8 @@ async function wtClick(e){
  if(action==='input-mode'){wt.form.inputMode=b.dataset.value;if(b.dataset.value==='paste'){wt.form.bridge=null;wt.message='已改为手工输入。带入的资料快照仍保留出处；请确认它们适用于当前正文。';}wtPaint();}
  if(action==='example'){wt.form={...wtFreshForm(),mode:'simulation',title:'虚构示例：第一次导出任务表',text:'打开任务表，在菜单中选择导出，将文件保存到电脑。之后可以使用表格工具查看。',material:'以下仅为虚构演示材料：这个示例工具的导出菜单位于右上角“更多”内，导出格式选择 CSV，编码选择 UTF-8。',feedback:'找不到导出入口怎么办？应该选什么文件格式和编码？',origin:'demo',scene:'第一次使用虚构示例工具、需要导出中文任务表的读者'};wtPaint();}
  if(action==='start'){if(await wtMutation('start',{},true)){wt.tab=wtCards().length?'report':'cards';wtPaint();}}
+ if(action==='return-creation')await wtReturnToCreation();
+ if(action==='open-creation')await wtOpenCreation(wtData().import_binding?.run_id);
  if(action==='cancel')await wtMutation('cancel');
  if(action==='pause')await wtMutation('pause',{},true);
  if(action==='refresh-run')await wtRefreshRun();
@@ -274,3 +276,33 @@ function wtMaterialsEditor(materials){
 function rootQuery(selector){return document.querySelectorAll('.wt-workspace '+selector);}
 
 setInterval(()=>{if(currentPage==='windtunnel'&&wt.run?.in_flight&&!wt.busy)wtRefreshRun();},1800);
+
+
+function wtReturnView(){
+ const data=wtData();if(!data.import_binding)return '';
+ if(data.returned_to_creation)return '<div class="wt-action-bar"><p>已回写创作新版本，原稿与检查报告已保留。请到创作页查看复审结果，再确认导出。</p><button class="secondary" data-wt="open-creation">打开创作与复审 →</button></div>';
+ if(!wtAllowed('return_to_creation'))return '';
+ return '<div class="wt-action-bar"><button class="primary" data-wt="return-creation">回写创作新版本并复审 →</button><p class="helper">将当前检查稿保存为创作新版本，保留原稿和检查记录。点击后启动 AI 复审并计费，通过后仍需你确认。</p></div>';
+}
+async function wtOpenCreation(id){
+ if(!id)return false;const account=activeAccountId;
+ try{const latest=await api('/api/runs/'+encodeURIComponent(id));if(account!==activeAccountId)return false;
+  run=latest;viewVersion=null;detailStage=null;editing=false;auto=false;selected=currentAgent();showPage('studio');render();await history();return true;
+ }catch(err){if(account===activeAccountId){wt.failure=err.message;wtPaint();}return false;}
+}
+async function wtReturnToCreation(){
+ if(wt.busy||!wtAllowed('return_to_creation')||wtData().returned_to_creation)return false;
+ const account=activeAccountId,id=wt.run.run_id,binding=wtData().import_binding,draft=wtDraft();if(!binding)return false;
+ wt.busy=true;wt.failure='';wtPaint();let creation=null;
+ try{
+  const result=await api(`/api/runs/${encodeURIComponent(id)}/return-to-creation`,'POST',{version:wt.run.status_version,key:crypto.randomUUID(),payload:{draft_id:draft.id,draft_hash:draft.hash,source_run_id:binding.run_id,source_draft_ref:binding.draft_ref,source_content_hash:binding.content_hash,source_version:binding.source_version}});
+  creation=result.creation;
+  if(account!==activeAccountId||wt.run?.run_id!==id)return false;
+  wt.run=result.windtunnel;wt.runs=wt.runs.map(r=>r.run_id===id?wt.run:r);
+  await api(`/api/runs/${encodeURIComponent(creation.run_id)}/background`,'POST',{action:'start',version:creation.status_version,key:crypto.randomUUID()});
+  if(account!==activeAccountId||wt.run?.run_id!==id)return false;
+  wt.message='新版本已保存，已提交后台复审；请查看审核结果后确认。';
+  return await wtOpenCreation(creation.run_id);
+ }catch(err){if(account===activeAccountId)wt.failure=creation?'新版本已回写，但复审启动尚未确认。请打开创作查看状态；已有版本不会重复回写。'+err.message:err.message;return false;}
+ finally{wt.busy=false;wtPaint();}
+}

@@ -172,7 +172,8 @@ class SkappPersonalBridgeTests(unittest.TestCase):
     def test_real_shared_synthetic_bundle_hashes_match_and_web_refuses(self):
         # Real author architecture, trained only on synthetic fixtures. Never installed.
         actual = self.root / 'actual' / 'xiaohongshu' / 'views-72h'
-        python = bridge.ROOT / 'runtime/skapp/venv/bin/python'
+        from backend.python_runtime import venv_python
+        python = venv_python(bridge.ROOT / 'runtime/skapp/venv')
         program = "from pathlib import Path; import sys; from scripts import skapp_personal as p; from tests.test_skapp_personal import shared_dataset; p.train(shared_dataset(n=100,dim=512),Path(sys.argv[1]),epochs=1,k=3,synthetic=True)"
         completed = subprocess.run([str(python), '-c', program, str(actual)], cwd=bridge.ROOT, capture_output=True, text=True, timeout=180)
         self.assertEqual(completed.returncode, 0, completed.stderr[-3000:])

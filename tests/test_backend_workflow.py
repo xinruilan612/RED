@@ -147,17 +147,22 @@ class WorkflowTests(unittest.TestCase):
 
     def test_old_issues_cannot_disappear_and_revision_limit(self):
         self.draft()
-        for turn in range(3):
+        limit=PARAMETERS['revision_rounds_max']
+        self.assertEqual(limit,5)
+        for turn in range(limit+1):
             report=self.report('revision_required')
             report['issues']=[{'issue_id':'unsupported','severity':'major','state':'open'}]
             if turn:
                 report['previous_issue_results']=[{'issue_id':'unsupported','result':'unresolved'}]
             self.review(report)
-            if turn < 2:
+            if turn < limit:
+                self.assertEqual(self.run.run_status,'RUNNING')
                 self.command('draft',content={'body':f'修改稿 {turn}'})
                 self.assert_code('MODEL_OUTPUT_INVALID',lambda:self.review(self.report()))
         self.assertEqual(self.run.wait_reason,'revision_limit')
-        self.assertEqual(self.run.iteration,2)
+        self.assertEqual(self.run.iteration,limit)
+        self.assertEqual(len(self.run.drafts),limit+1)
+        self.assert_code('INVALID_TRANSITION',lambda:self.command('draft',content={'body':'超出上限的稿件'}))
 
     def test_failed_gate_not_overridden_by_approved(self):
         self.draft()
@@ -201,10 +206,12 @@ class WorkflowTests(unittest.TestCase):
 
     def test_model_attempt_limit_counts_settled_calls(self):
         self.command('start')
-        for call in range(16):
+        limit=PARAMETERS['run_attempts_max']
+        self.assertEqual(limit,20)
+        for call in range(limit):
             self.store.reserve(self.run.run_id,'alice',str(call),10)
             self.store.settle(self.run.run_id,'alice',str(call),0)
-        self.assert_code('BUDGET_EXCEEDED',lambda:self.store.reserve(self.run.run_id,'alice','17',10))
+        self.assert_code('BUDGET_EXCEEDED',lambda:self.store.reserve(self.run.run_id,'alice',str(limit),10))
 
     def test_permissions_and_legacy_import(self):
         tool_allowed('audience','compute_content_metrics',['compute_content_metrics'],'alice','alice')

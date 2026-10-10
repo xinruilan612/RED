@@ -35,12 +35,18 @@ def cached_response(db, run, stage, input_hash):
             return None  # Explicit resumed job may retry within the original shared limits.
         require(old[1] is not None and old[2] is not None,'USAGE_UNKNOWN','上次调用结果或用量未知；已停止，未重复收费调用')
         if old[3]=='invalid':
-            from backend.citation_ids import repair
-            from backend.live import material_records, normalize
             raw=json.loads(old[1])
-            _,repairs=repair(stage,raw,material_records(run.context))
-            require(repairs,'MODEL_OUTPUT_INVALID','上次输出未通过校验，已停止重复调用；请查看被拒绝的模型响应')
-            normalize(run,stage,raw)
+            if getattr(run, 'workflow_type', 'creation') == 'windtunnel':
+                from backend.windtunnel import STAGES, normalize
+                require(stage in STAGES, 'MODEL_OUTPUT_INVALID', '无效风洞阶段不能复用')
+                # Revalidate received output without another call or rewriting its audit.
+                normalize(run,stage,raw)
+            else:
+                from backend.citation_ids import repair
+                from backend.live import material_records, normalize
+                _,repairs=repair(stage,raw,material_records(run.context))
+                require(repairs,'MODEL_OUTPUT_INVALID','上次输出未通过校验，已停止重复调用；请查看被拒绝的模型响应')
+                normalize(run,stage,raw)
     return old
 
 
@@ -50,7 +56,7 @@ def review_execution(db, run):
         return None
     lineage=db.execute('SELECT budget_id FROM live_lineage WHERE run_id=?',(run.run_id,)).fetchone()
     used=stage_attempt_count(db,lineage[0], 'reviewer','review') if lineage else 0
-    limit=CONTRACT['runtime_extension']['stage_attempts_max']
+    limit=PARAMETERS['revision_rounds_max']+1
     pending_review=run.current_stage=='reviewer' and run.review is None
     needs_review=bool(run.drafts) and (pending_review or
         (run.current_stage=='content' and run.review and run.review.get('decision')=='revision_required')) and run.run_status in ('QUEUED','RUNNING','WAITING_USER')
@@ -106,6 +112,67 @@ class ModelRouter:
 
 
 class Calls:
+    @staticmethod
+    def invoke_local_vision(store, run, page_data_url, feedback, text_blocks, adapter=None):
+        """Reserve one local call per owner; release the transaction before inference."""
+        from backend.local_vision import complete, inputs, MODEL
+        _,image_hash=inputs(page_data_url,feedback,text_blocks)
+        input_hash=digest({'image_hash':image_hash,'feedback':feedback,'text_blocks':text_blocks,'model':MODEL,'prompt_version':'local-vision.v1'})
+        call_id=str(uuid4()); now=time.time()
+        with store.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            store._get(db,run.run_id,run.owner_id)
+            db.execute("UPDATE local_media_calls SET status='abandoned',finished=?,error=? WHERE owner=? AND status='running' AND started<?",(now,'本地调用超过恢复期限，结果未知；没有自动重试',run.owner_id,now-180))
+            require(not db.execute("SELECT id FROM local_media_calls WHERE owner=? AND status='running'",(run.owner_id,)).fetchone(),'LOCAL_VISION_BUSY','已有图片正在分析，请等待完成')
+            db.execute('INSERT INTO local_media_calls(id,run_id,owner,model,input_hash,image_hash,feedback,status,started) VALUES(?,?,?,?,?,?,?,?,?)',(call_id,run.run_id,run.owner_id,MODEL,input_hash,image_hash,feedback,'running',now))
+        try:
+            result=(adapter or complete)(page_data_url,feedback,text_blocks)
+            require(isinstance(result,dict) and result.get('model')==MODEL,'LOCAL_VISION_INVALID','本地视觉模型返回无效')
+            require(all(type(result.get(k)) is int and result[k]>=0 for k in ('input_tokens','output_tokens')),'LOCAL_VISION_INVALID','本地视觉未报告实际用量')
+        except Exception as error:
+            public=error if isinstance(error,DomainError) else DomainError('LOCAL_VISION_FAILED','本地图片分析失败，未自动重试')
+            with store.connect() as db:
+                db.execute("UPDATE local_media_calls SET status='failed',error=?,input_tokens=?,output_tokens=?,finished=? WHERE id=? AND status='running'",(str(public),getattr(error,'input_tokens',None),getattr(error,'output_tokens',None),time.time(),call_id))
+            raise public
+        with store.connect() as db:
+            changed=db.execute("UPDATE local_media_calls SET status='succeeded',response_json=?,input_tokens=?,output_tokens=?,finished=? WHERE id=? AND status='running'",(json.dumps(result,ensure_ascii=False),result['input_tokens'],result['output_tokens'],time.time(),call_id))
+            require(changed.rowcount==1,'LOCAL_VISION_EXPIRED','本地分析结果已过期，请重新操作')
+        return {**result,'call_id':call_id}
+
+    @staticmethod
+    def invoke_studio_vision(store,run,preview,state,feedback,page_index,element_id=None,region=None,adapter=None,reference_asset_id=None):
+        from backend.studio_vision import prepare, complete, MODEL, PROMPT_VERSION
+        context,images,sources=prepare(preview,state,feedback,page_index,element_id,region,reference_asset_id)
+        call_id=str(uuid4()); now=time.time(); input_hash=digest(context)
+        with store.connect() as db:
+            db.execute('BEGIN IMMEDIATE'); store._get(db,run.run_id,run.owner_id)
+            db.execute("UPDATE studio_model_calls SET status='abandoned',finished=?,error=? WHERE owner=? AND status='running' AND started<?",(now,'本地调用结果未知，未自动重试',run.owner_id,now-180))
+            require(not db.execute("SELECT id FROM studio_model_calls WHERE owner=? AND status='running'",(run.owner_id,)).fetchone(),'LOCAL_VISION_BUSY','已有画布正在分析，请等待完成')
+            db.execute('INSERT INTO studio_model_calls(id,run_id,owner,provider,model,route_version,prompt_version,snapshot_id,input_hash,sources,input_json,status,started) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)',(call_id,run.run_id,run.owner_id,'ollama',MODEL,'local-studio.v1',PROMPT_VERSION,run.snapshot_id,input_hash,json.dumps(sources),json.dumps(context,ensure_ascii=False),'running',now))
+        result=None
+        try:
+            result=(adapter or complete)(context,images)
+            require(isinstance(result,dict) and result.get('model')==MODEL,'LOCAL_VISION_INVALID','视觉模型返回无效')
+            require(all(type(result.get(k)) is int and result[k]>=0 for k in ('input_tokens','output_tokens')),'LOCAL_VISION_INVALID','视觉模型未报告真实用量')
+            require(type(result.get('unsupported')) is bool and isinstance(result.get('operations'),list) and all(isinstance(result.get(k),str) and 1<=len(result[k])<=1200 for k in ('reason','observation')),'LOCAL_VISION_INVALID','视觉提案字段无效')
+            require((result['unsupported'] and not result['operations']) or (not result['unsupported'] and bool(result['operations'])),'LOCAL_VISION_INVALID','视觉提案状态矛盾')
+            if not result.get('unsupported'):
+                from backend.studio import apply_operations
+                apply_operations(state['current'],result.get('operations'),state['assets'],len(preview['pages']))
+        except Exception as error:
+            public=error if isinstance(error,DomainError) else DomainError('LOCAL_VISION_FAILED','本地视觉分析失败，原版本已保留，未自动重试')
+            with store.connect() as db:
+                parsed=result if isinstance(result,dict) else getattr(error,'parsed_response',None)
+                def token(name):
+                    value=getattr(error,name,result.get(name) if isinstance(result,dict) else None)
+                    return value if type(value) is int and value>=0 else None
+                db.execute("UPDATE studio_model_calls SET status='failed',response_json=?,error=?,input_tokens=?,output_tokens=?,finished=? WHERE id=? AND status='running'",(json.dumps(parsed,ensure_ascii=False) if parsed is not None else None,str(public),token('input_tokens'),token('output_tokens'),time.time(),call_id))
+            raise public
+        with store.connect() as db:
+            changed=db.execute("UPDATE studio_model_calls SET status='succeeded',response_json=?,input_tokens=?,output_tokens=?,finished=? WHERE id=? AND status='running'",(json.dumps(result,ensure_ascii=False),result['input_tokens'],result['output_tokens'],time.time(),call_id))
+            require(changed.rowcount==1,'LOCAL_VISION_EXPIRED','视觉结果已过期，未修改画布')
+        return {**result,'call_id':call_id}
+
     def __init__(self, store, config, router):
         self.store,self.config,self.router = store,config,router
 
@@ -131,9 +198,11 @@ class Calls:
             db.execute('INSERT INTO live_lineage VALUES(?,?) ON CONFLICT(run_id) DO NOTHING',(run.run_id,run.run_id))
             root=db.execute('SELECT budget_id FROM live_lineage WHERE run_id=?',(run.run_id,)).fetchone()[0]
             stage_count=stage_attempt_count(db,root,agent,stage)
-            require(stage_count<CONTRACT['runtime_extension']['stage_attempts_max'],'STAGE_ATTEMPT_LIMIT','同一步已达到3次调用上限（含首次）')
+            # body and revise share one counter: initial draft plus five revisions.
+            limit=PARAMETERS['revision_rounds_max']+1 if stage in ('review','revise') else CONTRACT['runtime_extension']['stage_attempts_max']
+            require(stage_count<limit,'STAGE_ATTEMPT_LIMIT',f'当前阶段已达到 {limit} 次调用上限（含首次）')
             if agent=='content' and stage=='revise':
-                require(stage_attempt_count(db,root,'reviewer','review')<CONTRACT['runtime_extension']['stage_attempts_max'],
+                require(stage_attempt_count(db,root,'reviewer','review')<PARAMETERS['revision_rounds_max']+1,
                         'STAGE_ATTEMPT_LIMIT','复审次数已用完，不能再调用 AI 改稿；请手动修改或知晓问题后人工采用')
             count,used=db.execute(f'SELECT COUNT(*),COALESCE(SUM(COALESCE(actual,reserved)),0) FROM live_calls WHERE run_id IN ({FAMILY})',(root,)).fetchone()
             cost_sql = 'SELECT COALESCE(SUM(COALESCE(c.actual,c.reserved)*COALESCE(a.rate,?)),0) FROM live_calls c LEFT JOIN model_audit a ON a.call_id=c.id '

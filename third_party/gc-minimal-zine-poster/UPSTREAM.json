@@ -1,0 +1,15 @@
+{
+  "repository": "https://github.com/LiamGvchi/gc-minimal-zine-poster",
+  "commit": "ddb0d66b24a94f9c4fdd1f02835a836a2db3774e",
+  "license": "MIT",
+  "files": {
+    "LICENSE": "d15c81ae8fa9a0b4b1db46c66e4490cc92e4898fb1f55e030559fbd2a2e2a232",
+    "README.md": "02419e873f4b8e5987101252923b0ac088a92e8c7ed8959972c7490912742d19",
+    "SKILL.md": "89c7dc90c9aa80ba020c55e54b7de2fa2b49b49d20c240b150cd79ebea59775d",
+    "references/quality-gate.md": "642952c568cddb7cecad13d1783d179494b4c839ef3d31e1e5e55bf9d8cedc5e",
+    "references/reference-analysis.md": "e555d645efed396ec61d8a89d588a014473787becf555645c29c48eea382ad61",
+    "references/style-system.md": "904890bd4a08c3883ae2d2c7c00c04816eaaba3022891f6cf1d181dc1b401504",
+    "references/prompt-compiler.md": "dbb79043c183051740735f6a604e7db18bf9974a79ea7b9846f638c73fd81784",
+    "references/variation-engine.md": "f48d3e0cdf803ed9d931d4bfb278ccf842da29255333c1d0573e98e404d99735"
+  }
+}

@@ -2,7 +2,10 @@
 import argparse
 import json
 import os
+import re
 import secrets
+from threading import BoundedSemaphore
+from contextlib import contextmanager
 from pathlib import Path
 from urllib.parse import urlsplit
 from fastapi import FastAPI, Request, Depends
@@ -20,7 +23,7 @@ from backend.web import FRONTEND, view
 def settings():
     values = {}
     path = Path(__file__).resolve().parents[1]/'.env'
-    if path.exists():
+    if os.environ.get('YOUJI_IGNORE_PROJECT_ENV') != '1' and path.exists():
         for line in path.read_text(encoding='utf-8-sig').splitlines():
             if '=' in line and not line.strip().startswith('#'):
                 k,v=line.split('=',1); values[k.strip()]=v.strip().strip('\"\'')
@@ -40,6 +43,13 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
     auth, service = Auth(store), Service(store,config,client,allow_windtunnel_live=env.get('WINDTUNNEL_ALLOW_LIVE','').lower()=='true')
     app = FastAPI(title='有迹运营 API', version='0.7.0', docs_url=None, redoc_url=None)
     app.state.store,app.state.service,app.state.auth = store,service,auth
+    media_slots = BoundedSemaphore(2)
+
+    @contextmanager
+    def media_slot():
+        require(media_slots.acquire(blocking=False), 'RATE_LIMITED', '图卡正在制作，请稍后重试')
+        try: yield
+        finally: media_slots.release()
 
     def failure(error):
         code = {'RESOURCE_NOT_FOUND':404,'AUTH_REQUIRED':401,'FORBIDDEN':403,'INVALID_INPUT':400,'RATE_LIMITED':429}.get(error.code,409)
@@ -67,10 +77,11 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
                 session = auth.session(request.cookies.get('youji_session',''))
                 require(session and secrets.compare_digest(request.headers.get('x-csrf-token',''),session['csrf']), 'FORBIDDEN','页面会话已过期，请刷新')
                 require(request.headers.get('content-type','').split(';')[0]=='application/json','INVALID_INPUT','只接受 JSON')
+                limit=15_000_000 if re.fullmatch(r"/api/runs/[^/]+/poster(?:/generate)?",request.url.path) else 8_000_000
                 chunks=[]; size=0
                 async for chunk in request.stream():
                     size+=len(chunk)
-                    require(size<=8_000_000,'INVALID_INPUT','请求超过 8 MB')
+                    require(size<=limit,'INVALID_INPUT',f'请求超过 {limit//1_000_000} MB')
                     chunks.append(chunk)
                 request._body=b''.join(chunks)
             response=await call_next(request)
@@ -263,6 +274,10 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
     @app.post('/api/runs/{run_id}/actions')
     def act(run_id: str,data: dict,user=Depends(logged)): return service.action(user['owner'],run_id,data)
 
+    @app.post('/api/runs/{run_id}/return-to-creation')
+    def return_to_creation(run_id: str,data: dict,user=Depends(logged)):
+        return service.return_to_creation(user['owner'],run_id,data)
+
     @app.post('/api/runs/{run_id}/background',status_code=202)
     def background(run_id: str,data: dict,user=Depends(logged)):
         return service.background(user['owner'],run_id,data)
@@ -277,23 +292,141 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
     @app.get('/')
     def index(): return FileResponse(FRONTEND/'index.html')
 
+    @app.get('/api/media/templates')
+    def media_templates(run_id: str=None,user=Depends(logged)):
+        from backend.media_templates import catalog
+        return catalog(store,user['owner'],run_id)
+
+    @app.post('/api/runs/{run_id}/media/template-next')
+    def media_template_next(run_id: str,data: dict,user=Depends(logged)):
+        from backend.media_templates import choose
+        return choose(store,user['owner'],run_id,data)
+
+    @app.get('/assets/templates/{filename}')
+    def media_template_thumbnail(filename: str):
+        from backend.media_templates import TEMPLATE_IDS
+        require(filename in {identity+'.png' for identity in TEMPLATE_IDS},'RESOURCE_NOT_FOUND','模板预览不存在')
+        path=FRONTEND/'assets'/'templates'/filename
+        require(path.is_file(),'RESOURCE_NOT_FOUND','模板预览不存在')
+        return FileResponse(path,media_type='image/png')
+
     @app.get('/api/runs/{run_id}/media/capabilities')
     def media_capabilities(run_id: str,user=Depends(logged)):
         store.get(run_id,user['owner'])
         from backend.media_exports import capabilities
         return capabilities()
 
+    def media_target(run_id, data, user, exporting=False):
+        fields={'template','options','draft_ref','content_hash'} | ({'kind','design_hash'} if exporting else set())
+        require(isinstance(data,dict) and set(data)<=fields, 'INVALID_INPUT', '图卡请求字段无效')
+        run=store.get(run_id,user['owner'])
+        from backend.media_exports import confirmed_snapshot
+        snapshot=confirmed_snapshot(run)
+        require(data.get('draft_ref')==snapshot['draft_ref'] and data.get('content_hash')==snapshot['content_hash'],
+                'VERSION_CONFLICT', '稿件版本已变化，请重新打开预览')
+        if exporting:
+            require(isinstance(data.get('design_hash'),str) and len(data['design_hash'])==64,
+                    'INVALID_INPUT', '请先预览当前样式，再下载成品')
+        return run
+
+    @app.get('/api/runs/{run_id}/poster')
+    def poster_read(run_id: str,user=Depends(logged)):
+        from backend.posters import read
+        with media_slot(): return read(store,user['owner'],run_id)
+
+    @app.post('/api/runs/{run_id}/poster')
+    def poster_mutate(run_id: str,data: dict,user=Depends(logged)):
+        from backend.posters import mutate
+        auth.throttle('poster:'+user['owner'],60,3600)
+        with media_slot(): return mutate(store,user['owner'],run_id,data)
+
+    @app.post('/api/runs/{run_id}/poster/generate')
+    def poster_generate(run_id: str,data: dict,user=Depends(logged)):
+        from backend.posters import generate
+        auth.throttle('poster-generate:'+user['owner'],30,3600)
+        with media_slot(): return generate(store,user['owner'],run_id,data)
+
+    @app.post('/api/runs/{run_id}/poster/export')
+    def poster_export(run_id: str,data: dict,user=Depends(logged)):
+        from backend.posters import export
+        with media_slot(): body,media_type,filename=export(store,user['owner'],run_id,data)
+        return Response(body,media_type=media_type,headers={'Content-Disposition':'attachment; filename='+filename})
+
+    @app.get('/api/runs/{run_id}/studio')
+    def studio_read(run_id: str,user=Depends(logged)):
+        from backend.studio import read
+        with media_slot(): return read(store,user['owner'],run_id)
+
+    @app.post('/api/runs/{run_id}/studio')
+    def studio_mutate(run_id: str,data: dict,user=Depends(logged)):
+        from backend.studio import mutate
+        auth.throttle('studio:'+user['owner'],120,3600)
+        with media_slot(): return mutate(store,user['owner'],run_id,data)
+
+    @app.post('/api/runs/{run_id}/studio/export')
+    def studio_export(run_id: str,data: dict,user=Depends(logged)):
+        from backend.studio import export
+        auth.throttle('studio-export:'+user['owner'],20,3600)
+        run=store.get(run_id,user['owner'])
+        with media_slot():
+            body,media_type,filename=export(store,user['owner'],run_id,data,execution=service.view(run) if data.get('kind')=='complete' else None)
+        return Response(body,media_type=media_type,headers={'Content-Disposition':'attachment; filename='+filename})
+
+    @app.post('/api/runs/{run_id}/media-preview')
+    def media_preview(run_id: str,data: dict,user=Depends(logged)):
+        run=media_target(run_id,data,user)
+        auth.throttle('media-preview:'+user['owner'],120,3600)
+        from backend.media_exports import preview_run
+        with media_slot():
+            return preview_run(run,template=data.get('template','classic'),options=data.get('options'))
+
+    @app.post('/api/runs/{run_id}/media-adjust-preview')
+    def media_adjust_preview(run_id: str,data: dict,user=Depends(logged)):
+        require(isinstance(data,dict) and set(data)<={'template','options','draft_ref','content_hash','design_hash','page_index','feedback'},'INVALID_INPUT','图卡调整请求字段无效')
+        from backend.html_cards import THEMES
+        require(data.get('template') in THEMES,'INVALID_INPUT','请先选择当前模板库中的图卡')
+        target={key:data[key] for key in ('template','options','draft_ref','content_hash') if key in data}
+        run=media_target(run_id,target,user)
+        require(type(data.get('page_index')) is int and 0<=data['page_index']<24,'INVALID_INPUT','请选择一张图卡')
+        require(isinstance(data.get('feedback'),str) and 1<=len(data['feedback'].strip())<=1000,'INVALID_INPUT','请填写1至1000字修改意见')
+        auth.throttle('media-adjust:'+user['owner'],20,3600)
+        from backend.media_exports import preview_run
+        from backend.media_adjust import propose
+        from backend.model_router import Calls
+        with media_slot():
+            before=preview_run(run,template=data.get('template','classic'),options=data.get('options'))
+        require(data.get('design_hash')==before['design_hash'],'VERSION_CONFLICT','图片已变化，请重新预览后调整')
+        require(data['page_index']<len(before['pages']),'INVALID_INPUT','所选图卡不存在')
+        selected=before['pages'][data['page_index']]
+        result=Calls.invoke_local_vision(store,run,selected['data_url'],data['feedback'].strip(),selected.get('text_blocks',[]))
+        # The caller may have changed the confirmed draft while local inference was running.
+        current=media_target(run_id,target,user)
+        with media_slot():
+            return propose(current,data,before,result)
+
+    @app.post('/api/runs/{run_id}/media-export')
+    def media_export_design(run_id: str,data: dict,user=Depends(logged)):
+        run=media_target(run_id,data,user,exporting=True)
+        auth.throttle('media-export:'+user['owner'],20,3600)
+        from backend.media_exports import export_run
+        kind=data.get('kind','complete')
+        with media_slot():
+            body,media_type,filename=export_run(run,kind,execution=service.view(run) if kind=='complete' else None,
+                template=data.get('template','classic'),options=data.get('options'),expected_design_hash=data['design_hash'])
+        return Response(body,media_type=media_type,headers={'Content-Disposition':'attachment; filename='+filename})
+
     @app.get('/api/runs/{run_id}/media-export')
-    def media_export(run_id: str,kind: str='images',user=Depends(logged)):
+    def media_export(run_id: str,kind: str='images',template: str='classic',user=Depends(logged)):
         auth.throttle('media-export:'+user['owner'],20,3600)
         from backend.media_exports import export_run
         run=store.get(run_id,user['owner'])
-        body,media_type,filename=export_run(run,kind,execution=service.view(run) if kind=='complete' else None)
+        with media_slot():
+            body,media_type,filename=export_run(run,kind,execution=service.view(run) if kind=='complete' else None,template=template)
         return Response(body,media_type=media_type,headers={'Content-Disposition': 'attachment; filename='+filename})
 
     @app.get('/{asset}')
     def asset(asset: str):
-        require(asset in ('style.css','app.js','operations.js','account.js','account_profile.js','auth.js','knowledge.js','windtunnel.js','windtunnel.css','trials.js','trials.css','guidance.js','media_exports.js','media_exports.css','skapp.js','topics.js','topics.css'),'RESOURCE_NOT_FOUND','页面不存在')
+        require(asset in ('style.css','app.js','operations.js','account.js','account_profile.js','auth.js','knowledge.js','windtunnel.js','windtunnel.css','trials.js','trials.css','guidance.js','media_exports.js','media_exports.css','posters.js','posters.css','poster_generation.js','skapp.js','topics.js','topics.css'),'RESOURCE_NOT_FOUND','页面不存在')
         require((FRONTEND/asset).is_file(),'RESOURCE_NOT_FOUND','页面不存在')
         media_type = 'text/css' if asset.endswith('.css') else 'text/javascript'
         return FileResponse(FRONTEND/asset, media_type=media_type)

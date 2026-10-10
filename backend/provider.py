@@ -20,7 +20,7 @@ RATE = 1.2 / 1_000_000
 class Config:
     api_key: str = field(default='', repr=False)
     model: str = MODEL
-    run_budget_usd: float = 0.10
+    run_budget_usd: float = 0.20
     day_budget_usd: float = 0.50
     routes: dict = field(default_factory=dict)
 
@@ -38,8 +38,10 @@ class Config:
 def load_config(path=None, environ=None):
     """Simple literal dotenv parser, no shell execution/interpolation, no printing values."""
     values={}
-    path=Path(path) if path is not None else ROOT/'.env'
-    if path.exists():
+    explicit_path = path is not None
+    environment = os.environ if environ is None else environ
+    path=Path(path) if explicit_path else ROOT/'.env'
+    if (explicit_path or environment.get('YOUJI_IGNORE_PROJECT_ENV') != '1') and path.exists():
         for line in path.read_text(encoding='utf-8-sig').splitlines():
             line=line.strip()
             if not line or line.startswith('#'): continue
@@ -155,6 +157,8 @@ def decode_response(body):
 
 
 class DeepSeek:
+    THINKING_TYPE = 'disabled'
+    MAX_OUTPUT_TOKENS = 3000
     def __init__(self, config): self.config=config
 
     def complete(self, messages):
@@ -164,7 +168,7 @@ class DeepSeek:
     def complete_result(self, messages):
         require(self.config.ready,'KEY_REQUIRED','请先填写 .env 的 DEEPSEEK_API_KEY 并重启服务')
         body=json.dumps({'model':self.config.model,'messages':messages,'stream':False,
-                         'thinking':{'type':'disabled'},'max_tokens':3000,
+                         'thinking':{'type':self.THINKING_TYPE},'max_tokens':self.MAX_OUTPUT_TOKENS,
                          'response_format':{'type':'json_object'}},ensure_ascii=False).encode()
         request=Request('https://api.deepseek.com/chat/completions',body,
                         {'Content-Type':'application/json','Authorization':'Bearer '+self.config.api_key})

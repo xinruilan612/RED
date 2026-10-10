@@ -1,19 +1,37 @@
 """Real local typesetting and silent slide video from confirmed draft snapshots."""
 from io import BytesIO
 from pathlib import Path
+import base64
 import hashlib
 import json
 import os
+import re
 import subprocess
 import tempfile
 import zipfile
 
 from backend.contracts import require
 from backend.workflow import digest
+from backend.product_photos import resolve_options, attribution, photo_identity
 
 WIDTH, HEIGHT = 1080, 1440
 MARGIN, BODY_SIZE, LINE_HEIGHT = 90, 42, 68
 MAX_PAGES = 24
+from backend.html_cards import THEMES as HTML_THEMES
+
+TEMPLATES = {
+    'classic': {'id': 'classic', 'version': 3, 'label': '清爽图文'},
+    'checklist': {'id': 'checklist', 'version': 3, 'label': '重点清单'},
+}
+
+
+TEMPLATES.update({key: {'id': key, 'version': 1, 'label': label} for key, label in HTML_THEMES.items()})
+
+
+def template_config(template):
+    require(isinstance(template, str) and template in TEMPLATES,
+            'INVALID_INPUT', '请选择有效图卡模板')
+    return dict(TEMPLATES[template])
 
 
 def font_path():
@@ -42,7 +60,9 @@ def capabilities():
             video = result.returncode == 0
         except (ImportError, OSError, RuntimeError, subprocess.TimeoutExpired):
             pass
-    return {'images_available': images, 'storyboard_available': True, 'complete_available': True, 'video_available': video,
+    from backend.html_cards import available as html_available
+    html_ready = html_available()
+    return {'templates': [{**item, 'available': html_ready if item['id'] in HTML_THEMES else images} for item in TEMPLATES.values() if item['id'] != 'checklist'], 'html_images_available': html_ready, 'images_available': images, 'storyboard_available': True, 'complete_available': True, 'video_available': video,
             'images_message': '下载封面和正文图片，无需模型费用。' if images else '图文导出需要 Pillow 和中文字体，请先配置运行环境。',
             'video_message': '生成无声图文翻页视频，可在剪辑软件中添加自己的配音。' if video else '视频成片暂不可用；可以先下载分镜与字幕。'}
 
@@ -59,70 +79,43 @@ def confirmed_snapshot(run):
     return {'schema_version': 1, 'run_id': run.run_id, 'snapshot_id': run.snapshot_id,
             'draft_ref': draft['ref'], 'content_hash': draft['content_hash'],
             'mode': run.context.get('mode', 'simulation'), 'acceptance': acceptance,
-            'source_refs': [{k: source.get(k) for k in ('source_id', 'document_id', 'version', 'url', 'source_url', 'page')}
-                            for source in run.context.get('evidence', []) + run.context.get('web_research', {}).get('sources', [])],
+            'source_refs': [{k: source.get(k) for k in ('source_id', 'document_id', 'version', 'url', 'source_url', 'page', 'title')}
+                            for source in run.context.get('evidence', []) + run.context.get('web_research', {}).get('sources', [])] + _material_sources(run.context.get('material')),
+            'user_material_provided': bool(run.context.get('material')),
             'content': draft['content'],
-            'notice': '排版导出不表示平台发布成功；图片仅为文字排版，无生成插画。'}
+            'notice': '排版导出不表示平台发布成功；产品照片来自标注来源或用户上传，无生成插画。'}
 
 
 def wrap_text(text, font, max_width):
-    lines = []
-    for paragraph in text.replace('\r\n', '\n').replace('\r', '\n').split('\n'):
-        current = ''
-        for char in paragraph:
-            if current and font.getlength(current + char) > max_width:
-                lines.append(current)
-                current = char
-            else:
-                current += char
-        lines.append(current)
-    return lines
+    from backend.card_layout import wrap
+    return wrap(text, font, max_width)
 
 
-def render_images(snapshot):
-    require(capabilities()['images_available'], 'MEDIA_UNAVAILABLE', '图文导出需要 Pillow 和可用的中文字体')
-    from PIL import Image, ImageDraw, ImageFont
-    path = font_path()
-    title_font, body_font, small_font = (ImageFont.truetype(path, n) for n in (70, BODY_SIZE, 28))
-    c = snapshot['content']
-    title = c['selected_title']
-    body = c['body'] + ('\n\n' + c['cta'] if c.get('cta') else '')
-    require(len(title) <= 500 and len(body) <= 30000, 'INVALID_INPUT', '稿件太长，请缩短后再制作图片')
-    title_width = WIDTH - 2 * MARGIN
-    measured = title_font.getlength(title)
-    if measured > title_width:
-        import math
-        target_lines = math.ceil(measured / title_width)
-        title_width = min(title_width, math.ceil(measured / target_lines) + 20)
-        while len(wrap_text(title, title_font, title_width)) > target_lines and title_width < WIDTH - 2 * MARGIN:
-            title_width = min(WIDTH - 2 * MARGIN, title_width + 35)
-    title_lines = wrap_text(title, title_font, title_width)
-    require(len(title_lines) <= 10, 'INVALID_INPUT', '标题太长，请先缩短标题')
-    lines = wrap_text(body, body_font, WIDTH - 2 * MARGIN)
-    per_page = (HEIGHT - 370) // LINE_HEIGHT
-    chunks = [lines[i:i + per_page] for i in range(0, len(lines), per_page)]
-    require(len(chunks) + 1 <= MAX_PAGES, 'INVALID_INPUT', '正文超过 24 页，请先缩短稿件')
-    pages = []
-    for index, chunk in enumerate([None] + chunks):
-        im = Image.new('RGB', (WIDTH, HEIGHT), '#f8f5ee')
-        draw = ImageDraw.Draw(im)
-        draw.rectangle((MARGIN, 150, MARGIN + 130, 162), fill='#32705b')
-        draw.text((MARGIN, 75), '有迹 · ' + ('封面' if index == 0 else '正文'), font=small_font, fill='#32705b')
-        if index == 0:
-            y = max(260, (HEIGHT - len(title_lines) * 100) // 2 - 100)
-            for line in title_lines:
-                draw.text((MARGIN, y), line, font=title_font, fill='#203d32')
-                y += 100
-            draw.text((MARGIN, min(HEIGHT - 190, y + 70)), '向左滑动，查看完整内容 →', font=small_font, fill='#5b6b63')
-        else:
-            draw.text((MARGIN, 205), '正文 · 第 ' + str(index) + ' 页', font=small_font, fill='#5b6b63')
-            for row, line in enumerate(chunk):
-                draw.text((MARGIN, 295 + row * LINE_HEIGHT), line, font=body_font, fill='#253c34')
-        draw.text((WIDTH - MARGIN - 120, HEIGHT - 85), f'{index + 1}/{len(chunks) + 1}', font=small_font, fill='#5b6b63')
-        data = BytesIO()
-        im.save(data, format='PNG')
-        pages.append((f'{index + 1:02d}.png', data.getvalue()))
+def render_images(snapshot, template='classic', options=None):
+    template_config(template)
+    if template not in HTML_THEMES:
+        require(capabilities()['images_available'], 'MEDIA_UNAVAILABLE', '图文导出需要 Pillow 和可用的中文字体')
+    from backend.card_layout import compose
+    options, photo = resolve_options(snapshot, options)
+    snapshot['product_photo'] = photo
+    if template in HTML_THEMES:
+        from backend.html_cards import compose as html_compose
+        pages, metadata, normalized = html_compose(snapshot, template, options)
+    else:
+        pages, metadata, normalized = compose(snapshot, template, font_path(), options)
+    snapshot['design_options'] = normalized
+    snapshot['page_details'] = metadata
     return pages
+
+
+def design_identity(snapshot, template, options):
+    from backend.card_layout import normalize_options
+    options, photo = resolve_options(snapshot, options)
+    snapshot['product_photo'] = photo
+    normalized, _ = normalize_options(options)
+    photo_identity(normalized, photo)
+    style = template_config(template)
+    return normalized, digest({'content_hash': snapshot['content_hash'], 'template': style, 'options': normalized})
 
 
 def _timestamp(seconds):
@@ -146,10 +139,11 @@ def _storyboard(snapshot):
     return [('subtitles.srt', '\n'.join(srt).encode()), ('storyboard.md', '\n'.join(board).encode())]
 
 
-def _video(snapshot, pages=None):
+def _video(snapshot, pages=None, template='classic', options=None):
+    template_config(template)
     require(capabilities()['video_available'], 'MEDIA_UNAVAILABLE', '视频编码器或中文字体不可用，请先下载图文包')
     import imageio_ffmpeg
-    pages = pages if pages is not None else render_images(snapshot)
+    pages = pages if pages is not None else render_images(snapshot, template=template, options=options)
     require(len(pages) <= 15, 'INVALID_INPUT', '视频最多 15 页（120 秒），请缩短稿件或下载图文包')
     with tempfile.TemporaryDirectory(prefix='youji-media-') as folder:
         base = Path(folder)
@@ -176,6 +170,8 @@ def _video(snapshot, pages=None):
 def _safe_source(source):
     from urllib.parse import urlsplit, urlunsplit
     result = {key: source.get(key) for key in ('source_id', 'document_id', 'version', 'page') if source.get(key) is not None}
+    if isinstance(source.get('title'), str):
+        result['title'] = ' '.join(source['title'].split())[:300]
     for key in ('url', 'source_url'):
         value = source.get(key)
         if not isinstance(value, str): continue
@@ -189,6 +185,44 @@ def _safe_source(source):
         except ValueError:
             pass
     return result
+
+
+
+def _material_sources(material):
+    """Extract explicitly labelled links only; never infer a source from copy."""
+    if not isinstance(material, str):
+        return []
+    sources = []
+    for line in material.splitlines():
+        match = re.match(r'^\s*(?:[-*]\s*)?(?:资料来源|来源|sources?)\s*[:：]\s*(.*)$', line, re.I)
+        if not match:
+            continue
+        for url in re.findall(r'https?://[^\s<>"\)\]]+', match.group(1)):
+            safe = _safe_source({'url': url.rstrip('。，；,;')})
+            if safe.get('url'):
+                sources.append({**safe, 'source_id': 'material-link-' + str(len(sources) + 1),
+                    'title': '用户提供的来源链接（未独立核验）'})
+    return sources
+
+
+def _source_instructions(sources, user_material_provided=False):
+    """List only saved task sources, not inferred brands or invented provenance."""
+    lines, seen = [], set()
+    for source in sources:
+        url = source.get('url') or source.get('source_url')
+        document = source.get('document_id')
+        identity = ('url', url) if url else ('document', document, source.get('version')) if document else ('source', source.get('source_id'))
+        if not any(identity[1:]) or identity in seen:
+            continue
+        seen.add(identity)
+        label = source.get('title') or ('任务资料 ' + str(document or source.get('source_id')))
+        detail = url
+        if not detail and source.get('version') is not None:
+            detail = '资料版本：' + str(source['version'])
+        lines.append('- ' + label + (' — ' + detail if detail else '（未记录公开链接）'))
+    return ('资料来源（本任务保存的证据快照，供核对）：\n' + '\n'.join(lines) if lines else
+            ('资料来源：用户提供素材未记录可列出的来源链接，请发布前补充核对。' if user_material_provided else
+             '资料来源：本任务未保存可列出的来源，请发布前补充核对。'))
 
 
 def execution_evidence(run, snapshot, execution=None):
@@ -224,7 +258,7 @@ def execution_evidence(run, snapshot, execution=None):
         'notice': '执行记录来自保存的任务与调用台账；模拟流程不算真实 AI 调用。人工采用不等于 AI 最终复审通过。导出不表示已经发布，未证明传播、成交或涨粉效果。'}
 
 
-def _complete_files(run, snapshot, execution):
+def _complete_files(run, snapshot, execution, template='classic', options=None):
     from backend.contracts import DomainError
     # Do not forward arbitrary future acceptance/audit fields to the shareable package.
     snapshot['acceptance'] = {key: value for key, value in snapshot['acceptance'].items() if key in
@@ -233,15 +267,15 @@ def _complete_files(run, snapshot, execution):
     files, media_status = [], {}
     pages = None
     try:
-        pages = render_images(snapshot)
+        pages = render_images(snapshot, template=template, options=options)
         files.extend(('images/' + name, data) for name, data in pages)
         media_status['images'] = {'status': 'generated', 'page_count': len(pages)}
     except DomainError as error:
-        if error.code != 'MEDIA_UNAVAILABLE': raise
+        if template in HTML_THEMES or error.code != 'MEDIA_UNAVAILABLE': raise
         media_status['images'] = {'status': 'unavailable', 'reason': str(error)}
         files.append(('images/未生成说明.txt', str(error).encode()))
     try:
-        video = _video(snapshot, pages=pages)
+        video = _video(snapshot, pages=pages, template=template)
         files.extend(('video/' + name, data) for name, data in video)
         media_status['video'] = {'status': 'generated', **snapshot['video']}
     except DomainError as error:
@@ -270,6 +304,11 @@ def _complete_files(run, snapshot, execution):
 7. manifest.json 记录每份文件的 SHA256，可用于核验下载后是否被改变。
 8. 人工检查完成后，由你登录平台发布。再回到网页“记录已发布”，填写实际链接和发布时间。
 
+{attribution(snapshot.get('product_photo'))}
+{_source_instructions(snapshot['source_refs'], snapshot['user_material_provided'])}
+来源仅列在本说明中，不自动追加到已确认正文；有来源记录不等于已核实全部事实。
+品牌合作关系：由创作者按实际情况填写，系统不自动声明合作或非合作。
+
 本次媒体状态：
 {media_lines}
 
@@ -279,15 +318,25 @@ def _complete_files(run, snapshot, execution):
     return files
 
 
-def export_run(run, kind='images', execution=None):
+def export_run(run, kind='images', execution=None, template='classic', options=None, expected_design_hash=None):
+    style = template_config(template)
     require(kind in ('images', 'storyboard', 'video', 'complete'), 'INVALID_INPUT', '请选择图文包、分镜字幕或无声图文视频')
     snapshot = confirmed_snapshot(run)
+    snapshot.update(template_id=style['id'], template_version=style['version'])
+    normalized, design_hash = design_identity(snapshot, template, options)
+    require(expected_design_hash is None or expected_design_hash == design_hash, 'VERSION_CONFLICT', '图卡设置已变化，请重新预览后下载')
+    snapshot.update(design_options=normalized, design_hash=design_hash)
     require(sum(len(str(snapshot['content'].get(k, ''))) for k in ('selected_title', 'body', 'cta')) <= 30500,
             'INVALID_INPUT', '稿件太长，请缩短后再制作成品')
-    files = _complete_files(run, snapshot, execution) if kind == 'complete' else (render_images(snapshot) if kind == 'images' else (_video(snapshot) if kind == 'video' else _storyboard(snapshot)))
+    files = _complete_files(run, snapshot, execution, template=template, options=options) if kind == 'complete' else (render_images(snapshot, template=template, options=options) if kind == 'images' else (_video(snapshot, template=template, options=options) if kind == 'video' else _storyboard(snapshot)))
     c = snapshot['content']
     caption = c['selected_title'] + '\n\n' + c['body'] + '\n\n' + c.get('cta', '') + '\n\n' + ' '.join('#' + t for t in c.get('tags', []))
     files.append(('caption.txt', caption.encode()))
+    if template in HTML_THEMES:
+        from backend.html_cards import VENDOR
+        files.extend(('模板许可/' + name, (VENDOR / name).read_bytes()) for name in ('LICENSE', 'MD2CARD_LICENSE', 'NOTICE.md'))
+    if snapshot.get('product_photo'):
+        files.append(('图片来源与许可.txt', attribution(snapshot['product_photo']).encode()))
     snapshot.update(export_kind=kind, files=[{'name': name, 'sha256': hashlib.sha256(data).hexdigest(), 'bytes': len(data)} for name, data in files])
     output = BytesIO()
     with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED) as archive:
@@ -295,3 +344,19 @@ def export_run(run, kind='images', execution=None):
             archive.writestr(name, data)
         archive.writestr('manifest.json', json.dumps(snapshot, ensure_ascii=False, indent=2))
     return output.getvalue(), 'application/zip', f'youji-{kind}-{run.run_id[:8]}.zip'
+
+
+def preview_run(run, template='classic', options=None):
+    """Return the exact export PNG bytes, with no model call or content changes."""
+    style = template_config(template)
+    snapshot = confirmed_snapshot(run)
+    pages = render_images(snapshot, template=template, options=options)
+    return {'schema_version': 1, 'run_id': snapshot['run_id'],
+            'snapshot_id': snapshot['snapshot_id'], 'draft_ref': snapshot['draft_ref'],
+            'content_hash': snapshot['content_hash'], 'template_id': style['id'],
+            'template_version': style['version'], 'page_count': len(pages),
+            'width': WIDTH, 'height': HEIGHT, 'design_hash': design_identity(snapshot, template, options)[1],
+            'options': snapshot['design_options'], 'product_photo': snapshot.get('product_photo'),
+            'pages': [{**snapshot['page_details'][index], 'name': name, 'sha256': hashlib.sha256(data).hexdigest(),
+                       'data_url': 'data:image/png;base64,' + base64.b64encode(data).decode('ascii')}
+                      for index, (name, data) in enumerate(pages)]}

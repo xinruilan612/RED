@@ -9,7 +9,7 @@ from unittest.mock import patch
 from uuid import uuid4
 from urllib.error import HTTPError
 
-from backend.contracts import DomainError
+from backend.contracts import DomainError, PARAMETERS
 from backend.provider import Config, DeepSeek, load_config, decode_response, NoRedirect
 from backend.execution import Executor
 from backend.live import schema, normalize, material_records
@@ -34,6 +34,62 @@ class FixtureModel:
 
 
 class LiveTests(unittest.TestCase):
+    def test_writer_output_reaches_review_unchanged_without_phrase_filter(self):
+        from backend.workflow import digest
+        base=self.model.complete
+        seen=[]
+        def response(messages):
+            value,tokens=base(messages)
+            if self.model.calls[-1]=='body':
+                value['body']='用文件夹整理课程笔记。\n\n本文据官方公开资料整理，非亲测、非品牌合作。'
+            if self.model.calls[-1]=='review':
+                seen.append(json.loads(messages[1]['content'])['draft'])
+            return value,tokens
+        self.model.complete=response
+        for _ in range(7):self.step()
+        draft=self.run.drafts[-1]
+        self.assertEqual(draft['content']['body'],'用文件夹整理课程笔记。\n\n本文据官方公开资料整理，非亲测、非品牌合作。')
+        self.assertEqual(draft['content_hash'],digest(draft['content']))
+        self.assertEqual(seen,[draft['content']])
+        log=next(n for n in self.run.node_runs if n['stage']=='body')
+        self.assertNotIn('copy_adjustments',log)
+        self.assertEqual(len(self.model.calls),8)
+
+    def test_promotion_policy_shared_by_writer_revision_and_review(self):
+        from backend.live import messages_for
+        for _ in range(6): self.step()
+        for stage in ('research','strategy','outline','hook','title','body','revise','review'):
+            with self.subTest(stage=stage):
+                prompt=messages_for(self.run,stage)[0][0]['content']
+                self.assertIn('资料来源由成品包说明承载',prompt)
+                self.assertIn('未填写就是未知',prompt)
+                self.assertIn('不能仅因缺少上述模板声明而要求返修',prompt)
+                self.assertIn('标称参数的限制不能因推广目的删除',prompt)
+                self.assertIn('用户明确要求保留的来源标注与真实合作披露应保留',prompt)
+
+    def test_writer_and_reviser_receive_direct_composition_and_self_check_rules(self):
+        from backend.live import messages_for
+        for _ in range(6): self.step()
+        for stage in ('body','revise'):
+            prompt=messages_for(self.run,stage)[0][0]['content']
+            self.assertIn('由content角色在生成时执行，不依赖后处理删句',prompt)
+            self.assertIn('不因出现某个词就删除整句',prompt)
+            self.assertIn('合作关系是否由用户明确提供',prompt)
+            self.assertIn('用户明确要求的来源标注和真实合作披露仍按要求保留',prompt)
+
+    def test_reviser_gets_actual_counts_and_conflicting_scope_guidance(self):
+        from backend.live import messages_for
+        for _ in range(6): self.step()
+        messages,data=messages_for(self.run,'revise')
+        draft=self.run.drafts[-1]['content']
+        self.assertEqual(data['draft_counts']['title_and_body'],sum(not c.isspace() for k in ('selected_title','body') for c in draft[k]))
+        self.assertIn('若本次明确禁止修改正文',messages[0]['content'])
+        self.assertIn('不只是替换同义词',messages[0]['content'])
+        for stage in ('body','revise','review'):
+            prompt=messages_for(self.run,stage)[0][0]['content']
+            self.assertIn('区分产品限制与创作者资料缺口',prompt)
+            self.assertIn('此为语义判断而非禁词表',prompt)
+
     def test_review_prompt_demands_contiguous_source_quotes(self):
         from backend.live import messages_for
         for _ in range(6): self.step()
@@ -53,11 +109,13 @@ class LiveTests(unittest.TestCase):
                 for item in value['previous_issue_results']:item['result']='unresolved'
             return value,tokens
         self.model.complete=revision
-        for _ in range(11):self.step()
+        limit=PARAMETERS['revision_rounds_max']
+        self.assertEqual(limit,5)
+        for _ in range(7+2*limit):self.step()
         self.assertEqual(self.run.run_status,'WAITING_USER')
         self.assertEqual(self.run.wait_reason,'revision_limit')
-        self.assertEqual(len(self.run.drafts),3)
-        self.assertEqual(len(self.model.calls),12)
+        self.assertEqual(len(self.run.drafts),limit+1)
+        self.assertEqual(len(self.model.calls),8+2*limit)
         self.assertIsNone(self.run.accepted_ref)
 
     def setUp(self):
@@ -108,7 +166,7 @@ class LiveTests(unittest.TestCase):
         self.step();self.assertEqual(self.run.wait_reason,'final_confirmation')
         self.assertEqual(self.run.review['previous_issue_results'],[{'issue_id':'i1','result':'resolved'}])
 
-    def test_three_rejected_reviews_stop_for_editing_without_fourth_generation(self):
+    def test_five_revisions_stop_for_editing_without_seventh_generation(self):
         base=self.model.complete
         def reject(messages):
             value,tokens=base(messages)
@@ -119,12 +177,14 @@ class LiveTests(unittest.TestCase):
                 value['previous_issue_results']=[{'issue_id':'same','result':'unresolved'}] if self.model.calls.count('review')>1 else []
             return value,tokens
         self.model.complete=reject
-        for _ in range(11):self.step()
+        limit=PARAMETERS['revision_rounds_max']
+        self.assertEqual(limit,5)
+        for _ in range(7+2*limit):self.step()
         self.assertEqual(self.run.run_status,'WAITING_USER')
         self.assertEqual(self.run.wait_reason,'revision_limit')
-        self.assertEqual(self.model.calls.count('body')+self.model.calls.count('revise'),3)
-        self.assertEqual(self.model.calls.count('review'),3)
-        self.assertEqual(len(self.run.drafts),3)
+        self.assertEqual(self.model.calls.count('body')+self.model.calls.count('revise'),limit+1)
+        self.assertEqual(self.model.calls.count('review'),limit+1)
+        self.assertEqual(len(self.run.drafts),limit+1)
         self.assertEqual(self.run.review['decision'],'revision_required')
         calls=len(self.model.calls)
         with self.assertRaises(DomainError):self.step()
@@ -132,12 +192,13 @@ class LiveTests(unittest.TestCase):
 
     def test_manual_edit_cannot_bypass_review_call_cap(self):
         self.until_review()
-        for i in range(3):
+        limit=PARAMETERS['revision_rounds_max']
+        for i in range(limit+1):
             draft=dict(self.run.drafts[-1]['content']);draft['body']='用户修改版本'+str(i)
             self.run=self.store.command(self.run.run_id,'me',self.run.status_version,str(uuid4()),'edit',{'content':draft})
             self.step()
         self.assertEqual(self.run.run_status,'FAILED')
-        self.assertEqual(self.model.calls.count('review'),3)
+        self.assertEqual(self.model.calls.count('review'),limit+1)
 
     def test_missing_material_then_supplement_rebuilds_snapshot(self):
         base=self.model.complete

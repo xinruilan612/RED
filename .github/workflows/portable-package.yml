@@ -1,0 +1,59 @@
+name: Native portable packages
+on:
+  push:
+    branches: ['codex/product-delivery*']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2025
+            label: Windows-x64
+            architecture: x64
+          - os: macos-15
+            label: macOS-arm64
+            architecture: arm64
+          - os: macos-15-intel
+            label: macOS-x64
+            architecture: x64
+          - os: ubuntu-24.04
+            label: Linux-x64
+            architecture: x64
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    env:
+      PYTHONUTF8: '1'
+      PYTHONIOENCODING: utf-8
+      YOUJI_IGNORE_PROJECT_ENV: '1'
+      DEEPSEEK_API_KEY: ''
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.12'
+          architecture: ${{ matrix.architecture }}
+      - run: python -m pip install -r requirements.txt pyinstaller==6.22.3
+      - name: Install native rendering browser
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/runtime/package-browser
+        run: python -m playwright install --with-deps chromium
+      - run: python scripts/build_portable.py --browser-dir runtime/package-browser
+      - name: Exercise the built executable and persisted SQLite via HTTP
+        shell: bash
+        run: |
+          executable=runtime/portable-dist/Youji/Youji
+          if [ "$RUNNER_OS" = Windows ]; then executable="$executable.exe"; fi
+          python scripts/portable_smoke.py --executable "$executable" --output runtime/portable-smoke
+      - name: Preserve Unix permissions and browser symlinks
+        run: python -c "import shutil; shutil.make_archive('runtime/Youji-${{ matrix.label }}','gztar','runtime/portable-dist','Youji')"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: Youji-${{ matrix.label }}
+          path: runtime/Youji-${{ matrix.label }}.tar.gz
+          retention-days: 7

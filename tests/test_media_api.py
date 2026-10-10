@@ -5,6 +5,7 @@ no paid model calls. Rendering and MP4 decoding use real libraries and binaries.
 """
 from io import BytesIO
 import hashlib
+import base64
 import json
 import os
 from pathlib import Path
@@ -70,6 +71,120 @@ class MediaPostgresApiTests(unittest.TestCase):
         self.assertEqual(run['run_status'], 'SUCCEEDED')
         self.assertEqual(run['usage']['model_calls'], 0)
         return run
+
+    def design_request(self,run):
+        return {'template':'checklist','draft_ref':run['accepted_ref'],
+                'content_hash':run['acceptance']['content_hash'],
+                'options':{'page_styles':{'0':{'size':'large','accent':'orange'}}}}
+
+    def test_local_vision_proposal_requires_auth_and_preserves_accepted_copy(self):
+        from unittest.mock import patch
+        self.register();run=self.confirm(self.create());base='/api/runs/'+run['run_id']
+        draft=next(d for d in run['drafts'] if d['ref']==run['accepted_ref'])
+        request={'template':'xhs-e','options':{},'draft_ref':draft['ref'],'content_hash':draft['content_hash']}
+        before=self.post(base+'/media-preview',request).json()
+        body={**request,'design_hash':before['design_hash'],'page_index':1,'feedback':'把这一页拆成两页，保留图片'}
+        with patch('backend.model_router.Calls.invoke_local_vision',return_value={'action':'split','observation':'正文文字较多','reason':'用户要求拆页','model':'fixture-vision'}) as call:
+            stale=self.post(base+'/media-adjust-preview',{**body,'design_hash':'old'})
+            self.assertEqual(stale.status_code,409);call.assert_not_called()
+            missing_csrf=self.client.post(base+'/media-adjust-preview',json=body)
+            self.assertEqual(missing_csrf.status_code,403);call.assert_not_called()
+            result=self.post(base+'/media-adjust-preview',body)
+            self.assertEqual(result.status_code,200,result.text)
+            data=result.json();self.assertEqual(data['mode'],'local_vision')
+            self.assertEqual(data['preview']['page_count'],before['page_count']+1)
+            self.assertTrue(call.call_args.args[2].startswith('data:image/png;base64,'))
+            self.assertEqual(call.call_args.args[3],body['feedback'])
+            self.assertEqual(self.client.get(base).json()['accepted_ref'],run['accepted_ref'])
+            unchanged=self.post(base+'/media-preview',request).json()
+            self.assertEqual(unchanged['design_hash'],before['design_hash'])
+            after=self.post(base+'/media-preview',{**request,'options':data['options']}).json()
+            self.assertEqual(after['design_hash'],data['preview']['design_hash'])
+            self.assertEqual(after['content_hash'],before['content_hash'])
+            # Returned layout cannot be used to silently replace the confirmed wording.
+            data['options']['layout_plan']['pages'][1]['text_blocks'][0]='编造的新卖点'
+            rejected=self.post(base+'/media-preview',{**request,'options':data['options']})
+            self.assertEqual(rejected.status_code,400,rejected.text)
+        other=TestClient(self.app);self.addCleanup(other.close)
+        self.assertIn(other.post(base+'/media-adjust-preview',json=body).status_code,(401,403))
+
+    def test_template_catalog_rotation_authenticated_and_csrf(self):
+        self.register()
+        run=self.confirm(self.create())
+        route='/api/runs/'+run['run_id']+'/media/template-next'
+        request={'action':'init','idempotency_key':uuid4().hex,'draft_ref':run['accepted_ref'],
+                 'content_hash':run['acceptance']['content_hash']}
+        catalog=self.client.get('/api/media/templates',params={'run_id':run['run_id']})
+        self.assertEqual(catalog.status_code,200,catalog.text)
+        self.assertEqual(len(catalog.json()['templates']),8)
+        self.assertIsNone(catalog.json()['selection'])
+        denied=self.client.post(route,json=request)
+        self.assertEqual(denied.status_code,403,denied.text)
+        first=self.post(route,request)
+        self.assertEqual(first.status_code,200,first.text)
+        self.assertEqual(first.json()['template_id'],'xhs-e')
+        self.assertEqual(self.post(route,request).json(),first.json())
+        self.assertEqual(self.client.get('/api/media/templates',params={'run_id':run['run_id']}).json()['selection'],first.json())
+        manual=self.post(route,{**request,'action':'select','template_id':'xhs-h','idempotency_key':uuid4().hex})
+        self.assertEqual(manual.status_code,200,manual.text)
+        self.assertEqual(manual.json()['template_id'],'xhs-h')
+        next_result=self.post(route,{**request,'action':'next','idempotency_key':uuid4().hex})
+        self.assertEqual(next_result.json()['template_id'],'xhs-a')
+        stale=self.post(route,{**request,'draft_ref':'old','idempotency_key':uuid4().hex})
+        self.assertEqual(stale.status_code,409,stale.text)
+        other=TestClient(self.app);self.addCleanup(other.close)
+        self.assertEqual(other.get('/api/media/templates',params={'run_id':run['run_id']}).status_code,401)
+        self.assertEqual(self.client.get('/assets/templates/xhs-e.png').status_code,200)
+        self.assertEqual(self.client.get('/assets/templates/evil.png').status_code,404)
+
+    def test_global_style_roundtrip_through_authenticated_api(self):
+        self.register();run=self.confirm(self.create());base='/api/runs/'+run['run_id']
+        request=dict(self.design_request(run),template='classic',options={'global_style':{'size':'large','accent':'blue'}})
+        response=self.post(base+'/media-preview',request)
+        self.assertEqual(response.status_code,200,response.text[:200])
+        preview=response.json()
+        response=self.post(base+'/media-export',dict(request,kind='images',design_hash=preview['design_hash']))
+        self.assertEqual(response.status_code,200)
+        with zipfile.ZipFile(BytesIO(response.content)) as archive:
+            for page in preview['pages']:
+                self.assertEqual(archive.read(page['name']),base64.b64decode(page['data_url'].split(',',1)[1]))
+        self.assertEqual(self.client.get(base).json()['accepted_ref'],run['accepted_ref'])
+
+    def test_preview_export_exact_png_design_binding_and_no_run_mutation(self):
+        self.register();run=self.confirm(self.create());base='/api/runs/'+run['run_id']
+        request=self.design_request(run)
+        response=self.post(base+'/media-preview',request)
+        self.assertEqual(response.status_code,200,response.text[:200])
+        preview=response.json()
+        self.assertEqual(preview['draft_ref'],run['accepted_ref'])
+        self.assertEqual(preview['content_hash'],request['content_hash'])
+        self.assertEqual(len(preview['design_hash']),64)
+        response=self.post(base+'/media-export',dict(request,kind='images',design_hash=preview['design_hash']))
+        self.assertEqual(response.status_code,200,response.text[:200] if response.status_code!=200 else '')
+        with zipfile.ZipFile(BytesIO(response.content)) as archive:
+            manifest=json.loads(archive.read('manifest.json'))
+            self.assertEqual(manifest['design_hash'],preview['design_hash'])
+            for page in preview['pages']:
+                self.assertEqual(archive.read(page['name']),base64.b64decode(page['data_url'].split(',',1)[1]))
+        changed=dict(request,options={'page_styles':{'0':{'size':'normal','accent':'blue'}}},kind='images',design_hash=preview['design_hash'])
+        self.assertEqual(self.post(base+'/media-export',changed).status_code,409)
+        after=self.client.get(base).json()
+        self.assertEqual(after['status_version'],run['status_version'])
+        self.assertEqual(after['accepted_ref'],run['accepted_ref'])
+        self.assertEqual(after['usage']['model_calls'],0)
+
+    def test_preview_csrf_owner_version_options_and_missing_preview_guards(self):
+        self.register();run=self.confirm(self.create());base='/api/runs/'+run['run_id'];request=self.design_request(run)
+        self.assertEqual(self.client.post(base+'/media-preview',json=request).status_code,403)
+        self.assertEqual(self.post(base+'/media-preview',dict(request,draft_ref='old')).status_code,409)
+        self.assertEqual(self.post(base+'/media-preview',dict(request,content_hash='old')).status_code,409)
+        self.assertEqual(self.post(base+'/media-preview',dict(request,template='unsafe')).status_code,400)
+        self.assertEqual(self.post(base+'/media-preview',dict(request,options={'page_styles':{'999':{'size':'normal'}}})).status_code,400)
+        self.assertEqual(self.post(base+'/media-preview',dict(request,options={'cover_image':'data:image/svg+xml;base64,PHN2Zz4='})).status_code,400)
+        self.assertEqual(self.post(base+'/media-export',dict(request,kind='images')).status_code,400)
+        self.post('/api/auth/logout',{});self.csrf=self.client.get('/api/session').json()['csrf'];self.register('other_card_user')
+        self.assertEqual(self.post(base+'/media-preview',request).status_code,404)
+        self.assertEqual(self.post(base+'/media-export',dict(request,kind='images',design_hash='0'*64)).status_code,404)
 
     def test_media_assets_have_browser_mime_and_nosniff(self):
         for name, mime in [('media_exports.js', 'text/javascript'), ('media_exports.css', 'text/css')]:

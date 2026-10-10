@@ -1,5 +1,5 @@
 'use strict';
-let ops=null,chosenTrend=null,opsBusy=false,currentPage='overview',platformFilter='all',keyword='',includeTrendExamples=false;
+let ops=null,chosenTrend=null,opsBusy=false,currentPage='studio',platformFilter='all',keyword='',includeTrendExamples=false;
 const platformNames={xiaohongshu:'小红书',douyin:'抖音'};
 const pubStates={AWAITING_APPROVAL:'待发布确认',APPROVED:'待执行',SIMULATED:'已演练 · 未真实发布',MANUAL_REPORTED:'已发布 · 人工记录'};
 const memoryStates={proposed:'待你决定',accepted:'已接受',rejected:'已拒绝',revoked:'已撤销',superseded:'指标已修正 · 经验失效'};
@@ -9,7 +9,7 @@ const badge=(text,kind='')=>`<span class="pill ${kind}">${esc(text)}</span>`;
 const empty=(title,body)=>`<div class="empty-state"><span class="empty-symbol">↗</span><h2>${esc(title)}</h2><p>${esc(body)}</p></div>`;
 const navigationGroup=page=>({accounts:'overview',examples:'overview',trends:'studio',windtunnel:'studio',trials:'studio',topics:'studio',metrics:'publish'})[page]||page;
 function showPage(page){
- if(!pageInfo[page])page='overview';
+ if(!pageInfo[page])page='studio';
  currentPage=page;location.hash=page;
  $('studioView').hidden=page!=='studio';$('operationsView').hidden=page==='studio';
  [$('pageEyebrow').textContent,$('pageTitle').textContent,$('pageDescription').textContent]=pageInfo[page];
@@ -17,7 +17,7 @@ function showPage(page){
  if(typeof renderPageTools==='function')renderPageTools(page);
  clearError();if(ops&&page!=='studio')renderOperations();window.scrollTo({top:0});
 }
-async function initOperations(){ops=await api('/api/operations');syncAccounts();if(run&&!matchesAccount(run)){run=null;$('workbench').hidden=true;$('welcome').hidden=false;fillAccountBrief();}showPage(location.hash.slice(1)||'overview');return await history();}
+async function initOperations(){ops=await api('/api/operations');syncAccounts();if(run&&!matchesAccount(run)){run=null;$('workbench').hidden=true;$('welcome').hidden=false;fillAccountBrief();}showPage(location.hash.slice(1)||'studio');return await history();}
 async function operate(action,payload){
  if(opsBusy)return false;opsBusy=true;clearError();
  document.querySelectorAll('#operationsView button').forEach(b=>b.disabled=true);

@@ -143,7 +143,7 @@ class Run:
         elif self.iteration >= PARAMETERS['revision_rounds_max']:
             if fail_on_limit:
                 self._transition('FAILED')
-                self.event('agent.failed',agent='reviewer',mode='live',message='初稿及两次改稿仍未通过审核，已达到3轮上限；停止调用')
+                self.event('agent.failed',agent='reviewer',mode='live',message='初稿及5次改稿仍未通过审核，已达到改稿上限；停止调用')
             else:
                 self._transition('WAITING_USER', 'revision_limit')
         else:
@@ -225,7 +225,7 @@ class Run:
         if self.wait_reason == 'missing_material':
             require(material.strip(), 'INVALID_INPUT', '请补充实际素材')
         if self.wait_reason == 'hypothesis_permission':
-            require(allow_hypothesis, 'INVALID_INPUT', '模拟版无历史导入，请允许假设模式或取消')
+            require(allow_hypothesis, 'INVALID_INPUT', '当前没有可用受众历史，请明确允许将受众判断作为待验证假设，或补充真实历史后重新开始')
         self.supplement(str(uuid4()))
         self.context['material'] = material
         self.context['allow_hypothesis'] = allow_hypothesis

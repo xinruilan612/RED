@@ -51,3 +51,6 @@ xxhash==4.0.1
 zstandard==0.25.0
 Pillow==12.3.0
 imageio-ffmpeg==0.6.0
+playwright==1.60.0
+greenlet==3.5.6
+pyee==13.0.1

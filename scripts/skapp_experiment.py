@@ -9,6 +9,10 @@ import statistics
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+from backend.python_runtime import is_venv_python
+
 VENDOR = ROOT / 'third_party/skapp'
 COMMIT = '3353b5a79bbeacf8110971b2ef035a4046c1a25c'
 
@@ -33,7 +37,7 @@ def verify_vendor():
 
 def command(args):
     verify_vendor()
-    if Path(args.python).absolute() == ROOT / 'runtime/venv/bin/python':
+    if is_venv_python(args.python, ROOT / 'runtime/venv'):
         raise ValueError('Use a separate SKAPP environment, not the website environment')
     cmd = [args.python, str(VENDOR / 'src' / (args.action + '.py'))]
     if args.action == 'download':

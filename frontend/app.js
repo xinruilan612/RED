@@ -5,11 +5,12 @@ const names={audience:'受众与竞品洞察',research:'素材与证据研究',c
 const stages={analysis:'分析',audience:'受众分析',research:'素材分析',strategy:'策略',outline:'提纲',hook:'开头',title:'标题',body:'正文',revise:'按意见改稿',review:'审核'};
 const states={QUEUED:'准备开始',RUNNING:'可以继续执行',WAITING_USER:'等待你的决定',SUCCEEDED:'已确认完成',CANCELLED:'已取消',FAILED:'执行失败',RETRY_WAIT:'等待重试',EXPIRED:'已过期'};
 const checks={brief_fit:'符合需求',audience_fit:'受众相关',usefulness_and_readability:'实用与易读',title_body_alignment:'标题与正文一致',evidence_integrity:'证据完整',experience_authenticity:'经历真实',originality_risk:'原创风险',privacy_and_policy:'隐私与规则'};
-let provider=null,polling=false,materialDocsCache=[],confirmedLiveRuns=new Set(),materialRefreshes=new Map();
+let provider=null,polling=false,materialDocsCache=[],materialRefreshes=new Map();
 let csrf='',run=null,selected='audience',busy=false,auto=false,editing=false,viewVersion=null,detailStage=null,toastTimer,chosenHypothesis=null;
 let cancellationRun=null;
 let creationSequence=0;
-let pendingLiveBudget=null;
+let revisionFeedbackRun=null;
+let renderedDraftKey=null;
 async function api(path,method='GET',body){
  const r=await fetch(path,{method,headers:method==='POST'?{'Content-Type':'application/json','X-CSRF-Token':csrf}:{},body:body===undefined?undefined:JSON.stringify(body)});
  const data=await r.json(); if(!r.ok){const failure=new Error(data.error?.message||'请求失败');failure.code=data.error?.code;failure.status=r.status;throw failure;}return data;
@@ -59,24 +60,6 @@ async function refreshMaterialDocuments(){
  materialRefreshes.set(account,request);
  try{await request;}finally{if(materialRefreshes.get(account)===request)materialRefreshes.delete(account);}
 }
-function confirmLiveBudget(resume){
- if(!run||run.mode!=='live'||!provider)return true;
- if(confirmedLiveRuns.has(run.run_id))return true;
- const calls=provider.run_attempts_max??16,tokens=provider.run_tokens_max??80000,runUsd=provider.run_budget_usd??0.10,dayUsd=provider.day_budget_usd??0.50;
- const experiment=run.testing_budget;
- const experimentNotice=experiment?`本轮参考预算：¥${Number(experiment.target_cny).toFixed(2)}，希望约写 ${experiment.target_runs} 轮；已计入约¥${Number(experiment.spent_cny).toFixed(4)}，已进行 ${experiment.run_count} 轮（包含未完成任务）。\n参考目标用于查看用量，不影响继续创作。\n\n`:'';
- pendingLiveBudget={runId:run.run_id,snapshotId:run.snapshot_id,resume};
- $('liveBudgetMessage').textContent=`即将调用真实模型，可能产生费用。\n\n${experimentNotice}\n本任务硬上限：最多 ${calls} 次调用、${tokens.toLocaleString()} Token、$${Number(runUsd).toFixed(2)}；今日累计上限 $${Number(dayUsd).toFixed(2)}。\n上传资料最多 3 段，联网资料最多再加 3 段（每段最多 400 字）；达到任一上限会由服务器停止，不自动重试。`;
- $('liveBudgetConfirmation').hidden=false;$('liveBudgetConfirmation').scrollIntoView({behavior:'smooth',block:'center'});
- return false;
-}
-$('declineLiveBudget').onclick=()=>{pendingLiveBudget=null;$('liveBudgetConfirmation').hidden=true;};
-$('approveLiveBudget').onclick=async()=>{
- const pending=pendingLiveBudget;pendingLiveBudget=null;$('liveBudgetConfirmation').hidden=true;
- if(!pending)return;
- if(busy||run?.run_id!==pending.runId||run.snapshot_id!==pending.snapshotId){error(new Error('任务或素材已变化，请重新确认费用。'));return;}
- confirmedLiveRuns.add(pending.runId);await pending.resume();
-};
 let historyDeleted=false,historyRequest=0,historyMenuRun=null,historyMenuOpener=null;
 async function history(){
  const request=++historyRequest,deleted=historyDeleted,accountId=typeof activeAccountId==='undefined'?null:activeAccountId;
@@ -112,29 +95,35 @@ function renderTestingBudget(){
  const budget=run?.testing_budget,host=$('testingBudget');
  $('usageDetails').hidden=!budget;host.hidden=!budget;
  const money=value=>Number.isFinite(Number(value))?'¥'+Number(value).toFixed(2):'待统计';
- host.textContent=budget?`累计用量：${money(budget.spent_cny)}。参考目标：${money(budget.target_cny)}。参考目标用于查看用量，不影响继续创作。`:'';
+ host.textContent=budget?`累计用量：${money(budget.spent_cny)}。${budget.hard_limit?'总预算硬上限':'参考目标'}：${money(budget.target_cny)}。${budget.hard_limit?'达到上限停止模型调用。':'参考目标用于查看用量，不影响继续创作。'}`:'';
 }
 
 function renderMode(mode){
  const live=mode==='live';
  $('modeBadge').textContent=live?'真实 AI · DeepSeek':'模拟运行';
- $('modeNotice').textContent=live?'四个角色调用 DeepSeek；每次输出与用量可查看。可结合账号资料与已读取来源；事实仍需核查，最终由你确认。':'这是免费模拟流程，使用固定模板和本地规则，没有调用真实 AI。';
+ $('modeNotice').textContent=live?'四个角色调用 DeepSeek；每次输出与用量可查看。可结合账号资料与已读取来源；事实仍需核查，最终由你确认。':'文案采用免费模拟流程，使用固定模板和本地规则；图文共创的看图修改会单独调用本机视觉模型。';
  $('detailMode').textContent=live?'真实 AI 产物':'模拟产物';
 }
 function unresolvedUsage(task){
  return Number(task.usage?.unknown_calls||0)>0||(task.calls||[]).some(c=>c.tokens===null);
 }
+function currentRunFailure(task){
+ if(task.in_flight||task.run_status==='SUCCEEDED'||(task.review?.decision==='approved'&&(task.allowed_actions||[]).includes('accept')))return '';
+ if(task.background?.status==='blocked'&&task.background.error)return task.background.error;
+ if(task.run_status==='FAILED')return (task.events||[]).filter(e=>e.type==='agent.failed').at(-1)?.payload?.message||'';
+ return '';
+}
 function modelFailureGuidance(task){
  if(task.in_flight||!['FAILED'].includes(task.run_status)&&task.background?.status!=='blocked')return '';
- const last=(task.events||[]).filter(e=>e.type==='agent.failed').at(-1);
- const message=task.background?.error||last?.payload?.message||'';
+ if(task.review?.decision==='approved'&&(task.allowed_actions||[]).includes('accept')||task.run_status==='SUCCEEDED')return '';
+ const message=currentRunFailure(task);
  const failed=[...(task.calls||[])].reverse().find(c=>['invalid','failed'].includes(c.status));
- if(!/格式|JSON|MODEL_OUTPUT_INVALID|模型返回|用量不确定|用量未知/.test(message)&&!failed)return '';
+ if(!/格式|JSON|MODEL_OUTPUT_INVALID|模型返回|用量不确定|用量未知/.test(message)&&(message||!failed))return '';
  const stage=(failed?.stage==='analysis'?stages[failed?.agent]:stages[failed?.stage])||stages[failed?.agent]||'当前步骤';
  const saved='已完成的分析、资料和稿件都保留，不用重新上传。';
  if(unresolvedUsage(task))return `${stage}暂时停止：这次调用未保存完整的结果或用量记录。${saved}为避免重复计费，当前不能直接重试，需要先核对这次调用的用量；不要另建任务反复提交。`;
  if((task.allowed_actions||[]).includes('recover'))return `${stage}的模型结果未能通过检查。${saved}可以点击“从失败步骤继续”，保留已有进度和累计用量；新的模型请求仍受原来的额度限制。`;
- if((task.allowed_actions||[]).includes('next'))return `${stage}的模型结果未能通过检查。${saved}可以点击“重试未完成步骤”，已成功的步骤会复用；新的模型请求仍受原来的额度限制。`;
+ if((task.allowed_actions||[]).includes('next'))return `${stage}的模型结果未能通过检查。${saved}可以点击“重试并继续到审核”，复用已成功的步骤并继续到需要你处理；再次失败会停止，不会自动反复重试；新的模型请求仍受原来的额度限制。`;
  return `${stage}的模型结果未能通过检查。${saved}请查看运行记录中的具体原因，当前没有可执行的重试步骤。`;
 }
 function nextStepGuidance(task){
@@ -143,16 +132,29 @@ function nextStepGuidance(task){
  if(editing&&task.review_execution?.exhausted)return '保存会创建新版本，不调用 AI。但本任务复审次数已用完，保存后只能继续手动修改，或知晓问题后人工采用；旧审核不会变成新版本通过。';
  if(editing)return '你正在修改稿件。保存会创建新版本，不调用 AI；之后可申请复审，或知晓问题后人工采用。';
  if(task.in_flight)return '正在处理，结果会自动保存并更新。可以先阅读已有稿件；无需重复点击或刷新。';
+ const currentFailure=currentRunFailure(task);
+ if(currentFailure&&!isRecoverableReviewError(task,currentFailure))return modelFailureGuidance(task)||currentFailure;
+ if(allowed.includes('reconcile_review'))return '当前只有非阻断建议，可免费重新判定审核结果，无需重复付费改稿。';
+ if(allowed.includes('accept'))return task.ai_revision?.available?'当前版本审核通过。满意就确认并下载；不满意可填写新的意见，继续逐次调整。':'当前版本审核通过。请核对正文与事实，再确认当前版本并下载。';
+ if(task.ai_revision?.available)return '查看审核意见，可补充你的要求，再点击“让 AI 按意见改稿并复审”。新版本通过后，由你确认并下载。';
  const failure=modelFailureGuidance(task);if(failure)return failure;
  if(task.review_execution?.blocked)return task.review_execution.message;
  if(allowed.includes('supplement'))return '请先补充下方缺失素材或选择假设权限，再继续分析；不能用虚构经历填补证据。';
  if(task.current_stage==='reviewer'&&task.drafts.length&&!task.review)return '新版本已保存，尚未完成复审。点击“复审当前版本”查看审核意见；真实 AI 复审会计入费用。';
- if(task.review?.decision==='revision_required')return '先看下方具体问题，再手动修改或按意见改稿。读者理解检查可选，不代替基础审核。';
+ if(task.review?.decision==='revision_required')return '先看下方具体问题，再填写修改要求，让 AI 改稿并复审。';
  if(allowed.includes('accept'))return '先检查正文和事实，再确认当前版本。需要修改时另存新版本，原审核不沿用。';
  if(allowed.includes('adopt_manual'))return '当前版本尚未通过有效审核。可继续修改/复审，或明确知晓已有问题后人工采用。';
  if(task.run_status==='FAILED')return '本次执行失败，已有稿件和记录保留。先看具体错误，再决定是否从失败步骤继续，不必新建重复任务。';
  if(['CANCELLED','EXPIRED'].includes(task.run_status))return '本任务已停止，旧版本仍可查看。需要继续创作时新建一份需求。';
  return '需求已保存。点“连续运行”生成初稿并停在人工处理处；想逐步了解过程，可点“执行下一步”。过程和来源在下方按需展开。';
+}
+function isRecoverableReviewError(task,message){
+ // Only the known reviewer format failure is replaced by the actionable revision card.
+ // Request errors, budget errors, and unrelated backend failures must stay visible.
+ return Boolean(task.ai_revision?.available)&&!unresolvedUsage(task)&&
+  (task.allowed_actions||[]).includes('repair_review')&&
+  /审核|review|MODEL_OUTPUT_INVALID|模型返回.*校验/i.test(message||'')&&
+  !/预算|额度|用量|数据库|连接|网络|权限|CSRF|FORBIDDEN/i.test(message||'');
 }
 function render(){
  if(!run)return;
@@ -164,20 +166,21 @@ function render(){
  document.querySelector('#editor .editor-note').textContent=run.review_execution?.exhausted?'保存会创建新版本，不覆盖旧稿，也不调用 AI。本任务复审次数已用完；保存后可继续手动修改，或知晓问题后人工采用，不能沿用旧审核。':'保存会创建新版本，不会覆盖旧稿，也不会自动调用 AI。保存后可点击“复审”，或知晓已有问题后人工采用；未保存修改不进入最终稿。';
  $('modelCalls').textContent=(run.usage?.model_calls||0)+' 次';
  $('modelCost').textContent=run.mode==='live'?'≤ $'+Number(run.usage.cost_upper_estimate_usd||0).toFixed(4)+' 估算':'¥0.00（模拟）';
- if(run.run_status==='FAILED'){const last=run.events.filter(e=>e.type==='agent.failed').at(-1);error(new Error(modelFailureGuidance(run)||last?.payload.message||'执行失败，请查看运行记录'),'run');}
+ const currentFailure=currentRunFailure(run);
+ if(currentFailure&&!isRecoverableReviewError(run,currentFailure))error(new Error(modelFailureGuidance(run)||currentFailure),'run');
  $('welcome').hidden=true;$('workbench').hidden=false;
  $('runTitle').textContent=run.context.topic;
  $('runSummary').textContent=`${run.context.operations?.platform==='douyin'?'抖音 · 口播脚本':'小红书 · 图文笔记'} · 写给 ${run.context.audience} · ${run.context.tone} · ${run.snapshot_id.slice(0,8)} 输入快照`;
  const background=run.background;
  const jobLabels={queued:background?.worker_online?'已排队，后台即将执行':'已排队，等待 Worker 启动',running:'正在执行 · 结果保存后自动更新',pausing:'正在暂停，等待当前节点保存',paused:'本步已停止 · 查看结果后继续',blocked:'后台等待处理',waiting:'等待你的审核'};
  $('statusLabel').textContent=jobLabels[background?.status]|| (run.in_flight?'AI 正在处理，请稍候':states[run.run_status]);
- if(background?.error)error(new Error(['insufficient','searching'].includes(run.context.web_research?.status)?'联网调查未完成。请在上方修改关键词，点击“重新搜索这一步”；无需新建任务。':modelFailureGuidance(run)||background.error),'run');$('versionCount').textContent=run.drafts.length+' 个';
+ if(currentFailure&&['insufficient','searching'].includes(run.context.web_research?.status))error(new Error('联网调查未完成。请在上方修改关键词，点击“重新搜索这一步”；无需新建任务。'),'run');$('versionCount').textContent=run.drafts.length+' 个';
  const allowed=run.allowed_actions;
- $('recover').hidden=!allowed.includes('recover');$('next').hidden=!allowed.includes('next');$('auto').hidden=!allowed.includes('next');$('cancel').hidden=!allowed.includes('cancel');
- $('next').textContent=run.current_stage==='reviewer'?'执行复审 / 审核 →':run.review?.decision==='revision_required'?'按意见改稿 →':'执行下一步 →';
+ $('recover').hidden=!allowed.includes('recover');$('next').hidden=!allowed.includes('next');$('auto').hidden=!(auto||run.in_flight);$('cancel').hidden=!allowed.includes('cancel');
+ $('next').textContent=run.current_stage==='reviewer'?'执行复审 / 审核 →':run.review?.decision==='revision_required'?'按意见改稿 →':'生成稿件并审核 →';
  $('auto').textContent=background?(run.in_flight?'暂停后台任务':'后台运行到人工处理'):(auto?'停止自动运行':'自动运行到人工处理');
- if(background){$('next').hidden=!allowed.includes('next')||run.in_flight;$('auto').hidden=!allowed.includes('next')&&!run.in_flight;$('auto').textContent=run.in_flight?'暂停执行':'连续运行到人工处理';$('next').textContent=run.current_stage==='reviewer'?'复审当前版本，看审核意见 →':run.current_stage==='brief'&&run.context.web_research?.enabled&&run.context.web_research.status!=='complete'?'执行一步：联网搜索 →':'执行下一步，看结果 →';}
- if(!run.in_flight&&run.background?.status==='blocked'&&modelFailureGuidance(run)&&!unresolvedUsage(run))$('next').textContent='重试未完成步骤 →';
+ if(background){$('next').hidden=!allowed.includes('next')||run.in_flight;$('auto').hidden=!run.in_flight;$('auto').textContent=run.in_flight?'暂停执行':'连续运行到人工处理';$('next').textContent=run.current_stage==='reviewer'?'复审当前版本，看审核意见 →':run.current_stage==='brief'&&run.context.web_research?.enabled&&run.context.web_research.status!=='complete'?'搜索资料并生成稿件 →':'生成稿件并审核 →';}
+ if(!run.in_flight&&run.background?.status==='blocked'&&modelFailureGuidance(run)&&!unresolvedUsage(run))$('next').textContent='重试并继续到审核 →';
  if(!run.in_flight&&unresolvedUsage(run)&&['FAILED','RUNNING','QUEUED'].includes(run.run_status)){$('next').hidden=true;$('auto').hidden=true;$('recover').hidden=true;}
  if(run.review_execution?.blocked&&!run.in_flight){$('next').hidden=true;$('auto').hidden=true;}
  if(['insufficient','searching'].includes(run.context.web_research?.status)&&!run.in_flight){$('next').hidden=true;$('auto').hidden=true;}
@@ -192,7 +195,8 @@ function render(){
  const contentStages=['strategy','outline','hook','title','body'].map(s=>`<button class="stage-chip ${run.artifacts.some(a=>a.stage===s)?'done':''}" data-stage="${s}">${stages[s]}</button>`).join('');
  $('flow').innerHTML=`<div class="parallel">${node('audience','01','理解读者 · 明确假设')}${node('research','02','收录素材 · 标记缺口')}</div><div class="connector">同一份需求 · 并行分析<span>↓ 汇合 ↓</span></div>${node('content','03','策略与写作 · 同一角色负责返修')}<div class="stages">${contentStages}</div><div class="connector"><span>↓</span></div>${node('reviewer','04','问题定位 · 修改建议 · 再次审核')}<div class="connector">审核意见保留 ↓ 最后由你决定</div>${node('human','YOU','补资料 / 改稿 / 比较版本 / 最后确认')}`;
  renderDetails();renderHuman();renderRecovery();renderDraft();renderTimeline();renderCalls();
- document.querySelectorAll('#workbench button').forEach(b=>{if(!b.closest('#flow')&&b.id!=='auto')b.disabled=busy||(b.dataset.titleChoice!==undefined&&run.artifacts.find(a=>a.stage==='title')?.value.candidates[Number(b.dataset.titleChoice)]===run.drafts.at(-1)?.content.selected_title);});
+ document.querySelectorAll('#workbench button').forEach(b=>{if(!b.closest('#flow')&&!b.closest('#mediaExports')&&b.id!=='auto')b.disabled=busy||(b.dataset.titleChoice!==undefined&&run.artifacts.find(a=>a.stage==='title')?.value.candidates[Number(b.dataset.titleChoice)]===run.drafts.at(-1)?.content.selected_title);});
+ renderDraftActionState();
  $('cancel').disabled=busy&&!run.in_flight;$('reviewConfirmUnavailable').disabled=true;$('confirmationPending').disabled=true;
  $('checkReaders').disabled=busy||editing||run.in_flight;
  if(background&&run.in_flight){for(const id of ['editButton','accept','adoptManual','revise','recover'])$(id).disabled=true;}
@@ -231,63 +235,179 @@ function renderRecovery(){
  const canRepair=run.allowed_actions.includes('repair_review');
  const stopped=['SUCCEEDED','CANCELLED','EXPIRED'].includes(run.run_status);
  const blocked=!stopped&&(canRepair||(run.current_stage==='reviewer'&&run.drafts.length&&!run.review&&!run.allowed_actions.includes('accept')&&!run.allowed_actions.includes('adopt_manual')));
- $('reviewRecovery').hidden=!blocked;
+ $('reviewRecovery').hidden=!blocked||canRepair; // Recoverable issues are shown once, in the main decision card.
  $('repairReview').hidden=!canRepair;
  $('repairReview').textContent=run.review_recovery?.next_action==='request_human'?'查看审核问题并进入人工处理（不调用 AI）':'查看审核问题并进入改稿（不调用 AI）';
  if(!blocked)return;
  $('reviewRecoveryTitle').textContent=canRepair?'稿件已保存，先处理审核问题':'稿件已保存，审核尚未完成';
  $('reviewRecoveryMessage').textContent=canRepair?(run.review_recovery?.reason||'审核结果未通过格式校验。可以免费整理已收到的意见，保留稿件和问题，进入人工处理，不再次调用模型。'):run.in_flight?'正在审核，完成后这里会显示下一步。你可以先阅读下方稿件。':'当前不能确认稿件。请查看上方具体错误与运行记录；不要反复启动同一个失败步骤。';
- const rejected=[...(run.calls||[])].reverse().find(c=>c.stage==='review'&&c.status==='invalid'&&!c.inherited);
- $('reviewRecoveryIssues').innerHTML=(rejected?.diagnostic_response?.issues||[]).map(i=>`<div class="issue"><b>${esc(i.excerpt||i.location||'稿件问题')}</b><p>${esc(i.reason)}</p><p>修改建议：${esc(i.suggestion)}</p></div>`).join('');
+ $('reviewRecoveryIssues').innerHTML='';
  if(canRepair){$('next').hidden=true;$('auto').hidden=true;}
 }
 function renderHuman(){
  const allowed=run.allowed_actions,review=run.review;
- const issueReview=review||run.prior_review||[...(run.calls||[])].reverse().find(c=>c.stage==='review'&&c.status==='invalid'&&!c.inherited)?.diagnostic_response;
+ if(revisionFeedbackRun!==run.run_id){$('revisionFeedback').value='';revisionFeedbackRun=run.run_id;}
+ const historicalReview=run.prior_review;
+ const issueReview=review;
+ const failedReview=!review&&!run.in_flight&&run.drafts.length&&(run.current_stage==='reviewer'||canReviewFailure(run));
  const revision=review?.decision==='revision_required';
- const visible=run.run_status==='WAITING_USER'||revision||allowed.includes('adopt_manual')||run.run_status==='SUCCEEDED';
- $('humanPanel').hidden=!visible;
+ const canAI=Boolean(run.ai_revision?.available)&&Boolean(websiteSession?.auth_required);
+ const canRepair=allowed.includes('repair_review');
+ const canReconcile=allowed.includes('reconcile_review')&&!run.in_flight;
+ $('reconcileReview').hidden=!canReconcile;
+ const rounds=run.ai_revision;
+ const confirmed=run.run_status==='SUCCEEDED';
+ $('confirmedPanel').hidden=!confirmed;
+ $('revisionRemaining').hidden=confirmed;
+ $('revisionRemaining').textContent=!confirmed&&Number.isInteger(rounds?.remaining)?`初稿后最多调整 ${rounds.limit} 次，已使用 ${rounds.used} 次，还可调整 ${rounds.remaining} 次。每次只生成一版并复审，费用和 Token 上限仍适用。`:'';
+ $('revise').textContent=review?.decision==='approved'?'按我的新意见调整并复审':'让 AI 按意见改稿并复审';
+ const visible=run.run_status==='WAITING_USER'||failedReview||revision||canRepair||canAI||allowed.includes('adopt_manual')||run.run_status==='SUCCEEDED';
+ $('humanPanel').hidden=confirmed||!visible;
  $('supplyForm').hidden=!allowed.includes('supplement');
- $('revise').hidden=!(revision&&allowed.includes('next')&&!run.review_execution?.blocked);
- $('confirmationPending').hidden=allowed.includes('accept')||allowed.includes('adopt_manual')||run.run_status==='SUCCEEDED';
- $('adoptManual').hidden=!allowed.includes('adopt_manual');
+ $('revise').hidden=!(canAI||(!websiteSession?.auth_required&&revision&&allowed.includes('next')&&!run.review_execution?.blocked));
+ $('revisionInput').hidden=!canAI;
+ $('manualAlternatives').hidden=!(allowed.includes('edit')||allowed.includes('adopt_manual')||canRepair);
+ $('accept').textContent=`确认第 ${run.drafts.length} 版，准备发布`;
+ if(canAI&&!run.in_flight){$('next').hidden=true;$('auto').hidden=true;}
+ $('confirmationPending').hidden=canAI||allowed.includes('accept')||allowed.includes('adopt_manual')||run.run_status==='SUCCEEDED';
+ $('adoptManual').hidden=true;
  $('adoptManual').textContent=`已知晓问题，采用当前版本（第 ${run.drafts.length} 版）`;
- $('editButton').hidden=!allowed.includes('edit');$('accept').hidden=!allowed.includes('accept');$('export').hidden=!allowed.includes('export');
+ $('editButton').hidden=!allowed.includes('edit');$('accept').hidden=true;$('export').hidden=true;
  $('export').href=`/api/runs/${run.run_id}/export`;
- $('sendToPublish').hidden=run.run_status!=='SUCCEEDED';
+ $('sendToPublish').hidden=true;
  $('sendToPublish').textContent=run.mode==='simulation'?'进入模拟发布演练 →':'记录已发布 →';
  let title='需要你的决定',message='';
- if(run.run_status==='SUCCEEDED'){title=run.acceptance?.mode==='manual_override'?'稿件已确认 · 人工采用，无需再次确认':'稿件已确认，无需再次确认';message='下一步：下载确认稿，或到下方导出图文和视频素材，再前往平台发布。'+(run.acceptance?.mode==='manual_override'?'本版本由人工采用，不表示 AI 审核通过。':'')+'这里还没有实际发布；发布后再记录作品链接。';}
+ if(run.run_status==='SUCCEEDED'){title=run.acceptance?.mode==='manual_override'?'稿件已确认 · 人工采用，无需再次确认':'稿件已确认，无需再次确认';message='下一步：预览图片，再下载全部成品包。'+(run.acceptance?.mode==='manual_override'?'本版本由人工采用，不表示 AI 审核通过。':'')+'这里还没有实际发布。';}
  else if(run.wait_reason==='missing_material'){title='资料还不够，请补充';message='请提供缺失的真实素材。保存后，两个分析角色会使用新快照重新执行。';}
  else if(run.wait_reason==='hypothesis_permission'){title='没有历史数据，需要你选择';message='本次账号快照没有可用的历史指标。可以允许明确标注的假设模式；也可取消任务，导入历史指标后新建创作。';}
+ else if(canReconcile){title='仅有非阻断建议，可免费重新判定';message='必需检查已通过，普通建议不应反复要求改稿。重新判定复用已有审核，不调用 AI；仍需你确认稿件。';}
+ else if(allowed.includes('accept')){title=`第 ${run.drafts.length} 版审核通过，待你确认`;message='可以确认后下载，也可以填写新的意见继续调整。可选建议不阻断确认；尚未发布。';}
  else if(run.review_execution?.blocked){title='复审次数已用完，由你处理';message=run.review_execution.message;}
- else if(run.wait_reason==='revision_limit'){title='已达到自动改稿上限';message='AI 自动改稿已停止。'+(run.review_execution?.exhausted?'复审次数也已用完。':'')+'你仍可手动修改，或知晓下方问题后采用当前版本；人工采用会单独记录，不表示 AI 审核通过。';}
- else if(revision){title='主编发现了问题，最后由你决定';message='你可以按意见改稿、手动修改，或知晓问题后人工采用当前版本。';}
+ else if(run.wait_reason==='revision_limit'&&!canAI){title='已达到自动改稿上限';message='AI 自动改稿已停止。'+(run.review_execution?.exhausted?'复审次数也已用完。':'')+'你仍可手动修改，或知晓下方问题后采用当前版本；人工采用会单独记录，不表示 AI 审核通过。';}
+ else if(failedReview&&run.background?.error){title=`第 ${run.drafts.length} 版已保存，复审尚未完成`;message=run.background.error;}
+ else if(canAI){title=`第 ${run.drafts.length} 版需要修改`;message='按下方审核意见修改，也可以补充你的要求。AI 会生成下一版并自动复审；通过后再由你确认。';}
+ else if(canRepair){title='稿件已保存，审核意见需要处理';message=run.review_recovery?.reason||'审核结果未通过校验。可展开其他处理方式，先整理已有意见；不会自动确认稿件。';}
+ else if(revision){title='当前稿件需要修改';message=run.ai_revision?.reason||'请按下方意见处理；也可以展开其他处理方式手动修改。';}
  else if(allowed.includes('adopt_manual')){title='当前稿件，最后由你决定';message='这个版本尚未通过 AI 审核。可以继续修改或复审，也可以知晓问题后人工采用。';}
- else if(allowed.includes('accept')){title='审核结束，最后由你决定';message='请检查正文与素材。你可以先修改，也可以确认当前版本；修改后必须重新审核。';}
+ else if(allowed.includes('accept')){title=`第 ${run.drafts.length} 版 AI 审核通过，待你确认`;message='请核对正文与事实，确认后即可下载全部成品包，准备发布。AI 审核不等于平台审核，尚未发布。';}
  if(run.run_status==='WAITING_USER'&&['missing_material','hypothesis_permission'].includes(run.wait_reason)&&!allowed.includes('supplement')){title='已达到本轮补充上限';message=allowed.includes('adopt_manual')?'你仍可修改现有稿件，或知晓问题后人工采用。':'已有记录会保留。请取消本任务，带着完整资料新建创作。';}
  $('humanTitle').textContent=title;$('humanMessage').textContent=message;
- const issueHTML=(!review&&issueReview?'<p class="helper">以下为已有审核意见，仅供参考；当前版本尚未完成有效复审。</p>':'')+(issueReview?.human_questions||[]).map(q=>'<p class="issue">'+esc(q)+'</p>').join('')+(issueReview?.issues||[]).map(i=>`<div class="issue"><b>${esc(({selected_title:'标题',body:'正文',cta:'互动引导',tags:'标签'})[i.location]||i.location)} · ${esc(i.excerpt)}</b><p>${esc(i.reason)}</p><p>修改建议：${esc(i.suggestion)}</p></div>`).join('');
- $('issues').innerHTML=run.run_status==='SUCCEEDED'&&issueHTML?'<details><summary>查看此前审核记录（仅供回看）</summary><p class="helper">稿件确认已完成。此前意见保留供回看，不代表还有待办，也不表示这些问题已经通过 AI 复审。</p>'+issueHTML+'</details>':issueHTML;
+ $('confirmedTitle').textContent=confirmed?(run.acceptance?.mode==='manual_override'?'文案已确认 · 人工采用':'文案已确认'):'';
+ $('confirmedMessage').textContent=confirmed?('选择海报风格，调整画面并保留已确认文案。'+(run.acceptance?.mode==='manual_override'?'人工采用不表示 AI 审核通过。':'')+'采用排版后可导出，尚未发布。'):'';
+ const currentIssues=reviewIssuesHTML(issueReview);
+ const historyIssues=!review&&historicalReview?'<details><summary>查看上一版审核意见（历史记录，不代表当前问题）</summary><p class="helper">这些意见只对应之前版本，不代表还有待办；当前稿件的结论以本次复审为准。</p>'+reviewIssuesHTML(historicalReview)+'</details>':'';
+ const failure=failedReview&&run.run_status!=='SUCCEEDED'?'<p class="issue">当前版本尚未完成有效复审：'+esc(run.review_failure?.message||run.review_recovery?.reason||run.background?.error||'审核结果未通过校验，请重新复审当前稿件。')+'</p>':'';
+ $('issues').innerHTML=((run.run_status==='SUCCEEDED'||allowed.includes('accept'))&&currentIssues?'<details><summary>查看可选建议与审核记录</summary>'+currentIssues+'</details>':currentIssues)+failure+historyIssues;
+ $('confirmedIssues').innerHTML=confirmed?$('issues').innerHTML:'';
+}
+function canReviewFailure(task){return Boolean(task.review_failure||task.review_recovery?.available||task.allowed_actions?.includes('repair_review'));}
+function reviewIssuesHTML(review){
+ return (review?.human_questions||[]).map(q=>'<p class="issue">'+esc(q)+'</p>').join('')+(review?.issues||[]).map(i=>{
+  const technical=/claim_map|引用.*映射|事实映射/.test([i.reason,i.suggestion,i.id].join(' '));
+  const label=({selected_title:'标题',body:'正文',cta:'互动引导',tags:'标签'})[i.location]||i.location||'审核意见';
+  if(technical){
+   const plain=value=>String(value||'').replace(/claim_map/g,'资料引用对应关系');
+   return '<div class="issue"><b>资料引用核对</b><p>'+esc(plain(i.reason))+'</p>'+(i.suggestion?'<p>审核建议：'+esc(plain(i.suggestion))+'</p>':'')+'</div>';
+  }
+  const excerpt=String(i.excerpt||'');
+  return `<div class="issue"><b>${esc(label)}${excerpt?' · '+esc(excerpt.length>180?excerpt.slice(0,180)+'…':excerpt):''}</b><p>${esc(i.reason)}</p><p>修改建议：${esc(i.suggestion)}</p></div>`;
+ }).join('');
+}
+function renderDraftActionState(){
+ const draft=run?.drafts?.[viewVersion??run.drafts.length-1];
+ $('draftActions').hidden=!draft||run.run_status==='SUCCEEDED';if(!draft)return;
+ const latest=draft.ref===run.drafts.at(-1).ref;
+ const confirmed=run.run_status==='SUCCEEDED'&&draft.ref===run.accepted_ref;
+ const canConfirm=latest&&(run.allowed_actions||[]).includes('accept');
+ const canManual=latest&&(run.allowed_actions||[]).includes('adopt_manual');
+ const locked=busy||editing||run.in_flight;
+ $('draftActionTitle').textContent=confirmed?'✓ 已确认，下一步下载全部成品包':canConfirm?'✓ 审核通过，满意就确认并下载':canManual?'核对稿件后，确认并下载':!latest?'正在查看历史版本':`第 ${run.drafts.length} 版还需处理审核意见`;
+ $('draftActionStatus').textContent=confirmed?'包含文案和可生成的媒体；不会自动发布。':canConfirm?'确认后，在下方预览图片并下载全部成品包。':canManual?'AI 复审尚未通过。人工采用会保留审核问题，不代表 AI 审核通过；确认后可预览和下载。':!latest?'确认和导出必须对应最终版本，请先查看最新稿件。':(run.background?.error?`复审未完成：${run.background.error}。请点击“查看审核结果”处理。`:'请先按审核意见修改，复审通过后即可确认下载。');
+ $('draftConfirm').textContent=canManual&&!canConfirm?`知晓问题，人工采用第 ${run.drafts.indexOf(draft)+1} 版`:`确认第 ${run.drafts.indexOf(draft)+1} 版`;
+ $('draftConfirm').hidden=false;$('draftConfirm').disabled=locked||!(canConfirm||canManual);
+ $('draftDownload').hidden=true;$('draftDownload').disabled=locked||!confirmed;
+ $('draftActionDetails').hidden=canConfirm||confirmed;
+ $('draftActionDetails').textContent=!latest?'查看最新稿件':'查看审核结果';
 }
 function draftHTML(d,index,changed=false){const c=d.content;return `<article class="draft-copy ${changed?'changed':''}"><span class="version-tag">版本 ${index+1} · ${d.actor==='user'?'你手动修改':run.mode==='live'?'AI 创作':'模拟创作'} · ${esc(d.ref.slice(0,8))}${run.accepted_ref===d.ref?' · 已确认':''}</span><h3>${esc(c.selected_title)}</h3><pre>${esc(c.body)}</pre><p>${esc(c.cta)}</p><div>${(c.tags||[]).map(t=>'<span class="tag">#'+esc(t)+'</span>').join('')}</div></article>`;}
+function draftChangeDetails(previous,current){
+ const fields={selected_title:'标题',body:'正文',cta:'互动引导',tags:'标签'};
+ const rows=Object.entries(fields).flatMap(([key,label])=>{
+  const before=key==='tags'?(previous[key]||[]).map(t=>'#'+t).join(' '):String(previous[key]||'');
+  const after=key==='tags'?(current[key]||[]).map(t=>'#'+t).join(' '):String(current[key]||'');
+  if(before===after)return [];
+  // Compare Unicode characters, preserving the literal text rather than an AI summary.
+  const a=Array.from(before),b=Array.from(after);let start=0,end=0;
+  while(start<a.length&&start<b.length&&a[start]===b[start])start++;
+  while(end<a.length-start&&end<b.length-start&&a[a.length-1-end]===b[b.length-1-end])end++;
+  const excerpt=(text,tag)=>{
+   const left=text.slice(Math.max(0,start-35),start).join('');
+   const changed=text.slice(start,text.length-end).join('');
+   const right=text.slice(text.length-end,text.length-end+35).join('');
+   return (start>35?'…':'')+esc(left)+(changed?'<'+tag+'>'+esc(changed)+'</'+tag+'>':'<em>（此处无文字）</em>')+esc(right)+(end>35?'…':'');
+  };
+  return ['<div class="readable"><b>'+label+'</b><p>修改前：'+excerpt(a,'del')+'</p><p>修改后：'+excerpt(b,'ins')+'</p></div>'];
+ });
+ return rows.length?'<details class="revision-diff"><summary>展开查看实际修改前后</summary><p class="helper">以下直接比较两版文字；是否解决审核问题，以当前版本复审结果为准。</p>'+rows.join('')+'</details>':'';
+}
+function draftReviewSummary(d,index){
+ const prefix='第 '+(index+1)+' 版：';
+ if(d.ref!==run.drafts.at(-1).ref)return prefix+'历史版本。请查看最新版本的审核结果与下一步。';
+ if(run.run_status==='SUCCEEDED'&&run.accepted_ref===d.ref)return prefix+(run.acceptance?.mode==='manual_override'?'已人工确认采用，不代表 AI 审核通过。':'已确认。')+'可下载全部成品包。';
+ if(run.in_flight)return prefix+'复审未完成，正在处理。完成后将显示结果，请先阅读稿件。';
+ if(run.allowed_actions.includes('accept'))return prefix+'审核通过。满意后点击下方确认，再下载全部成品包。';
+ const review=run.review?.draft_ref===d.ref&&run.review?.content_hash===d.content_hash?run.review:null;
+ if(review?.decision==='revision_required')return prefix+'需要修改。查看审核意见，补充要求后让 AI 改稿并复审。';
+ if(review?.decision==='needs_human')return prefix+'需要补充信息。请查看审核问题并补充真实资料。';
+ return prefix+'复审未完成。请查看审核结果处理；文字发生变化不代表审核通过。';
+}
+function revisionIssueResults(d){
+ const prior=run.prior_review,issues=prior?.issues||[];
+ if(d.ref!==run.drafts.at(-1)?.ref||!issues.length)return '';
+ const review=run.review;
+ const priorDraft=run.drafts.find(x=>x.ref===prior.draft_ref);
+ const results=review?.previous_issue_results||[];
+ const ids=issues.map(x=>x.issue_id),resultIds=results.map(x=>x.issue_id);
+ const valid=!run.in_flight&&priorDraft&&priorDraft.ref!==d.ref&&prior.content_hash===priorDraft.content_hash&&prior.snapshot_id===priorDraft.snapshot_id&&
+  review?.draft_ref===d.ref&&review.content_hash===d.content_hash&&review.snapshot_id===d.snapshot_id&&d.snapshot_id===run.snapshot_id&&
+  ids.every(x=>typeof x==='string'&&x)&&new Set(ids).size===ids.length&&results.length===ids.length&&new Set(resultIds).size===ids.length&&
+  results.every(x=>ids.includes(x.issue_id)&&['resolved','unresolved','regressed'].includes(x.result));
+ const header='<section class="readable revision-results"><h3>本轮审核意见处理结果</h3>';
+ if(!valid)return header+'<p class="helper">待有效复审后显示逐条结果；文字有变化不代表问题已解决。</p></section>';
+ const labels={resolved:'复审判断已解决',unresolved:'仍需修改',regressed:'再次出现'};
+ return header+'<p class="helper">以下对应上一轮审核意见；你的补充要求请结合实际修改前后核对。</p>'+issues.map(i=>{
+  const result=results.find(x=>x.issue_id===i.issue_id).result;
+  return '<div class="issue"><b>'+labels[result]+'</b><p>上一版问题：'+esc(i.reason||i.excerpt||i.issue_id)+'</p></div>';
+ }).join('')+'</section>';
+}
 function renderDraft(){
  if(typeof mountMediaExports==='function'&&$('mediaExports'))mountMediaExports(run,$('mediaExports'));
- $('draftPanel').hidden=!run.drafts.length;if(!run.drafts.length)return;
+ $('draftPanel').hidden=!run.drafts.length;if(!run.drafts.length){renderDraftActionState();return;}
  // null follows new Worker drafts; only a user-selected older version is pinned.
  if(viewVersion!==null&&(!Number.isInteger(viewVersion)||viewVersion<0||viewVersion>=run.drafts.length))viewVersion=null;
+ renderDraftActionState();
+ const latestKey=run.run_id+':'+run.drafts.at(-1).ref;
+ if(renderedDraftKey!==latestKey){$('compareVersions').checked=false;renderedDraftKey=latestKey;}
  const i=viewVersion??run.drafts.length-1,d=run.drafts[i],prev=run.drafts[i-1];
  $('versionSelect').innerHTML=run.drafts.map((d,index)=>`<option value="${index}" ${index===i?'selected':''}>版本 ${index+1}${run.accepted_ref===d.ref?' · 已确认':''}</option>`).join('');
  $('compareVersionsWrap').hidden=!prev;
  if(!prev)$('compareVersions').checked=false;
  const compare=prev&&$('compareVersions').checked;
  const changes=prev?['selected_title','body','cta','tags'].filter(k=>JSON.stringify(prev.content[k])!==JSON.stringify(d.content[k])).map(k=>({selected_title:'标题',body:'正文',cta:'互动引导',tags:'标签'})[k]):[];
- $('draftView').innerHTML=(compare?'<p class="change-summary">与上一版相比：'+(changes.length?'修改了 '+changes.join('、'):'文字内容未变化')+'。左侧旧稿，右侧当前所选稿。</p><div class="draft-columns">'+draftHTML(prev,i-1)+draftHTML(d,i,true)+'</div>':draftHTML(d,i));
- $('checkReaders').hidden=!websiteSession?.auth_required;$('readerCheckHelp').hidden=$('checkReaders').hidden;
+ let summary='';
+ if(prev){
+  const onlyTags=changes.length===1&&changes[0]==='标签';
+  const request=run.context?.revision_requests?.findLast(r=>r.draft_ref===prev.ref);
+  if(request?.feedback)summary='<p class="helper">本次修改意见：'+esc(request.feedback)+'</p>';
+  summary+='<p class="change-summary">与上一版相比：'+(onlyTags?'仅修改标签，标题和正文未变':changes.length?'修改了 '+changes.join('、'):'标题、正文、互动引导和标签均未变化')+'。'+(compare?'左侧旧稿，右侧当前所选稿。':'当前显示所选版本。')+'</p>';
+  summary+=draftChangeDetails(prev.content,d.content);
+  if(changes.includes('标签'))summary+='<p class="change-summary">标签：'+esc((prev.content.tags||[]).map(t=>'#'+t).join(' '))+' → '+esc((d.content.tags||[]).map(t=>'#'+t).join(' '))+'</p>';
+ }
+ $('draftView').innerHTML='<p class="helper" role="status">'+esc(draftReviewSummary(d,i))+'</p>'+'<p class="helper">当前所选稿标题与正文共 '+Array.from((String(d.content.selected_title||'')+String(d.content.body||'')).replace(/\s/g,'')).length+' 字（不计空白、互动引导和标签）。</p>'+revisionIssueResults(d)+summary+(compare?'<div class="draft-columns">'+draftHTML(prev,i-1)+draftHTML(d,i,true)+'</div>':draftHTML(d,i));
+ $('checkReaders').hidden=typeof openDraftReaderCheck!=='function'||typeof activeAccountId==='undefined'||!activeAccountId||run.context?.operations?.account_id!==activeAccountId||!['creation',undefined].includes(run.workflow_type);$('readerCheckHelp').hidden=$('checkReaders').hidden;
  $('checkReaders').textContent=`用版本 ${i+1} 做读者理解检查（可选） →`;
  $('checkReaders').disabled=busy||editing||run.in_flight;
- const candidates=run.artifacts.find(a=>a.stage==='title')?.value;
- if(candidates&&run.allowed_actions.includes('edit')&&!editing)$('draftView').insertAdjacentHTML('beforeend','<details><summary>比较候选标题 / '+(run.review_execution?.exhausted?'另存新版本，不再复审':'选择后重新审核')+'</summary>'+candidates.candidates.map((t,n)=>`<div class="candidate-row"><div><b>${esc(t)}</b><p class="muted">${esc(candidates.reasons?.[n]||'历史版本未记录理由')}</p></div><button data-title-choice="${n}" ${t===run.drafts.at(-1).content.selected_title?'disabled':''}>${run.review_execution?.exhausted?'选用并另存':'选用并复审'}</button></div>`).join('')+'</details>');
+
 }
 $('draftView').onclick=async e=>{const b=e.target.closest('[data-title-choice]');if(!b||busy||editing)return;const title=run.artifacts.find(a=>a.stage==='title')?.value.candidates[Number(b.dataset.titleChoice)];if(title&&title!==run.drafts.at(-1).content.selected_title&&await act('edit',{...run.drafts.at(-1).content,selected_title:title})){viewVersion=null;render();toast(run.review_execution?.exhausted?'标题已另存；复审次数已用完，请自行核对正文后决定是否采用':'标题另存为新版本，请重新审核正文是否匹配');}};
 function renderTimeline(){
@@ -302,7 +422,6 @@ function renderCalls(){
 async function act(action,payload={}){
  if(action==='next'&&websiteSession?.auth_required)return backgroundCommand('step');
  if(action==='next'&&run?.review_execution?.blocked){error(new Error(run.review_execution.message));return false;}
- if(action==='next'&&run?.mode==='live'&&!confirmLiveBudget(()=>act(action,payload)))return false;
  if(busy||!run)return false;busy=true;clearError();if(action==='next'&&run.mode==='live')run.in_flight=true;render();
  try{run=await api(`/api/runs/${run.run_id}/actions`,'POST',{action,version:run.status_version,key:crypto.randomUUID(),payload});clearError();viewVersion=null;selected=currentAgent();detailStage=null;if(action==='edit'){ops=await api('/api/operations');syncAccounts();}await history();return true;}
  catch(e){auto=false;error(e);try{run=await api('/api/runs/'+run.run_id);}catch(_){}return false;}
@@ -310,11 +429,9 @@ async function act(action,payload={}){
 }
 async function backgroundCommand(action,extra={}){
  if(busy||!run)return false;
- if(['start','step'].includes(action)&&run.review_execution?.blocked){error(new Error(run.review_execution.message));return false;}
- const searchOnly=action==='step'&&run.current_stage==='brief'&&run.context.web_research?.enabled&&run.context.web_research.status!=='complete';
- if(['start','step'].includes(action)&&!searchOnly&&run.mode==='live'&&!confirmLiveBudget(()=>backgroundCommand(action,extra)))return false;
+ if(['start','step','revise_review'].includes(action)&&run.review_execution?.blocked){error(new Error(run.review_execution.message));return false;}
  let commandError=null;busy=true;clearError();render();
- try{run=action==='pause'?await pauseBackground(run.run_id):await api(`/api/runs/${run.run_id}/background`,'POST',{action,version:run.status_version,key:crypto.randomUUID(),...extra});clearError();selected=currentAgent();detailStage=null;await history();return true;}
+ try{run=action==='pause'?await pauseBackground(run.run_id):await api(`/api/runs/${run.run_id}/background`,'POST',{action,version:run.status_version,key:crypto.randomUUID(),...extra});if(action==='revise_review')$('revisionFeedback').value='';clearError();selected=currentAgent();detailStage=null;await history();return true;}
  catch(e){commandError=e;error(e);try{run=await api('/api/runs/'+run.run_id);}catch(_){}return false;}
  finally{busy=false;render();if(commandError)error(commandError);}
 }
@@ -330,7 +447,6 @@ async function pauseBackground(runId){
 async function autoRun(){
  if(websiteSession?.auth_required)return backgroundCommand(run.in_flight?'pause':'start');
  if(!auto&&run?.review_execution?.blocked){error(new Error(run.review_execution.message));return;}
- if(run?.mode==='live'&&!confirmLiveBudget(()=>autoRun()))return;
  if(auto){auto=false;render();return;}auto=true;render();
  while(auto&&run?.allowed_actions.includes('next')){
   if(!await act('next'))break;
@@ -340,9 +456,11 @@ async function autoRun(){
  }
  auto=false;render();
 }
-$('briefForm').addEventListener('submit',async e=>{e.preventDefault();if(busy)return;busy=true;clearError();e.submitter.disabled=true;
- try{const accountId=currentAccount()?.id,documentIds=[...$('materialDocumentSelect').selectedOptions].map(o=>o.value);if(documentIds.length>3)throw new Error('本次最多选择 3 份资料');run=await api('/api/runs','POST',{...(websiteSession?.auth_required?{knowledge:{enabled:$('useKnowledge').checked,document_ids:$('useKnowledge').checked?documentIds:[]}}:{}),...($('useWebResearch').checked?{web_research:{enabled:true,queries:[$('webQuery1').value,$('webQuery2').value].map(q=>q.trim()).filter(Boolean)}}:{}),mode:$('mode').value,topic:$('topic').value,audience:$('audience').value,tone:$('tone').value,material:$('material').value,scenario:$('scenario').value,allow_hypothesis:$('hypothesis').checked,operations:{platform:$('targetPlatform').value,account_id:accountId,account:$('accountName').value,trend_id:chosenTrend?.id||null,hypothesis_id:chosenHypothesis?.id||null}});chosenHypothesis=null;selected='audience';detailStage=null;viewVersion=null;editing=false;$('editor').hidden=true;render();await history();}
- catch(err){error(err);}finally{busy=false;e.submitter.disabled=false;if(run&&!$('workbench').hidden)render();}});
+$('briefForm').addEventListener('submit',async e=>{e.preventDefault();if(busy)return;let created=false;busy=true;clearError();e.submitter.disabled=true;
+ try{const accountId=currentAccount()?.id,documentIds=[...$('materialDocumentSelect').selectedOptions].map(o=>o.value);if(documentIds.length>3)throw new Error('本次最多选择 3 份资料');run=await api('/api/runs','POST',{...(websiteSession?.auth_required?{knowledge:{enabled:$('useKnowledge').checked,document_ids:$('useKnowledge').checked?documentIds:[]}}:{}),...($('useWebResearch').checked?{web_research:{enabled:true,queries:[$('webQuery1').value,$('webQuery2').value].map(q=>q.trim()).filter(Boolean)}}:{}),mode:$('mode').value,topic:$('topic').value,audience:$('audience').value,tone:$('tone').value,material:$('material').value,scenario:$('scenario').value,allow_hypothesis:$('hypothesis').checked,operations:{platform:$('targetPlatform').value,account_id:accountId,account:$('accountName').value,trend_id:chosenTrend?.id||null,hypothesis_id:chosenHypothesis?.id||null}});created=true;chosenHypothesis=null;selected='audience';detailStage=null;viewVersion=null;editing=false;$('editor').hidden=true;render();await history();}
+ catch(err){error(err);}finally{busy=false;e.submitter.disabled=false;if(run&&!$('workbench').hidden)render();}
+ if(created&&run?.allowed_actions?.includes('next')&&!run.in_flight)await autoRun();
+});
 $('history').addEventListener('click',async e=>{const b=e.target.closest('[data-run]');if(!b||busy||!dirtyGuard())return;if(historyDeleted){const box=b.getBoundingClientRect();openHistoryMenu(b,box.left,box.bottom);return;}auto=false;editing=false;$('editor').hidden=true;clearError();showPage('studio');try{run=await api('/api/runs/'+b.dataset.run);viewVersion=null;detailStage=null;selected=currentAgent();render();await history();}catch(err){error(err);}});
 function startCreation({trend=null,hypothesis=null}={}){
  if(busy||!dirtyGuard())return false;
@@ -356,7 +474,11 @@ $('newRun').onclick=()=>startCreation();
 $('flow').onclick=e=>{const chip=e.target.closest('[data-stage]');const b=e.target.closest('[data-agent]');if(chip){selected='content';detailStage=chip.dataset.stage;render();}else if(b){selected=b.dataset.agent;detailStage=null;render();}};
 $('recover').onclick=()=>act('recover');
 $('repairReview').onclick=async()=>{if(await act('repair_review')){clearError();selected='human';render();$('humanPanel').scrollIntoView({behavior:'smooth',block:'center'});toast('已有审核意见已整理。请按提示补充资料或修改稿件；本次没有调用 AI。');}};
-$('next').onclick=()=>act('next');$('auto').onclick=autoRun;
+$('reconcileReview').onclick=async()=>{if(busy||run?.in_flight||!run?.allowed_actions.includes('reconcile_review'))return;if(await act('reconcile_review')){clearError();selected='human';render();$('humanPanel').scrollIntoView({behavior:'smooth',block:'center'});toast('已按审核规则重新判定，未调用 AI。请查看结果并确认稿件。');}};
+$('next').onclick=()=>{
+ if(!run||busy||run.in_flight||unresolvedUsage(run)||!run.allowed_actions.includes('next'))return false;
+ return websiteSession?.auth_required?backgroundCommand('start'):autoRun();
+};$('auto').onclick=autoRun;
 $('cancel').onclick=async()=>{
  cancellationRun=run.run_id;$('cancelConfirmation').hidden=false;$('cancelConfirmation').scrollIntoView({behavior:'smooth',block:'center'});
 };
@@ -372,10 +494,19 @@ $('confirmCancel').onclick=async()=>{
   render();await history();
  }catch(e){error(e);}
 };
-$('revise').onclick=()=>act('next');
+$('revise').onclick=async()=>{
+ if(!websiteSession?.auth_required)return act('next');
+ if(!run?.ai_revision?.available||run.in_flight||editing)return;
+ const feedback=$('revisionFeedback').value.trim();
+ if(run.review?.decision==='approved'&&!feedback){error(new Error('请填写这一次想调整的地方，再交给 AI 改稿。'));return;}
+ if(await backgroundCommand('revise_review',{feedback})){$('revisionFeedback').value='';viewVersion=null;toast('已提交改稿和复审；新版本会自动显示，通过后请确认。');}
+};
 $('editButton').onclick=()=>{auto=false;const c=run.drafts.at(-1).content;$('editTitle').value=c.selected_title;$('editBody').value=c.body;$('editCta').value=c.cta;$('editTags').value=c.tags.join('，');editing=true;$('editor').hidden=false;render();$('editor').scrollIntoView({behavior:'smooth',block:'center'});$('editTitle').focus();};
 $('discardEdit').onclick=()=>{editing=false;$('editor').hidden=true;render();};
 $('editor').onsubmit=async e=>{e.preventDefault();const data={selected_title:$('editTitle').value,body:$('editBody').value,cta:$('editCta').value,tags:$('editTags').value.split(/[,，]/).map(x=>x.trim()).filter(Boolean)};if(await act('edit',data)){editing=false;$('editor').hidden=true;render();toast('新版本已保存。可以申请复审，也可以知晓问题后人工采用。');}};
+$('draftConfirm').onclick=()=>{const draft=run?.drafts?.[viewVersion??run.drafts.length-1];if(busy||editing||run?.in_flight||draft?.ref!==run?.drafts?.at(-1)?.ref)return;if(run.allowed_actions.includes('accept'))return $('accept').onclick();if(run.allowed_actions.includes('adopt_manual'))return $('adoptManual').onclick();};
+$('draftDownload').onclick=()=>{const draft=run?.drafts?.[viewVersion??run.drafts.length-1];if(busy||editing||run?.in_flight||run?.run_status!=='SUCCEEDED'||draft?.ref!==run.accepted_ref)return;return downloadCompleteBundle(run,$('draftDownload'),$('draftActionStatus'));};
+$('draftActionDetails').onclick=()=>{viewVersion=null;render();$(run.run_status==='SUCCEEDED'?'confirmedPanel':'humanPanel').scrollIntoView({behavior:'smooth',block:'center'});};
 $('accept').onclick=async()=>{if(await act('accept',{draft_ref:run.drafts.at(-1).ref,review_ref:run.review.ref}))toast('已确认当前版本，可以下载。');};
 $('adoptManual').onclick=async()=>{const draft=run.drafts.at(-1);if(await act('adopt_manual',{draft_ref:draft.ref,content_hash:draft.content_hash,acknowledge:true})){clearError();toast('已人工采用当前版本，审核意见保留，可以下载。');}};
 $('supplyForm').onsubmit=async e=>{e.preventDefault();if(await act('supplement',{material:$('supply').value,allow_hypothesis:$('supplyHypothesis').checked}))toast('补充已保存，请启动运行重新分析。');};
@@ -412,6 +543,19 @@ $('mode').onchange=()=>{renderMode($('mode').value);$('scenario').disabled=$('mo
 setInterval(async()=>{
  if(!run?.in_flight||polling)return;
  polling=true;
- try{const latest=await api('/api/runs/'+run.run_id);if(run?.run_id===latest.run_id){const changed=run.status_version!==latest.status_version;run=latest;render();if(changed){if(!run.in_flight){selected=currentAgent();const last=run.node_runs.at(-1);if(last){selected=last.agent;detailStage=last.stage;}render();}await history();}}}
+ try{const watchedId=run.run_id;const latest=await api('/api/runs/'+watchedId);if(run?.run_id===watchedId&&latest.run_id===watchedId){
+  const changed=run.status_version!==latest.status_version;
+  const completed=run.in_flight&&!latest.in_flight;
+  run=latest;
+  const showResult=completed&&!editing&&(typeof currentPage==='undefined'||currentPage==='studio');
+  if(showResult){viewVersion=null;selected='human';detailStage=null;$('compareVersions').checked=false;}
+  render();
+  if(showResult){const target=$('humanPanel').hidden?$('draftPanel'):$('humanPanel');if(!target.hidden){
+   const headerHeight=document.querySelector('.account-bar')?.getBoundingClientRect?.().height||0;
+   if(headerHeight)target.style?.setProperty('--result-scroll-offset',Math.ceil(headerHeight+16)+'px');
+   target.scrollIntoView({behavior:'smooth',block:'start'});
+  }}
+  if(changed)await history();
+ }}
  catch(_){}finally{polling=false;}
 },1500);

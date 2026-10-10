@@ -10,3 +10,6 @@ __pycache__/
 runtime/
 node_modules/
 .next/
+
+# Private, locally provisioned judge package credentials.
+provision.json

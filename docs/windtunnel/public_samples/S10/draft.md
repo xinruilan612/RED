@@ -1,0 +1,130 @@
+# S10：argparse可选参数
+
+来源：https://docs.python.org/3.12/howto/argparse.html#introducing-optional-arguments
+
+采集时间（UTC）：2026-10-07T02:57:40.587472+00:00
+
+来源性质：Python 3.12 官方英文文档公开章节，非用户投稿或真实创作者私稿。
+
+许可：文档正文 PSF License Version 2；代码示例同时可按 0BSD 使用。
+
+Copyright © 2001-2023 Python Software Foundation; All Rights Reserved.
+
+许可全文见 ../LICENSE_PSF.txt、../LICENSE_0BSD.txt 与 ../LICENSE_SOURCE.txt。
+
+改编说明：保留官方英文教程章节原文，未翻译、未人为植入错误、未添加真实作者反馈；仅添加来源与许可说明、删除网页段落锚点符号并整理空白。此为公开教程节选候选输入，不是 baseline 或风洞最终改稿。
+
+## 待检查教程节选
+
+```text
+Introducing Optional arguments
+
+So far we have been playing with positional arguments. Let us
+have a look on how to add optional ones:
+
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("--verbosity", help="increase output verbosity")
+args = parser.parse_args()
+if args.verbosity:
+    print("verbosity turned on")
+
+And the output:
+
+$ python prog.py --verbosity 1
+verbosity turned on
+$ python prog.py
+$ python prog.py --help
+usage: prog.py [-h] [--verbosity VERBOSITY]
+
+options:
+  -h, --help            show this help message and exit
+  --verbosity VERBOSITY
+                        increase output verbosity
+$ python prog.py --verbosity
+usage: prog.py [-h] [--verbosity VERBOSITY]
+prog.py: error: argument --verbosity: expected one argument
+
+Here is what is happening:
+
+The program is written so as to display something when --verbosity is
+specified and display nothing when not.
+
+To show that the option is actually optional, there is no error when running
+the program without it. Note that by default, if an optional argument isn’t
+used, the relevant variable, in this case args.verbosity, is
+given None as a value, which is the reason it fails the truth
+test of the if statement.
+
+The help message is a bit different.
+
+When using the --verbosity option, one must also specify some value,
+any value.
+
+The above example accepts arbitrary integer values for --verbosity, but for
+our simple program, only two values are actually useful, True or False.
+Let’s modify the code accordingly:
+
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("--verbose", help="increase output verbosity",
+                    action="store_true")
+args = parser.parse_args()
+if args.verbose:
+    print("verbosity turned on")
+
+And the output:
+
+$ python prog.py --verbose
+verbosity turned on
+$ python prog.py --verbose 1
+usage: prog.py [-h] [--verbose]
+prog.py: error: unrecognized arguments: 1
+$ python prog.py --help
+usage: prog.py [-h] [--verbose]
+
+options:
+  -h, --help  show this help message and exit
+  --verbose   increase output verbosity
+
+Here is what is happening:
+
+The option is now more of a flag than something that requires a value.
+We even changed the name of the option to match that idea.
+Note that we now specify a new keyword, action, and give it the value
+"store_true". This means that, if the option is specified,
+assign the value True to args.verbose.
+Not specifying it implies False.
+
+It complains when you specify a value, in true spirit of what flags
+actually are.
+
+Notice the different help text.
+
+Short options
+
+If you are familiar with command line usage,
+you will notice that I haven’t yet touched on the topic of short
+versions of the options. It’s quite simple:
+
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("-v", "--verbose", help="increase output verbosity",
+                    action="store_true")
+args = parser.parse_args()
+if args.verbose:
+    print("verbosity turned on")
+
+And here goes:
+
+$ python prog.py -v
+verbosity turned on
+$ python prog.py --help
+usage: prog.py [-h] [-v]
+
+options:
+  -h, --help     show this help message and exit
+  -v, --verbose  increase output verbosity
+
+Note that the new ability is also reflected in the help text.
+```

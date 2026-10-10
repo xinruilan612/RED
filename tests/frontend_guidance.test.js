@@ -230,3 +230,18 @@ test('topic comparison keeps a single guided flow without sibling tool links',()
  assert.equal(s.element('pageTools').hidden,false);
  assert.match(s.element('pageTools').innerHTML,/数据复盘/);
 });
+
+
+test('empty and unknown entry hashes open studio while explicit memory stays distinct',async()=>{
+ for(const hash of ['', '#missing-page', '#studio', '#memory', '#overview']){
+  const s=setup();
+  s.eval(`location.hash=${JSON.stringify(hash)};api=async()=>({accounts:[]});syncAccounts=()=>{};history=async()=>[];renderOperations=()=>{};run=null`);
+  await s.eval('initOperations()');
+  const expected=hash==='#memory'?'memory':hash==='#overview'?'overview':'studio';
+  assert.equal(s.eval('currentPage'),expected);
+  assert.equal(s.eval('location.hash'),expected);
+  assert.equal(s.element('studioView').hidden,expected!=='studio');
+  assert.equal(s.element('operationsView').hidden,expected==='studio');
+  if(expected==='memory')assert.match(s.element('pageTitle').textContent,/更有依据/);
+ }
+});

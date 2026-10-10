@@ -9,7 +9,7 @@ function renderPageTools(page){
  if(page==='topics'){const host=$('pageTools');host.hidden=true;host.innerHTML='';return;}
  const groups={studio:[['studio','写内容'],['trends','选题与来源']],publish:[['publish','作品归档'],['metrics','数据复盘']]};
  const group=navigationGroup(page),links=groups[group]||[];
- if(group==='studio'&&websiteSession?.auth_required)links.push(['windtunnel','读者理解检查（可选）']);
+
  const host=$('pageTools');host.hidden=!links.length;
  host.innerHTML=links.map(([id,label])=>`<button class="${id===page?'active':'quiet'}" data-go-page="${id}" aria-current="${id===page?'page':'false'}">${label}</button>`).join('');
 }
@@ -27,7 +27,7 @@ function gettingStartedHTML(account,runs=[]){
  const cards=step(state.profile,'设置你的账号','填清方向、读者和当前目标，之后创作会沿用它。','<button class="quiet" data-go-page="accounts">'+(state.profile?'调整档案':'完善账号档案')+' →</button>')+
   step(state.material,'备好一份素材（可选）','常用原文存进资料库；只做一次也可在创作时直接粘贴。',websiteSession?.auth_required?'<button class="quiet" data-go-page="library">'+(state.material?'查看已有素材':'添加一份真实资料')+' →</button>':'')+
   step(state.creation,'完成第一份稿件','保存需求 → 连续运行或逐步查看 → 处理问题 → 确认下载。','<button class="secondary" data-start-creation>开始一份创作 →</button>');
- const content=`<div class="detail-heading"><div><span class="eyebrow">开始使用</span><h2 id="gettingStartedTitle">${state.creation?'下一次继续积累':'第一次来，按这三步就够了'}</h2></div></div><ol class="guide-steps">${cards}</ol><p class="helper">资料、实验和周计划都不是强制前置步骤。体验示例使用免费模拟；真实 AI 会标明运行方式，并在执行前确认费用。</p>`;
+ const content=`<div class="detail-heading"><div><span class="eyebrow">开始使用</span><h2 id="gettingStartedTitle">${state.creation?'下一次继续积累':'第一次来，按这三步就够了'}</h2></div></div><ol class="guide-steps">${cards}</ol><p class="helper">资料、实验和周计划都不是强制前置步骤。体验示例使用免费模拟；真实 AI 会标明运行方式，按已设置的预算上限执行。</p>`;
  return state.profile&&state.creation?`<details id="gettingStarted" class="panel getting-started"><summary>使用指引（基础步骤已完成，按需查看）</summary>${content}</details>`:`<section id="gettingStarted" class="panel getting-started" aria-labelledby="gettingStartedTitle">${content}</section>`;
 }
 

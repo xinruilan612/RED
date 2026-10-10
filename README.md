@@ -1,5 +1,11 @@
 # 有迹 · 热点驱动的博主运营助手
 
+**2026-10-09 主线统一：**多模态共创、审核恢复、风洞修复和部署准备已整合到 `main`。本机统一使用 `http://127.0.0.1:8765/#studio`，打开根地址也进入创作工作台。[统一入口与数据保留说明](docs/MAIN_UNIFICATION.md) · [图文共创使用说明](docs/MULTIMODAL_STUDIO.md)。下文独立分支与试用记录为历史阶段。
+
+**2026-10-09 图卡更新：**接入八套 MIT 开源模板，支持数据库保存选择、按账号轮换、标准字号与模板原色、真实产品照片与预览导出。[操作与来源](docs/MEDIA_TEMPLATES.md)。常规模板排版不调用模型，不改写确认稿。新增可选的[本地看图交互试用](docs/MULTIMODAL_TRIAL.md)：模型看图后提议图片上下移动、正文对齐、拆页或移除图片，每次一个操作，由用户采用。
+
+2026-10-08 独立分支验收：[审核恢复、真实全流程与三人试读准备](docs/validation/DAY1_REVIEW_RECOVERY_20261008.md)。固定基线023d0be；含真实PNG/无声MP4导出与失败记录，下方旧阶段状态不代表本轮完整能力清单。
+
 **2026-10-02 更新：**[更改了什么、逐文件差异与验收边界](docs/validation/CHANGES_20261002.md)。本次上传到新分支 `王顺然-20261002`，保留旧“王顺然”和 main；真实人工采用不等于AI审核通过。
 
 **后续界面/跨平台改进与真实账号验收：**[最新修改与验收记录](docs/validation/REAL_ACCOUNT_ACCEPTANCE_20261002.md)。历史测试数量不能代替该轮最终结果。
@@ -63,12 +69,10 @@
 在项目目录运行：
 
 ```bash
-runtime/venv/bin/python -m backend.api --port 8765
-# 另一个终端：
-runtime/venv/bin/python -m backend.worker
+runtime/venv/bin/python scripts/local_dev.py start
 ```
 
-然后打开 http://127.0.0.1:8765/ 。首次环境与数据库安装见 [部署说明](docs/DEPLOYMENT.md)。保持终端运行；关闭后用相同命令再次启动。更换端口时也要同步修改 `.env` 的 PUBLIC_ORIGIN。
+然后打开 http://127.0.0.1:8765/#studio 。首次环境与数据库安装见 [部署说明](docs/DEPLOYMENT.md)。保持终端运行；关闭后用相同命令再次启动。更换端口时也要同步修改 `.env` 的 PUBLIC_ORIGIN。
 
 ## 填写 DeepSeek Key
 
@@ -88,7 +92,7 @@ runtime/venv/bin/python -m backend.worker
 
 ## 目前的边界
 
-模拟模式使用固定模板；真实模式由 DeepSeek 执行四角色，正常首次 8 次请求，改稿后复审。旧 backend.web 不提供资料库与联网搜索；新 backend.api 已接资料导入、原文检索与主动公开搜索。平台自动取数、CSV 导入、图片/OCR、图片生成和图文包导出仍未实现。运营指标支持逐条表单录入。审核不代表事实、原创或平台合规已独立验证。
+模拟模式使用固定模板；真实模式由 DeepSeek 执行四角色，正常首次 8 次请求，改稿后复审。旧 backend.web 不提供资料库与联网搜索；新 backend.api 已接资料导入、原文检索与主动公开搜索。平台自动取数、CSV 导入、通用 OCR 和 AI 图片生成仍未实现；图文包导出与本地看图试用见页首。运营指标支持逐条表单录入。审核不代表事实、原创或平台合规已独立验证。
 
 旧 backend.web 服务只绑定本机回环地址，不可直接部署公网。新 backend.api 已完成 FastAPI、网站账号、PostgreSQL 和持久队列本机联调，公网部署仍待推进。前端沿用原生 HTML/CSS/JS，没有重写成 Next.js。
 
