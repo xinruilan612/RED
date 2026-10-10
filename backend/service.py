@@ -14,6 +14,7 @@ class Service:
         upgrade(store)
         self.operations = Operations(store)
         self.executor = Executor(store,config,client)
+        self.models = self.executor.router.connections
         from backend.operations_planner import OperationsPlanner
         self.operations_planner=OperationsPlanner(store,self.operations,self.executor)
         from backend.knowledge import Knowledge
@@ -56,21 +57,25 @@ class Service:
 
     def create(self, owner, data):
         require(isinstance(data,dict),'INVALID_INPUT','请求格式无效')
+        connection_id=data.get('model_connection_id')
+        require(connection_id is None or isinstance(connection_id,str),'INVALID_INPUT','模型连接 ID 无效')
+        data={k:v for k,v in data.items() if k!='model_connection_id'}
         workflow_type=data.get('workflow_type','creation')
         require(workflow_type in ('creation','windtunnel'),'INVALID_INPUT','工作流类型无效')
         if workflow_type=='windtunnel':
-            policy=self.executor.router.policy('windtunnel')
+            policy=self.executor.router.policy('windtunnel',owner if data.get('mode')=='live' else None,connection_id)
             if data.get('mode')=='live':self.guard_windtunnel_live(policy)
             return self.view(self.windtunnel.create(owner,{k:v for k,v in data.items() if k!='workflow_type'},policy))
         data={k:v for k,v in data.items() if k!='workflow_type'}
         mode = data.get('mode','simulation')
         require(mode in ('simulation','live'), 'INVALID_INPUT', '运行模式无效')
-        require(mode!='live' or self.config.ready, 'KEY_REQUIRED', '请在服务器配置 DeepSeek Key')
+        policy=self.executor.router.policy(owner=owner if mode=='live' else None,connection_id=connection_id)
+        if mode=='live':self.executor.router.ready(policy,owner)
         context = validate_brief({k:v for k,v in data.items() if k not in ('mode','operations','knowledge','web_research')})
         from backend.web_research import selection as web_selection
         context['web_research']=web_selection(data.get('web_research'),mode)
         context['mode'] = mode
-        context['model_policy'] = self.executor.router.policy()
+        context['model_policy'] = policy
         if 'operations' in data:
             context['operations'] = self.operations.context(owner,data['operations'],mode)
         selection=data.get('knowledge',{'enabled':False})

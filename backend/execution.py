@@ -20,6 +20,8 @@ class Executor:
         from backend.model_router import ModelRouter, Calls
         upgrade(store)
         self.router=client if isinstance(client,ModelRouter) else ModelRouter(config,client)
+        from backend.model_connections import ModelConnections
+        self.router.connections=ModelConnections(store,config)
         self.calls=Calls(store,config,self.router)
         with store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
@@ -73,7 +75,7 @@ class Executor:
             calls=db.execute(f'SELECT id,agent,stage,reserved,actual,state,error,response_json,run_id FROM live_calls WHERE run_id IN ({FAMILY}) ORDER BY {self.store.order_column}',(root,)).fetchall()
             pending=db.execute("SELECT COUNT(*) FROM live_steps WHERE run_id=? AND state='running'",(run.run_id,)).fetchone()[0]
             audits={r[0]:json.loads(r[1]) for r in db.execute("SELECT call_id,sources FROM model_audit WHERE run_id IN ("+FAMILY+")",(root,))}
-            metadata={r[0]:dict(zip(('provider','model','route_version','prompt_version','input_hash','snapshot_id','duration_ms','request_id','input_tokens','output_tokens','rate'),r[1:])) for r in db.execute("SELECT call_id,provider,model,route_version,prompt_version,input_hash,snapshot_id,duration_ms,request_id,input_tokens,output_tokens,rate FROM model_audit WHERE run_id IN ("+FAMILY+")",(root,))}
+            metadata={r[0]:dict(zip(('provider','model','route_version','prompt_version','input_hash','snapshot_id','duration_ms','request_id','input_tokens','output_tokens','rate','billing_source','connection_id'),r[1:])) for r in db.execute("SELECT call_id,provider,model,route_version,prompt_version,input_hash,snapshot_id,duration_ms,request_id,input_tokens,output_tokens,rate,billing_source,connection_id FROM model_audit WHERE run_id IN ("+FAMILY+")",(root,))}
         items=[]
         for c in calls:
             item=dict(zip(('id','agent','stage','reserved_tokens','tokens','status','error'),c[:7]))
@@ -81,7 +83,8 @@ class Executor:
             item['inherited']=c[8]!=run.run_id
             if c[5]=='invalid' and c[7]:item['diagnostic_response']=json.loads(c[7])
             items.append(item)
-        return {'in_flight':bool(pending) and run.run_status not in ('CANCELLED','FAILED'),'calls':items,
+        policy=run.context.get('model_policy') or self.router.policy()
+        return {'model_policy':policy,'in_flight':bool(pending) and run.run_status not in ('CANCELLED','FAILED'),'calls':items,
                 'usage':{'model_calls':len(items),'tokens':sum(c['tokens'] or 0 for c in items),
                          'unknown_calls':sum(c['tokens'] is None for c in items),
                          'cost':None,'cost_upper_estimate_usd':round(sum((c['tokens'] if c['tokens'] is not None else c['reserved_tokens'])*c.get('rate',RATE) for c in items),6),
@@ -89,7 +92,10 @@ class Executor:
 
     def step(self,run_id,owner,version,key):
         self.calls.config=self.config
-        require(self.config.ready,'KEY_REQUIRED','请填写 .env 的 DEEPSEEK_API_KEY，然后重启服务')
+        selected=self.store.get(run_id,owner)
+        policy=selected.context.get('model_policy') or self.router.policy()
+        require(self.config.ready or any(r.get('connection_id') for r in policy['routes'].values()),'KEY_REQUIRED','请配置平台或个人模型连接')
+        self.router.ready(policy,owner)
         fingerprint=digest({'version':version,'action':'next'})
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')

@@ -58,6 +58,19 @@ CREATE TABLE testing_budget_roots (
  PRIMARY KEY(owner,root));
 CREATE TABLE testing_budget_reservations (
  call_id TEXT PRIMARY KEY, reserved_micro INTEGER NOT NULL);
+'''), (6, '''
+CREATE TABLE model_connections (
+ owner TEXT NOT NULL,id TEXT NOT NULL,version INTEGER NOT NULL,
+ payload TEXT NOT NULL,secret TEXT NOT NULL,active INTEGER NOT NULL,
+ PRIMARY KEY(owner,id));
+CREATE TABLE model_preferences (owner TEXT PRIMARY KEY,connection_id TEXT);
+CREATE TABLE model_connection_tests (
+ id TEXT PRIMARY KEY,owner TEXT NOT NULL,connection_id TEXT NOT NULL,
+ started DOUBLE PRECISION NOT NULL,reserved INTEGER NOT NULL,tokens INTEGER,
+ rate DOUBLE PRECISION NOT NULL,status TEXT NOT NULL);
+ALTER TABLE model_audit ADD COLUMN billing_source TEXT NOT NULL DEFAULT 'platform';
+ALTER TABLE model_audit ADD COLUMN billing_owner TEXT NOT NULL DEFAULT '';
+ALTER TABLE model_audit ADD COLUMN connection_id TEXT;
 '''))
 
 

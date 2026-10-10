@@ -121,9 +121,8 @@ class OperationsPlanner:
         except (TypeError,ValueError): raise DomainError('INVALID_INPUT','周开始日期无效') from None
         require(start.weekday()==0,'INVALID_INPUT','请选择周一作为计划开始日期')
         self.executor.calls.config=self.executor.config
-        router=self.executor.router; policy=router.policy('operations')
-        fixture=all(r['provider']=='fixture' for r in policy['routes'].values())
-        require(self.executor.config.ready or fixture,'KEY_REQUIRED','请先配置模型 API Key；生成前不会自动调用模型')
+        router=self.executor.router; policy=router.policy('operations',owner)
+        router.ready(policy,owner)
         fingerprint=digest({k:v for k,v in data.items() if k!='key'})
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
