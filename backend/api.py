@@ -173,6 +173,13 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
         from backend.xhs_sync import XHSSync
         return XHSSync(store).comments(user['owner'],account_id,note_id,offset)
 
+    @app.post('/api/social/sync/login')
+    def reconnect_social_sync(data: dict,user=Depends(logged)):
+        from backend.xhs_sync import XHSSync
+        require(set(data)=={'account_id'},'INVALID_INPUT','登录字段无效')
+        auth.throttle('xhs-login:'+user['owner'],3,300)
+        return XHSSync(store).reconnect(user['owner'],data['account_id'])
+
     @app.post('/api/social/sync/import-case')
     def import_social_sync_case(data: dict,user=Depends(logged)):
         from backend.xhs_case_import import XHSCaseImport

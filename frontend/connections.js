@@ -46,7 +46,7 @@ function connectionOverview(data){
 }
 async function renderConnections(){
  const token=++connectionLoad,identity=activeAccountId;$('operationsContent').innerHTML='<section class="panel"><p>正在读取账号数据状态…</p></section>';
- try{const [data,sync]=await Promise.all([api('/api/social/connection?account_id='+encodeURIComponent(identity)),api('/api/social/sync?account_id='+encodeURIComponent(identity))]);if(token!==connectionLoad||currentPage!=='connections'||identity!==activeAccountId)return;const notes=sync.bound?await api('/api/social/sync/notes?account_id='+encodeURIComponent(identity)):[];if(token!==connectionLoad||currentPage!=='connections'||identity!==activeAccountId)return;$('operationsContent').innerHTML=sync.bound?syncOverview(sync,notes):connectionOverview(data);document.querySelectorAll('[data-note-comments]').forEach(b=>b.onclick=()=>loadSyncComments(identity,b.dataset.noteComments,b,token));document.querySelectorAll('[data-import-note]').forEach(b=>b.onclick=()=>importSyncCase(identity,b.dataset.importNote));document.querySelectorAll('[data-sync-action]').forEach(b=>b.onclick=()=>connectionAction(async()=>{await api('/api/social/sync/control','POST',{account_id:identity,action:b.dataset.syncAction});await renderConnections();}));if($('refreshSyncStatus'))$('refreshSyncStatus').onclick=()=>renderConnections();}
+ try{const [data,sync]=await Promise.all([api('/api/social/connection?account_id='+encodeURIComponent(identity)),api('/api/social/sync?account_id='+encodeURIComponent(identity))]);if(token!==connectionLoad||currentPage!=='connections'||identity!==activeAccountId)return;const notes=sync.bound?await api('/api/social/sync/notes?account_id='+encodeURIComponent(identity)):[];if(token!==connectionLoad||currentPage!=='connections'||identity!==activeAccountId)return;$('operationsContent').innerHTML=sync.bound?syncOverview(sync,notes):connectionOverview(data);document.querySelectorAll('[data-note-comments]').forEach(b=>b.onclick=()=>loadSyncComments(identity,b.dataset.noteComments,b,token));document.querySelectorAll('[data-import-note]').forEach(b=>b.onclick=()=>importSyncCase(identity,b.dataset.importNote));document.querySelectorAll('[data-sync-action]').forEach(b=>b.onclick=()=>connectionAction(async()=>{await api('/api/social/sync/control','POST',{account_id:identity,action:b.dataset.syncAction});await renderConnections();}));if($('reconnectSync'))$('reconnectSync').onclick=()=>reconnectSync(identity,token);if($('refreshSyncStatus'))$('refreshSyncStatus').onclick=()=>renderConnections();}
  catch(e){if(token===connectionLoad&&currentPage==='connections'&&identity===activeAccountId){$('operationsContent').innerHTML='<section class="panel"><p>账号数据状态读取失败，请重试。</p></section>';error(e);}}
 }
 
@@ -54,7 +54,7 @@ function syncOverview(s,storedNotes){
  const names={ready:'等待同步',syncing:'正在读取',synced:'最近一轮读取成功',partial:'部分读取成功',paused:'已暂停',retrying:'断线退避中',needs_attention:'需要重新登录或检查'};
  const latest=s.latest_round?.summary||{},notes=storedNotes??s.latest_round?.notes??[];
  const stamp=t=>t?esc(dateText(new Date(t*1000).toISOString())):'尚无';
- return `<section class="panel"><h2>小红书 · ${esc(names[s.status]||s.status)}</h2><p>本机 MCP 只读连接 · 每 ${Math.round(s.interval_s/60)} 分钟自动读取</p><p>最近成功：${stamp(s.last_at)} · 下次读取：${stamp(s.next_at)}</p><p class="helper">${esc(s.limitation)} 这是浏览器观测数据，不是官方 API 或实时推送；电脑和服务需保持在线。</p>${s.error?`<p class="issue">${esc(s.error)}</p>`:''}<div class="buttons"><button id="refreshSyncStatus" class="quiet">刷新状态</button><button class="secondary" data-sync-action="${s.enabled?'pause':'resume'}">${s.enabled?'暂停自动同步':'恢复自动同步'}</button><button class="quiet" data-sync-action="refresh" ${s.status==='syncing'?'disabled':''}>立即核对一次</button></div></section><section class="panel"><h2>已同步笔记与评论</h2><p>唯一笔记 ${esc(s.counts.note)} 篇 · 唯一评论 ${esc(s.counts.comment)} 条</p><p class="helper">最近一轮新增笔记 ${esc(latest.new_notes??0)}，变化笔记 ${esc(latest.changed_notes??0)}，新增评论 ${esc(latest.new_comments??0)}；未读到的历史记录不会当作删除。下方展示最近观测的最多 30 篇已保存笔记。</p>${notes.map(n=>`<article class="detail-block"><h3>${connectionLink(n.url,n.title||'未命名笔记')}</h3><p>${esc(n.text.slice(0,300))}</p><p>点赞 ${n.metrics.likes??'未知'} · 收藏 ${n.metrics.favorites??'未知'} · 评论数 ${n.metrics.comments??'未知'} · 分享 ${n.metrics.shares??'未知'} · 曝光 / 阅读：暂无数据</p><button class="secondary" data-import-note="${esc(n.id)}">保存为表达参考案例</button><div><button class="quiet" data-note-comments="${esc(n.id)}">查看已保存评论（非全量）</button><div class="saved-comments"></div></div></article>`).join('')||'<p>首轮读取完成后显示本人笔记。</p>'}</section>`;
+ return `<section class="panel"><h2>小红书 · ${esc(names[s.status]||s.status)}</h2><p>本机 MCP 只读连接 · 每 ${Math.round(s.interval_s/60)} 分钟自动读取</p><p>最近成功：${stamp(s.last_at)} · 下次读取：${stamp(s.next_at)}</p><p class="helper">${esc(s.limitation)} 这是浏览器观测数据，不是官方 API 或实时推送；电脑和服务需保持在线。</p>${s.error?`<p class="issue">${esc(s.error)}</p>`:''}<div class="buttons"><button id="reconnectSync" class="secondary">扫码重新登录</button><button id="refreshSyncStatus" class="quiet">刷新状态</button><button class="secondary" data-sync-action="${s.enabled?'pause':'resume'}">${s.enabled?'暂停自动同步':'恢复自动同步'}</button><button class="quiet" data-sync-action="refresh" ${s.status==='syncing'?'disabled':''}>立即核对一次</button></div><div id="syncLoginQRCode"></div></section><section class="panel"><h2>已同步笔记与评论</h2><p>唯一笔记 ${esc(s.counts.note)} 篇 · 唯一评论 ${esc(s.counts.comment)} 条</p><p class="helper">最近一轮新增笔记 ${esc(latest.new_notes??0)}，变化笔记 ${esc(latest.changed_notes??0)}，新增评论 ${esc(latest.new_comments??0)}；未读到的历史记录不会当作删除。下方展示最近观测的最多 30 篇已保存笔记。</p>${notes.map(n=>`<article class="detail-block"><h3>${connectionLink(n.url,n.title||'未命名笔记')}</h3><p>${esc(n.text.slice(0,300))}</p><p>点赞 ${n.metrics.likes??'未知'} · 收藏 ${n.metrics.favorites??'未知'} · 评论数 ${n.metrics.comments??'未知'} · 分享 ${n.metrics.shares??'未知'} · 曝光 / 阅读：暂无数据</p><button class="secondary" data-import-note="${esc(n.id)}">保存为表达参考案例</button><div><button class="quiet" data-note-comments="${esc(n.id)}">查看已保存评论（非全量）</button><div class="saved-comments"></div></div></article>`).join('')||'<p>首轮读取完成后显示本人笔记。</p>'}</section>`;
 }
 
 async function loadSyncComments(account,note,button,token,offset=0){
@@ -76,5 +76,18 @@ async function importSyncCase(account,note){
  await connectionAction(async()=>{
   const result=await api('/api/social/sync/import-case','POST',{account_id:account,note_id:note,permission_confirmed:true});
   toast(result.reused?'相同正文已在案例库，复用已有版本':'已保存为表达参考案例，可在案例研究和资料库查看');
+ });
+}
+
+async function reconnectSync(account,token){
+ await connectionAction(async()=>{
+  const data=await api('/api/social/sync/login','POST',{account_id:account});
+  if(token!==connectionLoad||currentPage!=='connections'||account!==activeAccountId)return;
+  await renderConnections();
+  if(currentPage!=='connections'||account!==activeAccountId)return;
+  const target=$('syncLoginQRCode');
+  if(data.is_logged_in){target.innerHTML='<p>本机连接器已登录。点击“恢复自动同步”后将重新核对绑定账号身份；不同账号不会写入。</p>';return;}
+  if(typeof data.img!=='string'||!data.img.startsWith('data:image/png;base64,')||data.img.length>750000)throw new Error('二维码图片格式无效');
+  target.innerHTML=`<p>自动同步已暂停，请用原绑定的小红书账号扫码。有效期：${esc(data.timeout)}。扫码完成后点击“恢复自动同步”，系统会再次核对账号。</p><img src="${esc(data.img)}" alt="小红书重新登录二维码" width="240">`;
  });
 }

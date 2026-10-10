@@ -1,5 +1,8 @@
 """Bounded read-only xiaohongshu-mcp client. Never expose cookies or write tools."""
 import json
+import base64
+import struct
+import zlib
 import re
 import urllib.error
 import urllib.request
@@ -21,8 +24,9 @@ class LocalXHS:
         self.opener=urllib.request.build_opener(urllib.request.ProxyHandler({}),NoRedirect())
 
     def request(self,path,data=None):
-        allowed={'/api/v1/login/status','/api/v1/user/me','/api/v1/feeds/detail'}
+        allowed={'/api/v1/login/status','/api/v1/login/qrcode','/api/v1/user/me','/api/v1/feeds/detail'}
         require(path in allowed,'FORBIDDEN','同步器只允许身份、本人笔记和详情读取')
+        require(path!='/api/v1/login/qrcode' or data is None,'FORBIDDEN','登录二维码仅允许固定 GET 请求')
         try:
             token=self.token_file.read_text().strip()
             req=urllib.request.Request(self.base+path,data=None if data is None else json.dumps(data).encode(),
@@ -43,6 +47,34 @@ class LocalXHS:
         require(isinstance(result.get('user_id'),str) and result['user_id'],
                 'XHS_IDENTITY_UNVERIFIED','已登录但无法核实账号ID，暂停同步')
         return {'id':result['user_id'],'nickname':str(result.get('username') or '')[:200]}
+
+    def reconnect(self):
+        result=self.request('/api/v1/login/qrcode')
+        if result.get('is_logged_in') is True:
+            return {'is_logged_in':True,'img':None,'timeout':None}
+        value=result.get('img');prefix='data:image/png;base64,'
+        require(isinstance(value,str) and value.startswith(prefix) and len(value)<=750000,'XHS_RESPONSE','二维码必须为受限大小的 PNG 图片')
+        try:
+            raw=base64.b64decode(value[len(prefix):],validate=True)
+            require(raw.startswith(b'\x89PNG\r\n\x1a\n'),'XHS_RESPONSE','二维码图片格式无效')
+            position=8;chunks=[]
+            while position<len(raw):
+                size=struct.unpack('>I',raw[position:position+4])[0]
+                require(size<=500000 and position+12+size<=len(raw),'XHS_RESPONSE','二维码图片结构无效')
+                kind=raw[position+4:position+8];payload=raw[position+8:position+8+size]
+                crc=struct.unpack('>I',raw[position+8+size:position+12+size])[0]
+                require(zlib.crc32(kind+payload)==crc,'XHS_RESPONSE','二维码图片校验失败')
+                if not chunks:
+                    require(kind==b'IHDR' and size==13,'XHS_RESPONSE','二维码图片头无效')
+                    width,height=struct.unpack('>II',payload[:8])
+                    require(0<width<=2048 and 0<height<=2048,'XHS_RESPONSE','二维码图片尺寸超限')
+                chunks.append(kind);position+=12+size
+            require(chunks[-1:]==[b'IEND'] and b'IDAT' in chunks,'XHS_RESPONSE','二维码图片不完整')
+        except DomainError:raise
+        except (ValueError,struct.error):raise DomainError('XHS_RESPONSE','二维码图片编码无效') from None
+        timeout=result.get('timeout')
+        require(isinstance(timeout,(str,int)) and not isinstance(timeout,bool) and len(str(timeout))<=40 and re.fullmatch(r'(?:[0-9]+(?:\.[0-9]+)?(?:ms|s|m|h)?){1,4}',str(timeout)),'XHS_RESPONSE','二维码有效期无效')
+        return {'is_logged_in':False,'img':value,'timeout':timeout}
 
     def collect(self,expected_id,limit=5,check=lambda:None):
         require(type(limit) is int and 1<=limit<=5,'INVALID_INPUT','每轮最多读取5篇笔记')

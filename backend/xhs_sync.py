@@ -69,6 +69,15 @@ class XHSSync:
             rows=db.execute("SELECT payload FROM xhs_sync_entities WHERE owner=? AND account_id=? AND kind='note' ORDER BY last_seen DESC LIMIT 30",(owner,account_id)).fetchall()
         return [json.loads(r[0]) for r in rows]
 
+    def reconnect(self,owner,account_id):
+        find_account(Operations(self.store).read(owner),account_id)
+        with self.store.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            row=db.execute('SELECT bridge_port FROM xhs_sync_links WHERE owner=? AND account_id=?',(owner,account_id)).fetchone()
+            require(row is not None,'RESOURCE_NOT_FOUND','仅已有绑定账号可以重新登录')
+            db.execute("UPDATE xhs_sync_links SET enabled=0,status='paused',token=NULL,lease_until=NULL WHERE owner=? AND account_id=?",(owner,account_id))
+        return self.factory(row[0]).reconnect()
+
     def comments(self,owner,account_id,note_id,offset=0):
         find_account(Operations(self.store).read(owner),account_id)
         require(isinstance(note_id,str) and 0<len(note_id)<=200,'INVALID_INPUT','笔记标识无效')

@@ -73,3 +73,7 @@ test('note case import requires confirmation and binds selected account and note
  const s=setup();await s.eval("importSyncCase('mine','n')");assert.equal(s.calls.length,0);
  s.sandbox.window.confirm=()=>true;await s.eval("importSyncCase('mine','n')");assert.equal(s.calls[0][0],'/api/social/sync/import-case');assert.equal(s.calls[0][1],'POST');assert.equal(s.calls[0][2].account_id,'mine');assert.equal(s.calls[0][2].note_id,'n');assert.equal(s.calls[0][2].permission_confirmed,true);
 });
+test('reconnect renders only bounded PNG after owner-scoped login request',async()=>{
+ const s=setup();s.sandbox.api=async(url,method,data)=>{s.calls.push([url,method,data]);if(url.endsWith('/login'))return {img:'data:image/png;base64,AA==',timeout:'4m0s'};if(url.includes('/notes'))return [];if(url.includes('/sync?'))return {bound:true,interval_s:900,counts:{note:0,comment:0}};return {};};
+ await s.eval("reconnectSync('mine',connectionLoad)");assert.equal(s.calls[0][0],'/api/social/sync/login');assert.equal(s.calls[0][2].account_id,'mine');assert.match(s.element('syncLoginQRCode').innerHTML,/data:image\/png;base64/);assert.match(s.element('syncLoginQRCode').innerHTML,/原绑定/);
+});
