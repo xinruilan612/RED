@@ -443,7 +443,7 @@
   "runtime_extension": {
     "version": "0.7.0",
     "graph_policy": "four-role-graph@1",
-    "prompt_version": "four-role-v0.8-case-evidence1",
+    "prompt_version": "four-role-v0.9-public-style-library1",
     "lease_s": 30,
     "heartbeat_s": 10,
     "stage_attempts_max": 3,

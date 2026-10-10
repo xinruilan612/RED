@@ -119,3 +119,12 @@ search_public_sources/fetch_source_text 虽属于 research 能力名单，MVP �
 ## 2026-10-10 授权联网协议增补
 
 search_public_sources/fetch_source_text 的默认禁用保持为未授权任务的安全默认值，不代表排除自动检索。用户选择来源、范围、数量、频率和预算后，由编排器按授权交集启用并审计；实时数据连接与案例研究使用不同任务，统一保留来源时间和采集时间。登录失效、验证码或授权撤销暂停；只读验证不包含发布互动。扩展字段仍为 planned，运行实现后方可声明可用。
+
+
+## 2026-10-10 公开风格库自动检索协议
+
+`four-role-v0.9-public-style-library1` 保持 audience/research/content/reviewer 四角色及既有输出schema。服务层依据当前账号自动检索已入库、有效、公开、通过赞藏阈值的 expression_reference，最多3份不同文档；与用户选择的事实资料去重合并为任务冻结证据。不会因 knowledge.enabled=false 或未勾选文件而关闭此风格库路径；无当前账号时不推断其他账号身份，无命中时明确为空。
+
+每阶段输入包括 `retrieved_references`。受众basis、研究prohibited_claims、创作策略why_account和审核limitations分别保留实际source_id与该角色的借鉴/限制说明，服务端验证引用至少关联一份本任务实际参考。发布字段仍只写读者文案；商品事实不因高互动案例被视为已核实。标题、开头、结构、节奏、CTA需针对本题重写，禁止大段拼接、特色表达照搬及虚构本人经历。
+
+本人同步案例检索按最近已核验公开笔记集合过滤，公开状态未知或私密默认排除。即使旧任务快照保留了原文，每次模型调用前也要重新核对该来源当前公开性，不满足时在付费预留前停止，不删除历史审计或自动改写旧快照。

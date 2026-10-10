@@ -79,7 +79,53 @@ def evidence_metadata(metadata, document_id, version):
             'case_ref':({'document_id':document_id,'version':version,'platform':case.get('platform'),
                          'published_at':case.get('published_at'),'observed_at':case.get('observed_at'),
                          'assessment_status':case.get('assessment',{}).get('status'),
-                         'verification':case.get('verification')} if case else None)}
+                         'verification':case.get('verification'), 'source_method':case.get('source_method'),
+                         'metrics':case.get('metrics',{}), 'provenance':case.get('provenance',{})} if case else None)}
+
+
+def own_synced_case(metadata):
+    return metadata.get('research_case',{}).get('source_method') in ('local_browser_mcp','xhs_own_sync')
+
+
+def public_note_id(url):
+    from urllib.parse import urlsplit
+    parsed=urlsplit(url or '')
+    if parsed.hostname not in ('www.xiaohongshu.com','xiaohongshu.com'):return None
+    match=re.fullmatch(r'/explore/([A-Za-z0-9_-]+)',parsed.path.rstrip('/'))
+    return match.group(1) if match else None
+
+
+def assert_public_model_evidence(store,run,db):
+    """Recheck old snapshots before each model call; history remains unchanged."""
+    evidence=[source for source in run.context.get('evidence',[]) if source.get('source_type')=='research_case']
+    if not evidence:return
+    account=run.context.get('operations',{}).get('account_id')
+    checked=None
+    for source in evidence:
+        identity,version=source.get('document_id'),source.get('version')
+        if not identity or not version:continue
+        row=db.execute('SELECT v.metadata,d.source_url FROM knowledge_versions v JOIN knowledge_documents d ON d.id=v.document_id WHERE d.id=? AND d.owner=? AND d.account_id=? AND v.version=?',
+                       (identity,run.owner_id,account,version)).fetchone()
+        if not row or not own_synced_case(json.loads(row[0])):continue
+        if checked is None:
+            from backend.xhs_sync import XHSSync
+            checked=XHSSync.public_note_ids(db,run.owner_id,account)
+        require(public_note_id(source.get('url',row[1])) in checked,'SOURCE_VISIBILITY_CHANGED',
+                '本人笔记当前未核实为公开，已停止发送旧任务资料；请重新选择公开资料创建任务')
+
+
+def style_case(metadata):
+    case=metadata.get('research_case',{})
+    provenance=case.get('provenance',{})
+    metrics=case.get('metrics',{})
+    selection=provenance.get('style_selection',{})
+    thresholds=all(type(selection.get('min_'+key)) is int and selection['min_'+key]>0 for key in ('likes','favorites'))
+    return (metadata.get('retrieval_eligible',True) and not case.get('review_required')
+            and case.get('content_kind')!='lead' and case.get('evidence_role')=='expression_reference'
+            and case.get('source_method')=='local_browser_public_note'
+            and provenance.get('visibility')=='public' and provenance.get('visibility_source')=='platform_search_result'
+            and provenance.get('style_library_eligible') is True
+            and thresholds and any(type(metrics.get(key)) is int and metrics[key]>=selection['min_'+key] for key in ('likes','favorites')))
 
 
 class Knowledge:
@@ -200,7 +246,7 @@ class Knowledge:
             db.execute("UPDATE knowledge_documents SET status='deleted' WHERE id=?",(identity,))
         return {'deleted':True,'note':'后续检索已排除；已有任务的证据快照保留审计'}
 
-    def retrieve(self, owner, account, query, limit=4, document_ids=None):
+    def retrieve(self, owner, account, query, limit=4, document_ids=None, *, style_only=False):
         self.account(owner,account);query=validate_text(query,'检索内容',300)
         require(type(limit) is int and 1<=limit<=20,'INVALID_INPUT','检索条数需为 1–20')
         if document_ids is not None:
@@ -219,6 +265,12 @@ class Knowledge:
                 sql+=' AND d.id IN ('+','.join('?' for _ in document_ids)+')';args.extend(document_ids)
             rows=db.execute(sql,args).fetchall()
         rows=[r for r in rows if json.loads(r[11]).get('retrieval_eligible',True)]
+        if any(own_synced_case(json.loads(r[11])) for r in rows):
+            from backend.xhs_sync import XHSSync
+            with self.store.connect() as db:
+                public_ids=XHSSync.public_note_ids(db,owner,account)
+            rows=[r for r in rows if not own_synced_case(json.loads(r[11])) or public_note_id(r[8]) in public_ids]
+        if style_only:rows=[r for r in rows if style_case(json.loads(r[11]))]
         documents=[(r,json.loads(r[6])) for r in rows]
         n=len(documents);avg=sum(sum(t.values()) for _,t in documents)/max(1,n)
         df={t:sum(t in terms for _,terms in documents) for t in wanted}
@@ -259,6 +311,12 @@ class Knowledge:
                 embedding_note='本地真实语义向量与 BM25 融合；相关度不是事实置信度'
             except EmbeddingUnavailable as error:
                 embedding_note=str(error)
+        if style_only:
+            # Multiple chunks of one popular post must not crowd out other references.
+            unique=[];seen=set()
+            for item in results:
+                if item['document_id'] not in seen:unique.append(item);seen.add(item['document_id'])
+            results=unique
         selected=results[:limit]
         # Keep input costs bounded while preserving exact substrings and locations.
         for source in selected:

@@ -97,6 +97,8 @@ class Calls:
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             guard(db)
+            from backend.knowledge import assert_public_model_evidence
+            assert_public_model_evidence(self.store,run,db)
             if reuse:
                 old = db.execute('SELECT c.id,c.response_json,c.actual,c.state FROM live_calls c JOIN model_audit a ON a.call_id=c.id WHERE c.run_id=? AND a.input_hash=? AND c.stage=?',(run.run_id,input_hash,stage)).fetchone()
                 if old:

@@ -88,6 +88,13 @@ class Service:
             result=self.knowledge.retrieve(owner,account,(context['topic']+' '+context['audience'])[:300],limit=3,document_ids=document_ids if 'document_ids' in selection else None)
             context['retrieval']=result
             context['evidence']=result['sources']
+        account=context.get('operations',{}).get('account_id')
+        if account and context.get('operations',{}).get('platform')=='xiaohongshu':
+            # Authorized public style-library use is independent of optional fact selection.
+            style=self.knowledge.retrieve(owner,account,(context['topic']+' '+context['audience'])[:300],limit=3,style_only=True)
+            context['style_retrieval']=style
+            known={source['source_id'] for source in context.get('evidence',[])}
+            context['evidence']=context.get('evidence',[])+[source for source in style['sources'] if source['source_id'] not in known]
         if mode=='live': context['scenario']='standard'
         return self.view(self.store.create(owner,str(uuid4()),context))
 
