@@ -1,5 +1,6 @@
 """Offline source-selection and four-role prompt tests; no paid model calls."""
 import os
+from dataclasses import asdict
 import json
 import re
 import tempfile
@@ -188,6 +189,66 @@ class StyleLibraryTests(unittest.TestCase):
                 with self.assertRaises(DomainError):jobs.export(self.owner,identity)
                 with self.store.connect() as db:
                     self.assertIn('SECRET-BODY',db.execute('SELECT payload FROM research_jobs WHERE id=?',(identity,)).fetchone()[0])
+
+
+    def test_simulated_old_run_and_export_are_hidden_after_visibility_revocation(self):
+        with patch.object(XHSSync,'public_note_ids',return_value={'note-1'}):
+            own=self.save(case_changes={'source_method':'local_browser_mcp'})
+            result=self.create(mode='simulation',knowledge={'enabled':True,'document_ids':[own['id']]})
+        run=self.store.get(result['run_id'],self.owner)
+        before=asdict(self.store.get(run.run_id,self.owner))
+        with patch.object(XHSSync,'public_note_ids',return_value=set()):
+            for action in (lambda:self.service.view(run),lambda:self.service.export(self.owner,run.run_id)):
+                with self.assertRaises(DomainError) as caught:action()
+                self.assertEqual(caught.exception.code,'SOURCE_VISIBILITY_CHANGED')
+                self.assertNotIn(own['title'],str(caught.exception))
+                self.assertIn('历史任务内容已隐藏',str(caught.exception))
+        self.assertEqual(asdict(self.store.get(run.run_id,self.owner)),before)
+        self.assertEqual(self.model.inputs,[])
+        with patch.object(XHSSync,'public_note_ids',return_value={'note-1'}):
+            self.assertEqual(self.service.view(run)['run_id'],run.run_id)
+
+    def test_missing_source_version_blocks_old_task_display_conservatively(self):
+        self.save();result=self.create(mode='simulation');run=self.store.get(result['run_id'],self.owner)
+        source=run.context['evidence'][0]
+        with self.store.connect() as db:
+            db.execute('DELETE FROM knowledge_chunks WHERE document_id=?',(source['document_id'],))
+            db.execute('DELETE FROM knowledge_versions WHERE document_id=?',(source['document_id'],))
+            db.execute('DELETE FROM knowledge_documents WHERE id=?',(source['document_id'],))
+        for action in (lambda:self.service.view(run),lambda:self.service.export(self.owner,run.run_id)):
+            with self.assertRaises(DomainError) as caught:action()
+            self.assertEqual(caught.exception.code,'SOURCE_VISIBILITY_CHANGED')
+        self.assertTrue(self.store.get(run.run_id,self.owner).context['evidence'])
+
+
+    def test_windtunnel_material_snapshots_use_same_visibility_gate(self):
+        with patch.object(XHSSync,'public_note_ids',return_value={'note-1'}):
+            own=self.save(case_changes={'source_method':'local_browser_mcp'})
+            result=self.service.create(self.owner,{'workflow_type':'windtunnel','account_id':self.account,
+                         'title':'白衬衫护理','text':'阅读护理步骤。','mode':'simulation',
+                         'knowledge':[{'document_id':own['id'],'version':1}]})
+        run=self.store.get(result['run_id'],self.owner)
+        with patch.object(XHSSync,'public_note_ids',return_value=set()):
+            for action in (lambda:self.service.view(run),lambda:self.service.export(self.owner,run.run_id)):
+                with self.assertRaises(DomainError) as caught:action()
+                self.assertEqual(caught.exception.code,'SOURCE_VISIBILITY_CHANGED')
+        self.assertTrue(self.store.get(run.run_id,self.owner).windtunnel['sources'])
+
+
+    def test_windtunnel_imported_draft_cannot_bypass_origin_visibility(self):
+        with patch.object(XHSSync,'public_note_ids',return_value={'note-1'}):
+            own=self.save(case_changes={'source_method':'local_browser_mcp'})
+            original=self.create(mode='simulation',knowledge={'enabled':True,'document_ids':[own['id']]})
+            for _ in range(7):
+                original=self.service.action(self.owner,original['run_id'],{'action':'next','version':original['status_version'],'key':str(uuid4()),'payload':{}})
+            source=self.store.get(original['run_id'],self.owner)
+            result=self.service.create(self.owner,{'workflow_type':'windtunnel','account_id':self.account,'mode':'simulation',
+                      'import':{'run_id':source.run_id,'draft_ref':source.drafts[-1]['ref']}})
+        run=self.store.get(result['run_id'],self.owner)
+        with patch.object(XHSSync,'public_note_ids',return_value=set()):
+            with self.assertRaises(DomainError) as caught:self.service.view(run)
+            self.assertEqual(caught.exception.code,'SOURCE_VISIBILITY_CHANGED')
+        self.assertTrue(self.store.get(run.run_id,self.owner).windtunnel['drafts'])
 
 
 @unittest.skipUnless(os.environ.get('TEST_DATABASE_URL'), 'PostgreSQL integration requires TEST_DATABASE_URL')

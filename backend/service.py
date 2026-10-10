@@ -35,6 +35,7 @@ class Service:
                 'LIVE_DISABLED','内容风洞付费调用未启用；当前仅验证模拟流程')
 
     def view(self, run):
+        self.guard_source_visibility(run)
         if run.workflow_type=='windtunnel':
             result=self.windtunnel.view(run)
             result.update(self.executor.public(run))
@@ -50,6 +51,14 @@ class Service:
         if result['review_recovery']['available']:result['allowed_actions'].append('repair_review')
         if result['in_flight']:result['allowed_actions']=[a for a in result['allowed_actions'] if a=='cancel']
         return result
+
+    def guard_source_visibility(self,run):
+        # A freshly opened read transaction checks current permissions, including
+        # simulation runs; do not expose raw historical inputs or derived drafts.
+        from backend.knowledge import assert_public_model_evidence
+        with self.store.connect() as db:
+            db.execute('BEGIN')
+            assert_public_model_evidence(self.store,run,db)
 
     def background(self, owner, run_id, data):
         self.jobs.command(owner,run_id,data)
@@ -134,6 +143,7 @@ class Service:
 
     def export(self, owner, run_id):
         run = self.store.get(run_id,owner)
+        self.guard_source_visibility(run)
         if run.workflow_type=='windtunnel':return self.windtunnel.export(run)
         require('export' in actions(run),'INVALID_TRANSITION','请先确认准确版本')
         c = run.drafts[-1]['content']

@@ -101,23 +101,37 @@ def document_is_public(db,owner,account,metadata,url):
     return public_note_id(url) in XHSSync.public_note_ids(db,owner,account)
 
 
-def assert_public_model_evidence(store,run,db):
+def assert_public_model_evidence(store,run,db,seen=None):
     """Recheck old snapshots before each model call; history remains unchanged."""
+    seen=set() if seen is None else seen
+    require(run.run_id not in seen,'SOURCE_VISIBILITY_CHANGED','来源任务关系无法确认，历史任务暂不可展示或发送模型')
+    seen.add(run.run_id)
     evidence=[source for source in run.context.get('evidence',[]) if source.get('source_type')=='research_case']
+    wind=getattr(run,'windtunnel',None) or {}
+    wind_sources=wind.get('sources',[])+[source for history in wind.get('source_history',[]) for source in history.get('sources',[])]
+    evidence.extend(source for source in wind_sources if source.get('document_id'))
+    imported={draft.get('source',{}).get('run_id') for draft in wind.get('drafts',[]) if isinstance(draft.get('source'),dict)}-{None}
+    for identity in imported:
+        try:origin=store.get(identity,run.owner_id)
+        except ValueError:
+            require(False,'SOURCE_VISIBILITY_CHANGED','来源任务已无法确认，历史任务暂不可展示或发送模型')
+        assert_public_model_evidence(store,origin,db,seen)
     if not evidence:return
-    account=run.context.get('operations',{}).get('account_id')
+    account=run.context.get('operations',{}).get('account_id') or run.context.get('account_id')
     checked=None
     for source in evidence:
         identity,version=source.get('document_id'),source.get('version')
-        if not identity or not version:continue
+        require(identity and version,'SOURCE_VISIBILITY_CHANGED','来源身份已无法确认，历史任务暂不可展示或发送模型')
         row=db.execute('SELECT v.metadata,d.source_url FROM knowledge_versions v JOIN knowledge_documents d ON d.id=v.document_id WHERE d.id=? AND d.owner=? AND d.account_id=? AND v.version=?',
                        (identity,run.owner_id,account,version)).fetchone()
-        if not row or not own_synced_case(json.loads(row[0])):continue
+        require(row is not None,'SOURCE_VISIBILITY_CHANGED','来源版本已无法确认，历史任务暂不可展示或发送模型')
+        metadata=json.loads(row[0])
+        if not own_synced_case(metadata):continue
         if checked is None:
             from backend.xhs_sync import XHSSync
             checked=XHSSync.public_note_ids(db,run.owner_id,account)
-        require(public_note_id(source.get('url',row[1])) in checked,'SOURCE_VISIBILITY_CHANGED',
-                '本人笔记当前未核实为公开，已停止发送旧任务资料；请重新选择公开资料创建任务')
+        require(public_note_id(metadata.get('source_url',source.get('url',row[1]))) in checked,'SOURCE_VISIBILITY_CHANGED',
+                '本人笔记当前未核实为公开，历史任务内容已隐藏且停止模型调用；请使用公开资料创建新任务')
 
 
 def style_case(metadata):
