@@ -1,7 +1,7 @@
 'use strict';
 pageInfo.research=['RESEARCH / CASES','把案例研究，变成可引用的资料。','搜索、读取、整理和导出；表达参考与商品事实分别保存。'];
 let researchLoad=0,researchTimer=null,researchBusy=false,researchPending=null;
-let researchCaseEdit=null,caseEditLoad=0,transcriptBusy=false;
+let researchCaseEdit=null,caseEditLoad=0,transcriptBusy=false,transcriptResult=null;
 function researchRequest(data){
  const fingerprint=JSON.stringify(data);
  if(!researchPending||researchPending.fingerprint!==fingerprint)researchPending={fingerprint,key:crypto.randomUUID()};
@@ -74,6 +74,7 @@ async function submitTranscript(event,account,pageToken){
  const current=()=>account===activeAccountId&&currentPage==='research'&&pageToken===researchLoad;
  try{
   if(!current())throw new Error('账号或页面已变化，请重新选择文件');
+  transcriptResult=null;
   if(!file||!file.size)throw new Error('请选择有内容的音频或视频文件');
   if(file.size>10*1024*1024)throw new Error('文件超过 10 MiB，请截取不超过 120 秒的片段');
   if(!/\.(mp4|mov|m4a|mp3|wav|aiff|flac|ogg|webm)$/i.test(file.name))throw new Error('文件类型不支持，请选择列表中的音频或视频格式');
@@ -85,6 +86,7 @@ async function submitTranscript(event,account,pageToken){
   if(!current())return;
   const doc=await api('/api/research/transcripts','POST',{account_id:account,title,filename:file.name,file_base64,permission_confirmed:true});
   if(!current())return;
+  transcriptResult={document_id:doc.id,account_id:account,pageToken};
   status.textContent='转写已保存，尚不参与检索。请校对正文并点击“已校对，保存新版本并用于检索”。';
   if(editorRequest===caseEditLoad){++caseEditLoad;fillCaseEditor(doc,account);}
   else status.textContent='转写已保存，尚不参与检索。当前案例编辑未被覆盖，请在列表选择这份转写进行校对。';
@@ -132,7 +134,7 @@ async function refreshResearchJobs(account,token){
  }catch(e){if(currentPage==='research'&&token===researchLoad)error(e);}
 }
 async function renderResearch(){
- const token=++researchLoad,account=activeAccountId;clearTimeout(researchTimer);++caseEditLoad;researchCaseEdit=null;
+ const token=++researchLoad,account=activeAccountId;clearTimeout(researchTimer);++caseEditLoad;researchCaseEdit=null;transcriptResult=null;
  $('operationsContent').innerHTML=`<section class="panel"><div class="detail-heading"><h2>自动整理一次案例研究</h2><a class="button quiet" href="/api/research/cases/export?account_id=${encodeURIComponent(account)}">导出本账号案例文档</a></div><p class="muted">后台最多搜索 2 组关键词，尝试读取 6 个网页，保存最多 3 份正文。关闭页面后继续执行。搜索摘要不当作正文，未知互动不补零。</p><form id="researchCollectForm"><label for="researchQueries">搜索词（每行一组，最多两组）</label><textarea id="researchQueries" rows="2" required maxlength="241" placeholder="例如：敏感肌 防晒 产品对比&#10;品牌 产品名称 成分"></textarea><div class="two-col"><div><label for="researchProvider">搜索服务</label><select id="researchProvider"><option value="bing">Bing 公开网页（实验）</option><option value="xhs_local">小红书站内视频（已绑定本机账号）</option><option value="baidu">百度 AI 搜索（需配置，可能计费）</option><option value="wikipedia">百科背景资料</option></select></div><div><label for="researchRole">资料用途</label><select id="researchRole"><option value="expression_reference">表达参考：学习结构与方法</option><option value="product_fact">商品事实：仍需核验产品与来源</option></select></div></div><fieldset class="research-scopes"><legend>搜索范围</legend><label class="checkbox"><input name="researchScope" type="checkbox" value="web" checked> 全网</label><label class="checkbox"><input name="researchScope" type="checkbox" value="jd"> 京东</label><label class="checkbox"><input name="researchScope" type="checkbox" value="taobao"> 淘宝 / 天猫</label><label class="checkbox"><input name="researchScope" type="checkbox" value="xiaohongshu"> 小红书搜索线索</label></fieldset><p class="helper">限定范围基于搜索引擎收录，不是平台站内完整搜索。搜索引擎的小红书结果仅保留线索。选择“小红书站内视频”时，通过已绑定本机账号按最多点赞查找半年内视频，最多读取 3 篇文字描述及互动；不等于视频转写。</p><label class="checkbox"><input id="researchPermission" type="checkbox" required> 我确认本次资料研究的使用权限，并授权在所选范围和次数内自动搜索、读取与保存</label><button class="primary" type="submit">开始后台研究</button></form></section><section><div class="section-toolbar"><h2>研究任务</h2><button id="refreshResearch" class="quiet">刷新</button></div><div id="researchJobs"><p>正在读取任务…</p></div></section><section class="panel"><h2>上传自己的音频或视频转写</h2><p class="helper">支持 MP4、MOV、M4A、MP3、WAV、AIFF、FLAC、OGG、WebM，单份最多 10 MiB、时长最多 120 秒。使用本机 CPU，可能耗时数分钟，不调用收费模型；不会自动下载平台视频。转写可能误识别同音字，需要你校对保存新版本后才参与 RAG。</p><form id="transcriptForm"><label for="transcriptTitle">转写资料标题</label><input id="transcriptTitle" maxlength="200" required><label for="transcriptFile">音频或视频文件</label><input id="transcriptFile" type="file" accept=".mp4,.mov,.m4a,.mp3,.wav,.aiff,.flac,.ogg,.webm" required><label class="checkbox"><input id="transcriptPermission" type="checkbox" required> 我有权处理这份媒体，并同意在本机转写和保存供人工校对</label><button id="transcriptSubmit" class="primary" ${transcriptBusy?'disabled':''}>本机转写并预览</button><p id="transcriptStatus" class="helper" aria-live="polite"></p></form></section><section class="panel"><details id="caseEditorDetails"><summary>添加或编辑已有案例、视频字幕或商品事实</summary><form id="researchCaseForm"><p id="caseEditorStatus" class="helper" aria-live="polite"></p><label for="caseTitle">标题</label><input id="caseTitle" required maxlength="200"><div class="two-col"><div><label for="casePlatform">来源平台</label><select id="casePlatform"><option value="xiaohongshu">小红书</option><option value="public_web">公开网页</option><option value="jd">京东</option><option value="taobao">淘宝 / 天猫</option><option value="owned">自有资料</option></select></div><div><label for="caseAuthor">作者 / 品牌（可选）</label><input id="caseAuthor" maxlength="200"></div></div><label for="caseUrl">原始链接（可选）</label><input id="caseUrl" type="url"><div class="two-col"><div><label for="caseKind">内容类型</label><select id="caseKind"><option value="text">已取得正文</option><option value="transcript">已有视频字幕 / 转写</option><option value="lead">只有搜索线索（不进入 RAG）</option></select></div><div><label for="caseRole">证据类别</label><select id="caseRole"><option value="expression_reference">表达参考</option><option value="product_fact">商品事实资料（待核验）</option></select></div></div><label for="caseText">正文或字幕</label><textarea id="caseText" required maxlength="100000" rows="7" placeholder="粘贴有权使用的内容；不会因提供标题就视为已读取视频"></textarea><div class="two-col"><div><label for="casePublished">发布时间（可选）</label><input id="casePublished" type="datetime-local" step="0.001"></div><div><label for="caseObserved">指标观察时间（填写指标时必填）</label><input id="caseObserved" type="datetime-local" step="0.001"></div></div><div class="research-metrics">${[['views','播放 / 阅读'],['likes','点赞'],['favorites','收藏'],['comments','评论'],['shares','分享']].map(([k,v])=>`<div><label for="caseMetric-${k}">${v}</label><input id="caseMetric-${k}" type="number" min="0" max="1000000000000" step="1" placeholder="未知留空"></div>`).join('')}</div><div class="two-col"><div><label for="caseMinInteractions">高互动候选最低已知互动量</label><input id="caseMinInteractions" type="number" value="1000" min="1" max="1000000000" required></div><div><label for="caseMaxAge">发布后观察窗口（天）</label><input id="caseMaxAge" type="number" value="30" min="1" max="3650" required></div></div><label class="checkbox"><input id="casePermission" type="checkbox" required> 我有权保存和使用这份资料，知晓案例表达不能证明我的产品功效或亲身体验</label><button id="caseSaveButton" class="primary">保存案例并建立检索</button><button id="caseCancelEdit" type="button" class="quiet" hidden>取消编辑</button></form></details></section><div class="section-toolbar"><h2>已保存案例</h2><p class="helper">可在创作工作台勾选引用，或在资料库检索与移除。</p></div><div id="researchCases"></div>`;
  document.querySelectorAll('[name="researchScope"]').forEach(box=>box.onchange=()=>{
   if(box.checked)document.querySelectorAll('[name="researchScope"]').forEach(other=>{if((box.value==='web'&&other!==box)||(box.value!=='web'&&other.value==='web'))other.checked=false;});
@@ -156,8 +158,11 @@ async function renderResearch(){
   e.preventDefault();e.submitter.disabled=true;const editorRequest=caseEditLoad;
   try{
    const data=researchCasePayload(account);
-   await api('/api/research/cases','POST',data);
+   const saved=await api('/api/research/cases','POST',data);
    if(account===activeAccountId&&currentPage==='research'&&token===researchLoad){
+    if(transcriptResult?.document_id===data.document_id&&transcriptResult.account_id===account&&transcriptResult.pageToken===token&&saved.id===data.document_id&&!saved.metadata?.research_case?.review_required){
+     $('transcriptStatus').textContent=saved.metadata?.retrieval_eligible===true?'已校对并保存，可参与检索。':'已校对并保存；当前资料类型不参与检索。';
+    }
     toast(data.document_id?'案例新版本已保存，历史版本保留':'案例已保存，可进入资料检索');
     if(editorRequest===caseEditLoad)clearCaseEditor();
     await refreshResearchJobs(account,token);
