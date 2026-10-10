@@ -1,0 +1,152 @@
+--- a/tests/test_research_confirmation.py
++++ b/tests/test_research_confirmation.py
+@@ -94,7 +94,7 @@
+         result = self.create_run();run = self.store.get(result['run_id'], self.owner)
+         self.assertEqual(run.context['evidence'], [])
+         self.assertEqual(messages_for(run, 'research')[1]['retrieved_references'], [])
+-        self.assertNotIn('fixture-search-token', json.dumps(job, ensure_ascii=False))
++        self.assertIn('xsec_token=fixture-search-token', job['candidates'][0]['packet']['source_url'])
+
+     def test_selected_approval_persists_once_and_rejects_unowned_or_unknown_candidates(self):
+         job = self.research();chosen = job['candidates'][0]['id']
+@@ -114,6 +114,90 @@
+         self.assertEqual(changed.exception.code, 'IDEMPOTENCY_CONFLICT')
+         self.assertEqual(len(self.kb.list(self.owner, self.account)), 1)
+         self.assertEqual(PublicSearchFixture.calls, calls_before)
++
++    def test_platform_search_forces_confirmation_and_deduplicates_active_query(self):
++        packet = self.packet();packet.pop('confirmation_required')
++        with patch('backend.xhs_research.LocalResearchClient', PublicSearchFixture):
++            first = self.jobs.create(self.owner, packet)
++            packet['key'] = 'another-click'
++            second = self.jobs.create(self.owner, packet)
++            self.assertEqual(first['id'], second['id'])
++            self.assertTrue(self.jobs.once())
++        self.assertEqual(self.jobs.get(self.owner, first['id'])['status'], 'awaiting_confirmation')
++        self.assertEqual(self.kb.list(self.owner, self.account), [])
++
++    def test_successful_empty_search_is_not_a_connection_failure(self):
++        with patch('backend.xhs_research.LocalResearchClient', PublicSearchFixture), patch.object(PublicSearchFixture,'search',return_value={'feeds':[]}):
++            created=self.jobs.create(self.owner,self.packet());self.jobs.once()
++        result=self.jobs.get(self.owner,created['id'])
++        self.assertEqual(result['status'],'done')
++        self.assertIsNone(result['error'])
++        self.assertEqual(result['candidates'],[])
++        self.assertEqual(self.kb.list(self.owner,self.account),[])
++
++    def test_resigned_note_link_and_changed_body_reuse_existing_version(self):
++        first = self.research();approved = self.approve(first)
++        doc_id = approved['document_ids'][0]
++        old = self.kb.get(self.owner, self.account, doc_id)
++        packet = self.packet('search-again')
++        with patch('backend.xhs_research.LocalResearchClient', PublicSearchFixture):
++            created = self.jobs.create(self.owner, packet);self.jobs.once()
++        second = self.jobs.get(self.owner, created['id'])
++        with self.store.connect() as db:
++            value = json.loads(db.execute('SELECT payload FROM research_jobs WHERE id=?', (created['id'],)).fetchone()[0])
++            value['candidates'][0]['packet']['source_url'] += '&renewed=yes'
++            value['candidates'][0]['packet']['text'] += '搜索中新采集到的变化不覆盖已有用户版本。'
++            db.execute('UPDATE research_jobs SET payload=? WHERE id=?', (json.dumps(value), created['id']))
++        result = self.approve(second, key='confirm-again')
++        self.assertEqual(result['document_ids'], [doc_id])
++        self.assertEqual(self.kb.get(self.owner, self.account, doc_id), old)
++        self.assertEqual(len(self.kb.list(self.owner, self.account)), 1)
++
++    def test_concurrent_confirmations_of_same_note_create_one_version(self):
++        from concurrent.futures import ThreadPoolExecutor
++        from threading import Barrier
++        first=self.research()
++        with patch('backend.xhs_research.LocalResearchClient', PublicSearchFixture):
++            created=self.jobs.create(self.owner,self.packet('concurrent-search'));self.jobs.once()
++        second=self.jobs.get(self.owner,created['id'])
++        barrier=Barrier(2);save=self.jobs.cases.save
++        def synchronized_save(*args,**kwargs):
++            barrier.wait(timeout=15)
++            return save(*args,**kwargs)
++        with patch.object(self.jobs.cases,'save',side_effect=synchronized_save):
++            with ThreadPoolExecutor(max_workers=2) as pool:
++                results=list(pool.map(lambda job:self.approve(job,key='approve-'+job['id']),[first,second]))
++        self.assertEqual(results[0]['document_ids'],results[1]['document_ids'])
++        self.assertEqual(len(self.kb.list(self.owner,self.account)),1)
++        self.assertEqual(self.kb.list(self.owner,self.account)[0]['version'],1)
++
++    def test_only_link_candidate_cannot_be_imported(self):
++        job = self.research()
++        with self.store.connect() as db:
++            value = json.loads(db.execute('SELECT payload FROM research_jobs WHERE id=?', (job['id'],)).fetchone()[0])
++            value['candidates'][0]['packet']['text'] = ''
++            value['candidates'][0]['importable'] = False
++            db.execute('UPDATE research_jobs SET payload=? WHERE id=?', (json.dumps(value), job['id']))
++        with self.assertRaises(DomainError) as caught:self.approve(job)
++        self.assertEqual(caught.exception.code, 'CANDIDATE_UNREADABLE')
++        self.assertEqual(self.kb.list(self.owner, self.account), [])
++
++    def test_incremental_candidate_survives_later_transport_failure(self):
++        def collect(research, owner, account, queries, check=None, on_note=None, **kwargs):
++            research.expected_source_id = 'a'*24
++            on_note({'account_id':account,'title':'已完成的公开笔记','text':'衬衣领子发黄时先确认面料和洗护标识，再根据说明处理。',
++                     'source_url':'https://www.xiaohongshu.com/explore/first?xsec_token=fixture',
++                     'platform':'xiaohongshu','content_kind':'text','evidence_role':'expression_reference',
++                     'permission_confirmed':True,'observed_at':'2026-10-10T00:00:00+00:00',
++                     'note_id':'first','content_type':'image'})
++            raise DomainError('XHS_DETAIL_TIMEOUT','后续读取超时')
++        with patch('backend.xhs_research.XHSResearch.collect', collect):
++            job=self.jobs.create(self.owner,self.packet());self.jobs.once()
++        result=self.jobs.get(self.owner,job['id'])
++        self.assertEqual(result['error'],'XHS_DETAIL_TIMEOUT')
++        self.assertEqual(len(result['candidates']),1)
++        self.assertEqual(self.kb.list(self.owner,self.account),[])
++        self.assertEqual(len(self.approve(result)['document_ids']),1)
+
+     def test_confirmed_references_survive_restart_and_feed_four_role_messages(self):
+         job = self.research();approved = self.approve(job)
+@@ -166,6 +250,49 @@
+         with self.store.connect() as db:
+             self.assertEqual(db.execute('SELECT COUNT(*) FROM knowledge_versions').fetchone()[0], 0)
+
++    def test_cancel_after_first_import_can_resume_same_selection_without_overwriting(self):
++        job=self.research()
++        data={'candidate_ids':[c['id'] for c in job['candidates']], 'key':'resume-selection'}
++        save=self.jobs.cases.save;calls=[]
++        def cancel_second(*args,**kwargs):
++            calls.append(True)
++            if len(calls)==2:self.jobs.cancel(self.owner,job['id'])
++            return save(*args,**kwargs)
++        with patch.object(self.jobs.cases,'save',side_effect=cancel_second):
++            with self.assertRaises(DomainError) as stopped:self.jobs.confirm(self.owner,job['id'],data)
++        self.assertEqual(stopped.exception.code,'RESEARCH_STOPPED')
++        self.assertEqual(self.jobs.get(self.owner,job['id'])['status'],'cancelled')
++        self.assertEqual(len(self.kb.list(self.owner,self.account)),1)
++        existing=self.kb.list(self.owner,self.account)[0]
++        resumed=self.jobs.confirm(self.owner,job['id'],data)
++        self.assertEqual(resumed['status'],'done')
++        self.assertEqual(len(resumed['document_ids']),2)
++        self.assertEqual(len(self.kb.list(self.owner,self.account)),2)
++        self.assertEqual(self.kb.get(self.owner,self.account,existing['id'])['version'],1)
++        again=self.jobs.confirm(self.owner,job['id'],data)
++        self.assertEqual(again['document_ids'],resumed['document_ids'])
++
++    def test_abbreviated_metric_display_stays_separate_from_numeric_metrics(self):
++        from backend.research_jobs import ResearchJobs
++        created=self.jobs.create(self.owner,self.packet('display-metrics'))
++        job=self.jobs._claim()
++        self.jobs._stage(job, {'account_id':self.account,'title':'带原始互动的公开笔记',
++            'text':'衬衣领子发黄后需要先核对面料和洗护标识，避免误用洗护用品。',
++            'source_url':'https://www.xiaohongshu.com/explore/display-id?xsec_token=fixture',
++            'platform':'xiaohongshu','content_kind':'text','evidence_role':'expression_reference',
++            'permission_confirmed':True,'observed_at':'2026-10-10T00:00:00+00:00',
++            'metrics':{'likes':None},'metric_display':{'likes':'1.2万'},'note_id':'display-id'},
++            'local_browser_public_note',{'binding_source_id':'a'*24},'2026-10-10T00:00:00+00:00')
++        self.jobs._await_confirmation(job)
++        pending=self.jobs.get(self.owner,created['id'])
++        candidate=pending['candidates'][0]
++        self.assertEqual(candidate['preview']['metric_display']['likes'],'1.2万')
++        self.assertNotIn('metric_display',candidate['packet'])
++        approved=self.approve(pending)
++        doc=self.kb.get(self.owner,self.account,approved['document_ids'][0])
++        self.assertIsNone(doc['metadata']['research_case']['metrics']['likes'])
++        self.assertEqual(doc['metadata']['research_case']['provenance']['metric_display']['likes'],'1.2万')
++
+     def test_binding_change_between_selection_and_save_blocks_late_ingestion(self):
+         job = self.research();original_save = self.jobs.cases.save
+         def rebound_save(*args, **kwargs):

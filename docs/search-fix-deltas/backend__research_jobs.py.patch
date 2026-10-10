@@ -1,0 +1,209 @@
+--- a/backend/research_jobs.py
++++ b/backend/research_jobs.py
+@@ -49,6 +49,10 @@
+                     all(type(filters[k]) is int and 1<=filters[k]<=10**9 for k in ('min_likes','min_favorites')) and
+                     filters['sort_by'] in ('likes','favorites'), 'INVALID_INPUT','赞藏筛选字段无效')
+         require(type(data.get('confirmation_required', False)) is bool, 'INVALID_INPUT', '确认设置无效')
++        # Search is never consent to ingest authenticated platform content.
++        data = dict(data)
++        if data['provider'] == 'xhs_local':
++            data['confirmation_required'] = True
+         fingerprint = digest(data)
+         with self.store.connect() as db:
+             db.execute('BEGIN IMMEDIATE')
+@@ -57,6 +61,11 @@
+                 require(prior[1] == fingerprint, 'IDEMPOTENCY_CONFLICT', '相同任务编号不能提交不同研究范围')
+                 return self._public_view(db,owner,self._get(db, owner, prior[0]))
+             self._expire(db)
++            scope = {k:v for k,v in data.items() if k != 'key'}
++            for active in db.execute("SELECT id,payload FROM research_jobs WHERE owner=? AND account_id=? AND status IN ('queued','running')", (owner,data['account_id'])):
++                current = json.loads(active[1])
++                if all(current.get(k)==v for k,v in scope.items()):
++                    return self._public_view(db,owner,self._get(db,owner,active[0]))
+             count = db.execute("SELECT COUNT(*) FROM research_jobs WHERE owner=? AND status IN ('queued','running')", (owner,)).fetchone()[0]
+             require(count < 3, 'QUOTA_EXCEEDED', '最多同时保留 3 个待执行研究任务')
+             identity, now = str(uuid4()), time.time()
+@@ -286,43 +295,15 @@
+     def _execute_xhs(self, job, payload):
+         from backend.xhs_research import XHSResearch
+         research=XHSResearch(self.store)
+-        notes, attempts = research.collect(job['owner'], payload['account_id'], payload['queries'], check=lambda:self._change(job), **({'style_filters':payload['style_filters']} if 'style_filters' in payload else {}))
+-        def guard(db):
+-            self._guard(db,job)
+-            research.guard_save(db,job['owner'],payload['account_id'])
++        def staged(note):
++            packet = dict(note)
++            provenance = packet.pop('_provenance', None)
++            self._stage(job, packet, 'local_browser_public_note',
++                        {**(provenance or {}), 'binding_source_id':research.expected_source_id}, packet['observed_at'])
++        notes, attempts = research.collect(job['owner'], payload['account_id'], payload['queries'],
++            check=lambda:self._change(job), on_note=staged,
++            **({'style_filters':payload['style_filters']} if 'style_filters' in payload else {}))
+         self._change(job, lambda p:p['attempts'].extend(attempts))
+-        for note in notes:
+-            provenance=note.pop('_provenance',None)
+-            method='local_browser_public_note' if provenance else 'local_browser_video_description'
+-            self._change(job)
+-            if payload.get('confirmation_required'):
+-                self._stage(job, note, method, {**(provenance or {}),'binding_source_id':research.expected_source_id}, note['observed_at'])
+-                continue
+-            existing=next((d for d in self.cases.list(job['owner'],payload['account_id']) if d['source_url']==note['source_url'] and d['metadata'].get('research_case',{}).get('source_method')==method),None)
+-            if existing:note.update(document_id=existing['id'],expected_version=existing['version'])
+-            def saved(db, identity, version):
+-                current = self._guard(db, job)
+-                current['document_ids'].append(identity)
+-                current['items'].append({'url':note['source_url'], 'title':note['title'], 'status':'saved',
+-                    'body_read':True, 'video_transcribed':False, 'document_id':identity, 'version':version,
+-                    'observed_at':note['observed_at'],
+-                    'source_type':method})
+-                self._write(db, job, current)
+-            try:
+-                if existing:
+-                    full=self.cases.knowledge.get_version(job['owner'],payload['account_id'],existing['id'],existing['version'])
+-                    if self._same_xhs_case(full,note) and full['metadata']['research_case'].get('provenance')==provenance:
+-                        with self.store.connect() as db:
+-                            db.execute('BEGIN IMMEDIATE');guard(db)
+-                            row=db.execute('SELECT version,status FROM knowledge_documents WHERE id=? AND owner=? AND account_id=?',(existing['id'],job['owner'],payload['account_id'])).fetchone()
+-                            require(row and row[0]==existing['version'] and row[1]=='active','VERSION_CONFLICT','案例已更新或移除，请重新研究')
+-                            saved(db,existing['id'],existing['version'])
+-                        continue
+-                self.cases.save(job['owner'], note, source_method=method, provenance=provenance,
+-                    fetched_at=note['observed_at'], transaction_guard=guard, transaction_saved=saved)
+-            except DomainError as exc:
+-                if exc.code != 'DUPLICATE':raise
+-                self._item(job,{'url':note['source_url'],'title':note['title'],'status':'duplicate','error':'相同正文已存在，未重复保存'})
+         current=self._change(job)
+         if current.get('candidates'):
+             return self._await_confirmation(job)
+@@ -332,19 +313,45 @@
+             db.execute('BEGIN IMMEDIATE');final=self._guard(db,job)
+             final['report']=report
+             self._write(db,job,final)
+-            db.execute("UPDATE research_jobs SET status=?,token=NULL,lease_until=NULL WHERE id=?",('partial' if any(i['status']!='saved' for i in final['items']) else 'done' if final['document_ids'] else 'failed',job['id']))
++            status = 'failed' if any(a['status'] != 'done' for a in final['attempts']) else 'done'
++            db.execute("UPDATE research_jobs SET status=?,token=NULL,lease_until=NULL WHERE id=?",(status,job['id']))
+
+     def _stage(self, job, packet, method, provenance, fetched_at):
+-        require(isinstance(packet.get('text'), str) and len(packet['text'].strip()) >= 10,
+-                'INVALID_INPUT', '候选需要已读取正文')
++        packet = dict(packet)
++        preview = {key:packet.pop(key) for key in ('note_id','content_type','cover_url','body_kind','video_url','metric_display') if key in packet}
++        provenance = {**(provenance or {}), **preview}
++        importable = (isinstance(packet.get('text'), str) and len(packet['text'].strip()) >= 10
++                      and preview.get('body_kind') not in ('summary','lead','unread')
++                      and packet.get('content_kind') != 'lead')
+         candidate = dict(id=str(uuid4()), packet=packet, source_method=method,
+-                         provenance=provenance, fetched_at=fetched_at)
++                         provenance=provenance, preview=preview, importable=importable, fetched_at=fetched_at)
+         def stage(payload):
++            if any(self._candidate_key(c) == self._candidate_key(candidate) for c in payload.get('candidates', [])):
++                return
+             payload.setdefault('candidates', []).append(candidate)
+             payload['items'].append(dict(url=packet['source_url'], title=packet['title'],
+-                                         status='awaiting_confirmation', body_read=True,
+-                                         candidate_id=candidate['id']))
++                                         status='awaiting_confirmation' if importable else 'unreadable', body_read=importable,
++                                         observed_at=packet.get('observed_at'),candidate_id=candidate['id']))
+         self._change(job, stage)
++
++    @staticmethod
++    def _candidate_key(candidate):
++        from backend.knowledge import public_note_id
++        packet = candidate['packet']
++        note_id = candidate.get('preview', {}).get('note_id') or candidate.get('provenance', {}).get('note_id')
++        if packet.get('platform') == 'xiaohongshu':
++            return ('xiaohongshu', note_id or public_note_id(packet.get('source_url', '')) or packet.get('source_url'))
++        return (packet.get('platform'), packet.get('source_url'))
++
++    def _existing_candidate(self, db, owner, account, candidate):
++        key = self._candidate_key(candidate)
++        rows = db.execute("SELECT d.id,d.version,d.source_url,v.metadata FROM knowledge_documents d JOIN knowledge_versions v ON v.document_id=d.id AND v.version=d.version WHERE d.owner=? AND d.account_id=? AND d.status='active' AND d.source_type='research_case'", (owner,account))
++        for row in rows:
++            case = json.loads(row[3]).get('research_case', {})
++            prior = {'packet':{'source_url':row[2], 'platform':case.get('platform')}, 'provenance':case.get('provenance',{})}
++            if self._candidate_key(prior) == key:
++                return row[0], row[1]
++        return None
+
+     def _await_confirmation(self, job):
+         with self.store.connect() as db:
+@@ -361,6 +368,8 @@
+                 len(set(data['candidate_ids']))==len(data['candidate_ids']),
+                 'INVALID_INPUT', '请选择需要保存的资料并提供确认编号')
+         selection=sorted(data['candidate_ids'])
++        scoped = self.get(owner, identity)
++        find_account(Operations(self.store).read(owner), scoped['account_id'])
+         with self.store.connect() as db:
+             db.execute('BEGIN IMMEDIATE')
+             job=self._get(db,owner,identity)
+@@ -369,9 +378,12 @@
+                 require(prior['key']==data['key'] and prior['candidate_ids']==selection,
+                         'IDEMPOTENCY_CONFLICT','确认选择已经提交，不能改用其他资料')
+                 if job['status']=='done':return self._public_view(db,owner,job)
+-            require(job['status'] in ('awaiting_confirmation','confirming'), 'INVALID_TRANSITION','任务当前不能确认')
++            require(job['status'] in ('awaiting_confirmation','confirming','cancelled','partial','interrupted','failed'), 'INVALID_TRANSITION','任务当前不能确认')
+             chosen={c['id']:c for c in job.get('candidates',[])}
+             require(set(selection)<=set(chosen),'INVALID_INPUT','候选资料不存在')
++            require(all(chosen[i].get('importable', bool(chosen[i]['packet'].get('text','').strip())) and
++                        len(chosen[i]['packet'].get('text','').strip()) >= 10 for i in selection),
++                    'CANDIDATE_UNREADABLE','所选资料尚无可用正文，不能加入知识库')
+             payload={k:job[k] for k in job if k not in ('id','status','created_at','updated_at','documents','searches','reads')}
+             payload['confirmation']={'key':data['key'],'candidate_ids':selection}
+             db.execute("UPDATE research_jobs SET status='confirming',payload=?,updated_at=? WHERE id=? AND owner=?",
+@@ -382,15 +394,14 @@
+             if any(i.get('candidate_id')==candidate_id and i['status']=='saved' for i in current['items']):continue
+             candidate=chosen[candidate_id]
+             packet=dict(candidate['packet'])
+-            existing=next((d for d in self.cases.list(owner,job['account_id']) if d['source_url']==packet['source_url'] and d['metadata'].get('research_case',{}).get('source_method')==candidate['source_method']),None)
+-            if existing:packet.update(document_id=existing['id'],expected_version=existing['version'])
+             provenance={**(candidate.get('provenance') or {}),'human_confirmed':True,'confirmation_job_id':identity}
+             def guard(db):
+                 row=db.execute('SELECT status,payload FROM research_jobs WHERE id=? AND owner=?',(identity,owner)).fetchone()
+-                require(row and row[0]=='confirming','RESEARCH_STOPPED','确认已取消，不保存迟到结果')
++                require(row is not None,'RESOURCE_NOT_FOUND','研究任务不可访问')
+                 value=json.loads(row[1])
+                 require(value.get('confirmation')=={'key':data['key'],'candidate_ids':selection},'IDEMPOTENCY_CONFLICT','确认范围已改变')
+-                require(not any(i.get('candidate_id')==candidate_id and i['status']=='saved' for i in value['items']), 'RESEARCH_STOPPED','资料已经保存')
++                require(not any(i.get('candidate_id')==candidate_id and i['status']=='saved' for i in value['items']), 'RESEARCH_CANDIDATE_SAVED','资料已经保存')
++                require(row[0]=='confirming','RESEARCH_STOPPED','确认已取消，不保存迟到结果')
+                 if candidate['source_method'].startswith('local_browser'):
+                     from backend.xhs_research import XHSResearch
+                     research=XHSResearch(self.store)
+@@ -399,16 +410,34 @@
+                 return value
+             def saved(db, document_id, version):
+                 value=guard(db)
+-                value['document_ids'].append(document_id)
++                if document_id not in value['document_ids']:value['document_ids'].append(document_id)
+                 for item in value['items']:
+                     if item.get('candidate_id')==candidate_id:item.update(status='saved',document_id=document_id,version=version)
+                 db.execute('UPDATE research_jobs SET payload=?,updated_at=? WHERE id=? AND owner=?',
+                            (json.dumps(value,ensure_ascii=False),time.time(),identity,owner))
+-            self.cases.save(owner,packet,source_method=candidate['source_method'],fetched_at=candidate['fetched_at'],
+-                            provenance=provenance,transaction_guard=guard,transaction_saved=saved)
++            def unique_guard(db):
++                guard(db)
++                require(self._existing_candidate(db,owner,job['account_id'],candidate) is None,
++                        'RESEARCH_ALREADY_EXISTS','该笔记已入库，复用已有版本')
++            try:
++                try:
++                    # The check runs within Knowledge's write transaction, so concurrent
++                    # confirmations cannot create a second copy with a refreshed URL token.
++                    self.cases.save(owner,packet,source_method=candidate['source_method'],fetched_at=candidate['fetched_at'],
++                                    provenance=provenance,transaction_guard=unique_guard,transaction_saved=saved)
++                except DomainError as exc:
++                    if exc.code != 'RESEARCH_ALREADY_EXISTS':raise
++                    with self.store.connect() as db:
++                        db.execute('BEGIN IMMEDIATE');guard(db)
++                        existing=self._existing_candidate(db,owner,job['account_id'],candidate)
++                        require(existing is not None,'VERSION_CONFLICT','已有资料已移除，请重试')
++                        saved(db,*existing)
++            except DomainError as exc:
++                if exc.code != 'RESEARCH_CANDIDATE_SAVED':raise
+         with self.store.connect() as db:
+             db.execute('BEGIN IMMEDIATE')
+             current=self._get(db,owner,identity)
++            if current['status']=='done':return self._public_view(db,owner,current)
+             require(current['status']=='confirming','RESEARCH_STOPPED','确认已取消')
+             payload=json.loads(db.execute('SELECT payload FROM research_jobs WHERE id=? AND owner=?',(identity,owner)).fetchone()[0])
+             for item in payload['items']:

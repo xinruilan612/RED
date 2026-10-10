@@ -53,6 +53,10 @@ class ProductionTests(unittest.TestCase):
                     expected = 'text/javascript' if path.endswith('.js') else 'text/css'
                     self.assertEqual(response.headers['content-type'], expected+'; charset=utf-8', path)
                     self.assertEqual(response.headers['x-content-type-options'], 'nosniff')
+                    policy=response.headers['content-security-policy']
+                    self.assertIn("img-src 'self' data: https://*.xhscdn.com https://*.xiaohongshu.com http://*.xhscdn.com http://*.xiaohongshu.com;",policy)
+                    self.assertIn("script-src 'self';",policy)
+                    self.assertNotIn("img-src *",policy)
                     self.assertEqual(response.headers['cache-control'], 'no-store')
                 self.assertEqual(self.client.get('/secret.js').status_code, 404)
 

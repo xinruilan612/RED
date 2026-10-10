@@ -1,5 +1,9 @@
 """Bounded read-only xiaohongshu-mcp client. Never expose cookies or write tools."""
 import json
+import http.client
+import queue
+import socket
+import threading
 import base64
 import struct
 import zlib
@@ -9,6 +13,29 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 from backend.contracts import DomainError, require
+
+
+def http_failure(exc, prefix='XHS'):
+    """Classify fixed connector signals; never echo its ticket-bearing body."""
+    status=exc.code if type(exc.code) is int and 100<=exc.code<=599 else None
+    try:
+        raw=exc.read(65537)
+        value=json.loads(raw) if len(raw)<=65536 else {}
+        signal=' '.join(str(value.get(k,'')) for k in ('code','error','message','details')).lower() if isinstance(value,dict) else ''
+    except Exception:signal=''
+    finally:exc.close()
+    if any(term in signal for term in ('context deadline exceeded','timed out','timeout')):
+        return DomainError(prefix+'_TIMEOUT','平台读取超时；已取得候选保留，可稍后手动重试')
+    if any(term in signal for term in ('login_required','not_logged_in','登录已失效','未登录')):
+        return DomainError('XHS_LOGIN_REQUIRED','连接器登录会话失效，请点击重新连接')
+    if status==429 or any(term in signal for term in ('captcha','验证码','access_restricted')):
+        return DomainError('XHS_RESTRICTED','平台要求访问验证或限制访问；本次停止，不自动重试')
+    if any(term in signal for term in ('parse_error','json decode','invalid character')):
+        return DomainError('XHS_PARSE','平台响应解析失败；不表示登录失效')
+    if any(term in signal for term in ('selector not found','element not found','页面结构')):
+        return DomainError('XHS_STRUCTURE','平台页面结构无法识别；不表示登录失效')
+    return DomainError(prefix+'_HTTP_'+str(status) if status is not None else prefix+'_HTTP_ERROR',
+                       '本机接口返回错误状态；原因未确定，本次不自动重试')
 
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
@@ -23,6 +50,50 @@ class LocalXHS:
         self.token_file=Path(token_file)
         self.opener=urllib.request.build_opener(urllib.request.ProxyHandler({}),NoRedirect())
 
+    def read_response(self, req):
+        """Cancel only this request's socket; never touch the shared browser/session.
+
+        The connector sees client disconnect. Its own browser work also needs to
+        honor HTTP context cancellation; we never relaunch or retry it here.
+        """
+        guard=getattr(self,'check',None)
+        if guard is None:
+            with self.opener.open(req,timeout=85) as response:return response.read(8_000_001)
+        from urllib.parse import urlsplit
+        parsed=urlsplit(req.full_url)
+        connection=http.client.HTTPConnection(parsed.hostname,parsed.port,timeout=85)
+        result=queue.Queue(maxsize=1)
+        sockets=[]
+        def run():
+            try:
+                connection.connect()
+                sockets.append(connection.sock)
+                connection.request(req.get_method(),parsed.path,body=req.data,headers=dict(req.header_items()))
+                response=connection.getresponse()
+                if 300<=response.status<400:raise DomainError('XHS_TRANSPORT','本机连接器不允许重定向')
+                if response.status>=400:
+                    import io
+                    raise urllib.error.HTTPError(req.full_url,response.status,'Local connector error',{},io.BytesIO(response.read(65537)))
+                result.put((True,response.read(8_000_001)))
+            except Exception as exc:result.put((False,exc))
+            finally:connection.close()
+        guard()
+        threading.Thread(target=run,daemon=True,name='xhs-project-read').start()
+        try:
+            while True:
+                guard()
+                try:success,value=result.get(timeout=0.25)
+                except queue.Empty:continue
+                guard()
+                if success:return value
+                raise value
+        except BaseException:
+            for active_socket in sockets:
+                try:active_socket.shutdown(socket.SHUT_RDWR)
+                except OSError:pass
+            connection.close()
+            raise
+
     def request(self,path,data=None):
         allowed={'/api/v1/login/status','/api/v1/login/qrcode','/api/v1/user/me','/api/v1/feeds/detail'}
         require(path in allowed,'FORBIDDEN','同步器只允许身份、本人笔记和详情读取')
@@ -31,15 +102,25 @@ class LocalXHS:
             token=self.token_file.read_text().strip()
             req=urllib.request.Request(self.base+path,data=None if data is None else json.dumps(data).encode(),
                     headers={'Authorization':'Bearer '+token,'Content-Type':'application/json'})
-            with self.opener.open(req,timeout=85) as response:
-                body=response.read(8_000_001)
+            body=self.read_response(req)
             require(len(body)<=8_000_000,'XHS_RESPONSE','连接器响应过大')
             value=json.loads(body)
             require(value.get('success') is True and isinstance(value.get('data'),dict),
                     'XHS_RESPONSE','连接器未返回有效资料；请查看本机连接状态')
             return value['data']
         except DomainError:raise
-        except Exception:raise DomainError('XHS_TRANSPORT','本机连接器不可用或返回异常；未保存本轮结果') from None
+        except urllib.error.HTTPError as exc:
+            raise http_failure(exc) from None
+        except TimeoutError:
+            raise DomainError('XHS_TIMEOUT','笔记读取超时；未自动重试，已取得结果保留') from None
+        except urllib.error.URLError as exc:
+            code='XHS_TIMEOUT' if isinstance(exc.reason,TimeoutError) else 'XHS_CONNECTION'
+            raise DomainError(code,'本机连接器连接失败；请检查服务状态') from None
+        except (ConnectionError,OSError):
+            raise DomainError('XHS_CONNECTION','本机连接器连接不可用；请检查服务状态') from None
+        except (ValueError,TypeError,AttributeError):
+            raise DomainError('XHS_PARSE','本机连接器响应解析失败；不表示登录失效') from None
+        except Exception:raise DomainError('XHS_TRANSPORT','本机连接器读取失败；未自动重试') from None
 
     def identity(self):
         result=self.request('/api/v1/login/status')

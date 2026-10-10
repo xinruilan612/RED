@@ -27,3 +27,5 @@ body{background:#f5f6f2}main{max-width:1560px;padding:36px 40px 24px;margin-left
 .research-scopes{display:flex;flex-wrap:wrap;gap:10px 24px;border:1px solid var(--line);border-radius:8px;margin-top:18px;padding:8px 16px}.research-scopes legend{font-size:12px;color:var(--muted);padding:0 6px}.research-scopes .checkbox{margin:8px 0}.research-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}#researchJobs,#researchCases{display:grid;gap:16px;margin:16px 0 24px}#researchCases blockquote{white-space:pre-wrap;overflow-wrap:anywhere;margin:14px 0;border-left:3px solid var(--line);padding-left:14px}#researchJobs a{overflow-wrap:anywhere}@media(max-width:850px){.research-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 .rag-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}#ragSearchForm{display:grid;gap:8px}#ragSearchForm .primary{justify-self:start}@media(max-width:850px){.rag-filters{grid-template-columns:1fr}}
+
+.rag-candidate-cover{display:block;max-width:240px;max-height:240px;object-fit:contain}.rag-candidate-cover[hidden]{display:none}

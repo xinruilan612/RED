@@ -67,3 +67,13 @@ runtime/mediacrawler/.venv/bin/python scripts/xhs_creator_reader.py --source-id 
 账号汇总保留 `period_start/end`、`period_days`、`period_display`，包括曝光、观看、封面点击率、视频完播率、互动、净涨粉、新增关注、取消关注、主页访客。笔记列表只读首屏最多30张当前DOM卡片，按已核验SVG识别观看、评论、点赞、收藏、分享，单篇曝光仍为null；不按列位置猜测字段。百分比存百分数值，净涨粉可为负值；缩写数值只保留原始展示，不伪造成精确值。读取器不点击周期切换，只校验默认选中近7日并读取稳定快照。账号近7日汇总不能与单篇累计指标混用；`source_method=creator_browser_dom`、`source_updated_at=null`，不宣称官方API数据或准确延迟。
 
 真实读取器已于2026-10-10 16:06:33（北京时间）取得10-03至10-09汇总：曝光25、观看3、封面点击率8.7%；5篇笔记观看数分别24/17/7/8/30。已有MCP会话bootstrap及两种身份DOM校验通过，无需新二维码。证据存于忽略提交的 `runtime/connected_acceptance/creator-reader.json`。随后真实网页点击“立即核对”触发统一Worker，16:12:07完成PostgreSQL持久化、API回传与页面逐值核对；creator观测时间16:12:03，周期2026-10-03至2026-10-09，数值与上述读取器样本一致。下一轮16:27:07，间隔900秒；原MCP保持5篇唯一笔记、0条评论，无重复。完整链路证据为忽略提交的 `runtime/connected_acceptance/creator-integration.json`，含数据库与页面核对。本次本机链路已验收，不代表秒级实时、非空评论或全量历史已验证。
+
+## 2026-10-10 搜索无界面修正
+
+scripts/xhs_sync.py bridge 现在明确传入 `-headless=true`，复用同一 `COOKIES_PATH`，不删除或迁移登录文件。网页登录/重新连接是用户主动入口；普通搜索不会调用二维码登录。此前 `-headless=false` 会让每次连接器读取创建可见页面，已移除。
+
+本机二进制构建revision为 `a5c8f7799980ba1fdd501999843eb2d17e4c9a9f`；启动参数帮助和[上游说明](https://github.com/xpzouying/xiaohongshu-mcp#13-启动-mcp-服务)确认默认无界面。[对应版本会话读取](https://github.com/xpzouying/xiaohongshu-mcp/blob/a5c8f7799980ba1fdd501999843eb2d17e4c9a9f/cookies/cookies.go)确认显式COOKIES_PATH优先。无需改变浏览器指纹、绕过验证或改用用户日常浏览器。
+
+研究取消关闭单个HTTP连接、停止后续采集和本项目重试；不杀整个共享MCP。上游必须传播请求context才能同步停止内部浏览器，具体实测边界见当前状态。
+
+本轮真实取消已观察到上游 context canceled 及该请求浏览器子进程退出。搜索省略 filters，避免非默认排序触发上游筛选浮层等待；本地排序仅覆盖返回集合，仍可能受平台超时和访问限制影响。19:00 同词真实搜索返回20条线索、读取3条，网页确认1条入库并检索命中。

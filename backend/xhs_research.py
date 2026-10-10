@@ -1,14 +1,15 @@
 """Explicit, bounded local-account public-note research; no write operations.
 
-Search tokens live only in this call. Video descriptions are text evidence,
+Public note access parameters are retained in original links; connector credentials are never exposed. Video descriptions are text evidence,
 never claimed to be a watched video or a transcript.
 """
 import json
 import urllib.error
 import urllib.request
 from datetime import datetime, timezone
+from urllib.parse import urlsplit, urlencode
 from backend.contracts import DomainError, require
-from backend.xhs_local import LocalXHS, number
+from backend.xhs_local import LocalXHS, number, http_failure
 
 
 class XHSResearch:
@@ -24,7 +25,7 @@ class XHSResearch:
         require(not row[3], 'XHS_BUSY', '账号正在同步，请稍后再发起研究')
         return row[0], self.factory(port=row[1])
 
-    def collect(self, owner, account_id, queries, check=lambda:None, style_filters=None):
+    def collect(self, owner, account_id, queries, check=lambda:None, style_filters=None, on_note=None):
         require(1 <= len(queries) <= 2, 'INVALID_INPUT', '站内研究最多两个关键词')
         expected, client = self.connection(owner, account_id)
         self.expected_source_id = expected
@@ -32,46 +33,75 @@ class XHSResearch:
             check()
             identity, _ = self.connection(owner, account_id)
             require(identity == expected, 'XHS_IDENTITY_CHANGED', '账号绑定已改变，停止研究')
+        client.check=guard
         guard()
         require(client.identity()['id'] == expected, 'XHS_IDENTITY_CHANGED', '本机登录账号与绑定不符')
         notes, attempts, seen = [], [], set()
         reads = 0
         for query in queries:
             guard()
-            result = client.search(query, filters={'sort_by':'最多收藏' if style_filters['sort_by']=='favorites' else '最多点赞','note_type':'不限','publish_time':'不限'}) if style_filters else client.search(query)
+            try:
+                # No platform filter UI: upstream opens a hover panel for every
+                # non-empty filter. Rank only this returned finite candidate set.
+                result = client.search(query)
+            except DomainError as exc:
+                guard()
+                if not notes:raise
+                attempts.append({'query':query,'status':'failed','error':exc.code})
+                break
+            guard()
             feeds = result.get('feeds')
             require(isinstance(feeds, list), 'XHS_RESPONSE', '站内搜索返回格式异常')
-            attempts.append({'query':query, 'status':'done', 'results':len(feeds)})
+            attempts.append({'query':query, 'status':'done', 'results':len(feeds), 'sort_scope':'returned_candidates_only'})
+            preferred='collectedCount' if style_filters and style_filters.get('sort_by')=='favorites' else 'likedCount'
+            def rank(feed):
+                card=feed.get('noteCard',{}) if isinstance(feed,dict) else {}
+                info=card.get('interactInfo',{}) if isinstance(card,dict) else {}
+                value=number(info.get(preferred)) if isinstance(info,dict) else None
+                return (value is not None,value if value is not None else -1)
+            feeds=sorted(feeds,key=rank,reverse=True)
             for feed in feeds:
                 if reads >= (6 if style_filters else 3) or len(notes)>=3:break
                 if not isinstance(feed, dict):continue
                 identity, token = feed.get('id'), feed.get('xsecToken')
                 if not isinstance(identity,str) or not identity or identity in seen or not isinstance(token,str) or not token:continue
                 seen.add(identity);guard();reads += 1
-                detail = client.request('/api/v1/feeds/detail', {'feed_id':identity, 'xsec_token':token, 'load_all_comments':False})
-                detail = detail.get('data', detail)
-                note = detail.get('note')
-                require(isinstance(note,dict) and note.get('noteId') == identity, 'XHS_RESPONSE', '详情与搜索笔记不一致')
+                try:
+                    detail = client.request('/api/v1/feeds/detail', {'feed_id':identity, 'xsec_token':token, 'load_all_comments':False})
+                    guard()
+                    detail = detail.get('data', detail)
+                    note = detail.get('note')
+                    require(isinstance(note,dict) and note.get('noteId') == identity, 'XHS_STRUCTURE', '详情结构改变或与搜索笔记不一致')
+                except DomainError as exc:
+                    guard()
+                    if exc.code in ('XHS_IDENTITY_CHANGED','XHS_STOPPED','RESEARCH_STOPPED','XHS_LOGIN_REQUIRED'):raise
+                    attempts.append({'query':query,'note_id':identity,'status':'failed','error':exc.code})
+                    continue
                 body = str(note.get('desc') or '').strip()
-                if not body:continue
                 info = note.get('interactInfo') or {}
                 metrics = {key:number(info.get(raw)) for key,raw in [('likes','likedCount'),('favorites','collectedCount'),('comments','commentCount'),('shares','sharedCount')]}
                 metrics['views'] = None
-                if style_filters and not any(metrics[key] is not None and metrics[key]>=style_filters['min_'+key] for key in ('likes','favorites')):
-                    continue
+                high_interaction = bool(style_filters and any(metrics[key] is not None and metrics[key]>=style_filters['min_'+key] for key in ('likes','favorites')))
                 published = None
                 if type(note.get('time')) is int:
                     try:published = datetime.fromtimestamp(note['time']/1000, timezone.utc).isoformat()
                     except (ValueError,OverflowError,OSError):pass
                 observed = datetime.now(timezone.utc).isoformat()
-                notes.append({'account_id':account_id, 'title':str(note.get('title') or '小红书视频描述')[:200],
-                    'text':('【来源范围：公开笔记文字；未读取音轨或转写视频】\n' if style_filters else '【来源范围：视频笔记的文字描述；未读取音轨或转写视频】\n')+body[:99000],
-                    'source_url':'https://www.xiaohongshu.com/explore/'+identity, 'platform':'xiaohongshu',
+                card=feed.get('noteCard') if isinstance(feed.get('noteCard'),dict) else {}
+                kind={'normal':'image','video':'video'}.get(note.get('type') or card.get('type'),'unknown')
+                notes.append({'account_id':account_id, 'title':str(note.get('title') or card.get('displayTitle') or '未取得标题')[:200],
+                    'text':('【来源范围：视频笔记的文字描述；未读取音轨或转写视频】\n' if kind=='video' and body else '')+body[:99000],
+                    'note_id':identity,'content_type':kind,'cover_url':cover_url(note,card),'body_kind':('video_description' if kind=='video' else 'full_text') if body else 'unread',
+                    'source_url':original_url(note,feed,identity,token), 'platform':'xiaohongshu',
                     'author':str((note.get('user') or {}).get('nickname') or '')[:200],
                     'published_at':published, 'observed_at':observed, 'content_kind':'text',
-                    'evidence_role':'expression_reference', 'metrics':metrics, 'permission_confirmed':True})
+                    'evidence_role':'expression_reference', 'metrics':metrics,
+                    'metric_display':{key:str(info[raw])[:30] for key,raw in [('likes','likedCount'),('favorites','collectedCount'),('comments','commentCount'),('shares','sharedCount')] if isinstance(info.get(raw),(str,int)) and not isinstance(info.get(raw),bool) and str(info[raw]).strip()},
+                    'permission_confirmed':True})
                 if style_filters:
-                    notes[-1]['_provenance']={'visibility':'public','visibility_source':'platform_search_result','style_library_eligible':True,'style_selection':style_filters}
+                    notes[-1]['_provenance']={'visibility':'public','visibility_source':'platform_search_result','style_library_eligible':high_interaction,'high_engagement_supported':high_interaction,'style_selection':style_filters}
+                guard()
+                if on_note:on_note(dict(notes[-1]))
         guard()
         require(client.identity()['id'] == expected, 'XHS_IDENTITY_CHANGED', '研究期间登录账号变化，结果不保存')
         guard()
@@ -84,26 +114,48 @@ class XHSResearch:
         require(row[0]==self.expected_source_id,'XHS_IDENTITY_CHANGED','账号绑定已改变；不保存研究结果')
 
 
+def original_url(note, feed, identity, token):
+    for item in (note,feed):
+        for key in ('shareUrl','share_url','url','noteUrl'):
+            value=item.get(key)
+            if not isinstance(value,str):continue
+            parsed=urlsplit(value)
+            if parsed.scheme=='https' and parsed.hostname in ('www.xiaohongshu.com','xiaohongshu.com','xhslink.com') and not parsed.username and not parsed.password:
+                return value
+    # Same canonical navigation URL as upstream xiaohongshu-mcp feed_detail.go;
+    # the platform-returned access token is required to open a searched note.
+    return 'https://www.xiaohongshu.com/explore/'+identity+'?'+urlencode({'xsec_token':token,'xsec_source':'pc_feed'})
+
+
+def cover_url(note, card):
+    values=[]
+    if isinstance(card.get('cover'),dict):values.append(card['cover'])
+    if isinstance(note.get('imageList'),list):values.extend(note['imageList'][:1])
+    for item in values:
+        if not isinstance(item,dict):continue
+        for key in ('urlDefault','urlPre','url'):
+            value=item.get(key)
+            if isinstance(value,str) and urlsplit(value).scheme in ('https','http') and urlsplit(value).hostname:return value
+    return None
+
+
 class LocalResearchClient(LocalXHS):
     def search(self, query, filters=None):
         # Only this fixed read-only endpoint is added; never a general proxy.
         req = urllib.request.Request(self.base+'/api/v1/feeds/search',
-            data=json.dumps({'keyword':query,'filters':filters or {'sort_by':'最多点赞','note_type':'视频','publish_time':'半年内'}},ensure_ascii=False).encode(),
+            # Omitting filters uses the platform's default comprehensive results
+            # without interacting with its unstable filter/hover controls.
+            data=json.dumps({'keyword':query},ensure_ascii=False).encode(),
             headers={'Authorization':'Bearer '+self.token_file.read_text().strip(), 'Content-Type':'application/json'})
         try:
-            with self.opener.open(req, timeout=85) as response:body=response.read(8_000_001)
+            body=self.read_response(req)
             require(len(body)<=8_000_000,'XHS_RESPONSE','搜索响应过大')
             result=json.loads(body)
             require(result.get('success') is True and isinstance(result.get('data'),dict),'XHS_RESPONSE','站内搜索不可用；请本人核对登录或访问限制')
             return result['data']
         except DomainError:raise
         except urllib.error.HTTPError as exc:
-            # The connector body can contain platform URLs with session tickets.
-            # Classify only the numeric local HTTP status; never read its body.
-            status=exc.code if type(exc.code) is int and 100<=exc.code<=599 else None
-            exc.close()
-            raise DomainError('XHS_SEARCH_HTTP_'+str(status) if status is not None else 'XHS_SEARCH_HTTP_ERROR',
-                              '本机搜索接口返回错误状态；本次不重试') from None
+            raise http_failure(exc,'XHS_SEARCH') from None
         except TimeoutError:
             raise DomainError('XHS_SEARCH_TIMEOUT','本机搜索接口请求超时；本次不重试') from None
         except urllib.error.URLError as exc:

@@ -85,7 +85,7 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
         except DomainError as error:
             response=failure(error)
         response.headers.update({'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'same-origin',
-            'Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"})
+            'Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https://*.xhscdn.com https://*.xiaohongshu.com http://*.xhscdn.com http://*.xiaohongshu.com; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"})
         return response
 
     def logged(request: Request):

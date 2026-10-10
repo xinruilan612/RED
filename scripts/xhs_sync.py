@@ -22,7 +22,7 @@ def main():
         os.environ['AUTH_TOKEN']=(folder/'control-token').read_text().strip()
         os.environ['COOKIES_PATH']=str(folder/'session/cookies.json')
         os.chdir(folder)
-        os.execv(str(folder/'bin/xiaohongshu-mcp'),['xiaohongshu-mcp','-port','127.0.0.1:'+str(args.port),'-headless=false'])
+        os.execv(str(folder/'bin/xiaohongshu-mcp'),['xiaohongshu-mcp','-port','127.0.0.1:'+str(args.port),'-headless=true'])
     target=settings().get('DATABASE_URL','runtime/web.sqlite')
     if args.schema:
         if not args.schema.replace('_','').isalnum() or not target.startswith(('postgresql://','postgres://')):parser.error('invalid PostgreSQL schema')

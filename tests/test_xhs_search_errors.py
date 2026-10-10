@@ -1,4 +1,4 @@
-"""Classify local search failures without reading ticket-bearing error bodies."""
+"""Classify bounded connector error signals without exposing ticket-bearing text."""
 import io
 import tempfile
 import unittest
@@ -33,7 +33,7 @@ class SearchErrorTests(unittest.TestCase):
     def test_http_status_is_safe_and_error_body_never_read(self):
         for status in (400,401,403,429,500,503):
             body=UnreadableBody(b'SECRET raw response')
-            self.check(urllib.error.HTTPError('http://127.0.0.1/api?ticket=SECRET',status,'SECRET raw reason',{},body),'XHS_SEARCH_HTTP_'+str(status))
+            self.check(urllib.error.HTTPError('http://127.0.0.1/api?ticket=SECRET',status,'SECRET raw reason',{},body),'XHS_RESTRICTED' if status==429 else 'XHS_SEARCH_HTTP_'+str(status))
             self.assertTrue(body.closed)
 
     def test_timeout_and_nested_timeout_are_distinct_from_connection_errors(self):
@@ -50,3 +50,17 @@ class SearchErrorTests(unittest.TestCase):
         self.assertEqual(caught.exception.code,'XHS_RESPONSE')
         self.assertNotIn('SECRET',str(caught.exception))
         self.assertEqual(self.client.opener.open.call_count,1)
+
+    def test_http_timeout_signal_is_classified_but_private_details_never_echoed(self):
+        body=io.BytesIO(b'{"details":"context deadline exceeded SECRET?xsec_token=SECRET"}')
+        self.check(urllib.error.HTTPError('http://127.0.0.1',500,'bad',{},body),'XHS_SEARCH_TIMEOUT')
+        self.assertTrue(body.closed)
+
+    def test_search_omits_platform_filters_to_avoid_hover_panel(self):
+        import json
+        response=Mock();response.__enter__=Mock(return_value=response);response.__exit__=Mock(return_value=False)
+        response.read.return_value=b'{"success":true,"data":{"feeds":[]}}'
+        self.client.opener.open.return_value=response
+        self.client.search('领子发黄',filters={'sort_by':'最多点赞'})
+        request=self.client.opener.open.call_args.args[0]
+        self.assertEqual(json.loads(request.data),{'keyword':'领子发黄'})
