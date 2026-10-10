@@ -4,6 +4,7 @@ Search tokens live only in this call. Video descriptions are text evidence,
 never claimed to be a watched video or a transcript.
 """
 import json
+import urllib.error
 import urllib.request
 from datetime import datetime, timezone
 from backend.contracts import DomainError, require
@@ -96,4 +97,20 @@ class LocalResearchClient(LocalXHS):
             require(result.get('success') is True and isinstance(result.get('data'),dict),'XHS_RESPONSE','站内搜索不可用；请本人核对登录或访问限制')
             return result['data']
         except DomainError:raise
+        except urllib.error.HTTPError as exc:
+            # The connector body can contain platform URLs with session tickets.
+            # Classify only the numeric local HTTP status; never read its body.
+            status=exc.code if type(exc.code) is int and 100<=exc.code<=599 else None
+            exc.close()
+            raise DomainError('XHS_SEARCH_HTTP_'+str(status) if status is not None else 'XHS_SEARCH_HTTP_ERROR',
+                              '本机搜索接口返回错误状态；本次不重试') from None
+        except TimeoutError:
+            raise DomainError('XHS_SEARCH_TIMEOUT','本机搜索接口请求超时；本次不重试') from None
+        except urllib.error.URLError as exc:
+            code='XHS_SEARCH_TIMEOUT' if isinstance(exc.reason,TimeoutError) else 'XHS_SEARCH_CONNECTION'
+            raise DomainError(code,'无法完成本机搜索接口连接；本次不重试') from None
+        except (ConnectionError,OSError):
+            raise DomainError('XHS_SEARCH_CONNECTION','本机搜索接口连接中断；本次不重试') from None
+        except (ValueError,TypeError,AttributeError):
+            raise DomainError('XHS_RESPONSE','本机搜索接口返回格式异常；本次不重试') from None
         except Exception:raise DomainError('XHS_TRANSPORT','站内搜索失败；本次不重试') from None
