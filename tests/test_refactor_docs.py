@@ -40,12 +40,17 @@ class RefactorDocumentationTests(unittest.TestCase):
                 self.assertIn('backend/live.py::messages_for', text)
                 self.assertIn('本卡片不被直接加载为运行提示词', text)
 
+    def test_phase_two_scope_clarifications(self):
+        text = (ROOT / 'docs/design/CONNECTED_CREATOR_REQUIREMENTS.md').read_text()
+        for rule in ('仅第一阶段适用', '用户主动上传并授权的私有产品资料', '第二阶段允许完成检索', '全面提示词重写及完整对话改稿留到第四阶段'):
+            self.assertIn(rule, text)
+
     def test_sensitive_boundaries_are_explicit(self):
         text = (ROOT / 'docs/design/CONNECTED_CREATOR_REQUIREMENTS.md').read_text()
         for rule in ('不填 0、不编造', '保留后台评论归纳能力、数据表与历史数据',
                      '不回传明文', 'SKP / SKAPP', '准确链接尚未确定',
                      '开发功能不等于授权替用户公开发帖',
-                     '不修改业务代码、运行时 Prompt、数据库、依赖'):
+                     '仅第一阶段适用'):
             self.assertIn(rule, text)
         self.assertNotRegex(text, r'https?://\S*(?:skapp|skp)')
 

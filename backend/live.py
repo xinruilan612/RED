@@ -19,7 +19,7 @@ def material_records(context):
 
 
 def run_evidence(context):
-    return [{k:s[k] for k in ('source_id','source_type','text','verification','page','title','url','document_id','version','location_type','fetched_at','published_at','evidence_role','content_kind','source_scope','case_ref') if k in s}
+    return [{k:s[k] for k in ('source_id','source_type','text','verification','page','title','url','document_id','version','location_type','offset','body_hash','fetched_at','published_at','evidence_role','content_kind','source_scope','case_ref') if k in s}
             for s in context.get('evidence',[])]
 
 

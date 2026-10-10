@@ -60,6 +60,23 @@ class SocialConnectionsTests(unittest.TestCase):
         self.state['metrics'][1]['platform'] = 'douyin'
         self.assertEqual(data_center(self.state, 'mine')['local_records']['metric_snapshot_count'], 0)
 
+    def test_manual_snapshot_identifies_note_and_omits_unavailable_fields_without_mutation(self):
+        self.add_metric()
+        self.state['publications'][0].update(content={'selected_title':'真实作品','body':'不返回正文'},
+                                             url='https://www.xiaohongshu.com/explore/note')
+        self.state['metrics'][0]['values'].update(impressions=120,new_followers=3,profile_visits=8)
+        original=copy.deepcopy(self.state)
+        result=data_center(self.state,'mine')
+        snapshot=result['local_records']['latest_metric']
+        self.assertEqual(snapshot['publication_id'],'p0')
+        self.assertEqual(snapshot['publication_title'],'真实作品')
+        self.assertEqual(snapshot['publication_url'],'https://www.xiaohongshu.com/explore/note')
+        self.assertEqual(snapshot['observed_at'],'2026-10-01T12:00:00+08:00')
+        self.assertNotIn('不返回正文',str(result))
+        self.assertEqual(set(snapshot['values']),{'views','likes','saves','comments','shares'})
+        self.assertEqual({f['key'] for f in result['fields']},set(snapshot['values']))
+        self.assertEqual(self.state,original)
+
     def test_unknown_account_and_owner_cannot_read_profile(self):
         class Operations:
             def read(inner, owner):

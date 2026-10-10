@@ -78,7 +78,7 @@ test('new upload and newer editor survive an older review response',async()=>{
 });
 test('case save cannot update transcript status after account switch or page rerender',async()=>{
  for(const change of ['account','page']){
-  const s=await readyForReview();let resolve;s.sandbox.api=()=>new Promise(r=>resolve=r);const saving=s.save();
+  const s=await readyForReview();let resolve;s.sandbox.api=url=>url==='/api/search/settings'?Promise.resolve({providers:[]}):new Promise(r=>resolve=r);const saving=s.save();
   if(change==='account')s.sandbox.activeAccountId='other';else await s.eval('renderResearch()');
   s.element('transcriptStatus').textContent='新页面状态';resolve(s.sandbox.saved);await saving;
   assert.equal(s.element('transcriptStatus').textContent,'新页面状态');

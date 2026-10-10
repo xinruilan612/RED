@@ -2,7 +2,7 @@
 
 当前改版主线：**输入主题或产品资料 → 可选联网搜索 → RAG 资料库 → 四 Agent 创作 → 对话改稿 → 发布或导出 → 评论反馈改进下一篇**。
 
-先读 [正式改版需求](docs/design/CONNECTED_CREATOR_REQUIREMENTS.md)，再读 [阶段进度、代码依据与冲突裁决](docs/CONNECTED_CREATOR_STATUS.md)。本轮仅更新开发说明；代码存在、历史报告与当前运行验证分别记录，不能据此宣称改版已实现。
+先读 [正式改版需求](docs/design/CONNECTED_CREATOR_REQUIREMENTS.md)，再读 [阶段进度、代码依据与冲突裁决](docs/CONNECTED_CREATOR_STATUS.md)。第二轮已完成工作台与 RAG 的核心实现及工程验证；真实模型质量与未实测来源保留边界，详见原进度文档。
 
 ## 开发入口
 
@@ -11,13 +11,13 @@
 - [四 Agent 说明](docs/agents/00_overview_and_all_agents.md)
 - [部署说明](docs/DEPLOYMENT.md)、[Windows 启动](docs/WINDOWS.md)、[本机连接说明](docs/XHS_LOCAL_SYNC.md)
 
-继续维护现有 FastAPI、PostgreSQL、LangGraph 与 Worker、原生网页和四角色，不另建项目。正式入口为 backend.api 与 backend.worker；backend.web 为旧兼容服务。启动前核对当前数据库和端口，历史8775独立环境与默认库版本问题均未在本轮复验。
+继续维护现有 FastAPI、PostgreSQL、LangGraph 与 Worker、原生网页和四角色，不另建项目。正式入口为 backend.api 与 backend.worker；backend.web 为旧兼容服务。启动前核对当前数据库和端口，本轮已重启并验证8775独立环境；默认库兼容性未复验。
 
 ```bash
 runtime/venv/bin/python scripts/local_dev.py start
 ```
 
-该命令仅为现有启动入口，本轮没有执行。不要删除数据库来排查启动；不要打印或提交 .env、Cookie、API Key、恢复码或 runtime 数据。
+该命令仅为现有启动入口，本轮验收使用8775独立环境，没有验证该默认启动命令。不要删除数据库来排查启动；不要打印或提交 .env、Cookie、API Key、恢复码或 runtime 数据。
 
 ## 当前代码与差距
 
@@ -31,7 +31,7 @@ runtime/venv/bin/python scripts/local_dev.py start
 
 ## 后续推进与验证
 
-说明对齐 → 工作台与 RAG → 模型与资料输入 → 四 Agent 协作 → 评论复盘与发布 → 完整验收。每阶段更新测试、按实际范围验证并独立提交；下一轮先处理工作台和 RAG。
+说明对齐 → 工作台与 RAG → 模型与资料输入 → 四 Agent 协作 → 评论复盘与发布 → 完整验收。每阶段更新测试、按实际范围验证并独立提交；本轮停在第二阶段，未自动进入第三阶段。
 
 文档阶段只运行文档测试、角色卡同步检查、git diff --check；实现阶段按 AGENTS.md 运行真实 PostgreSQL 临时 schema 集成测试、前端和恢复测试。收费模型、真实数据采集、公开发布及公网部署分别记录，不以替身测试代替。
 

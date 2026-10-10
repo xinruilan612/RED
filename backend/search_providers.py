@@ -124,10 +124,24 @@ class SearchSettings:
             row = db.execute('SELECT enabled,day_limit,version FROM search_connections WHERE owner=?', (owner,)).fetchone()
             used = db.execute('SELECT COUNT(*) FROM search_requests WHERE owner=? AND created_at>=?',
                               (owner, self.day_start())).fetchone()[0]
-        return {'providers': [{'id': 'bing', 'name': 'Bing 公开网页（实验）', 'ready': True},
-                              {'id': 'wikipedia', 'name': '百科背景资料', 'ready': True},
-                              {'id': 'baidu', 'name': '百度 AI 搜索', 'ready': bool(row and row[0])}],
-                'targets': [{'id': k, **v} for k, v in TARGETS.items()],
+        # Configuration is permission to attempt a request, not a live health
+        # check. Do not probe vendors (possibly paid) while rendering settings.
+        providers = []
+        for identity, name in [('bing', 'Bing 公开网页（实验）'),
+                               ('wikipedia', '百科背景资料'), ('baidu', '百度 AI 搜索')]:
+            can_attempt = identity != 'baidu' or bool(row and row[0])
+            providers.append({'id': identity, 'name': name, 'ready': False,
+                              'configurable': identity == 'baidu',
+                              'configured': identity != 'baidu' or row is not None,
+                              'can_attempt': can_attempt, 'verification_status': 'not_verified',
+                              'verified_at': None,
+                              'status_note': ('可尝试，当前连接未核验' if can_attempt else
+                                              '请在模型与搜索设置中配置并启用；当前连接未核验')})
+        return {'providers': providers,
+                'targets': [{'id': k, **v, 'native_api_connected': False,
+                             'access_mode': 'search_engine_domain_filter' if v['domains'] else 'search_engine',
+                             'status_note': '仅搜索引擎域名过滤，未接通平台专用接口' if v['domains'] else '搜索引擎公开收录范围'}
+                            for k, v in TARGETS.items()],
                 'baidu': {'configured': row is not None, 'enabled': bool(row and row[0]),
                           'day_limit': row[1] if row else 20, 'version': row[2] if row else 0,
                           'requests_today': used, 'docs': BAIDU_DOCS}}

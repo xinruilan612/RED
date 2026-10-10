@@ -46,6 +46,25 @@ class SearchProviderTests(unittest.TestCase):
             with self.assertRaises(DomainError):self.settings.search('alice',query,'baidu',targets)
         self.assertEqual(self.settings.public('alice')['baidu']['requests_today'],0)
 
+    def test_configuration_never_claims_current_connection_verified(self):
+        with patch('backend.search_providers.request_baidu') as paid, patch('backend.sources.search_web') as public:
+            initial = self.settings.public('alice')
+            configured = self.save()
+        paid.assert_not_called(); public.assert_not_called()
+        initial_providers = {p['id']: p for p in initial['providers']}
+        self.assertTrue(initial_providers['bing']['can_attempt'])
+        self.assertTrue(initial_providers['wikipedia']['can_attempt'])
+        self.assertFalse(initial_providers['baidu']['can_attempt'])
+        self.assertTrue(next(p for p in configured['providers'] if p['id'] == 'baidu')['can_attempt'])
+        for provider in configured['providers']:
+            self.assertFalse(provider['ready'])
+            self.assertEqual(provider['verification_status'], 'not_verified')
+            self.assertIsNone(provider['verified_at'])
+        for target in configured['targets']:
+            self.assertFalse(target['native_api_connected'])
+            if target['id'] in ('jd', 'taobao'):
+                self.assertEqual(target['access_mode'], 'search_engine_domain_filter')
+
     def test_failed_paid_search_keeps_quota_and_never_retries(self):
         self.save(day_limit=1)
         with patch('backend.search_providers.request_baidu',side_effect=DomainError('SOURCE_UNAVAILABLE','network failure')) as request:

@@ -26,13 +26,11 @@ SOURCES = (
          finding='授权撤销与扫码确认事件不提供评论或自然笔记流量推送。'),
 )
 FIELDS = (
-    ('impressions', '曝光量', 'count'),
     ('views', '观看量（沿用现有记录口径）', 'count'),
     ('likes', '点赞数', 'count'),
     ('saves', '收藏数', 'count'),
     ('comments', '评论数', 'count'),
     ('shares', '分享数', 'count'),
-    ('new_followers', '新增粉丝', 'count'),
 )
 ADMISSION_REQUIREMENTS = (
     '平台或获授权服务商出具适用本项目的数据访问依据，不能以开源许可证代替。',
@@ -95,10 +93,13 @@ def data_center(state, identity):
     latest = max(dated, key=lambda pair: pair[1])[0] if dated else None
     # Explicit allowlist prevents a legacy/custom record carrying credentials
     # or unrelated account metadata from escaping into this read endpoint.
+    latest_post = next((p for p in posts if latest and p['id'] == latest['publication_id']), None)
     snapshot = None if latest is None else dict(
         metric_id=latest['id'], publication_id=latest['publication_id'],
         observed_at=latest['observed_at'], window=latest.get('window'),
         source_type='manual', verified=False,
+        publication_title=(latest_post.get('content') or {}).get('selected_title'),
+        publication_url=latest_post.get('url'),
         values={key: latest.get('values', {}).get(key) for key, _, _ in FIELDS})
     result.update(account_id=identity, account_name=account['name'],
                   connection_status='not_connected', last_sync_at=None,

@@ -43,8 +43,8 @@ class ConnectedCreatorDeliveryDocumentationTests(unittest.TestCase):
     def test_delivery_distinguishes_isolated_acceptance_and_external_gates(self):
         text=(ROOT/'docs/CONNECTED_CREATOR_STATUS.md').read_text()
         self.assertIn('历史记录（保留，不代表本轮复验）', text)
-        for phrase in ('8775', 'SCHEMA_TOO_NEW', '当前可用性', '18570', 'partial',
-                       '1 份知乎正文', '本轮没有启动/重启', '未提取 Cookie',
+        for phrase in ('8775', '默认库版本兼容', '真实模型', '18570', 'partial',
+                       '1 份知乎正文', '重启8775', '不提交Cookie',
                        '$0.0184536', '15378 tokens', 'WAITING_USER'):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase,text)
@@ -64,9 +64,9 @@ class ConnectedCreatorDeliveryDocumentationTests(unittest.TestCase):
 class ConnectedCreatorLatestAcceptanceTests(unittest.TestCase):
     def test_current_state_does_not_confuse_qr_video_description_and_completed_capture(self):
         text=(ROOT/'docs/CONNECTED_CREATOR_STATUS.md').read_text()
-        self.assertIn('历史计数不覆盖当前未提交代码', text)
-        for phrase in ('扫码重连后', '视频只是文字描述', '视频文字描述',
-                       '本人笔记', '导入本人笔记明确不含评论', '冻结版本', '15分钟定时读取',
+        self.assertIn('本轮验收对象是完整当前工作树', text)
+        for phrase in ('扫码重连后', '可读取笔记文字', '视频文字描述',
+                       '后台评论表及历史数据未删除', '评论与发布属第五阶段', '冻结资料', '15分钟定时读取',
                        '非空评论和逐笔流量仍未实测', '待校对原始版本不参与检索',
                        '8次真实调用', '$0.05', '私有证据未在本轮打开'):
             with self.subTest(phrase=phrase):
