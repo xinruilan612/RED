@@ -32,12 +32,16 @@ class ResearchJobs:
         require(isinstance(queries, list) and 1 <= len(queries) <= 2 and
                 all(isinstance(q, str) and 2 <= len(q.strip()) <= 120 for q in queries),
                 'INVALID_INPUT', '研究任务限 1 至 2 个搜索词，每个 2 至 120 字符')
-        require(data['provider'] in ('bing', 'wikipedia', 'baidu'), 'INVALID_INPUT', '搜索服务无效')
+        require(data['provider'] in ('bing', 'wikipedia', 'baidu', 'xhs_local'), 'INVALID_INPUT', '搜索服务无效')
         domains = target_domains(data['targets'])
         require(data['provider'] != 'wikipedia' or not domains, 'INVALID_INPUT', '百科仅支持全网范围')
         require(data['evidence_role'] in ('expression_reference', 'product_fact') and
                 data['permission_confirmed'] is True, 'INVALID_INPUT', '请选择资料用途并确认保存权限')
         find_account(Operations(self.store).read(owner), data['account_id'])
+        if data['provider'] == 'xhs_local':
+            require(data['targets'] == ['xiaohongshu'] and data['evidence_role'] == 'expression_reference', 'INVALID_INPUT', '站内视频研究只支持小红书表达参考')
+            from backend.xhs_research import XHSResearch
+            XHSResearch(self.store).connection(owner, data['account_id'])
         fingerprint = digest(data)
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
@@ -97,11 +101,10 @@ class ResearchJobs:
             return job['report']
         require(job['status'] in TERMINAL, 'INVALID_TRANSITION', '任务仍在执行，请完成或取消后导出')
         # Interrupted/cancelled work is reviewable without ever replaying search.
-        active = {doc['id'] for doc in self.cases.list(owner, job['account_id'])}
-        available = [identity for identity in job['document_ids'] if identity in active]
-        report = self.cases.export(owner, job['account_id'], available, title='未完成的资料研究')
+        references=[{'document_id':item['document_id'],'version':item['version']} for item in job['items'] if item['status']=='saved']
+        report = self.cases.export_versions(owner, job['account_id'], references, title='未完成的资料研究')
         report['content'] += '\n\n任务状态：'+safe(job['status'])+'；未自动重发任何搜索请求。\n'
-        report['content'] += '已保存资料使用导出时仍有效的版本；停用资料不重新导出。\n'
+        report['content'] += '已保存资料使用本次任务的冻结版本；移除不改变历史报告，也不恢复新检索。\n'
         report['content'] += self._scope_report(job)
         return report
 
@@ -174,6 +177,8 @@ class ResearchJobs:
 
     def _execute(self, job):
         payload = self._change(job)
+        if payload['provider'] == 'xhs_local':
+            return self._execute_xhs(job, payload)
         candidates, seen = [], set()
         for query in payload['queries']:
             self._change(job, lambda p: p['attempts'].append({'query': query, 'status': 'started'}))
@@ -227,7 +232,7 @@ class ResearchJobs:
                     raise
                 self._item(job, {**candidate, 'status': 'failed', 'error': self._failure(exc)})
         current = self._change(job)
-        report = self.cases.export(job['owner'], payload['account_id'], current['document_ids'], title='本次资料研究')
+        report = self.cases.export_versions(job['owner'], payload['account_id'], [{'document_id':i['document_id'],'version':i['version']} for i in current['items'] if i['status']=='saved'], title='本次资料研究')
         report['content'] += '\n'+self._scope_report(current)
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE'); final = self._guard(db, job)
@@ -237,3 +242,33 @@ class ResearchJobs:
             status = ('partial' if incomplete else 'done') if saved_count else ('partial' if final['items'] else 'failed')
             self._write(db, job, final)
             db.execute('UPDATE research_jobs SET status=?,token=NULL,lease_until=NULL WHERE id=?', (status, job['id']))
+
+    def _execute_xhs(self, job, payload):
+        from backend.xhs_research import XHSResearch
+        notes, attempts = XHSResearch(self.store).collect(job['owner'], payload['account_id'], payload['queries'], check=lambda:self._change(job))
+        self._change(job, lambda p:p['attempts'].extend(attempts))
+        for note in notes:
+            self._change(job)
+            existing=next((d for d in self.cases.list(job['owner'],payload['account_id']) if d['source_url']==note['source_url'] and d['metadata'].get('research_case',{}).get('source_method')=='local_browser_video_description'),None)
+            if existing:note.update(document_id=existing['id'],expected_version=existing['version'])
+            def saved(db, identity, version):
+                current = self._guard(db, job)
+                current['document_ids'].append(identity)
+                current['items'].append({'url':note['source_url'], 'title':note['title'], 'status':'saved',
+                    'body_read':True, 'video_transcribed':False, 'document_id':identity, 'version':version,
+                    'source_type':'local_browser_video_description'})
+                self._write(db, job, current)
+            try:
+                self.cases.save(job['owner'], note, source_method='local_browser_video_description',
+                    fetched_at=note['observed_at'], transaction_guard=lambda db:self._guard(db,job), transaction_saved=saved)
+            except DomainError as exc:
+                if exc.code != 'DUPLICATE':raise
+                self._item(job,{'url':note['source_url'],'title':note['title'],'status':'duplicate','error':'相同正文已存在，未重复保存'})
+        current=self._change(job)
+        report=self.cases.export_versions(job['owner'],payload['account_id'],[{'document_id':i['document_id'],'version':i['version']} for i in current['items'] if i['status']=='saved'],title='小红书视频案例文字研究')
+        report['content'] += '\n'+self._scope_report(current)+'\n\n只读取视频笔记文字描述及可见互动；没有下载、观看或转写视频。按最多点赞排序的有限结果，不代表全平台爆款排名。\n'
+        with self.store.connect() as db:
+            db.execute('BEGIN IMMEDIATE');final=self._guard(db,job)
+            final['report']=report
+            self._write(db,job,final)
+            db.execute("UPDATE research_jobs SET status=?,token=NULL,lease_until=NULL WHERE id=?",('partial' if any(i['status']!='saved' for i in final['items']) else 'done' if final['document_ids'] else 'failed',job['id']))
