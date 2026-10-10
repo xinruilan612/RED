@@ -153,7 +153,22 @@ class ConnectedModel:
         item=self.connection;provider=item['provider']
         url=base_url(item['base_url'])
         headers={'Content-Type':'application/json'}
-        if PROVIDERS[provider]['protocol']=='anthropic':
+        if PROVIDERS[provider]['protocol']=='responses':
+            headers['Authorization']='Bearer '+self._key
+            payload={'model':item['model'],'input':messages,'stream':False,'store':False,
+                     'max_output_tokens':max_tokens,'text':{'format':{'type':'json_object'}}}
+            packet=connected_request(url+'/responses',headers,payload)
+            try:
+                require(packet.get('status')=='completed','MODEL_OUTPUT_INVALID','模型输出未完成，未自动重试')
+                parts=[part for entry in packet['output'] if entry.get('type')=='message' for part in entry.get('content',[])]
+                require(not any(part.get('type')=='refusal' for part in parts),'MODEL_OUTPUT_INVALID','模型拒绝了本次生成，未自动重试')
+                value=json.loads(''.join(part['text'] for part in parts if part.get('type')=='output_text'))
+                usage=packet['usage'];tokens=usage['total_tokens']
+                require(all(type(n) is int and n>=0 for n in (tokens,usage['input_tokens'],usage['output_tokens'])),'MODEL_OUTPUT_INVALID','模型用量报告无效')
+                require(tokens==usage['input_tokens']+usage['output_tokens'],'MODEL_OUTPUT_INVALID','模型总用量与分项不一致')
+                meta={'request_id':packet.get('id'),'input_tokens':usage['input_tokens'],'output_tokens':usage['output_tokens']}
+            except (ValueError,KeyError,TypeError):raise DomainError('MODEL_OUTPUT_INVALID','Responses 返回格式或用量无效，未自动重试') from None
+        elif PROVIDERS[provider]['protocol']=='anthropic':
             headers.update({'x-api-key':self._key,'anthropic-version':'2023-06-01'})
             payload={'model':item['model'],'max_tokens':max_tokens,'stream':False,
                      'system':'\n'.join(m['content'] for m in messages if m['role']=='system'),

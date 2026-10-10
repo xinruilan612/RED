@@ -123,12 +123,29 @@ class ConnectionTests(unittest.TestCase):
             connection={'provider':provider,'model':'example-model','base_url':item['base_url'] or 'https://api.example.com/v1'}
             response={'choices':[{'finish_reason':'stop','message':{'content':'{"ok":true}'}}],'usage':{'total_tokens':20,'prompt_tokens':12,'completion_tokens':8}}
             if provider=='anthropic':response={'stop_reason':'end_turn','content':[{'type':'text','text':'{"ok":true}'}],'usage':{'input_tokens':12,'output_tokens':8,'cache_read_input_tokens':5}}
+            if provider=='openai_responses':response={'status':'completed','output':[{'type':'reasoning','summary':[]},{'type':'message','content':[{'type':'output_text','text':'{"ok":true}'}]}],'usage':{'input_tokens':12,'output_tokens':8,'total_tokens':20}}
             if provider=='minimax':response['choices'][0]['message']['content']='<think>internal</think>{"ok":true}'
             with self.subTest(provider=provider),patch('backend.provider.connected_request',return_value=response) as request:
                 value,tokens,meta=ConnectedModel(connection,'secret').complete_result([{'role':'system','content':'JSON only'},{'role':'user','content':'test'}])
                 self.assertTrue(value['ok']);self.assertEqual(tokens,25 if provider=='anthropic' else 20)
                 if provider=='anthropic':self.assertIn('x-api-key',request.call_args.args[1])
                 else:self.assertIn('Authorization',request.call_args.args[1])
+
+    def test_responses_protocol_has_native_endpoint_output_and_usage(self):
+        response={'status':'completed','id':'response-fixture','output':[{'type':'message','content':[{'type':'output_text','text':'{"ok":true}'}]}],
+                  'usage':{'input_tokens':10,'output_tokens':9,'total_tokens':19}}
+        item={'provider':'openai_responses','model':'codex-model-from-user','base_url':'https://api.openai.com/v1'}
+        with patch('backend.provider.connected_request',return_value=response) as request:
+            value,tokens,meta=ConnectedModel(item,'user-key').complete_result([{'role':'user','content':'JSON please'}])
+        self.assertEqual(request.call_args.args[0],'https://api.openai.com/v1/responses')
+        payload=request.call_args.args[2]
+        self.assertEqual(payload['text']['format'],{'type':'json_object'})
+        self.assertFalse(payload['store']);self.assertIn('input',payload);self.assertNotIn('messages',payload)
+        self.assertEqual((tokens,meta['input_tokens'],meta['output_tokens']),(19,10,9))
+        for invalid in ({**response,'status':'incomplete'},{**response,'usage':None},
+                        {**response,'output':[{'type':'message','content':[{'type':'refusal','refusal':'No'}]}]}):
+            with patch('backend.provider.connected_request',return_value=invalid),self.assertRaises(DomainError):
+                ConnectedModel(item,'user-key').complete_result([{'role':'user','content':'JSON please'}])
 
     def test_platform_budget_not_consumed_by_byok_and_byok_budget_isolated(self):
         from backend.model_router import Calls

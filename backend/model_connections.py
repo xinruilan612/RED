@@ -14,6 +14,7 @@ CATALOG = [
     ('kimi','Kimi','https://api.moonshot.cn/v1','openai','https://platform.kimi.com/docs/api/overview'),
     ('doubao','豆包 / 火山方舟','https://ark.cn-beijing.volces.com/api/v3','openai','https://docs.volcengine.com/docs/ark/compatible-with-openai-sdk'),
     ('openai','OpenAI','https://api.openai.com/v1','openai','https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create'),
+    ('openai_responses','OpenAI Responses / Codex 模型','https://api.openai.com/v1','responses','https://developers.openai.com/api/docs/guides/migrate-to-responses'),
     ('zhipu','智谱 GLM','https://open.bigmodel.cn/api/paas/v4','openai','https://docs.bigmodel.cn/cn/guide/develop/openai/introduction'),
     ('minimax','MiniMax','https://api.minimax.cn/v1','openai','https://platform.minimax.cn/docs/api-reference/text-openai-api'),
     ('wenxin','百度文心','https://qianfan.baidubce.com/v2','openai','https://ai.baidu.com/ai-doc/WENXINWORKSHOP/0m2vwrjws'),
@@ -36,7 +37,7 @@ def base_url(value):
     try:address=ipaddress.ip_address(p.hostname)
     except ValueError:require('.' in p.hostname and p.hostname.lower()!='localhost','INVALID_INPUT','模型地址必须使用公网主机')
     else:require(address.is_global,'INVALID_INPUT','模型地址不能指向内网')
-    require(not p.path.rstrip('/').endswith(('/chat/completions','/messages')),'INVALID_INPUT','请填写 Base URL，不含 chat/completions 或 messages')
+    require(not p.path.rstrip('/').endswith(('/chat/completions','/messages','/responses')),'INVALID_INPUT','请填写 Base URL，不含 chat/completions、messages 或 responses')
     return value.rstrip('/')
 
 
