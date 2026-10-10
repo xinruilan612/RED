@@ -80,3 +80,27 @@ class ConnectedCreatorLatestAcceptanceTests(unittest.TestCase):
         self.assertIn('export_versions',rag)
         self.assertIn('document_id/expected_version',rag)
         self.assertIn('评论不进入',rag)
+
+
+class CreatorDOMDocumentationTests(unittest.TestCase):
+    def test_creator_reader_and_full_integration_have_separate_evidence(self):
+        sync = (ROOT/'docs/XHS_LOCAL_SYNC.md').read_text()
+        status = (ROOT/'docs/CONNECTED_CREATOR_STATUS.md').read_text()
+        for phrase in ('scripts/xhs_creator_reader.py', 'creator_account_id', 'source_id',
+                       '--login', 'bootstrap', '独立profile', '单篇曝光', 'source_updated_at=null'):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, sync)
+        for phrase in ('08:06:33.190213Z', '24/17/7/8/30', '8.7%', 'Worker持久化',
+                       '联调仍待验收', '原MCP笔记及评论采集独立', '不提交Git'):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, status)
+
+    def test_completed_case_research_is_not_still_described_as_queued(self):
+        for path in ('README.md', 'docs/XHS_LOCAL_SYNC.md', 'docs/CONNECTED_CREATOR_STATUS.md',
+                     'docs/DEPLOYMENT.md', 'docs/design/CONNECTED_CREATOR_REQUIREMENTS.md'):
+            text = (ROOT/path).read_text()
+            with self.subTest(path=path):
+                self.assertNotIn('研究已排队', text)
+                self.assertNotIn('研究排队待结果', text)
+                self.assertNotIn('不读取创作者后台流量', text)
+                self.assertIn('3份', text)
