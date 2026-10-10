@@ -46,7 +46,8 @@ class StyleLibraryTests(unittest.TestCase):
 
     def save(self, *, account=None, owner=None, case_changes=None, meta_changes=None, text=None):
         case={'evidence_role':'expression_reference','content_kind':'text','source_method':'local_browser_public_note',
-              'metrics':{'likes':120,'favorites':55},'assessment':{'status':'insufficient'},
+              'metrics':{'likes':120,'favorites':55},'assessment':{'status':'insufficient','policy':{'max_age_days':30,'min_interactions':1000},'limitation':'测试样本'},
+              'author':'测试作者','published_at':None,'observed_at':None,'collected_at':'2026-10-10T00:00:00+00:00',
               'provenance':{'visibility':'public','visibility_source':'platform_search_result','style_library_eligible':True,
                             'style_selection':{'min_likes':100,'min_favorites':50,'sort_by':'most_liked'}}}
         case.update(case_changes or {})
@@ -121,7 +122,8 @@ class StyleLibraryTests(unittest.TestCase):
         self.assertNotIn('style_learning',value)
 
     def test_old_own_case_is_hidden_and_previously_public_snapshot_blocks_model(self):
-        own=self.save(case_changes={'source_method':'local_browser_mcp'})
+        with patch.object(XHSSync,'public_note_ids',return_value={'note-1'}):
+            own=self.save(case_changes={'source_method':'local_browser_mcp'})
         with patch.object(XHSSync,'public_note_ids',return_value=set()):
             self.assertEqual(self.kb.retrieve(self.owner,self.account,'白衬衫护理')['sources'],[])
         with patch.object(XHSSync,'public_note_ids',return_value={'note-1'}):
@@ -136,6 +138,56 @@ class StyleLibraryTests(unittest.TestCase):
                 self.service.executor.calls.invoke(run,'audience','audience',messages_for(run,'audience')[0],lambda db:None)
         self.assertEqual(self.model.inputs,[])
         with self.store.connect() as db:self.assertEqual(db.execute('SELECT COUNT(*) FROM live_calls').fetchone()[0],0)
+
+
+    def test_private_case_is_hidden_from_library_and_all_external_case_exports(self):
+        from backend.research_cases import ResearchCases
+        cases=ResearchCases(self.store)
+        with patch.object(XHSSync,'public_note_ids',return_value={'note-1'}):
+            own=self.save(case_changes={'source_method':'local_browser_mcp'})
+        public=self.save()  # Search-public sources do not use the own-account whitelist.
+        refs=[{'document_id':own['id'],'version':1}]
+        with patch.object(XHSSync,'public_note_ids',return_value=set()):
+            self.assertEqual([d['id'] for d in self.kb.list(self.owner,self.account)],[public['id']])
+            with self.assertRaises(DomainError):self.kb.get(self.owner,self.account,own['id'])
+            self.assertEqual(self.kb.get(self.owner,self.account,public['id'])['id'],public['id'])
+            report=cases.export(self.owner,self.account)
+            self.assertEqual(report['count'],1);self.assertNotIn(own['title'],report['content'])
+            with self.assertRaises(DomainError):cases.export(self.owner,self.account,[own['id']])
+            with self.assertRaises(DomainError):cases.export_versions(self.owner,self.account,refs)
+            audit=self.kb.get_version(self.owner,self.account,own['id'],1)
+            self.assertEqual(audit['title'],own['title']);self.assertTrue(audit['chunks'])
+            self.assertEqual(cases.export_versions(self.owner,self.account,[{'document_id':public['id'],'version':1}])['count'],1)
+
+    def test_cached_and_failed_job_reports_hide_private_sources_without_deleting_audit(self):
+        from backend.research_jobs import ResearchJobs
+        jobs=ResearchJobs(self.store)
+        with patch.object(XHSSync,'public_note_ids',return_value={'note-1'}):
+            own=self.save(case_changes={'source_method':'local_browser_mcp'})
+        public=self.save()
+        for kind in ('saved','failed','public'):
+            packet={'account_id':self.account,'queries':['白衬衫护理'],'provider':'bing','targets':['web'],
+                    'evidence_role':'expression_reference','permission_confirmed':True,'key':kind}
+            job=jobs.create(self.owner,packet);identity=job['id']
+            doc=public if kind=='public' else own
+            item={'title':doc['title'],'url':doc['source_url'],'status':'failed' if kind=='failed' else 'saved'}
+            if kind!='failed':item.update(document_id=doc['id'],version=1)
+            with self.store.connect() as db:
+                row=db.execute('SELECT payload FROM research_jobs WHERE id=?',(identity,)).fetchone()
+                payload=json.loads(row[0]);payload.update(items=[item],report={'content':doc['title']+' SECRET-BODY','count':1})
+                db.execute("UPDATE research_jobs SET status='done',payload=? WHERE id=?",(json.dumps(payload),identity))
+            with patch.object(XHSSync,'public_note_ids',return_value=set()):
+                if kind=='public':
+                    self.assertEqual(jobs.export(self.owner,identity)['count'],1)
+                    self.assertIn('SECRET-BODY',jobs.get(self.owner,identity)['report']['content'])
+                    continue
+                for visible in (jobs.get(self.owner,identity),next(j for j in jobs.list(self.owner,self.account) if j['id']==identity),jobs.cancel(self.owner,identity),jobs.create(self.owner,packet)):
+                    serialized=json.dumps(visible,ensure_ascii=False)
+                    self.assertNotIn(doc['title'],serialized);self.assertNotIn('SECRET-BODY',serialized)
+                    self.assertEqual(visible['error'],'SOURCE_VISIBILITY_CHANGED')
+                with self.assertRaises(DomainError):jobs.export(self.owner,identity)
+                with self.store.connect() as db:
+                    self.assertIn('SECRET-BODY',db.execute('SELECT payload FROM research_jobs WHERE id=?',(identity,)).fetchone()[0])
 
 
 @unittest.skipUnless(os.environ.get('TEST_DATABASE_URL'), 'PostgreSQL integration requires TEST_DATABASE_URL')

@@ -95,6 +95,12 @@ def public_note_id(url):
     return match.group(1) if match else None
 
 
+def document_is_public(db,owner,account,metadata,url):
+    if not own_synced_case(metadata):return True
+    from backend.xhs_sync import XHSSync
+    return public_note_id(url) in XHSSync.public_note_ids(db,owner,account)
+
+
 def assert_public_model_evidence(store,run,db):
     """Recheck old snapshots before each model call; history remains unchanged."""
     evidence=[source for source in run.context.get('evidence',[]) if source.get('source_type')=='research_case']
@@ -207,6 +213,7 @@ class Knowledge:
         self.account(owner,account)
         with self.store.connect() as db:
             rows=db.execute("SELECT d.id,d.title,d.version,d.source_type,d.source_url,d.updated_at,v.filename,v.metadata FROM knowledge_documents d JOIN knowledge_versions v ON v.document_id=d.id AND v.version=d.version WHERE d.owner=? AND d.account_id=? AND d.status='active' ORDER BY d.updated_at DESC,d.id",(owner,account)).fetchall()
+            rows=[r for r in rows if document_is_public(db,owner,account,json.loads(r[7]),r[4])]
         return [dict(zip(('id','title','version','source_type','source_url','updated_at','filename'),r[:7]),metadata=json.loads(r[7])) for r in rows]
 
     def get(self, owner, account, identity):
@@ -215,9 +222,17 @@ class Knowledge:
             row=db.execute("SELECT title,version,source_type,source_url FROM knowledge_documents WHERE owner=? AND account_id=? AND id=? AND status='active'",(owner,account,identity)).fetchone()
             require(row,'RESOURCE_NOT_FOUND','资料不可访问')
             v=db.execute('SELECT fingerprint,metadata,filename FROM knowledge_versions WHERE document_id=? AND version=?',(identity,row[1])).fetchone()
+            require(document_is_public(db,owner,account,json.loads(v[1]),row[3]),'RESOURCE_NOT_FOUND','资料当前不可访问')
             parts=db.execute('SELECT id,page,offset_start,text FROM knowledge_chunks WHERE document_id=? AND version=? ORDER BY page,offset_start',(identity,row[1])).fetchall()
-            versions=[dict(version=r[0],metadata=json.loads(r[1])) for r in db.execute('SELECT version,metadata FROM knowledge_versions WHERE document_id=? ORDER BY version DESC',(identity,))]
+            versions=[dict(version=r[0],metadata=json.loads(r[1])) for r in db.execute('SELECT version,metadata FROM knowledge_versions WHERE document_id=? ORDER BY version DESC',(identity,))
+                      if document_is_public(db,owner,account,json.loads(r[1]),json.loads(r[1]).get('source_url',''))]
         return dict(id=identity,title=row[0],version=row[1],source_type=row[2],source_url=row[3],fingerprint=v[0],metadata=json.loads(v[1]),filename=v[2],versions=versions,chunks=[dict(zip(('id','page','offset','text'),p)) for p in parts])
+
+    def assert_public_document(self,owner,account,document):
+        """External exports must recheck privacy even when reading audit versions."""
+        with self.store.connect() as db:
+            require(document_is_public(db,owner,account,document['metadata'],document['source_url']),
+                    'RESOURCE_NOT_FOUND','资料当前不可访问，历史审计不代表可公开导出')
 
     def get_version(self, owner, account, identity, version):
         """Read an immutable owned version for historical reports, even if removed.

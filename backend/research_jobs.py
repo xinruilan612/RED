@@ -54,7 +54,7 @@ class ResearchJobs:
             prior = db.execute('SELECT id,fingerprint FROM research_jobs WHERE owner=? AND key=?', (owner, data['key'])).fetchone()
             if prior:
                 require(prior[1] == fingerprint, 'IDEMPOTENCY_CONFLICT', '相同任务编号不能提交不同研究范围')
-                return self._get(db, owner, prior[0])
+                return self._public_view(db,owner,self._get(db, owner, prior[0]))
             self._expire(db)
             count = db.execute("SELECT COUNT(*) FROM research_jobs WHERE owner=? AND status IN ('queued','running')", (owner,)).fetchone()[0]
             require(count < 3, 'QUOTA_EXCEEDED', '最多同时保留 3 个待执行研究任务')
@@ -81,17 +81,40 @@ class ResearchJobs:
     def _expire(db):
         db.execute("UPDATE research_jobs SET status='interrupted',token=NULL,lease_until=NULL,updated_at=? WHERE status='running' AND lease_until<=?", (time.time(), time.time()))
 
+    @staticmethod
+    def _public_view(db,owner,job):
+        from backend.knowledge import document_is_public, own_synced_case
+        account=job['account_id']
+        for item in job['items']:
+            row=None
+            if item.get('document_id') and item.get('version'):
+                row=db.execute('SELECT v.metadata FROM knowledge_versions v JOIN knowledge_documents d ON d.id=v.document_id WHERE d.owner=? AND d.account_id=? AND d.id=? AND v.version=?',
+                               (owner,account,item['document_id'],item['version'])).fetchone()
+            if row:
+                candidates=[json.loads(row[0])]
+            else:
+                # Failed/old items may only retain a source URL, including in cached reports.
+                url=item.get('url') or item.get('source_url')
+                candidates=[json.loads(r[0]) for r in db.execute('SELECT v.metadata FROM knowledge_versions v JOIN knowledge_documents d ON d.id=v.document_id WHERE d.owner=? AND d.account_id=?',(owner,account))
+                            if json.loads(r[0]).get('source_url')==url] if url else []
+            if any(own_synced_case(meta) and not document_is_public(db,owner,account,meta,meta.get('source_url','')) for meta in candidates):
+                # Do not rewrite stored audit text; suppress the entire potentially mixed report.
+                return {**job,'items':[],'reads':[],'documents':[],'document_ids':[],
+                        'attempts':[],'searches':[],'report':None,'error':'SOURCE_VISIBILITY_CHANGED',
+                        'source_visibility_blocked':True}
+        return job
+
     def get(self, owner, identity):
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE'); self._expire(db)
-            return self._get(db, owner, identity)
+            return self._public_view(db,owner,self._get(db, owner, identity))
 
     def list(self, owner, account_id):
         find_account(Operations(self.store).read(owner), account_id)
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE'); self._expire(db)
             ids = db.execute('SELECT id FROM research_jobs WHERE owner=? AND account_id=? ORDER BY created_at DESC LIMIT 30', (owner, account_id)).fetchall()
-            return [self._get(db, owner, row[0]) for row in ids]
+            return [self._public_view(db,owner,self._get(db, owner, row[0])) for row in ids]
 
     def cancel(self, owner, identity):
         with self.store.connect() as db:
@@ -99,10 +122,11 @@ class ResearchJobs:
             job = self._get(db, owner, identity)
             if job['status'] not in TERMINAL:
                 db.execute("UPDATE research_jobs SET status='cancelled',token=NULL,lease_until=NULL,updated_at=? WHERE id=? AND owner=?", (time.time(), identity, owner))
-            return self._get(db, owner, identity)
+            return self._public_view(db,owner,self._get(db, owner, identity))
 
     def export(self, owner, identity):
         job = self.get(owner, identity)
+        require(not job.get('source_visibility_blocked'),'RESOURCE_NOT_FOUND','报告包含当前不可访问的本人笔记，已停止导出')
         if job['report'] is not None:
             return job['report']
         require(job['status'] in TERMINAL, 'INVALID_TRANSITION', '任务仍在执行，请完成或取消后导出')

@@ -139,6 +139,7 @@ class ResearchCases:
             if key in seen:continue
             seen.add(key)
             doc=self.knowledge.get_version(owner,account_id,*key)
+            self.knowledge.assert_public_document(owner,account_id,doc)
             require(doc['source_type']=='research_case' and isinstance(doc['metadata'].get('research_case'),dict),
                     'INVALID_INPUT','指定版本不是研究案例')
             docs.append(doc)
