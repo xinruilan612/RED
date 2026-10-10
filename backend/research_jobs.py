@@ -1,5 +1,6 @@
 """Bounded durable research; interrupted paid searches are never replayed."""
 import json
+import hashlib
 import time
 from uuid import uuid4
 
@@ -245,7 +246,11 @@ class ResearchJobs:
 
     def _execute_xhs(self, job, payload):
         from backend.xhs_research import XHSResearch
-        notes, attempts = XHSResearch(self.store).collect(job['owner'], payload['account_id'], payload['queries'], check=lambda:self._change(job))
+        research=XHSResearch(self.store)
+        notes, attempts = research.collect(job['owner'], payload['account_id'], payload['queries'], check=lambda:self._change(job))
+        def guard(db):
+            self._guard(db,job)
+            research.guard_save(db,job['owner'],payload['account_id'])
         self._change(job, lambda p:p['attempts'].extend(attempts))
         for note in notes:
             self._change(job)
@@ -256,11 +261,21 @@ class ResearchJobs:
                 current['document_ids'].append(identity)
                 current['items'].append({'url':note['source_url'], 'title':note['title'], 'status':'saved',
                     'body_read':True, 'video_transcribed':False, 'document_id':identity, 'version':version,
+                    'observed_at':note['observed_at'],
                     'source_type':'local_browser_video_description'})
                 self._write(db, job, current)
             try:
+                if existing:
+                    full=self.cases.knowledge.get_version(job['owner'],payload['account_id'],existing['id'],existing['version'])
+                    if self._same_xhs_case(full,note):
+                        with self.store.connect() as db:
+                            db.execute('BEGIN IMMEDIATE');guard(db)
+                            row=db.execute('SELECT version,status FROM knowledge_documents WHERE id=? AND owner=? AND account_id=?',(existing['id'],job['owner'],payload['account_id'])).fetchone()
+                            require(row and row[0]==existing['version'] and row[1]=='active','VERSION_CONFLICT','案例已更新或移除，请重新研究')
+                            saved(db,existing['id'],existing['version'])
+                        continue
                 self.cases.save(job['owner'], note, source_method='local_browser_video_description',
-                    fetched_at=note['observed_at'], transaction_guard=lambda db:self._guard(db,job), transaction_saved=saved)
+                    fetched_at=note['observed_at'], transaction_guard=guard, transaction_saved=saved)
             except DomainError as exc:
                 if exc.code != 'DUPLICATE':raise
                 self._item(job,{'url':note['source_url'],'title':note['title'],'status':'duplicate','error':'相同正文已存在，未重复保存'})
@@ -272,3 +287,13 @@ class ResearchJobs:
             final['report']=report
             self._write(db,job,final)
             db.execute("UPDATE research_jobs SET status=?,token=NULL,lease_until=NULL WHERE id=?",('partial' if any(i['status']!='saved' for i in final['items']) else 'done' if final['document_ids'] else 'failed',job['id']))
+
+    @staticmethod
+    def _same_xhs_case(full,note):
+        """Observation time alone is a job event, not a new content version."""
+        case=full['metadata'].get('research_case',{})
+        return (full['fingerprint']==hashlib.sha256(note['text'].strip().encode()).hexdigest()
+                and full['title']==note['title'].strip() and full['source_url']==note['source_url']
+                and case.get('source_method')=='local_browser_video_description'
+                and all(case.get(k)==note.get(k) for k in ('metrics','published_at','content_kind','evidence_role'))
+                and all(case.get(k)==note.get(k,'').strip() for k in ('platform','author')))

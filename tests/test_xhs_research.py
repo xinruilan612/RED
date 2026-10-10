@@ -74,3 +74,86 @@ class XHSResearchTests(unittest.TestCase):
             notes,_=XHSResearch(self.store,self.client).collect('owner',self.account,['护肤','保湿'])
         self.assertEqual(notes,[])
         self.assertEqual(len(self.calls),5)
+
+    def research_job(self,jobs,key):
+        return jobs.create('owner',dict(account_id=self.account,queries=['护肤'],provider='xhs_local',targets=['xiaohongshu'],evidence_role='expression_reference',permission_confirmed=True,key=key))
+
+    def test_repeat_semantics_reuses_version_and_keeps_job_observation(self):
+        jobs=ResearchJobs(self.store)
+        first=self.research_job(jobs,'first')
+        with patch('backend.xhs_research.LocalResearchClient',self.client):jobs.once()
+        original=jobs.get('owner',first['id'])
+        second=self.research_job(jobs,'second')
+        with patch('backend.xhs_research.LocalResearchClient',self.client):jobs.once()
+        repeated=jobs.get('owner',second['id'])
+        self.assertEqual(repeated['status'],'done')
+        self.assertEqual([i['version'] for i in repeated['items']],[1,1,1])
+        self.assertEqual(original['document_ids'],repeated['document_ids'])
+        self.assertTrue(all(i['observed_at'] for i in repeated['items']))
+        self.assertGreater(repeated['items'][0]['observed_at'],original['items'][0]['observed_at'])
+        self.assertEqual([d['version'] for d in jobs.cases.list('owner',self.account)],[1,1,1])
+
+    def test_changed_metrics_or_content_create_new_versions(self):
+        jobs=ResearchJobs(self.store);first=self.research_job(jobs,'first')
+        with patch('backend.xhs_research.LocalResearchClient',self.client):jobs.once()
+        original=jobs.get('owner',first['id']);request=self.client.request
+        def changed(client,path,data):
+            value=request(client,path,data)
+            if data['feed_id']=='0':value['note']['interactInfo']['collectedCount']='301'
+            if data['feed_id']=='1':value['note']['desc']+='新增正文'
+            return value
+        second=self.research_job(jobs,'second')
+        with patch('backend.xhs_research.LocalResearchClient',self.client),patch.object(self.client,'request',changed):jobs.once()
+        revised=jobs.get('owner',second['id'])
+        self.assertEqual([i['version'] for i in revised['items']],[2,2,1])
+        self.assertEqual([i['version'] for i in jobs.get('owner',first['id'])['items']],[1,1,1])
+        self.assertEqual(jobs.cases.knowledge.get_version('owner',self.account,original['items'][0]['document_id'],1)['metadata']['research_case']['metrics']['favorites'],300)
+
+    def test_pause_during_final_identity_saves_nothing(self):
+        jobs=ResearchJobs(self.store);job=self.research_job(jobs,'pause');calls=[]
+        def identity(client):
+            calls.append(True)
+            if len(calls)==2:
+                with self.store.connect() as db:db.execute('UPDATE xhs_sync_links SET enabled=0')
+            return {'id':'person'}
+        with patch('backend.xhs_research.LocalResearchClient',self.client),patch.object(self.client,'identity',identity):jobs.once()
+        result=jobs.get('owner',job['id']);self.assertEqual(result['error'],'XHS_STOPPED');self.assertEqual(result['document_ids'],[])
+        self.assertEqual(jobs.cases.list('owner',self.account),[])
+
+    def test_pause_immediately_before_save_is_transactionally_fenced(self):
+        jobs=ResearchJobs(self.store);job=self.research_job(jobs,'pause');save=jobs.cases.save
+        def pause(*args,**kwargs):
+            with self.store.connect() as db:db.execute('UPDATE xhs_sync_links SET enabled=0')
+            return save(*args,**kwargs)
+        with patch('backend.xhs_research.LocalResearchClient',self.client),patch.object(jobs.cases,'save',pause):jobs.once()
+        result=jobs.get('owner',job['id']);self.assertEqual(result['error'],'XHS_STOPPED');self.assertEqual(result['document_ids'],[])
+        self.assertEqual(jobs.cases.list('owner',self.account),[])
+
+    def test_binding_change_immediately_before_reuse_is_fenced(self):
+        jobs=ResearchJobs(self.store);self.research_job(jobs,'first')
+        with patch('backend.xhs_research.LocalResearchClient',self.client):jobs.once()
+        job=self.research_job(jobs,'second');same=jobs._same_xhs_case
+        def changed(*args):
+            with self.store.connect() as db:db.execute("UPDATE xhs_sync_links SET source_id='different'")
+            return same(*args)
+        with patch('backend.xhs_research.LocalResearchClient',self.client),patch.object(jobs,'_same_xhs_case',changed):jobs.once()
+        result=jobs.get('owner',job['id']);self.assertEqual(result['error'],'XHS_IDENTITY_CHANGED');self.assertEqual(result['document_ids'],[])
+        self.assertEqual([d['version'] for d in jobs.cases.list('owner',self.account)],[1,1,1])
+
+
+@unittest.skipUnless(__import__('os').environ.get('TEST_DATABASE_URL'),'requires actual PostgreSQL')
+class PostgresXHSResearchTests(XHSResearchTests):
+    def setUp(self):
+        import os
+        import psycopg
+        from uuid import uuid4
+        super().setUp()
+        base=os.environ['TEST_DATABASE_URL'];schema='youji_xhs_research_'+uuid4().hex
+        with psycopg.connect(base,autocommit=True) as db:db.execute('CREATE SCHEMA '+schema)
+        def cleanup():
+            with psycopg.connect(base,autocommit=True) as db:db.execute('DROP SCHEMA '+schema+' CASCADE')
+        self.addCleanup(cleanup)
+        self.store=Store(base+('&' if '?' in base else '?')+'options=-csearch_path%3D'+schema);upgrade(self.store)
+        self.account=Operations(self.store).read('owner')['accounts'][0]['id']
+        with self.store.connect() as db:
+            db.execute("INSERT INTO xhs_sync_links(owner,account_id,source_id,bridge_port,interval_s,enabled,status,next_at) VALUES(?,?,?,?,?,1,'ready',0)",('owner',self.account,'person',18061,900))

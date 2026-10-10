@@ -26,6 +26,7 @@ class XHSResearch:
     def collect(self, owner, account_id, queries, check=lambda:None):
         require(1 <= len(queries) <= 2, 'INVALID_INPUT', '站内研究最多两个关键词')
         expected, client = self.connection(owner, account_id)
+        self.expected_source_id = expected
         def guard():
             check()
             identity, _ = self.connection(owner, account_id)
@@ -68,7 +69,14 @@ class XHSResearch:
                     'evidence_role':'expression_reference', 'metrics':metrics, 'permission_confirmed':True})
         guard()
         require(client.identity()['id'] == expected, 'XHS_IDENTITY_CHANGED', '研究期间登录账号变化，结果不保存')
+        guard()
         return notes, attempts
+
+    def guard_save(self, db, owner, account_id):
+        """Fence permission and the original identity in the document transaction."""
+        row=db.execute('SELECT source_id,enabled FROM xhs_sync_links WHERE owner=? AND account_id=?',(owner,account_id)).fetchone()
+        require(row and row[1],'XHS_STOPPED','账号连接已暂停；不保存迟到的研究结果')
+        require(row[0]==self.expected_source_id,'XHS_IDENTITY_CHANGED','账号绑定已改变；不保存研究结果')
 
 
 class LocalResearchClient(LocalXHS):
