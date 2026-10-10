@@ -23,3 +23,7 @@
 真实离线 CPU 验收使用 macOS Tingting 合成的自有中文测试音频，时长 13.083 秒；成功产生时间分段转写。预期包含“杏茶、莓果和豆沙”，实际有“姓茶、美國和豆沙”等同音误识别。这证明解码、模型推理与返回链路可运行，不证明识别质量已满足生产使用。未进行付费调用。
 
 核心失败边界运行：`runtime/venv/bin/python -m unittest discover -s tests -p test_local_transcription.py -v`。
+
+## 网页入口验收
+
+案例研究页支持上传有权使用的媒体。`POST /api/research/transcripts` 校验登录、账号、使用确认、10 MiB字节上限和单进程并发，转写结果保存为待校对案例，不参与检索；用户校对并保存新版本后才进入RAG。原始版本、媒体hash及模型来源保留。浏览器已用合成中文MOV完成上传、预览、校对、v2保存和召回验收。原Whisper返回值移除EOS导致误判的问题已修复并用同一MOV回归。

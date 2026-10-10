@@ -63,8 +63,9 @@ class ConnectedCreatorDeliveryDocumentationTests(unittest.TestCase):
 class ConnectedCreatorLatestAcceptanceTests(unittest.TestCase):
     def test_current_state_does_not_confuse_qr_video_description_and_completed_capture(self):
         text=(ROOT/'docs/CONNECTED_CREATOR_STATUS.md').read_text()
-        for phrase in ('扫码重连成功', '二维码已实际生成', '不是视频音轨转写',
-                       '本人笔记', '评论不随', '冻结版本', '585', '56', '4876323',
+        for phrase in ('扫码重连后', '不是视频音轨转写', '视频文字描述',
+                       '本人笔记', '评论不随', '冻结版本', '15分钟定时读取',
+                       '非空评论和逐笔流量仍未实测', '待校对原始版本不参与检索',
                        '8次真实调用', '$0.05', '不构成官方API许可'):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase,text)
