@@ -26,14 +26,9 @@ test('missing metrics stay absent and zero stays zero',()=>{
  const s=setup();s.sandbox.data={account_name:'<script>',connection_status:'not_connected',reason:'no',fields:[{key:'views',label:'阅读'},{key:'likes',label:'点赞'}],local_records:{publication_count:0,metric_snapshot_count:1,latest_metric:{observed_at:'now',window:'24h',values:{views:null,likes:0}}}};
  const html=s.eval('connectionOverview(data)');assert.match(html,/未记录/);assert.match(html,/<td>0<\/td>/);assert.match(html,/尚未连接平台/);assert.doesNotMatch(html,/<script>/);
 });
-test('sync observations escape text and mark missing metrics and partial comments',()=>{
- const s=setup();s.sandbox.sync={status:'synced',interval_s:900,counts:{note:1,comment:0},latest_round:{notes:[{url:'https://example.com',title:'<script>',text:'<img>',metrics:{likes:0},comments:[]}]}};
- const html=s.eval('syncOverview(sync)');assert.doesNotMatch(html,/<script>|<img>/);assert.match(html,/点赞 0/);assert.match(html,/收藏 未知/);assert.match(html,/非全量/);
-});
-test('stored note history is shown even when latest round omitted it',()=>{
- const s=setup();s.sandbox.sync={status:'synced',interval_s:900,counts:{note:1,comment:1},latest_round:{notes:[]}};
- s.sandbox.notes=[{id:'n',url:'https://example.com',title:'OLDER',text:'body',metrics:{}}];
- const html=s.eval('syncOverview(sync,notes)');assert.match(html,/OLDER/);assert.match(html,/data-note-comments="n"/);assert.match(html,/已保存评论/);
+test('removed notes and comments section cannot expose historic text',()=>{
+ const s=setup();s.sandbox.sync={status:'synced',interval_s:900,counts:{note:1,comment:0},latest_round:{notes:[{title:'PRIVATE',text:'SECRET',metrics:{}}]}};
+ const html=s.eval('syncOverview(sync)');assert.doesNotMatch(html,/PRIVATE|SECRET|已同步笔记与评论|data-note-comments/);
 });
 test('comment load escapes stored text and uses scoped read-only endpoint',async()=>{
  const s=setup();s.sandbox.button={disabled:false,nextElementSibling:{innerHTML:''}};
@@ -56,46 +51,15 @@ test('reconnect renders only bounded PNG after owner-scoped login request',async
  await s.eval("reconnectSync('mine',connectionLoad)");assert.equal(s.calls[0][0],'/api/social/sync/login');assert.equal(s.calls[0][2].account_id,'mine');assert.match(s.element('syncLoginQRCode').innerHTML,/data:image\/png;base64/);assert.match(s.element('syncLoginQRCode').innerHTML,/原绑定/);
 });
 
-test('creator account period and per-note metrics stay separate with unknown exposure',()=>{
- const s=setup();s.sandbox.creator={status:'synced',source_method:'creator_browser_dom',observed_at:123,source_updated_at:null,
-  account:{period_start:'2026-10-01',period_end:'2026-10-07',period_days:7,metrics:{exposure:8901,views:4567,cover_ctr:12.5,video_completion_rate:0,likes:0}},
-  notes:[{id:'n',title:'单篇',source_url:'https://example.com/n',metrics:{views:23,likes:0,comments:null}}]};
- const html=s.eval('creatorMetricsOverview(creator)');
- assert.match(html,/2026-10-01 至 2026-10-07 · 7 天窗口/);
- assert.match(html,/不是单篇指标，也不是累计数据/);
- assert.match(html,/平台数据更新时间：未知/);assert.match(html,/<td>12.5%<\/td>/);assert.match(html,/<td>0%<\/td>/);
- const noteSection=html.split('<h3>笔记管理逐篇观测</h3>')[1];
- assert.match(noteSection,/<td>未知<\/td><td>23<\/td><td>0<\/td>/);
- assert.doesNotMatch(noteSection,/8901|4567/);
+test('only public per-note metrics render and removed account metrics never render',()=>{
+ const s=setup();s.sandbox.creator={status:'synced',source_method:'creator_browser_dom',account:{metrics:{views:9999,followers_gained:333}},notes:[{id:'public-id',visibility:'public',title:'公开标题',source_url:'https://example.com',metrics:{views:23,likes:0,comments:null}},{id:'private',visibility:'private',title:'PRIVATE',metrics:{views:777}},{id:'legacy',title:'LEGACY',metrics:{views:888}}]};
+ const html=s.eval('creatorMetricsOverview(creator)');assert.match(html,/公开标题/);assert.match(html,/笔记 ID：public-id/);assert.match(html,/<td>23<\/td><td>0<\/td>/);assert.match(html,/<td>未知<\/td>/);
+ assert.doesNotMatch(html,/9999|333|PRIVATE|LEGACY|777|888|账号周期汇总|净涨粉|新增关注|取消关注|主页访客|<th>曝光/);
 });
-test('failed creator attempt marks preserved values stale and keeps both timestamps',()=>{
- const s=setup();s.sandbox.failed={status:'failed',observed_at:200,error:'login lost'};
- s.sandbox.previous={status:'synced',observed_at:100,source_method:'creator_browser_dom',account:{metrics:{views:321}},notes:[]};
- const html=s.eval('creatorMetricsOverview(failed,previous)');
- assert.match(html,/旧数据 · 本轮读取失败/);assert.match(html,/尚未重新确认/);
- assert.match(html,/1970-01-01T00:01:40.000Z/);assert.match(html,/本轮失败尝试：1970-01-01T00:03:20.000Z/);
- assert.match(html,/<td>321<\/td>/);assert.doesNotMatch(html,/本轮读取成功/);
+test('failed read retains only public prior values with stale label',()=>{
+ const s=setup();s.sandbox.failed={status:'failed',observed_at:200,error:'login lost'};s.sandbox.previous={status:'synced',observed_at:100,notes:[{id:'n',visibility:'public',metrics:{views:321}}]};
+ const html=s.eval('creatorMetricsOverview(failed,previous)');assert.match(html,/旧数据 · 本轮读取失败/);assert.match(html,/<td>321<\/td>/);assert.match(html,/本轮失败尝试/);
 });
-test('failed creator fetch without previous data does not fabricate zero values',()=>{
- const s=setup();s.sandbox.creator={status:'unavailable',error:'not logged in'};
- const html=s.eval('creatorMetricsOverview(creator)');
- assert.match(html,/当前不可读取/);assert.match(html,/起止日期未知/);assert.doesNotMatch(html,/<td>0<\/td>/);
-});
-test('creator fields and errors are escaped and unsafe note URLs stay inert',()=>{
- const s=setup();s.sandbox.creator={status:'partial',error:'<script>',source_method:'<img>',account:{period_start:'<svg>',period_end:'x',metrics:{views:'<iframe>'}},notes:[{id:'n',title:'<img>',source_url:'javascript:alert(1)',metrics:{views:'<script>'}}]};
- const html=s.eval('creatorMetricsOverview(creator)');assert.doesNotMatch(html,/<script>|<img>|<svg>|<iframe>|javascript:/);
- assert.match(html,/&lt;script&gt;/);assert.match(html,/部分读取成功/);
-});
-test('sync includes independent creator metrics without replacing stored comments',()=>{
- const s=setup();s.sandbox.sync={status:'synced',interval_s:900,counts:{note:1,comment:2},creator_metrics:{status:'synced',account:{metrics:{views:900}},notes:[]},latest_round:{notes:[{id:'n',url:'https://example.com',title:'N',text:'body',metrics:{comments:2}}]}};
- const html=s.eval('syncOverview(sync)');assert.match(html,/账号周期汇总/);assert.match(html,/评论数 2/);assert.match(html,/data-note-comments="n"/);assert.match(html,/创作中心观测见上方/);
-});
-
-
-test('creator abbreviated displays remain approximate and growth metrics keep their labels',()=>{
- const s=setup();s.sandbox.creator={status:'synced',account:{period_display:'近7日',metrics:{views:null,followers_gained:3,follows_added:2,unfollows:1,profile_visitors:4},metric_displays:{views:'1.2万'}},notes:[{id:'n',metrics:{views:null},metric_displays:{views:'2千'}}]};
- const html=s.eval('creatorMetricsOverview(creator)');
- assert.match(html,/1.2万（页面显示，精确值未知）/);assert.match(html,/2千（页面显示，精确值未知）/);
- assert.doesNotMatch(html,/12000|2000/);assert.match(html,/页面周期：近7日/);
- for(const [label,value] of [['净涨粉',3],['新增关注',2],['取消关注',1],['主页访客',4]])assert.ok(html.includes(`<td>${label}</td><td>${value}</td>`));
+test('unknown and abbreviated metrics are not converted to exact zero',()=>{
+ const s=setup();s.sandbox.creator={status:'synced',notes:[{id:'n',visibility:'public',metrics:{views:null},metric_displays:{views:'2千'}}]};const html=s.eval('creatorMetricsOverview(creator)');assert.match(html,/2千（页面显示，精确值未知）/);assert.doesNotMatch(html,/2000|<td>0<\/td>/);
 });

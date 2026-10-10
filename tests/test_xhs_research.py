@@ -37,6 +37,37 @@ class XHSResearchTests(unittest.TestCase):
         self.assertEqual(notes[0]['metrics']['favorites'],300)
         self.assertEqual(notes[0]['content_kind'],'text');self.assertIn('未读取音轨',notes[0]['text'])
 
+    def test_public_style_thresholds_and_provenance(self):
+        search=self.client.search
+        def filtered(client,query,filters=None):
+            self.assertEqual(filters['note_type'],'不限')
+            return search(client,query)
+        selection={'min_likes':100,'min_favorites':50,'sort_by':'favorites'}
+        with patch.object(self.client,'search',filtered):
+            notes,_=XHSResearch(self.store,self.client).collect('owner',self.account,['护肤'],style_filters=selection)
+        self.assertEqual(len(notes),3)
+        self.assertTrue(notes[0]['_provenance']['style_library_eligible'])
+        self.assertEqual(notes[0]['_provenance']['visibility'],'public')
+        self.assertIsNone(notes[0]['metrics']['likes'])
+        selection['min_favorites']=1000
+        with patch.object(self.client,'search',filtered):
+            notes,_=XHSResearch(self.store,self.client).collect('owner',self.account,['护肤'],style_filters=selection)
+        self.assertEqual(notes,[])
+
+    def test_style_job_saves_eligible_case_and_rejects_invalid_filter(self):
+        data=dict(account_id=self.account,queries=['护肤'],provider='xhs_local',targets=['xiaohongshu'],evidence_role='expression_reference',permission_confirmed=True,key='style',style_filters={'min_likes':100,'min_favorites':50,'sort_by':'likes'})
+        jobs=ResearchJobs(self.store)
+        data['style_filters']['min_likes']=0
+        with self.assertRaises(DomainError):jobs.create('owner',data)
+        data['style_filters']['min_likes']=100
+        job=jobs.create('owner',data);search=self.client.search
+        with patch('backend.xhs_research.LocalResearchClient',self.client),patch.object(self.client,'search',lambda c,q,filters=None:search(c,q)):
+            jobs.once()
+        self.assertEqual(jobs.get('owner',job['id'])['status'],'done')
+        case=jobs.cases.list('owner',self.account)[0]['metadata']['research_case']
+        self.assertEqual(case['source_method'],'local_browser_public_note')
+        self.assertTrue(case['provenance']['style_library_eligible'])
+
     def test_owner_pause_and_identity_fail_closed(self):
         with self.assertRaises(DomainError):XHSResearch(self.store,self.client).connection('other',self.account)
         with self.store.connect() as db:db.execute('UPDATE xhs_sync_links SET enabled=0')

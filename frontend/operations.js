@@ -32,7 +32,7 @@ function renderOperations(){
  if(currentPage==='library')renderLibrary();
  if(currentPage==='models')renderModelSettings();
  if(currentPage==='connections')renderConnections();
- if(currentPage==='research')renderResearch();
+ if(currentPage==='research'){currentPage='library';renderLibrary();}
  if(currentPage==='windtunnel')renderWindtunnel();
  if(currentPage==='publish')renderPublications();
  if(currentPage==='metrics')renderMetrics();

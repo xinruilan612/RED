@@ -26,7 +26,7 @@ class ResearchJobs:
 
     def create(self, owner, data):
         fields = {'account_id', 'queries', 'provider', 'targets', 'evidence_role', 'permission_confirmed', 'key'}
-        require(isinstance(data, dict) and set(data) == fields, 'INVALID_INPUT', '研究任务字段无效')
+        require(isinstance(data, dict) and fields <= set(data) <= fields | {'style_filters'}, 'INVALID_INPUT', '研究任务字段无效')
         require(isinstance(data['key'], str) and 1 <= len(data['key']) <= 160,
                 'INVALID_INPUT', '请提供任务幂等编号')
         queries = data['queries']
@@ -43,6 +43,11 @@ class ResearchJobs:
             require(data['targets'] == ['xiaohongshu'] and data['evidence_role'] == 'expression_reference', 'INVALID_INPUT', '站内视频研究只支持小红书表达参考')
             from backend.xhs_research import XHSResearch
             XHSResearch(self.store).connection(owner, data['account_id'])
+        if 'style_filters' in data:
+            filters=data['style_filters']
+            require(data['provider']=='xhs_local' and isinstance(filters,dict) and set(filters)=={'min_likes','min_favorites','sort_by'} and
+                    all(type(filters[k]) is int and 1<=filters[k]<=10**9 for k in ('min_likes','min_favorites')) and
+                    filters['sort_by'] in ('likes','favorites'), 'INVALID_INPUT','赞藏筛选字段无效')
         fingerprint = digest(data)
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
@@ -54,7 +59,7 @@ class ResearchJobs:
             count = db.execute("SELECT COUNT(*) FROM research_jobs WHERE owner=? AND status IN ('queued','running')", (owner,)).fetchone()[0]
             require(count < 3, 'QUOTA_EXCEEDED', '最多同时保留 3 个待执行研究任务')
             identity, now = str(uuid4()), time.time()
-            payload = {k: data[k] for k in fields - {'key'}}
+            payload = {k: data[k] for k in set(data) - {'key'}}
             payload.update(queries=list(dict.fromkeys(q.strip() for q in queries)), attempts=[], items=[],
                            document_ids=[], report=None, error=None,
                            limits={'max_queries': 2, 'max_pages': 6, 'max_documents': 3})
@@ -247,14 +252,16 @@ class ResearchJobs:
     def _execute_xhs(self, job, payload):
         from backend.xhs_research import XHSResearch
         research=XHSResearch(self.store)
-        notes, attempts = research.collect(job['owner'], payload['account_id'], payload['queries'], check=lambda:self._change(job))
+        notes, attempts = research.collect(job['owner'], payload['account_id'], payload['queries'], check=lambda:self._change(job), **({'style_filters':payload['style_filters']} if 'style_filters' in payload else {}))
         def guard(db):
             self._guard(db,job)
             research.guard_save(db,job['owner'],payload['account_id'])
         self._change(job, lambda p:p['attempts'].extend(attempts))
         for note in notes:
+            provenance=note.pop('_provenance',None)
+            method='local_browser_public_note' if provenance else 'local_browser_video_description'
             self._change(job)
-            existing=next((d for d in self.cases.list(job['owner'],payload['account_id']) if d['source_url']==note['source_url'] and d['metadata'].get('research_case',{}).get('source_method')=='local_browser_video_description'),None)
+            existing=next((d for d in self.cases.list(job['owner'],payload['account_id']) if d['source_url']==note['source_url'] and d['metadata'].get('research_case',{}).get('source_method')==method),None)
             if existing:note.update(document_id=existing['id'],expected_version=existing['version'])
             def saved(db, identity, version):
                 current = self._guard(db, job)
@@ -262,26 +269,26 @@ class ResearchJobs:
                 current['items'].append({'url':note['source_url'], 'title':note['title'], 'status':'saved',
                     'body_read':True, 'video_transcribed':False, 'document_id':identity, 'version':version,
                     'observed_at':note['observed_at'],
-                    'source_type':'local_browser_video_description'})
+                    'source_type':method})
                 self._write(db, job, current)
             try:
                 if existing:
                     full=self.cases.knowledge.get_version(job['owner'],payload['account_id'],existing['id'],existing['version'])
-                    if self._same_xhs_case(full,note):
+                    if self._same_xhs_case(full,note) and full['metadata']['research_case'].get('provenance')==provenance:
                         with self.store.connect() as db:
                             db.execute('BEGIN IMMEDIATE');guard(db)
                             row=db.execute('SELECT version,status FROM knowledge_documents WHERE id=? AND owner=? AND account_id=?',(existing['id'],job['owner'],payload['account_id'])).fetchone()
                             require(row and row[0]==existing['version'] and row[1]=='active','VERSION_CONFLICT','案例已更新或移除，请重新研究')
                             saved(db,existing['id'],existing['version'])
                         continue
-                self.cases.save(job['owner'], note, source_method='local_browser_video_description',
+                self.cases.save(job['owner'], note, source_method=method, provenance=provenance,
                     fetched_at=note['observed_at'], transaction_guard=guard, transaction_saved=saved)
             except DomainError as exc:
                 if exc.code != 'DUPLICATE':raise
                 self._item(job,{'url':note['source_url'],'title':note['title'],'status':'duplicate','error':'相同正文已存在，未重复保存'})
         current=self._change(job)
-        report=self.cases.export_versions(job['owner'],payload['account_id'],[{'document_id':i['document_id'],'version':i['version']} for i in current['items'] if i['status']=='saved'],title='小红书视频案例文字研究')
-        report['content'] += '\n'+self._scope_report(current)+'\n\n只读取视频笔记文字描述及可见互动；没有下载、观看或转写视频。按最多点赞排序的有限结果，不代表全平台爆款排名。\n'
+        report=self.cases.export_versions(job['owner'],payload['account_id'],[{'document_id':i['document_id'],'version':i['version']} for i in current['items'] if i['status']=='saved'],title='小红书公开案例文字研究')
+        report['content'] += '\n'+self._scope_report(current)+'\n\n只读取公开笔记文字及可见互动；没有下载、观看或转写视频。有限搜索结果，不代表全平台爆款排名。\n'
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE');final=self._guard(db,job)
             final['report']=report
@@ -294,6 +301,6 @@ class ResearchJobs:
         case=full['metadata'].get('research_case',{})
         return (full['fingerprint']==hashlib.sha256(note['text'].strip().encode()).hexdigest()
                 and full['title']==note['title'].strip() and full['source_url']==note['source_url']
-                and case.get('source_method')=='local_browser_video_description'
+                and case.get('source_method') in ('local_browser_video_description','local_browser_public_note')
                 and all(case.get(k)==note.get(k) for k in ('metrics','published_at','content_kind','evidence_role'))
                 and all(case.get(k)==note.get(k,'').strip() for k in ('platform','author')))
