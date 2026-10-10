@@ -77,3 +77,38 @@ test('reconnect renders only bounded PNG after owner-scoped login request',async
  const s=setup();s.sandbox.api=async(url,method,data)=>{s.calls.push([url,method,data]);if(url.endsWith('/login'))return {img:'data:image/png;base64,AA==',timeout:'4m0s'};if(url.includes('/notes'))return [];if(url.includes('/sync?'))return {bound:true,interval_s:900,counts:{note:0,comment:0}};return {};};
  await s.eval("reconnectSync('mine',connectionLoad)");assert.equal(s.calls[0][0],'/api/social/sync/login');assert.equal(s.calls[0][2].account_id,'mine');assert.match(s.element('syncLoginQRCode').innerHTML,/data:image\/png;base64/);assert.match(s.element('syncLoginQRCode').innerHTML,/原绑定/);
 });
+
+test('creator account period and per-note metrics stay separate with unknown exposure',()=>{
+ const s=setup();s.sandbox.creator={status:'synced',source_method:'creator_browser_dom',observed_at:123,source_updated_at:null,
+  account:{period_start:'2026-10-01',period_end:'2026-10-07',period_days:7,metrics:{exposure:8901,views:4567,cover_ctr:12.5,video_completion_rate:0,likes:0}},
+  notes:[{id:'n',title:'单篇',source_url:'https://example.com/n',metrics:{views:23,likes:0,comments:null}}]};
+ const html=s.eval('creatorMetricsOverview(creator)');
+ assert.match(html,/2026-10-01 至 2026-10-07 · 7 天窗口/);
+ assert.match(html,/不是单篇指标，也不是累计数据/);
+ assert.match(html,/平台数据更新时间：未知/);assert.match(html,/<td>12.5%<\/td>/);assert.match(html,/<td>0%<\/td>/);
+ const noteSection=html.split('<h3>笔记管理逐篇观测</h3>')[1];
+ assert.match(noteSection,/<td>未知<\/td><td>23<\/td><td>0<\/td>/);
+ assert.doesNotMatch(noteSection,/8901|4567/);
+});
+test('failed creator attempt marks preserved values stale and keeps both timestamps',()=>{
+ const s=setup();s.sandbox.failed={status:'failed',observed_at:200,error:'login lost'};
+ s.sandbox.previous={status:'synced',observed_at:100,source_method:'creator_browser_dom',account:{metrics:{views:321}},notes:[]};
+ const html=s.eval('creatorMetricsOverview(failed,previous)');
+ assert.match(html,/旧数据 · 本轮读取失败/);assert.match(html,/尚未重新确认/);
+ assert.match(html,/1970-01-01T00:01:40.000Z/);assert.match(html,/本轮失败尝试：1970-01-01T00:03:20.000Z/);
+ assert.match(html,/<td>321<\/td>/);assert.doesNotMatch(html,/本轮读取成功/);
+});
+test('failed creator fetch without previous data does not fabricate zero values',()=>{
+ const s=setup();s.sandbox.creator={status:'unavailable',error:'not logged in'};
+ const html=s.eval('creatorMetricsOverview(creator)');
+ assert.match(html,/当前不可读取/);assert.match(html,/起止日期未知/);assert.doesNotMatch(html,/<td>0<\/td>/);
+});
+test('creator fields and errors are escaped and unsafe note URLs stay inert',()=>{
+ const s=setup();s.sandbox.creator={status:'partial',error:'<script>',source_method:'<img>',account:{period_start:'<svg>',period_end:'x',metrics:{views:'<iframe>'}},notes:[{id:'n',title:'<img>',source_url:'javascript:alert(1)',metrics:{views:'<script>'}}]};
+ const html=s.eval('creatorMetricsOverview(creator)');assert.doesNotMatch(html,/<script>|<img>|<svg>|<iframe>|javascript:/);
+ assert.match(html,/&lt;script&gt;/);assert.match(html,/部分读取成功/);
+});
+test('sync includes independent creator metrics without replacing stored comments',()=>{
+ const s=setup();s.sandbox.sync={status:'synced',interval_s:900,counts:{note:1,comment:2},creator_metrics:{status:'synced',account:{metrics:{views:900}},notes:[]},latest_round:{notes:[{id:'n',url:'https://example.com',title:'N',text:'body',metrics:{comments:2}}]}};
+ const html=s.eval('syncOverview(sync)');assert.match(html,/账号周期汇总/);assert.match(html,/评论数 2/);assert.match(html,/data-note-comments="n"/);assert.match(html,/创作中心观测见上方/);
+});
