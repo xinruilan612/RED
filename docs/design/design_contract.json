@@ -411,12 +411,33 @@
     "version": "1.0.0",
     "workflow_type": "windtunnel",
     "graph_policy": "windtunnel.v1",
-    "stages": ["wt_conditions", "wt_read", "wt_verify", "wt_patch"],
-    "result_states": ["pass", "unclear", "unsupported", "insufficient"],
-    "scope": ["owner", "account_id"],
+    "stages": [
+      "wt_conditions",
+      "wt_read",
+      "wt_verify",
+      "wt_patch"
+    ],
+    "result_states": [
+      "pass",
+      "unclear",
+      "unsupported",
+      "insufficient"
+    ],
+    "scope": [
+      "owner",
+      "account_id"
+    ],
     "paid_calls_default": false,
-    "reading_context": ["draft", "scene", "questions"],
-    "human_confirmation": ["conditions", "patch", "completion"],
+    "reading_context": [
+      "draft",
+      "scene",
+      "questions"
+    ],
+    "human_confirmation": [
+      "conditions",
+      "patch",
+      "completion"
+    ],
     "evaluation_status": "engineering_fixtures_only_real_model_and_reader_results_pending"
   },
   "runtime_extension": {
@@ -466,5 +487,41 @@
     "prepublication_approval_required": false,
     "platform_verified": false,
     "preserve_source_draft_separately": true
+  },
+  "connected_creator_extension": {
+    "version": "2026-10-10",
+    "status": "planned",
+    "requirements": "CONNECTED_CREATOR_REQUIREMENTS.md",
+    "priority_platform": "xiaohongshu",
+    "account_type": "personal_without_api_access",
+    "capabilities": [
+      "authorized_readonly_sync",
+      "source_selectable_research",
+      "case_document_export",
+      "hybrid_rag",
+      "platform_deepseek",
+      "owner_isolated_byok"
+    ],
+    "sync_required_fields": [
+      "owner",
+      "account_id",
+      "source_id",
+      "source_url",
+      "source_observed_at",
+      "collected_at",
+      "source_method",
+      "authorization_scope",
+      "evidence_ref"
+    ],
+    "truth_boundaries": [
+      "missing_is_null",
+      "polling_is_not_push",
+      "search_summary_is_not_read_body",
+      "rag_is_not_training",
+      "simulation_is_not_real_metrics"
+    ],
+    "paid_testing_requires_explicit_budget": true,
+    "readonly_real_account_validation_authorized": true,
+    "publishing_authorized": false
   }
 }

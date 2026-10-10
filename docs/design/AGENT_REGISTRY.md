@@ -1,6 +1,6 @@
 # Tool / Skill 注册表
 
-由 scripts/sync_agent_cards.py 从独立角色卡生成，请勿直接编辑。所有接口均为设计，尚未实现。权限另由 design_contract.json 校验。
+由 scripts/sync_agent_cards.py 从独立角色卡生成，请勿直接编辑。所有接口均为设计，尚未实现。权限另由 design_contract.json 校验。当前扩展见 [已批准需求基线](CONNECTED_CREATOR_REQUIREMENTS.md)，planned 不代表已实现。
 
 ## Tools
 
