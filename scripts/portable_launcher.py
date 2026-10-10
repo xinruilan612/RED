@@ -173,6 +173,49 @@ def ready(origin, database, marker):
         return False
 
 
+class WindowsChildJob:
+    """Kernel owns descendant lifetime even when console close bypasses finally."""
+    def __init__(self):
+        self.handle = None
+        if os.name != 'nt':
+            return
+        import ctypes
+        from ctypes import wintypes
+        class Basic(ctypes.Structure):
+            _fields_ = [('PerProcessUserTimeLimit',ctypes.c_int64),('PerJobUserTimeLimit',ctypes.c_int64),('LimitFlags',wintypes.DWORD),('MinimumWorkingSetSize',ctypes.c_size_t),('MaximumWorkingSetSize',ctypes.c_size_t),('ActiveProcessLimit',wintypes.DWORD),('Affinity',ctypes.c_size_t),('PriorityClass',wintypes.DWORD),('SchedulingClass',wintypes.DWORD)]
+        class IO(ctypes.Structure):
+            _fields_ = [(name,ctypes.c_uint64) for name in ('ReadOperationCount','WriteOperationCount','OtherOperationCount','ReadTransferCount','WriteTransferCount','OtherTransferCount')]
+        class Extended(ctypes.Structure):
+            _fields_ = [('BasicLimitInformation',Basic),('IoInfo',IO),('ProcessMemoryLimit',ctypes.c_size_t),('JobMemoryLimit',ctypes.c_size_t),('PeakProcessMemoryUsed',ctypes.c_size_t),('PeakJobMemoryUsed',ctypes.c_size_t)]
+        kernel=ctypes.WinDLL('kernel32',use_last_error=True)
+        kernel.CreateJobObjectW.argtypes=[ctypes.c_void_p,wintypes.LPCWSTR];kernel.CreateJobObjectW.restype=wintypes.HANDLE
+        kernel.SetInformationJobObject.argtypes=[wintypes.HANDLE,ctypes.c_int,ctypes.c_void_p,wintypes.DWORD];kernel.SetInformationJobObject.restype=wintypes.BOOL
+        kernel.AssignProcessToJobObject.argtypes=[wintypes.HANDLE,wintypes.HANDLE];kernel.AssignProcessToJobObject.restype=wintypes.BOOL
+        kernel.CloseHandle.argtypes=[wintypes.HANDLE];kernel.CloseHandle.restype=wintypes.BOOL
+        handle=kernel.CreateJobObjectW(None,None)
+        if not handle:raise ctypes.WinError(ctypes.get_last_error())
+        limits=Extended();limits.BasicLimitInformation.LimitFlags=0x2000 # JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+        if not kernel.SetInformationJobObject(handle,9,ctypes.byref(limits),ctypes.sizeof(limits)):
+            error=ctypes.get_last_error();kernel.CloseHandle(handle);raise ctypes.WinError(error)
+        self.kernel=kernel;self.handle=handle
+    def assign(self,process):
+        if self.handle and not self.kernel.AssignProcessToJobObject(self.handle,int(process._handle)):
+            import ctypes
+            raise ctypes.WinError(ctypes.get_last_error())
+    def close(self):
+        if self.handle:
+            self.kernel.CloseHandle(self.handle);self.handle=None
+
+
+def watch_parent_pipe():
+    # Only launcher service children get this dedicated pipe. EOF also detects a
+    # hard-killed parent, without PID reuse or polling permission assumptions.
+    def watch():
+        sys.stdin.buffer.read(1)
+        os._exit(1)
+    threading.Thread(target=watch,daemon=True,name='launcher-parent-watchdog').start()
+
+
 def stop_processes(processes):
     for process in processes:
         if process.poll() is None:
@@ -212,7 +255,7 @@ def launch(args):
     port = free_port(); origin = f'http://127.0.0.1:{port}'
     env = child_environment(data_dir, port, config)
     marker = data_dir / ('worker-ready-' + uuid.uuid4().hex + '.json')
-    processes = []; threads = []; stop = threading.Event(); lock = threading.Lock(); log = None
+    processes = []; threads = []; stop = threading.Event(); lock = threading.Lock(); log = None; job = WindowsChildJob()
     previous = {}
     log_path = data_dir / 'launcher.log'
     try:
@@ -222,9 +265,10 @@ def launch(args):
         for sig in (signal.SIGINT, signal.SIGTERM):
             previous[sig] = signal.signal(sig, lambda *_: stop.set())
         for service in ('api', 'worker'):
-            process = subprocess.Popen(service_command(service, port, data_dir, marker), cwd=str(data_dir), env=env,
+            process = subprocess.Popen(service_command(service, port, data_dir, marker) + ['--parent-watchdog'], cwd=str(data_dir), env=env, stdin=subprocess.PIPE,
                                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding='utf-8', errors='replace')
             processes.append(process)
+            job.assign(process)
             thread = threading.Thread(target=log_stream, args=(process.stdout, log, [config['deepseek_api_key']], lock), daemon=True)
             thread.start(); threads.append(thread)
         deadline = time.monotonic() + args.timeout
@@ -256,6 +300,10 @@ def launch(args):
         raise
     finally:
         stop_processes(processes)
+        job.close()
+        for process in processes:
+            if process.stdin is not None:
+                process.stdin.close()
         for thread in threads:
             thread.join(timeout=3)
         if log is not None:
@@ -267,10 +315,16 @@ def launch(args):
 
 
 def main(argv=None):
+    # Frozen Windows console pipes may default to a legacy code page; Chinese
+    # readiness/log messages must not crash the parent after services are ready.
+    for stream in (sys.stdout, sys.stderr):
+        if stream is not None and hasattr(stream, 'reconfigure'):
+            stream.reconfigure(encoding='utf-8', errors='replace')
     parser = argparse.ArgumentParser()
     parser.add_argument('--service', choices=('api', 'worker', 'document-parser', 'word-parser', 'self-test'))
     parser.add_argument('--port', type=int, default=0)
     parser.add_argument('--worker-marker')
+    parser.add_argument('--parent-watchdog', action='store_true', help=argparse.SUPPRESS)
     parser.add_argument('--self-test-output')
     parser.add_argument('--data-dir')
     parser.add_argument('--config-path')
@@ -283,6 +337,10 @@ def main(argv=None):
         if args.service:
             if args.service in ('api', 'worker') and (not args.data_dir or not 1 <= args.port <= 65535 or not args.worker_marker):
                 raise ValueError('Invalid internal service arguments.')
+            if args.parent_watchdog:
+                if args.service not in ('api','worker'):
+                    raise ValueError('Invalid parent watchdog service.')
+                watch_parent_pipe()
             run_service(args)
             return 0
         return launch(args)

@@ -61,3 +61,12 @@ class NativeEvidenceTests(unittest.TestCase):
         self.assertIn('install chromium', native)
         self.assertNotIn('--with-deps', native)
         self.assertIn('scripts/portable_smoke.py --executable', workflow)
+
+    def test_failure_diagnostics_never_uploads_temporary_user_database(self):
+        workflow = (Path(__file__).resolve().parents[1] / '.github/workflows/portable-package.yml').read_text()
+        diagnostics = workflow.split('name: Preserve synthetic smoke failure diagnostics', 1)[1].split('      - name:', 1)[0]
+        self.assertIn('if: failure()', diagnostics)
+        self.assertIn('runtime/portable-smoke/launcher-smoke.log', diagnostics)
+        self.assertIn('runtime/portable-smoke/diagnostic.json', diagnostics)
+        for sensitive in ('provision.json', '.sqlite', '**', '.env', 'user/'):
+            self.assertNotIn(sensitive, diagnostics)

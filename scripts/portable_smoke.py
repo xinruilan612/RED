@@ -11,6 +11,7 @@ import signal
 import subprocess
 import tempfile
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 import uuid
@@ -42,6 +43,16 @@ def docx_fixture():
     return output.getvalue()
 
 
+class HTTPFailure(RuntimeError):
+    def __init__(self, method, path, error):
+        reason=getattr(error,'reason',error)
+        self.diagnostic={'stage':'http','method':method,'path':urllib.parse.urlsplit(path).path,'error_type':type(error).__name__,'reason_type':type(reason).__name__}
+        if isinstance(error,urllib.error.HTTPError):self.diagnostic['status']=error.code
+        errno=getattr(reason,'errno',None)
+        if isinstance(errno,int):self.diagnostic['errno']=errno
+        super().__init__('HTTP '+method+' '+self.diagnostic['path']+' failed ('+type(error).__name__+'/'+type(reason).__name__+').')
+
+
 class HTTP:
     def __init__(self,origin):
         self.origin=origin;self.csrf=None
@@ -50,8 +61,11 @@ class HTTP:
         headers={}
         if data is not None:headers.update({'Content-Type':'application/json','Origin':self.origin,'X-CSRF-Token':self.csrf or ''})
         request=urllib.request.Request(self.origin+path,None if data is None else json.dumps(data,ensure_ascii=False).encode(),headers)
-        with self.opener.open(request,timeout=30) as response:
-            raw=response.read();mime=response.headers.get('Content-Type','')
+        try:
+            with self.opener.open(request,timeout=30) as response:
+                raw=response.read();mime=response.headers.get('Content-Type','')
+        except (urllib.error.URLError,TimeoutError,OSError) as error:
+            raise HTTPFailure('GET' if data is None else 'POST',path,error) from None
         if path.endswith('.js'):return raw,mime
         value=json.loads(raw)
         if isinstance(value,dict) and value.get('csrf'):self.csrf=value['csrf']
@@ -126,6 +140,9 @@ def run(executable,output):
                 checks['document_delete']=True
             finally:
                 if process is not None:stop(process)
+                service_log=data/'launcher.log'
+                if service_log.exists():
+                    log.write('\n--- packaged service logs (synthetic empty-key fixture) ---\n'+service_log.read_text(encoding='utf-8',errors='replace'));log.flush()
         media=output/'offline-media'
         result=subprocess.run(command(executable,['--service','self-test','--self-test-output',str(media)]),cwd=root,capture_output=True,timeout=180)
         (output/'offline-media-smoke.log').write_bytes(result.stdout+result.stderr)
@@ -143,6 +160,10 @@ def main():
     try:
         run(args.executable,args.output);print('Packaged offline smoke passed; no paid model calls.');return 0
     except Exception as error:
-        print('Packaged smoke failed ('+type(error).__name__+'); inspect the local smoke logs.');return 1
+        diagnostic=error.diagnostic if isinstance(error,HTTPFailure) else {'stage':'smoke','error_type':type(error).__name__}
+        output=Path(args.output);output.mkdir(parents=True,exist_ok=True)
+        (output/'diagnostic.json').write_text(json.dumps(diagnostic,indent=2)+'\n')
+        detail=str(error) if isinstance(error,HTTPFailure) else type(error).__name__
+        print('Packaged smoke failed: '+detail+'; inspect the local smoke logs.');return 1
 
 if __name__=='__main__':raise SystemExit(main())

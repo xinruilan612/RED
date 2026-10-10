@@ -65,6 +65,17 @@ jobs:
           name: Youji-${{ matrix.label }}
           path: runtime/Youji-${{ matrix.label }}.*
           retention-days: 7
+      - name: Preserve synthetic smoke failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: Youji-diagnostics-${{ matrix.label }}
+          path: |
+            runtime/portable-smoke/launcher-smoke.log
+            runtime/portable-smoke/offline-media-smoke.log
+            runtime/portable-smoke/diagnostic.json
+          if-no-files-found: warn
+          retention-days: 7
       - name: Preserve synthetic native acceptance evidence
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:

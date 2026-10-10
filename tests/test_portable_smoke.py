@@ -27,6 +27,28 @@ class PortableSmokeTests(unittest.TestCase):
         for endpoint in ('/api/runs','/api/operations/agent-plan','/api/operations/ai-review','/api/sources'):
             self.assertNotIn(endpoint,source)
         self.assertIn('deepseek_api_key":""',source)
+    def test_http_failure_has_safe_path_and_reason_not_credentials(self):
+        import urllib.error
+        http=smoke.HTTP('http://127.0.0.1:12345')
+        failure=urllib.error.URLError(ConnectionRefusedError(10061,'secret-cookie private-key'))
+        with patch.object(http.opener,'open',side_effect=failure):
+            with self.assertRaises(smoke.HTTPFailure) as caught:
+                http.request('/api/knowledge?account_id=private-key',{'password':'secret-cookie'})
+        diagnostic=caught.exception.diagnostic
+        self.assertEqual(diagnostic['path'],'/api/knowledge')
+        self.assertEqual(diagnostic['method'],'POST')
+        self.assertEqual(diagnostic['errno'],10061)
+        self.assertNotIn('private-key',str(caught.exception))
+        self.assertNotIn('secret-cookie',json.dumps(diagnostic))
+    def test_readiness_failure_cannot_pass_smoke(self):
+        from unittest.mock import Mock
+        with tempfile.TemporaryDirectory() as folder:
+            ready=Path(folder)/'ready.json';process=Mock();process.poll.return_value=1
+            with patch.object(smoke.subprocess,'Popen',return_value=process),patch.object(smoke,'stop') as stop:
+                with self.assertRaisesRegex(RuntimeError,'did not become ready'):
+                    smoke.start(Path('/installed/app'),Path(folder),Path(folder)/'config',ready,io.StringIO())
+                stop.assert_called_once_with(process)
+
     def test_fixture_media_service_dispatch_is_explicit(self):
         with patch.object(launcher,'offline_self_test') as execute:
             result=launcher.main(['--service','self-test','--self-test-output','/tmp/offline-only'])
