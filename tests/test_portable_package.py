@@ -50,3 +50,14 @@ class NativeEvidenceTests(unittest.TestCase):
         workflow = (Path(__file__).resolve().parents[1] / '.github/workflows/portable-package.yml').read_text()
         self.assertIn("'zip' if os.name == 'nt' else 'gztar'", workflow)
         self.assertIn('path: runtime/Youji-${{ matrix.label }}.*', workflow)
+
+    def test_browser_system_packages_only_on_linux_without_skipping_native_smoke(self):
+        workflow = (Path(__file__).resolve().parents[1] / '.github/workflows/portable-package.yml').read_text()
+        linux = workflow.split('name: Install Linux rendering browser and system libraries', 1)[1].split('      - name:', 1)[0]
+        self.assertIn("if: runner.os == 'Linux'", linux)
+        self.assertIn('install --with-deps chromium', linux)
+        native = workflow.split('name: Install Windows or macOS rendering browser', 1)[1].split('      - run:', 1)[0]
+        self.assertIn("if: runner.os != 'Linux'", native)
+        self.assertIn('install chromium', native)
+        self.assertNotIn('--with-deps', native)
+        self.assertIn('scripts/portable_smoke.py --executable', workflow)
