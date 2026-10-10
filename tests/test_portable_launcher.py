@@ -23,6 +23,9 @@ class PortableLauncherTests(unittest.TestCase):
         self.assertEqual(env['DEEPSEEK_API_KEY'],'provision-only')
         self.assertEqual(env['PUBLIC_ORIGIN'],'http://127.0.0.1:12345')
         self.assertEqual(env['YOUJI_IGNORE_PROJECT_ENV'],'1')
+        import ssl
+        self.assertTrue(Path(env['SSL_CERT_FILE']).is_file())
+        self.assertGreater(ssl.create_default_context(cafile=env['SSL_CERT_FILE']).cert_store_stats()['x509_ca'], 0)
         self.assertNotIn('PYTHONPATH',env);self.assertNotIn('HTTP_PROXY',env)
     def test_provision_allowlist_and_no_shell(self):
         with tempfile.TemporaryDirectory() as d:

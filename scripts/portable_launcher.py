@@ -13,6 +13,7 @@ import time
 import urllib.request
 import uuid
 import webbrowser
+import certifi
 
 RESOURCE_ROOT = Path(getattr(sys, '_MEIPASS', Path(__file__).resolve().parents[1]))
 if str(RESOURCE_ROOT) not in sys.path:
@@ -65,6 +66,7 @@ def child_environment(data_dir, port, config, bundle_root=BUNDLE_ROOT, inherited
     allowed = {'PATH', 'SYSTEMROOT', 'WINDIR', 'COMSPEC', 'PATHEXT', 'HOME', 'USERPROFILE', 'LOCALAPPDATA', 'APPDATA', 'LANG', 'LC_ALL', 'TMP', 'TEMP', 'TMPDIR'}
     env = {key: value for key, value in source.items() if key in allowed}
     env.update(PYTHONUTF8='1', PYTHONIOENCODING='utf-8', PYTHONDONTWRITEBYTECODE='1', YOUJI_IGNORE_PROJECT_ENV='1',
+               SSL_CERT_FILE=certifi.where(),
                DATABASE_URL=str(Path(data_dir) / 'youji.sqlite'), PUBLIC_ORIGIN=f'http://127.0.0.1:{port}',
                DEEPSEEK_API_KEY=config['deepseek_api_key'], MODEL_ROUTES_JSON='{}', REGISTRATION_INVITE='',
                WINDTUNNEL_ALLOW_LIVE='true' if config['windtunnel_allow_live'] else 'false',

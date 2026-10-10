@@ -50,10 +50,19 @@ jobs:
           executable=runtime/portable-dist/Youji/Youji
           if [ "$RUNNER_OS" = Windows ]; then executable="$executable.exe"; fi
           python scripts/portable_smoke.py --executable "$executable" --output runtime/portable-smoke
-      - name: Preserve Unix permissions and browser symlinks
-        run: python -c "import shutil; shutil.make_archive('runtime/Youji-${{ matrix.label }}','gztar','runtime/portable-dist','Youji')"
+      - name: Create native archive (Windows ZIP; Unix tar preserves permissions and symlinks)
+        run: python -c "import os, shutil; shutil.make_archive('runtime/Youji-${{ matrix.label }}','zip' if os.name == 'nt' else 'gztar','runtime/portable-dist','Youji')"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: Youji-${{ matrix.label }}
-          path: runtime/Youji-${{ matrix.label }}.tar.gz
+          path: runtime/Youji-${{ matrix.label }}.*
+          retention-days: 7
+      - name: Preserve synthetic native acceptance evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: Youji-validation-${{ matrix.label }}
+          path: |
+            runtime/portable-smoke/portable-smoke-report.json
+            runtime/portable-smoke/offline-media/self-test-report.json
+          if-no-files-found: error
           retention-days: 7

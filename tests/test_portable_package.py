@@ -13,6 +13,8 @@ class ProvisionTests(unittest.TestCase):
             self.assertEqual(json.loads(target.read_text()),{'schema_version':1,'deepseek_api_key':'synthetic-test-key','windtunnel_allow_live':True})
             with self.assertRaises(FileExistsError): provision(root,'different-test-key')
             self.assertIn('synthetic-test-key',target.read_text())
+            self.assertTrue(json.loads((root/'private-distribution.json').read_text())['credential_included'])
+            self.assertNotIn('synthetic-test-key',(root/'使用说明.txt').read_text())
 
     def test_unbuilt_and_invalid_keys_rejected(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -32,3 +34,19 @@ class PackagedBrowserTests(unittest.TestCase):
             self.assertEqual(browser_arguments(), {})
         with patch.dict('os.environ', {'YOUJI_CHROMIUM_EXECUTABLE':'/custom/chrome'}, clear=True):
             self.assertEqual(browser_arguments(), {'executable_path':'/custom/chrome'})
+
+
+class NativeEvidenceTests(unittest.TestCase):
+    def test_ci_retains_only_explicit_synthetic_reports_for_acceptance(self):
+        workflow = (Path(__file__).resolve().parents[1] / '.github/workflows/portable-package.yml').read_text()
+        evidence = workflow.split('name: Preserve synthetic native acceptance evidence', 1)[1]
+        self.assertIn('runtime/portable-smoke/portable-smoke-report.json', evidence)
+        self.assertIn('runtime/portable-smoke/offline-media/self-test-report.json', evidence)
+        self.assertIn('if-no-files-found: error', evidence)
+        for sensitive in ('provision.json', '.sqlite', 'launcher.log', '**', '.env'):
+            self.assertNotIn(sensitive, evidence)
+
+    def test_windows_archive_uses_native_zip_and_unix_preserves_symlinks(self):
+        workflow = (Path(__file__).resolve().parents[1] / '.github/workflows/portable-package.yml').read_text()
+        self.assertIn("'zip' if os.name == 'nt' else 'gztar'", workflow)
+        self.assertIn('path: runtime/Youji-${{ matrix.label }}.*', workflow)
