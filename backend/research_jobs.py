@@ -14,6 +14,8 @@ from backend.sources import public_url, read_article
 from backend.workflow import digest
 
 LEASE_SECONDS = 120
+TASK_SECONDS = 180
+QUEUE_SECONDS = 300
 TERMINAL = ('done', 'partial', 'failed', 'interrupted', 'cancelled')
 
 
@@ -26,7 +28,7 @@ class ResearchJobs:
 
     def create(self, owner, data):
         fields = {'account_id', 'queries', 'provider', 'targets', 'evidence_role', 'permission_confirmed', 'key'}
-        require(isinstance(data, dict) and fields <= set(data) <= fields | {'style_filters'}, 'INVALID_INPUT', '研究任务字段无效')
+        require(isinstance(data, dict) and fields <= set(data) <= fields | {'style_filters', 'confirmation_required'}, 'INVALID_INPUT', '研究任务字段无效')
         require(isinstance(data['key'], str) and 1 <= len(data['key']) <= 160,
                 'INVALID_INPUT', '请提供任务幂等编号')
         queries = data['queries']
@@ -48,25 +50,51 @@ class ResearchJobs:
             require(data['provider']=='xhs_local' and isinstance(filters,dict) and set(filters)=={'min_likes','min_favorites','sort_by'} and
                     all(type(filters[k]) is int and 1<=filters[k]<=10**9 for k in ('min_likes','min_favorites')) and
                     filters['sort_by'] in ('likes','favorites'), 'INVALID_INPUT','赞藏筛选字段无效')
-        fingerprint = digest(data)
+        require(type(data.get('confirmation_required', False)) is bool, 'INVALID_INPUT', '确认设置无效')
+        raw_queries = list(queries)
+        data = dict(data)
+        data['queries'] = list(dict.fromkeys(' '.join(q.split()) for q in queries))
+        data['targets'] = sorted(set(data['targets']))
+        data['confirmation_required'] = True if data['provider']=='xhs_local' else data.get('confirmation_required',False)
+        scope = self._scope(data)
+        fingerprint = digest(scope)
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
+            self._expire(db)
             prior = db.execute('SELECT id,fingerprint FROM research_jobs WHERE owner=? AND key=?', (owner, data['key'])).fetchone()
             if prior:
-                require(prior[1] == fingerprint, 'IDEMPOTENCY_CONFLICT', '相同任务编号不能提交不同研究范围')
-                return self._public_view(db,owner,self._get(db, owner, prior[0]))
-            self._expire(db)
+                previous=self._get(db,owner,prior[0])
+                require(self._scope(previous)==scope, 'IDEMPOTENCY_CONFLICT', '相同任务编号不能提交不同研究范围')
+                return self._reuse(self._public_view(db,owner,previous),'idempotent_task')
+            for active in db.execute("SELECT id,payload FROM research_jobs WHERE owner=? AND account_id=? AND status IN ('queued','running')", (owner,data['account_id'])):
+                current = json.loads(active[1])
+                if self._scope(current)==scope:
+                    return self._reuse(self._public_view(db,owner,self._get(db,owner,active[0])),'active_task')
             count = db.execute("SELECT COUNT(*) FROM research_jobs WHERE owner=? AND status IN ('queued','running')", (owner,)).fetchone()[0]
             require(count < 3, 'QUOTA_EXCEEDED', '最多同时保留 3 个待执行研究任务')
             identity, now = str(uuid4()), time.time()
-            payload = {k: data[k] for k in set(data) - {'key'}}
-            payload.update(queries=list(dict.fromkeys(q.strip() for q in queries)), attempts=[], items=[],
-                           document_ids=[], report=None, error=None,
+            payload = dict(scope)
+            payload.update(raw_queries=raw_queries, attempts=[], items=[],
+                           trace=[],phase='queued',counts={},outcome=None,error_origin=None,
+                           queue_deadline_at=now+QUEUE_SECONDS,
+                           document_ids=[], candidates=[], report=None, error=None,
                            limits={'max_queries': 2, 'max_pages': 6, 'max_documents': 3})
             db.execute('INSERT INTO research_jobs VALUES(?,?,?,?,?,?,?,?,?,?,?)',
                        (identity, owner, data['account_id'], data['key'], fingerprint, 'queued',
                         json.dumps(payload, ensure_ascii=False), None, None, now, now))
-            return self._get(db, owner, identity)
+            return self._reuse(self._get(db, owner, identity),'new_task')
+
+    @staticmethod
+    def _scope(data):
+        return {'account_id':data['account_id'], 'queries':list(dict.fromkeys(' '.join(q.split()) for q in data['queries'])),
+                'provider':data['provider'],'targets':sorted(set(data['targets'])),
+                'evidence_role':data['evidence_role'],'permission_confirmed':data['permission_confirmed'],
+                'confirmation_required':True if data['provider']=='xhs_local' else data.get('confirmation_required',False),
+                'style_filters':data.get('style_filters')}
+
+    @staticmethod
+    def _reuse(job, kind):
+        return {**job,'reuse':{'kind':kind,'cache_hit':False,'task_id':job['id']}}
 
     @staticmethod
     def _get(db, owner, identity):
@@ -79,7 +107,18 @@ class ResearchJobs:
 
     @staticmethod
     def _expire(db):
-        db.execute("UPDATE research_jobs SET status='interrupted',token=NULL,lease_until=NULL,updated_at=? WHERE status='running' AND lease_until<=?", (time.time(), time.time()))
+        now=time.time()
+        for identity,status,encoded,created,lease in db.execute("SELECT id,status,payload,created_at,lease_until FROM research_jobs WHERE status IN ('queued','running')").fetchall():
+            payload=json.loads(encoded)
+            deadline=payload.get('queue_deadline_at',created+QUEUE_SECONDS) if status=='queued' else payload.get('deadline_at',created+TASK_SECONDS)
+            if deadline>now and (status!='running' or lease is not None and lease>now):continue
+            absolute=deadline<=now
+            code='RESEARCH_QUEUE_TIMEOUT' if status=='queued' else 'RESEARCH_TIMEOUT' if absolute else 'RESEARCH_LEASE_EXPIRED'
+            final='partial' if payload.get('candidates') else 'failed' if absolute else 'interrupted'
+            payload.update(error=code,error_origin='queue' if status=='queued' else 'deadline' if absolute else 'lease',
+                           outcome='partial_results' if payload.get('candidates') else 'queue_timeout' if status=='queued' else 'timeout',phase='complete')
+            db.execute('UPDATE research_jobs SET status=?,payload=?,token=NULL,lease_until=NULL,updated_at=? WHERE id=?',
+                       (final,json.dumps(payload,ensure_ascii=False),now,identity))
 
     @staticmethod
     def _public_view(db,owner,job):
@@ -121,7 +160,9 @@ class ResearchJobs:
             db.execute('BEGIN IMMEDIATE')
             job = self._get(db, owner, identity)
             if job['status'] not in TERMINAL:
-                db.execute("UPDATE research_jobs SET status='cancelled',token=NULL,lease_until=NULL,updated_at=? WHERE id=? AND owner=?", (time.time(), identity, owner))
+                payload=json.loads(db.execute('SELECT payload FROM research_jobs WHERE id=? AND owner=?',(identity,owner)).fetchone()[0])
+                payload.update(outcome='cancelled',phase='complete')
+                db.execute("UPDATE research_jobs SET status='cancelled',payload=?,token=NULL,lease_until=NULL,updated_at=? WHERE id=? AND owner=?", (json.dumps(payload,ensure_ascii=False),time.time(), identity, owner))
             return self._public_view(db,owner,self._get(db, owner, identity))
 
     def export(self, owner, identity):
@@ -157,19 +198,23 @@ class ResearchJobs:
             row = db.execute("SELECT id,owner FROM research_jobs WHERE status='queued' ORDER BY created_at LIMIT 1").fetchone()
             if not row:
                 return None
-            token = str(uuid4())
-            db.execute("UPDATE research_jobs SET status='running',token=?,lease_until=?,updated_at=? WHERE id=? AND status='queued'", (token, time.time()+LEASE_SECONDS, time.time(), row[0]))
+            token = str(uuid4());now=time.time()
+            payload=json.loads(db.execute('SELECT payload FROM research_jobs WHERE id=?',(row[0],)).fetchone()[0])
+            payload.update(run_started_at=now,deadline_at=now+TASK_SECONDS,phase='starting')
+            db.execute("UPDATE research_jobs SET status='running',payload=?,token=?,lease_until=?,updated_at=? WHERE id=? AND status='queued'", (json.dumps(payload,ensure_ascii=False),token,now+LEASE_SECONDS,now,row[0]))
             return dict(id=row[0], owner=row[1], token=token)
 
     def _guard(self, db, job):
         row = db.execute('SELECT status,token,lease_until,payload FROM research_jobs WHERE id=? AND owner=?', (job['id'], job['owner'])).fetchone()
         require(row and row[0] == 'running' and row[1] == job['token'] and row[2] > time.time(),
                 'RESEARCH_STOPPED', '任务已取消或执行租约已失效；不保存迟到结果')
-        return json.loads(row[3])
+        payload=json.loads(row[3])
+        require(payload.get('deadline_at',time.time()+TASK_SECONDS)>time.time(),'RESEARCH_TIMEOUT','研究总时限已到，保留已取得候选')
+        return payload
 
     def _write(self, db, job, payload):
         db.execute('UPDATE research_jobs SET payload=?,lease_until=?,updated_at=? WHERE id=? AND owner=? AND token=?',
-                   (json.dumps(payload, ensure_ascii=False), time.time()+LEASE_SECONDS, time.time(), job['id'], job['owner'], job['token']))
+                   (json.dumps(payload, ensure_ascii=False), min(time.time()+LEASE_SECONDS,payload.get('deadline_at',time.time()+LEASE_SECONDS)), time.time(), job['id'], job['owner'], job['token']))
 
     def _change(self, job, mutate=lambda payload: None):
         with self.store.connect() as db:
@@ -196,14 +241,60 @@ class ResearchJobs:
                 return True
             with self.store.connect() as db:
                 db.execute('BEGIN IMMEDIATE')
-                try:
-                    payload = self._guard(db, job)
-                except DomainError:
-                    return True
-                payload['error'] = self._failure(exc)
-                self._write(db, job, payload)
-                db.execute("UPDATE research_jobs SET status='interrupted',token=NULL,lease_until=NULL WHERE id=?", (job['id'],))
+                row=db.execute('SELECT status,token,payload FROM research_jobs WHERE id=? AND owner=?',(job['id'],job['owner'])).fetchone()
+                if not row or row[0]!='running' or row[1]!=job['token']:return True
+                payload=json.loads(row[2]);code=self._failure(exc)
+                payload.update(error=code,phase='complete',
+                    error_origin='deadline' if 'TIMEOUT' in code and code.startswith('RESEARCH') else payload.get('error_origin') or 'connector',
+                    outcome='partial_results' if payload.get('candidates') else 'timeout' if 'TIMEOUT' in code else 'search_failed')
+                status='partial' if payload.get('candidates') else 'failed'
+                db.execute('UPDATE research_jobs SET status=?,payload=?,token=NULL,lease_until=NULL,updated_at=? WHERE id=?',
+                           (status,json.dumps(payload,ensure_ascii=False),time.time(),job['id']))
         return True
+
+    @staticmethod
+    def _merge_attempts(payload, attempts):
+        for attempt in attempts:
+            key=(attempt.get('phase','detail' if attempt.get('note_id') else 'search'),attempt.get('query'),attempt.get('note_id'),attempt.get('attempt',1),attempt.get('status'))
+            if not any((a.get('phase','detail' if a.get('note_id') else 'search'),a.get('query'),a.get('note_id'),a.get('attempt',1),a.get('status'))==key for a in payload['attempts']):
+                payload['attempts'].append(attempt)
+
+    def _progress(self, job, event):
+        allowed=('phase','query','note_id','attempt','status','error','error_origin','mcp_http_status','raw_count','parsed_count','filtered_count','results','sort_scope')
+        clean={k:event[k] for k in allowed if k in event}
+        clean['counts']={k:v for k,v in event.get('counts',{}).items() if type(v) is int and v>=0}
+        def mutate(payload):
+            payload['phase']=clean.get('phase',payload.get('phase'))
+            payload.setdefault('counts',{}).update(clean['counts'])
+            trace=payload.setdefault('trace',[])
+            if not trace or {k:v for k,v in trace[-1].items() if k!='at'}!=clean:
+                trace.append({**clean,'at':time.time()});payload['trace']=trace[-50:]
+            if clean.get('error'):
+                payload['error_origin']=clean.get('error_origin',clean.get('phase'))
+                payload['mcp_http_status']=clean.get('mcp_http_status')
+            if clean.get('phase') in ('search','detail') and clean.get('status') in ('done','failed'):
+                self._merge_attempts(payload,[dict(clean)])
+        self._change(job,mutate)
+
+    @staticmethod
+    def _result(payload):
+        counts=payload.setdefault('counts',{})
+        counts.update(candidate_count=len(payload.get('candidates',[])),importable_count=sum(c.get('importable',True) for c in payload.get('candidates',[])))
+        searches={}
+        for a in payload['attempts']:
+            if not a.get('note_id') and a.get('phase','search')=='search':searches[a.get('query')]=a
+        failed_search=any(a.get('status')=='failed' for a in searches.values())
+        failed_details=counts.get('detail_failed_count',0) or sum(i.get('status')=='failed' for i in payload['items'])
+        has_results=bool(payload.get('candidates') or payload.get('document_ids'))
+        if has_results:return ('partial','partial_results') if failed_search or failed_details else ('done','candidates_ready')
+        if failed_search:return 'failed','search_failed'
+        if failed_details:return 'failed','detail_failed'
+        raw=counts.get('raw_count',sum(a.get('results',a.get('raw_count',0)) for a in searches.values()))
+        parsed=counts.get('parsed_count',len(payload['items']))
+        if raw and not parsed:return 'failed','invalid_results'
+        if raw and counts.get('filtered_count',0)>=parsed:return 'done','filtered_all'
+        if payload['items']:return 'partial','unreadable_results'
+        return 'done','empty_results'
 
     def _execute(self, job):
         payload = self._change(job)
@@ -235,7 +326,7 @@ class ResearchJobs:
         pages = 0
         for candidate in candidates:
             current = self._change(job)
-            if pages >= 6 or len(current['document_ids']) >= 3:
+            if pages >= 6 or len(current['document_ids']) + len(current.get('candidates', [])) >= 3:
                 self._item(job, {**candidate, 'status': 'limit_reached'})
                 continue
             try:
@@ -248,6 +339,13 @@ class ResearchJobs:
             try:
                 article = self.reader(candidate['url'])
                 self._change(job)
+                if payload.get('confirmation_required'):
+                    packet = dict(account_id=payload['account_id'], title=article['title'], text=article['text'],
+                        source_url=article['url'], platform='public_web', content_kind='text',
+                        evidence_role=payload['evidence_role'], permission_confirmed=True,
+                        published_at=article.get('published_at'), observed_at=article['fetched_at'])
+                    self._stage(job, packet, 'read_public_web', None, article['fetched_at'])
+                    continue
                 def saved(db, identity, version):
                     updated = self._guard(db, job)
                     updated['document_ids'].append(identity)
@@ -262,6 +360,8 @@ class ResearchJobs:
                     raise
                 self._item(job, {**candidate, 'status': 'failed', 'error': self._failure(exc)})
         current = self._change(job)
+        if current.get('candidates'):
+            return self._await_confirmation(job)
         report = self.cases.export_versions(job['owner'], payload['account_id'], [{'document_id':i['document_id'],'version':i['version']} for i in current['items'] if i['status']=='saved'], title='本次资料研究')
         report['content'] += '\n'+self._scope_report(current)
         with self.store.connect() as db:
@@ -269,55 +369,170 @@ class ResearchJobs:
             final['report'] = report
             saved_count = len(final['document_ids'])
             incomplete = any(a['status'] != 'done' for a in final['attempts']) or any(i['status'] not in ('saved', 'limit_reached') for i in final['items'])
-            status = ('partial' if incomplete else 'done') if saved_count else ('partial' if final['items'] else 'failed')
+            status,outcome=self._result(final)
+            final.update(outcome=outcome,phase='complete')
             self._write(db, job, final)
             db.execute('UPDATE research_jobs SET status=?,token=NULL,lease_until=NULL WHERE id=?', (status, job['id']))
 
     def _execute_xhs(self, job, payload):
         from backend.xhs_research import XHSResearch
         research=XHSResearch(self.store)
-        notes, attempts = research.collect(job['owner'], payload['account_id'], payload['queries'], check=lambda:self._change(job), **({'style_filters':payload['style_filters']} if 'style_filters' in payload else {}))
-        def guard(db):
-            self._guard(db,job)
-            research.guard_save(db,job['owner'],payload['account_id'])
-        self._change(job, lambda p:p['attempts'].extend(attempts))
-        for note in notes:
-            provenance=note.pop('_provenance',None)
-            method='local_browser_public_note' if provenance else 'local_browser_video_description'
-            self._change(job)
-            existing=next((d for d in self.cases.list(job['owner'],payload['account_id']) if d['source_url']==note['source_url'] and d['metadata'].get('research_case',{}).get('source_method')==method),None)
-            if existing:note.update(document_id=existing['id'],expected_version=existing['version'])
-            def saved(db, identity, version):
-                current = self._guard(db, job)
-                current['document_ids'].append(identity)
-                current['items'].append({'url':note['source_url'], 'title':note['title'], 'status':'saved',
-                    'body_read':True, 'video_transcribed':False, 'document_id':identity, 'version':version,
-                    'observed_at':note['observed_at'],
-                    'source_type':method})
-                self._write(db, job, current)
-            try:
-                if existing:
-                    full=self.cases.knowledge.get_version(job['owner'],payload['account_id'],existing['id'],existing['version'])
-                    if self._same_xhs_case(full,note) and full['metadata']['research_case'].get('provenance')==provenance:
-                        with self.store.connect() as db:
-                            db.execute('BEGIN IMMEDIATE');guard(db)
-                            row=db.execute('SELECT version,status FROM knowledge_documents WHERE id=? AND owner=? AND account_id=?',(existing['id'],job['owner'],payload['account_id'])).fetchone()
-                            require(row and row[0]==existing['version'] and row[1]=='active','VERSION_CONFLICT','案例已更新或移除，请重新研究')
-                            saved(db,existing['id'],existing['version'])
-                        continue
-                self.cases.save(job['owner'], note, source_method=method, provenance=provenance,
-                    fetched_at=note['observed_at'], transaction_guard=guard, transaction_saved=saved)
-            except DomainError as exc:
-                if exc.code != 'DUPLICATE':raise
-                self._item(job,{'url':note['source_url'],'title':note['title'],'status':'duplicate','error':'相同正文已存在，未重复保存'})
+        def staged(note):
+            packet = dict(note)
+            provenance = packet.pop('_provenance', None)
+            self._stage(job, packet, 'local_browser_public_note',
+                        {**(provenance or {}), 'binding_source_id':research.expected_source_id}, packet['observed_at'])
+        notes, attempts = research.collect(job['owner'], payload['account_id'], payload['queries'],
+            check=lambda:self._change(job), on_note=staged,on_progress=lambda event:self._progress(job,event),
+            **({'style_filters':payload['style_filters']} if payload.get('style_filters') else {}))
+        self._change(job, lambda p:self._merge_attempts(p,attempts))
         current=self._change(job)
+        if current.get('candidates'):
+            return self._await_confirmation(job)
         report=self.cases.export_versions(job['owner'],payload['account_id'],[{'document_id':i['document_id'],'version':i['version']} for i in current['items'] if i['status']=='saved'],title='小红书公开案例文字研究')
         report['content'] += '\n'+self._scope_report(current)+'\n\n只读取公开笔记文字及可见互动；没有下载、观看或转写视频。有限搜索结果，不代表全平台爆款排名。\n'
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE');final=self._guard(db,job)
             final['report']=report
             self._write(db,job,final)
-            db.execute("UPDATE research_jobs SET status=?,token=NULL,lease_until=NULL WHERE id=?",('partial' if any(i['status']!='saved' for i in final['items']) else 'done' if final['document_ids'] else 'failed',job['id']))
+            status,outcome=self._result(final)
+            final.update(outcome=outcome,phase='complete')
+            self._write(db,job,final)
+            db.execute("UPDATE research_jobs SET status=?,token=NULL,lease_until=NULL WHERE id=?",(status,job['id']))
+
+    def _stage(self, job, packet, method, provenance, fetched_at):
+        packet = dict(packet)
+        preview = {key:packet.pop(key) for key in ('note_id','content_type','cover_url','body_kind','video_url','metric_display') if key in packet}
+        provenance = {**(provenance or {}), **preview}
+        importable = (isinstance(packet.get('text'), str) and len(packet['text'].strip()) >= 10
+                      and preview.get('body_kind') not in ('summary','lead','unread')
+                      and packet.get('content_kind') != 'lead')
+        candidate = dict(id=str(uuid4()), packet=packet, source_method=method,
+                         provenance=provenance, preview=preview, importable=importable, fetched_at=fetched_at)
+        def stage(payload):
+            if any(self._candidate_key(c) == self._candidate_key(candidate) for c in payload.get('candidates', [])):
+                return
+            payload.setdefault('candidates', []).append(candidate)
+            payload['items'].append(dict(url=packet['source_url'], title=packet['title'],
+                                         status='awaiting_confirmation' if importable else 'unreadable', body_read=importable,
+                                         observed_at=packet.get('observed_at'),candidate_id=candidate['id']))
+        self._change(job, stage)
+
+    @staticmethod
+    def _candidate_key(candidate):
+        from backend.knowledge import public_note_id
+        packet = candidate['packet']
+        note_id = candidate.get('preview', {}).get('note_id') or candidate.get('provenance', {}).get('note_id')
+        if packet.get('platform') == 'xiaohongshu':
+            return ('xiaohongshu', note_id or public_note_id(packet.get('source_url', '')) or packet.get('source_url'))
+        return (packet.get('platform'), packet.get('source_url'))
+
+    def _existing_candidate(self, db, owner, account, candidate):
+        key = self._candidate_key(candidate)
+        rows = db.execute("SELECT d.id,d.version,d.source_url,v.metadata FROM knowledge_documents d JOIN knowledge_versions v ON v.document_id=d.id AND v.version=d.version WHERE d.owner=? AND d.account_id=? AND d.status='active' AND d.source_type='research_case'", (owner,account))
+        for row in rows:
+            case = json.loads(row[3]).get('research_case', {})
+            prior = {'packet':{'source_url':row[2], 'platform':case.get('platform')}, 'provenance':case.get('provenance',{})}
+            if self._candidate_key(prior) == key:
+                return row[0], row[1]
+        return None
+
+    def _await_confirmation(self, job):
+        with self.store.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            payload = self._guard(db, job)
+            status,outcome=self._result(payload)
+            payload.update(outcome=outcome,phase='complete')
+            if status=='done':payload.update(error_origin=None,mcp_http_status=None)
+            self._write(db, job, payload)
+            db.execute("UPDATE research_jobs SET status='awaiting_confirmation',token=NULL,lease_until=NULL WHERE id=?", (job['id'],))
+
+    def confirm(self, owner, identity, data):
+        require(isinstance(data, dict) and set(data)=={'candidate_ids','key'} and
+                isinstance(data['key'], str) and 1<=len(data['key'])<=160 and
+                isinstance(data['candidate_ids'], list) and 1<=len(data['candidate_ids'])<=3 and
+                all(isinstance(i,str) and i for i in data['candidate_ids']) and
+                len(set(data['candidate_ids']))==len(data['candidate_ids']),
+                'INVALID_INPUT', '请选择需要保存的资料并提供确认编号')
+        selection=sorted(data['candidate_ids'])
+        scoped = self.get(owner, identity)
+        find_account(Operations(self.store).read(owner), scoped['account_id'])
+        with self.store.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            job=self._get(db,owner,identity)
+            prior=job.get('confirmation')
+            if prior:
+                require(prior['key']==data['key'] and prior['candidate_ids']==selection,
+                        'IDEMPOTENCY_CONFLICT','确认选择已经提交，不能改用其他资料')
+                if job['status']=='done':return self._public_view(db,owner,job)
+            require(job['status'] in ('awaiting_confirmation','confirming','cancelled','partial','interrupted','failed'), 'INVALID_TRANSITION','任务当前不能确认')
+            chosen={c['id']:c for c in job.get('candidates',[])}
+            require(set(selection)<=set(chosen),'INVALID_INPUT','候选资料不存在')
+            require(all(chosen[i].get('importable', bool(chosen[i]['packet'].get('text','').strip())) and
+                        len(chosen[i]['packet'].get('text','').strip()) >= 10 for i in selection),
+                    'CANDIDATE_UNREADABLE','所选资料尚无可用正文，不能加入知识库')
+            payload={k:job[k] for k in job if k not in ('id','status','created_at','updated_at','documents','searches','reads')}
+            payload['confirmation']={'key':data['key'],'candidate_ids':selection}
+            db.execute("UPDATE research_jobs SET status='confirming',payload=?,updated_at=? WHERE id=? AND owner=?",
+                       (json.dumps(payload,ensure_ascii=False),time.time(),identity,owner))
+        for candidate_id in selection:
+            with self.store.connect() as db:
+                current=self._get(db,owner,identity)
+            if any(i.get('candidate_id')==candidate_id and i['status']=='saved' for i in current['items']):continue
+            candidate=chosen[candidate_id]
+            packet=dict(candidate['packet'])
+            provenance={**(candidate.get('provenance') or {}),'human_confirmed':True,'confirmation_job_id':identity}
+            def guard(db):
+                row=db.execute('SELECT status,payload FROM research_jobs WHERE id=? AND owner=?',(identity,owner)).fetchone()
+                require(row is not None,'RESOURCE_NOT_FOUND','研究任务不可访问')
+                value=json.loads(row[1])
+                require(value.get('confirmation')=={'key':data['key'],'candidate_ids':selection},'IDEMPOTENCY_CONFLICT','确认范围已改变')
+                require(not any(i.get('candidate_id')==candidate_id and i['status']=='saved' for i in value['items']), 'RESEARCH_CANDIDATE_SAVED','资料已经保存')
+                require(row[0]=='confirming','RESEARCH_STOPPED','确认已取消，不保存迟到结果')
+                if candidate['source_method'].startswith('local_browser'):
+                    from backend.xhs_research import XHSResearch
+                    research=XHSResearch(self.store)
+                    research.expected_source_id=candidate.get('provenance',{}).get('binding_source_id')
+                    research.guard_save(db,owner,job['account_id'])
+                return value
+            def saved(db, document_id, version):
+                value=guard(db)
+                if document_id not in value['document_ids']:value['document_ids'].append(document_id)
+                for item in value['items']:
+                    if item.get('candidate_id')==candidate_id:item.update(status='saved',document_id=document_id,version=version)
+                db.execute('UPDATE research_jobs SET payload=?,updated_at=? WHERE id=? AND owner=?',
+                           (json.dumps(value,ensure_ascii=False),time.time(),identity,owner))
+            def unique_guard(db):
+                guard(db)
+                require(self._existing_candidate(db,owner,job['account_id'],candidate) is None,
+                        'RESEARCH_ALREADY_EXISTS','该笔记已入库，复用已有版本')
+            try:
+                try:
+                    # The check runs within Knowledge's write transaction, so concurrent
+                    # confirmations cannot create a second copy with a refreshed URL token.
+                    self.cases.save(owner,packet,source_method=candidate['source_method'],fetched_at=candidate['fetched_at'],
+                                    provenance=provenance,transaction_guard=unique_guard,transaction_saved=saved)
+                except DomainError as exc:
+                    if exc.code != 'RESEARCH_ALREADY_EXISTS':raise
+                    with self.store.connect() as db:
+                        db.execute('BEGIN IMMEDIATE');guard(db)
+                        existing=self._existing_candidate(db,owner,job['account_id'],candidate)
+                        require(existing is not None,'VERSION_CONFLICT','已有资料已移除，请重试')
+                        saved(db,*existing)
+            except DomainError as exc:
+                if exc.code != 'RESEARCH_CANDIDATE_SAVED':raise
+        with self.store.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            current=self._get(db,owner,identity)
+            if current['status']=='done':return self._public_view(db,owner,current)
+            require(current['status']=='confirming','RESEARCH_STOPPED','确认已取消')
+            payload=json.loads(db.execute('SELECT payload FROM research_jobs WHERE id=? AND owner=?',(identity,owner)).fetchone()[0])
+            for item in payload['items']:
+                if item['status']=='awaiting_confirmation':item['status']='not_selected'
+            payload['report']=None
+            db.execute("UPDATE research_jobs SET status='done',payload=?,updated_at=? WHERE id=? AND owner=?",
+                       (json.dumps(payload,ensure_ascii=False),time.time(),identity,owner))
+            return self._public_view(db,owner,self._get(db,owner,identity))
 
     @staticmethod
     def _same_xhs_case(full,note):

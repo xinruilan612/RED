@@ -263,12 +263,17 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
     def start_research(data: dict,user=Depends(logged)):
         from backend.research_jobs import ResearchJobs
         auth.throttle('research-job:'+user['owner'],10,3600)
-        return ResearchJobs(store).create(user['owner'],data)
+        return ResearchJobs(store).create(user['owner'],{**data,'confirmation_required':True})
 
     @app.get('/api/research/jobs/{job_id}')
     def get_research(job_id: str,user=Depends(logged)):
         from backend.research_jobs import ResearchJobs
         return ResearchJobs(store).get(user['owner'],job_id)
+
+    @app.post('/api/research/jobs/{job_id}/confirm')
+    def confirm_research(job_id: str,data: dict,user=Depends(logged)):
+        from backend.research_jobs import ResearchJobs
+        return ResearchJobs(store).confirm(user['owner'],job_id,data)
 
     @app.post('/api/research/jobs/{job_id}/cancel')
     def cancel_research(job_id: str,data: dict,user=Depends(logged)):

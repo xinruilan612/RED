@@ -88,7 +88,10 @@ class Service:
         if 'operations' in data:
             context['operations'] = self.operations.context(owner,data['operations'],mode)
         selection=data.get('knowledge',{'enabled':False})
-        require(isinstance(selection,dict) and set(selection)<={'enabled','document_ids'} and 'enabled' in selection and type(selection['enabled']) is bool,'INVALID_INPUT','资料检索设置无效')
+        require(isinstance(selection,dict) and set(selection)<={'enabled','document_ids','automatic_references'} and 'enabled' in selection and type(selection['enabled']) is bool,'INVALID_INPUT','资料检索设置无效')
+        automatic_references=selection.get('automatic_references',True)
+        require(type(automatic_references) is bool,'INVALID_INPUT','自动参考设置无效')
+        context['knowledge_selection']={**selection,'automatic_references':automatic_references}
         document_ids=selection.get('document_ids',[])
         require(isinstance(document_ids,list) and len(document_ids)<=3 and all(isinstance(x,str) and x for x in document_ids),'INVALID_INPUT','最多选择 3 份资料')
         if selection['enabled']:
@@ -98,12 +101,18 @@ class Service:
             context['retrieval']=result
             context['evidence']=result['sources']
         account=context.get('operations',{}).get('account_id')
-        if account and context.get('operations',{}).get('platform')=='xiaohongshu':
+        if account and automatic_references and context.get('operations',{}).get('platform')=='xiaohongshu':
             # Authorized public style-library use is independent of optional fact selection.
             style=self.knowledge.retrieve(owner,account,(context['topic']+' '+context['audience'])[:300],limit=3,style_only=True)
             context['style_retrieval']=style
             known={source['source_id'] for source in context.get('evidence',[])}
             context['evidence']=context.get('evidence',[])+[source for source in style['sources'] if source['source_id'] not in known]
+        if account and automatic_references:
+            approved=self.knowledge.retrieve(owner,account,(context['topic']+' '+context['audience'])[:300],limit=3,approved_only=True)
+            if approved['sources']:
+                context['approved_retrieval']=approved
+                known={source['source_id'] for source in context.get('evidence',[])}
+                context['evidence']=context.get('evidence',[])+[source for source in approved['sources'] if source['source_id'] not in known]
         if mode=='live': context['scenario']='standard'
         return self.view(self.store.create(owner,str(uuid4()),context))
 

@@ -275,7 +275,7 @@ class Knowledge:
             db.execute("UPDATE knowledge_documents SET status='deleted' WHERE id=?",(identity,))
         return {'deleted':True,'note':'后续检索已排除；已有任务的证据快照保留审计'}
 
-    def retrieve(self, owner, account, query, limit=4, document_ids=None, *, style_only=False):
+    def retrieve(self, owner, account, query, limit=4, document_ids=None, *, style_only=False, approved_only=False):
         self.account(owner,account);query=validate_text(query,'检索内容',300)
         require(type(limit) is int and 1<=limit<=20,'INVALID_INPUT','检索条数需为 1–20')
         if document_ids is not None:
@@ -299,6 +299,7 @@ class Knowledge:
             with self.store.connect() as db:
                 public_ids=XHSSync.public_note_ids(db,owner,account)
             rows=[r for r in rows if not own_synced_case(json.loads(r[11])) or public_note_id(r[8]) in public_ids]
+        if approved_only:rows=[r for r in rows if json.loads(r[11]).get('research_case',{}).get('provenance',{}).get('human_confirmed') is True]
         if style_only:rows=[r for r in rows if style_case(json.loads(r[11]))]
         documents=[(r,json.loads(r[6])) for r in rows]
         n=len(documents);avg=sum(sum(t.values()) for _,t in documents)/max(1,n)
