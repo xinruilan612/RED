@@ -90,7 +90,7 @@ class WindtunnelApiTests(unittest.TestCase):
         self.assertEqual(response.json()['error']['code'],'LIVE_DISABLED')
         for path in ('/windtunnel.js','/windtunnel.css'):
             self.assertEqual(self.client.get(path).status_code,200,path)
-        self.assertIn('windtunnel',self.client.get('/').text)
+        self.assertNotIn('windtunnel',self.client.get('/').text)
         self.assertEqual(self.client.get('/.env').status_code,404)
 
     def test_recheck_cannot_export_previous_batch(self):

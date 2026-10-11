@@ -176,7 +176,7 @@ class DemoWebTests(unittest.TestCase):
                 if 'data-page' in attrs:self.pages.append(attrs['data-page'])
         parsed=Elements();parsed.feed(html)
         self.assertEqual(len(parsed.ids),len(set(parsed.ids)))
-        self.assertEqual(parsed.pages,['overview','accounts','connections','models','library','trends','trials','windtunnel','studio','publish','metrics','memory'])
+        self.assertEqual(parsed.pages,['library','trends','studio','publish','overview','accounts','metrics','memory','connections','models'])
         status,script=self.request('GET','/operations.js')
         self.assertEqual(status,200);self.assertIn('/api/operations',script)
 

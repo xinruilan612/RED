@@ -8,14 +8,15 @@ const dateText=value=>value?new Date(value).toLocaleString('zh-CN',{hour12:false
 const badge=(text,kind='')=>`<span class="pill ${kind}">${esc(text)}</span>`;
 const empty=(title,body)=>`<div class="empty-state"><span class="empty-symbol">↗</span><h2>${esc(title)}</h2><p>${esc(body)}</p></div>`;
 function showPage(page){
- if(!pageInfo[page])page='overview';
+ if(page==='trials'||page==='windtunnel')page='studio';
+ if(!pageInfo[page])page='studio';
  currentPage=page;location.hash=page;
  $('studioView').hidden=page!=='studio';$('operationsView').hidden=page==='studio';
  [$('pageEyebrow').textContent,$('pageTitle').textContent,$('pageDescription').textContent]=pageInfo[page];
- document.querySelectorAll('[data-page]').forEach(b=>{b.classList.toggle('active',b.dataset.page===page);b.setAttribute('aria-current',b.dataset.page===page?'page':'false');});
+ document.querySelectorAll('[data-page]').forEach(b=>{const active=b.dataset.page===page;b.classList.toggle('active',active);b.setAttribute('aria-current',active?'page':'false');if(active){const group=b.closest?.('details');if(group)group.open=true;}});
  clearError();if(ops&&page!=='studio')renderOperations();window.scrollTo({top:0});
 }
-async function initOperations(){ops=await api('/api/operations');syncAccounts();if(run&&!matchesAccount(run)){run=null;$('workbench').hidden=true;$('welcome').hidden=false;fillAccountBrief();}showPage(location.hash.slice(1)||'overview');await history();}
+async function initOperations(){ops=await api('/api/operations');syncAccounts();if(run&&!matchesAccount(run)){run=null;$('workbench').hidden=true;$('welcome').hidden=false;fillAccountBrief();}showPage(location.hash.slice(1)||'studio');await history();}
 async function operate(action,payload){
  if(opsBusy)return false;opsBusy=true;clearError();
  document.querySelectorAll('#operationsView button').forEach(b=>b.disabled=true);
@@ -28,12 +29,10 @@ function renderOperations(){
  if(currentPage==='overview')renderOverview();
  if(currentPage==='accounts')renderAccounts();
  if(currentPage==='trends')renderTrends();
- if(currentPage==='trials')renderTrials();
  if(currentPage==='library')renderLibrary();
  if(currentPage==='models')renderModelSettings();
  if(currentPage==='connections')renderConnections();
  if(currentPage==='research'){currentPage='library';renderLibrary();}
- if(currentPage==='windtunnel')renderWindtunnel();
  if(currentPage==='publish')renderPublications();
  if(currentPage==='metrics')renderMetrics();
  if(currentPage==='memory')renderMemory();

@@ -46,7 +46,8 @@ class ProductionTests(unittest.TestCase):
                 self.assertEqual(page.status_code, 200)
                 self.assertEqual(page.headers['content-type'], 'text/html; charset=utf-8')
                 assets = re.findall(r'(?:src|href)="(/[^"?]+\.(?:js|css))"', page.text)
-                self.assertGreaterEqual(len(assets), 11)
+                self.assertTrue({'/auth.js','/app.js','/operations.js','/knowledge.js','/style.css'}.issubset(assets))
+                self.assertFalse({'/windtunnel.js','/windtunnel.css','/trials.js','/trials.css'}.intersection(assets))
                 for path in assets:
                     response = self.client.get(path)
                     self.assertEqual(response.status_code, 200, path)
