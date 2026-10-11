@@ -22,22 +22,52 @@ def extract(raw):
         if info.file_size > 10_000_000 or info.file_size > max(info.compress_size, 1) * 1000:
             raise ValueError('文档正文压缩比例或大小超过限制')
         root = ElementTree.fromstring(archive.read(info))
+        relationships = {}
+        if 'word/_rels/document.xml.rels' in names:
+            for item in ElementTree.fromstring(archive.read('word/_rels/document.xml.rels')):
+                target = item.get('Target', '')
+                if item.get('Type', '').endswith('/hyperlink') and target.startswith(('https://', 'http://', 'mailto:')):
+                    relationships[item.get('Id')] = target
 
     ns = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
+    rel_ns = '{http://schemas.openxmlformats.org/officeDocument/2006/relationships}'
+
+    def inline(node):
+        if node.tag == ns + 't':
+            return node.text or ''
+        if node.tag == ns + 'tab':
+            return '\t'
+        if node.tag in (ns + 'br', ns + 'cr'):
+            return '\n'
+        text = ''.join(inline(child) for child in node)
+        if node.tag == ns + 'hyperlink':
+            target = relationships.get(node.get(rel_ns + 'id'))
+            if target and target not in text:
+                return text + ' (' + target + ')'
+        return text
+
+    def blocks(node):
+        for child in node:
+            if child.tag == ns + 'p':
+                yield inline(child)
+            elif child.tag == ns + 'tbl':
+                # One chunkable block per row keeps headers, order and units.
+                for row in child.findall(ns + 'tr'):
+                    cells = [' / '.join(blocks(cell)) for cell in row.findall(ns + 'tc')]
+                    yield '\t'.join(cells)
+            elif child.tag not in (ns + 'sectPr', ns + 'tcPr'):
+                yield from blocks(child)
+
     paragraphs = []
-    for paragraph in root.iter(ns + 'p'):
-        pieces = []
-        for node in paragraph.iter():
-            if node.tag == ns + 't' and node.text:
-                pieces.append(node.text)
-            elif node.tag == ns + 'tab':
-                pieces.append('\t')
-            elif node.tag in (ns + 'br', ns + 'cr'):
-                pieces.append('\n')
-        text = ''.join(pieces).strip()
-        if text:
+    total = 0
+    for text in blocks(root):
+        # TABs delimit table cells, including empty first/last cells. Do not
+        # collapse their positions while removing paragraph edge whitespace.
+        text = text.strip(' \r\n')
+        if text.strip():
             paragraphs.append([len(paragraphs) + 1, text])
-            if len(paragraphs) > 10000 or sum(len(item[1]) for item in paragraphs) > 100_000:
+            total += len(text)
+            if len(paragraphs) > 10000 or total > 100_000:
                 raise ValueError('正文超过 10 万字符或段落数限制')
     if not paragraphs:
         raise ValueError('没有可提取的正文文字')

@@ -16,14 +16,36 @@ function bindModelForm(catalog){
 }
 async function testModelConnection(item){
  if(!window.confirm(`将使用「${item.label}」的密钥发送一次短请求，会产生小额模型费用（受该连接预算约束）。确认测试？`))return;
- await connectionAction(async()=>{await api('/api/models/connections/'+encodeURIComponent(item.id)+'/test','POST',{version:item.version,acknowledge_cost:true});await refreshModelStatus();if(currentPage==='models')await renderModelSettings();toast('连接测试已完成，请查看状态');});
+ const token=settingsLoad;
+ await connectionAction(async()=>{
+  let failure=null;
+  try{await api('/api/models/connections/'+encodeURIComponent(item.id)+'/test','POST',{version:item.version,acknowledge_cost:true});}catch(e){failure=e;}
+  try{
+   await refreshModelStatus();
+   if(currentPage==='models'&&token===settingsLoad){
+    const data=await api('/api/models');
+    if(currentPage==='models'&&token===settingsLoad){
+     const current=(data.connections||[]).find(c=>c.id===item.id),label=$('modelTestStatus-'+item.id);
+     if(label)label.textContent=current?modelTestLabel(current):'连接已撤销，请选择其他连接';
+    }
+   }
+  }catch(e){if(!failure)failure=new Error('测试请求已完成，但状态读取失败；请刷新状态核对，不要重复发送收费测试。');}
+  if(failure)throw failure;
+  toast('连接测试已完成，请查看状态');
+ });
+}
+function modelTestLabel(item){return '测试状态：'+({untested:'未测试',passed:'短请求测试通过',failed:'上次测试失败'}[item.test_status]||'未测试')+' · '+(item.last_tested?dateText(item.last_tested):'尚无测试时间');}
+function currentModelLabel(data,active){
+ if(data.default_connection_id)return active?active.label+' · '+active.model:'原默认连接已撤销或不可用，请重新选择';
+ return data.platform?.ready===false?'平台 DeepSeek 尚未配置，可连接自己的模型':'平台 DeepSeek';
 }
 function searchSettingsForm(settings){
  const s=settings.baidu||{};
  return `<form id="searchSettingsForm" class="panel"><h2>百度联网搜索</h2><p>用于全网或限定京东、淘宝等站点的网页检索；限定站点不等于完整的站内搜索接口。</p><p class="helper">${connectionLink(s.docs,'百度搜索接口文档')} · 当前${s.configured?'已保存密钥':'未配置密钥'} · 今日已用 ${esc(s.requests_today??0)} 次（UTC 日）</p><label><input name="enabled" type="checkbox" ${s.enabled?'checked':''}> 启用百度搜索</label><label>每日请求上限（UTC 日）<input name="day_limit" type="number" min="1" step="1" value="${esc(s.day_limit??100)}" required></label><label>百度 API Key<input name="api_key" type="password" autocomplete="new-password" placeholder="${s.configured?'留空保留已保存的密钥':'输入自己的百度搜索密钥'}"></label><p class="helper">搜索请求可能计费；次数限制不是金额保证。保存设置本身不执行搜索，已保存密钥不代表连接验证通过；当前搜索连接未核验。</p><button class="secondary">保存搜索设置</button></form>`;
 }
 function modelChoiceOptions(catalog,items,selected){
- return `<option value="platform" ${!selected?'selected':''}>平台 DeepSeek（无需填写 Key）</option><optgroup label="连接自己的模型">${catalog.map(p=>`<option value="preset:${esc(p.id)}">${esc(p.name)} · 填写自己的 Key</option>`).join('')}</optgroup>${items.length?`<optgroup label="已保存的连接">${items.map(c=>`<option value="connection:${esc(c.id)}" ${selected===c.id?'selected':''}>${esc(c.label)} · ${esc(c.model)}</option>`).join('')}</optgroup>`:''}`;
+ const unavailable=selected&&!items.some(c=>c.id===selected)?`<option value="connection:${esc(selected)}" selected disabled>原默认连接不可用 · 请重新选择</option>`:'';
+ return unavailable+`<option value="platform" ${!selected?'selected':''}>平台 DeepSeek（无需填写 Key）</option><optgroup label="连接自己的模型">${catalog.map(p=>`<option value="preset:${esc(p.id)}">${esc(p.name)} · 填写自己的 Key</option>`).join('')}</optgroup>${items.length?`<optgroup label="已保存的连接">${items.map(c=>`<option value="connection:${esc(c.id)}" ${selected===c.id?'selected':''}>${esc(c.label)} · ${esc(c.model)}</option>`).join('')}</optgroup>`:''}`;
 }
 function showModelEditor(catalog,item,defaults){
  $('modelConnectionEditor').innerHTML=item?modelConnectionForm(catalog,item,defaults):'<p class="helper">使用平台提供的 DeepSeek。要用自己的模型，在上方直接选择厂商，然后填写 API Key。</p>';
@@ -32,10 +54,11 @@ function showModelEditor(catalog,item,defaults){
 async function renderModelSettings(){
  const token=++settingsLoad;$('operationsContent').innerHTML='<section class="panel"><p>正在读取模型与搜索配置…</p></section>';
  try{const [data,search]=await Promise.all([api('/api/models'),api('/api/search/settings')]);if(token!==settingsLoad||currentPage!=='models')return;
- const catalog=data.catalog||[],items=data.connections||[],defaults=data.defaults||modelSettingDefaults,statuses={untested:'未测试',passed:'短请求测试通过',failed:'上次测试失败'};
+ const catalog=data.catalog||[],items=data.connections||[],defaults=data.defaults||modelSettingDefaults;
  const active=items.find(c=>c.id===data.default_connection_id);
- $('operationsContent').innerHTML=`<section class="panel"><h2>选择要使用的模型</h2><p>直接选择厂商，填写自己的 Key，保存后即可用于新任务。</p><label>模型服务<select id="defaultModelConnection">${modelChoiceOptions(catalog,items,data.default_connection_id)}</select></label><p class="helper">当前用于新任务：${active?esc(active.label)+' · '+esc(active.model):'平台 DeepSeek'}。选择厂商和保存配置不会调用模型。</p><div id="modelConnectionEditor"></div></section><details class="panel"><summary>管理已保存的连接（${items.length}）</summary>${items.map(c=>`<article class="detail-block"><h3>${esc(c.label)} · ${esc(c.model)}</h3><p class="helper">${esc(c.provider)} · ${esc(c.base_url)} · 测试状态：${esc(statuses[c.test_status]||'未测试')} · ${c.last_tested?esc(dateText(c.last_tested)):'尚无测试时间'}</p><div class="buttons"><button data-edit-model="${esc(c.id)}" class="quiet">编辑并使用</button><button data-test-model="${esc(c.id)}" class="secondary">测试连接（可能计费）</button><button data-delete-model="${esc(c.id)}" class="quiet">删除连接</button></div></article>`).join('')||'<p class="helper">还没有保存的连接，请在上方选择厂商。</p>'}</details>${searchSettingsForm(search)}`;
+ $('operationsContent').innerHTML=`<section class="panel"><h2>选择要使用的模型</h2><p>直接选择厂商，填写自己的 Key，保存后即可用于新任务。</p><label>模型服务<select id="defaultModelConnection">${modelChoiceOptions(catalog,items,data.default_connection_id)}</select></label><p class="helper">当前用于新任务：${esc(currentModelLabel(data,active))}。选择厂商和保存配置不会调用模型。</p><div id="modelConnectionEditor"></div></section><details class="panel"><summary>管理已保存的连接（${items.length}）</summary>${items.map(c=>`<article class="detail-block"><h3>${esc(c.label)} · ${esc(c.model)}</h3><p class="helper">${esc(c.provider)} · ${esc(c.base_url)} · <span id="modelTestStatus-${esc(c.id)}">${esc(modelTestLabel(c))}</span></p><div class="buttons"><button data-edit-model="${esc(c.id)}" class="quiet">编辑并使用</button><button data-test-model="${esc(c.id)}" class="secondary">测试连接（可能计费）</button><button data-delete-model="${esc(c.id)}" class="quiet">删除连接</button></div></article>`).join('')||'<p class="helper">还没有保存的连接，请在上方选择厂商。</p>'}</details>${searchSettingsForm(search)}`;
  showModelEditor(catalog,active,defaults);
+ if(data.default_connection_id&&!active)$('modelConnectionEditor').innerHTML='<p class="issue">原连接不可用，未自动切换或消耗平台额度。请在上方明确选择平台 DeepSeek，或配置其他模型。</p>';
  $('defaultModelConnection').onchange=async e=>{
   const choice=e.target.value;
   if(choice.startsWith('preset:')){const provider=catalog.find(p=>p.id===choice.slice(7));if(provider)showModelEditor(catalog,{provider:provider.id},defaults);return;}
@@ -47,5 +70,5 @@ async function renderModelSettings(){
  document.querySelectorAll('[data-test-model]').forEach(b=>b.onclick=()=>testModelConnection(items.find(c=>c.id===b.dataset.testModel)));
  document.querySelectorAll('[data-delete-model]').forEach(b=>b.onclick=async()=>{const item=items.find(c=>c.id===b.dataset.deleteModel);if(!window.confirm(`删除「${item.label}」的保存连接？以后需重新填写密钥。`))return;await connectionAction(async()=>{await api('/api/models/connections/'+encodeURIComponent(item.id)+'/delete','POST',{version:item.version});await refreshModelStatus();if(currentPage==='models')await renderModelSettings();});});
  $('searchSettingsForm').onsubmit=async e=>{e.preventDefault();const f=e.target.elements,enabled=f.enabled.checked;if(enabled&&!window.confirm('启用后，你发起或授权的百度搜索可能产生费用，按所设 UTC 日次数上限执行。确认启用？'))return;const payload={enabled,day_limit:Number(f.day_limit.value),version:search.baidu.version,acknowledge_cost:true};if(f.api_key.value)payload.api_key=f.api_key.value;await connectionAction(async()=>{await api('/api/search/settings','POST',payload);f.api_key.value='';if(currentPage==='models')await renderModelSettings();toast('搜索配置已保存');});};
- }catch(e){if(token===settingsLoad&&currentPage==='models'){$('operationsContent').innerHTML='<section class="panel"><p>配置读取失败，请重新打开此页重试。</p></section>';error(e);}}
+ }catch(e){if(token===settingsLoad&&currentPage==='models'){$('operationsContent').innerHTML='<section class="panel"><p role="alert">配置读取失败，已保存的连接没有被更改。'+esc(e.message||'请检查网络或登录状态')+'</p><button id="retryModelSettings" class="secondary">重新读取配置（不调用模型）</button></section>';$('retryModelSettings').onclick=()=>renderModelSettings();}}
 }

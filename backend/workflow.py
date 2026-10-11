@@ -62,6 +62,7 @@ class Run:
 
     def cancel(self):
         self._transition('CANCELLED')
+        self.clear_revision('cancelled')
         self.event('run.cancelled')
 
     def branch(self, agent, snapshot_id, outcome, data=None):
@@ -113,6 +114,7 @@ class Run:
         self.supplements += 1
         self.snapshot_id, self.branches, self.review = snapshot_id, {}, None
         self.prior_review, self.branch_errors = None, {}
+        self.clear_revision('superseded_by_material')
         self.current_stage = 'brief'
         self._transition('QUEUED')
 
@@ -123,7 +125,12 @@ class Run:
         item = {'ref': f'{uuid4()}@1', 'content': json.loads(json.dumps(content)),
                 'content_hash': digest(content), 'snapshot_id': self.snapshot_id, 'actor':'content'}
         self.drafts.append(item)
-        self.prior_review = self.review
+        self.prior_review = self.review or (self.prior_review if self.context.get('pending_revision') else None)
+        pending = self.context.pop('pending_revision', None)
+        if pending:
+            for request in self.context.get('revision_requests', []):
+                if request['id'] == pending['id']:
+                    request.update(status='applied', result_draft_ref=item['ref'])
         self.review = None
         self.current_stage = 'reviewer'
         self.event('artifact.created', artifact_ref=item['ref'])
@@ -204,6 +211,7 @@ class Run:
 
     def edit(self, content):
         require(self.can_manual_adopt(), 'INVALID_TRANSITION', '当前不能编辑稿件')
+        self.clear_revision('superseded_by_edit')
         if self.run_status == 'WAITING_USER':
             self._transition('QUEUED')
             self._transition('RUNNING')
@@ -213,6 +221,43 @@ class Run:
         self.prior_review = prior
         self.drafts[-1]['actor'] = 'user'
         return ref
+
+    def clear_revision(self, status):
+        pending = self.context.pop('pending_revision', None)
+        if pending:
+            for request in self.context.get('revision_requests', []):
+                if request['id'] == pending['id']:
+                    request['status'] = status
+
+    def can_request_revision(self):
+        return (self.context.get('mode') == 'live' and self.can_manual_adopt()
+                and not self.context.get('pending_revision')
+                and self.wait_reason != 'revision_limit'
+                and (self.iteration < PARAMETERS['revision_rounds_max'] or
+                     (self.review and self.review['decision'] == 'revision_required'
+                      and self.run_status == 'RUNNING')))
+
+    def request_revision(self, draft_ref, content_hash, instruction):
+        from backend.demo import validate_text
+        instruction = validate_text(instruction, '改稿要求', 1500)
+        require(self.can_request_revision(), 'INVALID_TRANSITION', '当前不能请求 AI 改稿；请等待执行完成，或使用手动编辑')
+        draft = self.drafts[-1]
+        require(draft_ref == draft['ref'] and content_hash == draft['content_hash'] == digest(draft['content']),
+                'VERSION_CONFLICT', '稿件版本已变化，请重新查看最新稿后提交改稿要求')
+        # A reviewer may already have allocated this revision round. User
+        # instructions refine that round; they do not fabricate review issues.
+        if not (self.review and self.review['decision'] == 'revision_required' and self.run_status == 'RUNNING'):
+            self.iteration += 1
+        request = {'id': str(uuid4()), 'draft_ref': draft_ref, 'content_hash': content_hash,
+                   'instruction': instruction, 'snapshot_id': self.snapshot_id, 'status': 'pending'}
+        self.context.setdefault('revision_requests', []).append(dict(request))
+        self.context['pending_revision'] = request
+        self.prior_review = self.review or self.prior_review
+        self.review = None
+        if self.run_status == 'WAITING_USER':
+            self._transition('QUEUED')
+        self.current_stage = 'content'
+        self.event('artifact.created', stage='user_revision_request', request_ref=request['id'], draft_ref=draft_ref)
 
     def demo_step(self):
         from backend.demo import advance

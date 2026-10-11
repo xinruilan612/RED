@@ -19,7 +19,7 @@ def main():
     if args.action=='bridge':
         root=Path(__file__).resolve().parents[1];folder=root/'runtime/xhs-local'
         os.umask(0o077)
-        os.environ['AUTH_TOKEN']=(folder/'control-token').read_text().strip()
+        os.environ['AUTH_TOKEN']=(folder/'control-token').read_text(encoding='utf-8').strip()
         os.environ['COOKIES_PATH']=str(folder/'session/cookies.json')
         os.chdir(folder)
         os.execv(str(folder/'bin/xiaohongshu-mcp'),['xiaohongshu-mcp','-port','127.0.0.1:'+str(args.port),'-headless=true'])

@@ -1,4 +1,5 @@
 import concurrent.futures
+from contextlib import closing
 import json
 import sqlite3
 import tempfile
@@ -39,6 +40,23 @@ class StudyBudgetTests(unittest.TestCase):
             function()
         self.assertEqual(caught.exception.code, code)
 
+    def test_connection_is_closed_on_commit_and_rollback_without_garbage_collection(self):
+        client = BudgetedClient(Adapter(), self.path)
+        with client._connect() as committed:
+            committed.execute("INSERT INTO study_budget_policy(policy) VALUES ('fixture-commit')")
+        with self.assertRaises(sqlite3.ProgrammingError):
+            committed.execute('SELECT 1')
+        with self.assertRaisesRegex(ValueError, 'fixture'):
+            with client._connect() as rolled_back:
+                rolled_back.execute("INSERT INTO study_budget_policy(policy) VALUES ('fixture-rollback')")
+                raise ValueError('fixture')
+        with self.assertRaises(sqlite3.ProgrammingError):
+            rolled_back.execute('SELECT 1')
+        with client._connect() as db:
+            values = [row[0] for row in db.execute('SELECT policy FROM study_budget_policy')]
+        self.assertIn('fixture-commit', values)
+        self.assertNotIn('fixture-rollback', values)
+
     def test_normal_metadata_settles_and_records(self):
         adapter = Adapter()
         client = BudgetedClient(adapter, self.path)
@@ -46,7 +64,7 @@ class StudyBudgetTests(unittest.TestCase):
         self.assertEqual((tokens, meta['input_tokens'], meta['output_tokens']), (30, 20, 10))
         self.assertEqual(client.summary(), {'cap_cny': 5, 'charged_upper_cny': .00012,
             'reserved_unknown_cny': 0, 'committed_upper_cny': .00012, 'calls': 1, 'unknown_calls': 0})
-        with sqlite3.connect(self.path) as db:
+        with closing(sqlite3.connect(self.path)) as db, db:
             row = db.execute('SELECT messages_sha256,reserved_micro,charged_upper_micro,response_json,request_id FROM study_calls').fetchone()
         self.assertEqual(len(row[0]), 64)
         self.assertEqual(row[1:3], (RESERVE_MICRO, 120))
@@ -142,7 +160,7 @@ class StudyBudgetTests(unittest.TestCase):
         self.assertEqual(summary['calls'], 2)
         self.assertEqual(summary['unknown_calls'], 1)
         self.assertEqual(summary['committed_upper_cny'], (RESERVE_MICRO + 120) / 1_000_000)
-        with sqlite3.connect(self.path) as db:
+        with closing(sqlite3.connect(self.path)) as db, db:
             self.assertEqual(db.execute("SELECT failure_code,continuation_safe FROM study_calls WHERE state='unknown'").fetchone(), ('ADAPTER_EXCEPTION', 1))
             self.assertIn(('continue_bounded_unknown',), db.execute('SELECT policy FROM study_budget_policy').fetchall())
         self.assertNotIn(b'secret-api-key', self.path.read_bytes())
@@ -169,7 +187,7 @@ class StudyBudgetTests(unittest.TestCase):
         with patch.object(client.adapter, 'complete_result', return_value=oversized):
             self.assert_code('STUDY_BUDGET_UNKNOWN', lambda: client.complete_result(MESSAGES))
         self.assert_code('STUDY_BUDGET_UNKNOWN', lambda: client.complete_result(other))
-        with sqlite3.connect(self.path) as db:
+        with closing(sqlite3.connect(self.path)) as db, db:
             self.assertEqual(db.execute('SELECT failure_code,continuation_safe FROM study_calls').fetchone(), ('USAGE_BOUND_EXCEEDED', 0))
 
     def test_continuation_requires_native_verified_bounds_on_each_call(self):
@@ -185,7 +203,7 @@ class StudyBudgetTests(unittest.TestCase):
         old = BudgetedClient(Adapter(error=RuntimeError('private')), self.path)
         self.assert_code('STUDY_BUDGET_UNKNOWN', lambda: old.complete_result(MESSAGES))
         # Emulate a genuinely old ledger before failure classification existed.
-        with sqlite3.connect(self.path) as db:
+        with closing(sqlite3.connect(self.path)) as db, db:
             db.execute('UPDATE study_calls SET failure_code=NULL')
             call_id = db.execute('SELECT id FROM study_calls').fetchone()[0]
         client = self.native_client()

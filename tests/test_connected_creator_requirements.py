@@ -17,10 +17,10 @@ class ConnectedCreatorRequirementsTests(unittest.TestCase):
             with self.subTest(path=path.name):
                 self.assertIn(BASELINE, path.read_text())
 
-    def test_planned_extension_does_not_grant_publication_or_paid_testing(self):
+    def test_partial_extension_does_not_grant_publication_or_paid_testing(self):
         c = json.loads((ROOT/"docs/design/design_contract.json").read_text())
         x = c["connected_creator_extension"]
-        self.assertEqual(x["status"], "planned")
+        self.assertEqual(x["status"], "partially_implemented")
         self.assertEqual(c["agents"], ["audience", "research", "content", "reviewer"])
         self.assertFalse(x["publishing_authorized"])
         self.assertTrue(x["paid_testing_requires_explicit_budget"])
@@ -28,6 +28,25 @@ class ConnectedCreatorRequirementsTests(unittest.TestCase):
         self.assertIn("missing_is_null", x["truth_boundaries"])
         self.assertIn("owner", x["sync_required_fields"])
         self.assertIn("account_id", x["sync_required_fields"])
+
+    def test_current_authority_has_no_obsolete_stage_stop_or_media_expansion(self):
+        for path in ('AGENTS.md', 'README.md', 'docs/design/CONNECTED_CREATOR_REQUIREMENTS.md'):
+            text=(ROOT/path).read_text(encoding='utf-8')
+            with self.subTest(path=path):
+                self.assertIn('b50c628',text)
+                self.assertNotIn('本轮停在第二阶段，未自动进入第三阶段',text)
+                self.assertNotIn('不全面重写角色 Prompt',text)
+                self.assertIn('图片',text)
+                self.assertIn('视频',text)
+
+    def test_role_cards_respect_optional_reference_and_runtime_authority(self):
+        for path in sorted((ROOT/'docs/agents').glob('0[1-4]*.md')):
+            text=path.read_text(encoding='utf-8')
+            with self.subTest(path=path.name):
+                self.assertIn('runtime_extension.prompt_version',text)
+                self.assertIn('knowledge.automatic_references',text)
+                self.assertIn('本卡片不被直接加载为运行提示词',text)
+                self.assertNotIn('本轮仅完成说明对齐，新增职责尚待阶段四',text)
 
     def test_platform_permission_gate_and_runtime_truth_are_explicit(self):
         text = (ROOT/"docs/design"/BASELINE).read_text()

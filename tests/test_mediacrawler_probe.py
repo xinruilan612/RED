@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from backend.private_files import is_private_file
 from scripts.mediacrawler_probe import profile_id,clean_note,clean_comments,private_json,ProbeStopped
 
 class MediaCrawlerProbeTests(unittest.TestCase):
@@ -26,7 +27,7 @@ class MediaCrawlerProbeTests(unittest.TestCase):
     def test_result_file_is_private(self):
         with tempfile.TemporaryDirectory() as root:
             path=Path(root)/'result.json';private_json(path,{'status':'done'})
-            self.assertEqual(path.stat().st_mode&0o777,0o600)
+            self.assertTrue(is_private_file(path))
             self.assertEqual(json.loads(path.read_text())['status'],'done')
 
 

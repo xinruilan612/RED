@@ -40,7 +40,12 @@ class ProcessPackageTests(unittest.TestCase):
             git('add', '.')
             git('commit', '-qm', 'side experiment')
             git('checkout', '-q', '-')
-            (root / 'link.md').symlink_to(root / '.env')
+            try:
+                (root / 'link.md').symlink_to(root / '.env')
+            except OSError as exc:
+                if getattr(exc, 'winerror', None) == 1314:
+                    self.skipTest('Windows symbolic-link privilege unavailable; full case runs on Linux')
+                raise
             output = root / 'output/process.zip'
             result = build(output, root=root, extras=('link.md',))
             self.assertEqual(result['commits'], 3)

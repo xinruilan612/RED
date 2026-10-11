@@ -8,6 +8,7 @@ from pathlib import Path
 from unittest.mock import patch
 from backend.contracts import DomainError
 from backend.credentials import CredentialVault
+from backend.private_files import is_private_file
 from backend.model_connections import ModelConnections,PROVIDERS,base_url
 from backend.provider import Config,ConnectedModel,connected_request
 from backend.service import Service
@@ -34,7 +35,7 @@ class ConnectionTests(unittest.TestCase):
             ciphertext=db.execute('SELECT secret FROM model_connections').fetchone()[0]
         self.assertNotIn('secret-never-public',ciphertext)
         self.assertEqual(CredentialVault(self.store,environ={}).decrypt(ciphertext),'secret-never-public')
-        self.assertEqual((Path(self.temp.name)/'credentials.key').stat().st_mode & 0o777,0o600)
+        self.assertTrue(is_private_file(Path(self.temp.name)/'credentials.key'))
         self.assertNotIn('secret-never-public',json.dumps(self.models.public('alice')))
         self.assertEqual(self.models.public('bob')['connections'],[])
         with self.assertRaises(DomainError):self.models.select('bob',{'connection_id':item['id']})

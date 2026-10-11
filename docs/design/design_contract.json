@@ -443,7 +443,7 @@
   "runtime_extension": {
     "version": "0.7.0",
     "graph_policy": "four-role-graph@1",
-    "prompt_version": "four-role-v1.0-original-grouped-retrieval3",
+    "prompt_version": "four-role-v1.1-optin-comments-user-revision1",
     "lease_s": 30,
     "heartbeat_s": 10,
     "stage_attempts_max": 3,
@@ -489,8 +489,8 @@
     "preserve_source_draft_separately": true
   },
   "connected_creator_extension": {
-    "version": "2026-10-10",
-    "status": "planned",
+    "version": "2026-10-11",
+    "status": "partially_implemented",
     "requirements": "CONNECTED_CREATOR_REQUIREMENTS.md",
     "priority_platform": "xiaohongshu",
     "account_type": "personal_without_api_access",

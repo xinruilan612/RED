@@ -7,17 +7,24 @@ const states={QUEUED:'准备开始',RUNNING:'可以继续执行',WAITING_USER:'�
 const checks={brief_fit:'符合需求',audience_fit:'受众相关',usefulness_and_readability:'实用与易读',title_body_alignment:'标题与正文一致',evidence_integrity:'证据完整',experience_authenticity:'经历真实',originality_risk:'原创风险',privacy_and_policy:'隐私与规则'};
 let provider=null,polling=false,materialDocsCache=[],confirmedLiveRuns=new Set(),materialRefreshes=new Map();
 let cancellationRun=null,pendingLiveBudget=null;
+let commentNotesLoad=0,commentNotesAccount=null,revisionBinding=null,revisionCommand=null;
 let csrf='',run=null,selected='audience',busy=false,auto=false,editing=false,viewVersion=null,detailStage=null,toastTimer,chosenHypothesis=null;
 async function api(path,method='GET',body){
  const r=await fetch(path,{method,headers:method==='POST'?{'Content-Type':'application/json','X-CSRF-Token':csrf}:{},body:body===undefined?undefined:JSON.stringify(body)});
- const data=await r.json(); if(!r.ok)throw new Error(data.error?.message||'请求失败');return data;
+ const data=await r.json();if(!r.ok){const error=new Error(data.error?.message||'请求失败');error.status=r.status;error.code=data.error?.code;throw error;}return data;
 }
 let errorSource=null;
 function error(e,source='request'){$('error').textContent=e.message||String(e);$('error').hidden=false;errorSource=source;}
 function clearError(){$('error').hidden=true;errorSource=null;}
 function toast(text){$('toast').textContent=text;$('toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').hidden=true,3500);}
 function json(value){return '<pre class="json">'+esc(JSON.stringify(value,null,2))+'</pre>';}
-function dirtyGuard(){return !editing||window.confirm('有尚未保存的编辑，确定放弃吗？');}
+function hasUnsavedRevision(){return Boolean($('revisionInstruction')?.value?.trim());}
+function dirtyGuard(){
+ if(!editing&&!hasUnsavedRevision())return true;
+ if(!window.confirm('有尚未保存的编辑或改稿要求，确定放弃吗？'))return false;
+ if($('revisionInstruction'))$('revisionInstruction').value='';revisionBinding=null;
+ return true;
+}
 function audienceWebObservations(value){
  return (value.observations||[]).map(o=>{const source=(run.context.evidence||[]).find(s=>s.source_id===o.source_id);return `<article class="source-card"><h3>有原文依据的观察</h3><blockquote>${esc(o.quote)}</blockquote><p>${esc(o.interpretation)}</p>${source?.url?`<a href="${esc(source.url)}" target="_blank" rel="noopener noreferrer">${esc(source.title||'查看来源')}</a>`:''}</article>`;}).join('');
 }
@@ -44,6 +51,40 @@ async function refreshMaterialDocuments(){
  })();
  materialRefreshes.set(account,request);
  try{await request;}finally{if(materialRefreshes.get(account)===request)materialRefreshes.delete(account);}
+}
+function resetCommentSelection(){
+ commentNotesLoad++;commentNotesAccount=null;
+ if(!$('useCommentFeedback'))return;
+ $('useCommentFeedback').checked=false;$('commentFeedbackFields').hidden=true;$('commentNoteSelect').innerHTML='';
+}
+async function refreshCommentNotes(){
+ const account=currentAccount()?.id,token=++commentNotesLoad,select=$('commentNoteSelect');
+ if(!account)return;
+ const selected=commentNotesAccount===account?new Set([...select.selectedOptions].map(o=>o.value)):new Set();
+ commentNotesAccount=null;select.innerHTML='';$('commentFeedbackStatus').textContent='正在读取已核实的公开笔记…';
+ try{
+  const notes=await api('/api/social/sync/notes?account_id='+encodeURIComponent(account));
+  if(token!==commentNotesLoad||currentAccount()?.id!==account||!$('useCommentFeedback').checked)return;
+  const visible=notes.filter(n=>n.visibility==='public');
+  select.innerHTML=visible.map(n=>`<option value="${esc(n.id)}" ${selected.has(n.id)?'selected':''}>${esc(n.title||n.id)} · ${esc(n.id)}</option>`).join('');
+  commentNotesAccount=account;$('commentFeedbackStatus').textContent=visible.length?'最多选 3 篇。创建任务时冻结已取得的部分评论；后续同步不会改写这次输入。':'暂无已核实的公开笔记；请检查账号连接，或关闭评论参考后继续。';
+ }catch(e){if(token===commentNotesLoad&&currentAccount()?.id===account)$('commentFeedbackStatus').textContent='读取失败，可点击刷新重试、检查账号连接，或关闭评论参考继续。';}
+}
+function commentFeedbackRequest(){
+ if(!$('useCommentFeedback')?.checked)return {enabled:false};
+ const ids=[...$('commentNoteSelect').selectedOptions].map(o=>o.value);
+ if(commentNotesAccount!==currentAccount()?.id||!ids.length||ids.length>3)throw new Error('请选 1 至 3 篇当前账号的公开笔记，或关闭评论参考。');
+ return {enabled:true,note_ids:ids};
+}
+function revisionTargetsLatest(){return viewVersion===null||viewVersion===run?.drafts.length-1;}
+function renderFeedbackAndRevision(){
+ const feedback=run.context.comment_feedback,host=$('commentFeedbackSummary');
+ if(host){host.hidden=!feedback?.enabled;if(feedback?.enabled)host.innerHTML=`<h2>本次评论参考</h2><p>${esc(feedback.limitation)}</p><p>已冻结 ${esc(feedback.sample_size)} 条样本 · ${esc(feedback.frozen_at)}</p>${(feedback.notes||[]).map(n=>`<p>${esc(n.title||n.note_id)} · 笔记 ID：${esc(n.note_id)}</p>`).join('')}`;}
+ const panel=$('revisionConversation');if(!panel)return;
+ const requests=run.context.revision_requests||[],allowed=run.allowed_actions.includes('request_revision')&&!run.in_flight,viewingHistory=!revisionTargetsLatest();
+ panel.hidden=!(allowed||requests.length);$('revisionRequestForm').hidden=!allowed||viewingHistory;
+ $('revisionConversationHistory').innerHTML=(allowed&&viewingHistory?'<p role="status" class="helper">正在查看历史稿件，不能把这版要求自动套用到最新稿。请在“查看版本”中选择最新版本，阅读后再提交改稿要求。</p>':'')+requests.map(r=>`<p><b>你的要求：</b>${esc(r.instruction)}</p><p class="helper">针对 ${esc(r.draft_ref)} · ${esc(({pending:'已保存，等待执行',applied:'已生成新版本，仍需完整复审',superseded_by_edit:'已由手动编辑替代',superseded_by_material:'已因补料失效'})[r.status]||r.status)}</p>`).join('');
+ if(revisionBinding?.runId!==run.run_id){revisionBinding=null;$('revisionInstruction').value='';}
 }
 function liveBudgetKey(task){return JSON.stringify([task.run_id,task.snapshot_id,task.model_policy||task.context?.model_policy||null]);}
 function confirmLiveBudget(resume){
@@ -106,6 +147,7 @@ function render(){
  renderWebResearch();
  renderMode(run.mode);
  renderTestingBudget();
+ renderFeedbackAndRevision();
  if($('workbenchGuide'))$('workbenchGuide').textContent=nextStepGuidance(run);
  $('modelCalls').textContent=(run.usage?.model_calls||0)+' 次';
  $('modelCost').textContent=run.mode==='live'?'≤ $'+Number(run.usage.cost_upper_estimate_usd||0).toFixed(4)+' 估算':'¥0.00（模拟）';
@@ -165,7 +207,7 @@ function renderDetails(){
  const matches=detailStage?logs.filter(n=>n.stage===detailStage):logs;
  if(!matches.length){$('details').innerHTML='<div class="empty">本次输入的这个创作阶段还没有执行。</div>'+previousHistory;return;}
  const current=matches[matches.length-1];
- $('details').innerHTML=`${selected==='content'&&run.drafts.length>1?'<p class="editor-note">这些是生成时保存的阶段记录。最新修改后的稿件，请查看下方“文案与版本对比”。</p>':''}<p class="muted">最近阶段：${esc(stages[current.stage])} · ${current.duration_ms} ms · 真实模型调用 ${current.model_calls||0} 次 · ${current.tokens??'未知'} Token</p><div class="detail-block"><h3>当前产物</h3>${friendly(current.agent,current.stage,current.output)}<details><summary>查看原始结构化记录</summary>${json(current.output)}</details></div><details><summary>查看这一阶段的输入</summary>${json(current.input)}</details><div class="detail-block"><h3>工具与记忆</h3><p>${run.context.evidence?.length?'已使用资料检索快照，来源与片段可在本阶段输入中查看。':'本次未使用检索片段。'}${esc(current.memory)}</p><p>${run.mode==='live'?'由 DeepSeek 生成；审核不代表外部事实已核实。':'采用固定模板 / 本地规则，未使用模型推理。'}</p></div>${logs.length>1?'<details><summary>所有阶段与历史记录（'+logs.length+'）</summary>'+logs.map(l=>'<h3>'+esc(stages[l.stage])+' · '+esc(l.snapshot_id.slice(0,8))+'</h3>'+friendly(l.agent,l.stage,l.output)).join('')+'</details>':''}${previousHistory}`;
+ $('details').innerHTML=`${selected==='content'&&run.drafts.length>1?'<p class="editor-note">这些是生成时保存的阶段记录。最新修改后的稿件，请查看下方“文案与版本对比”。</p>':''}<p class="muted">最近阶段：${esc(stages[current.stage])} · ${current.duration_ms} ms · 真实模型调用 ${current.model_calls||0} 次 · ${current.tokens??'未知'} Token</p><div class="detail-block"><h3>当前产物</h3>${friendly(current.agent,current.stage,current.output)}<details><summary>查看原始结构化记录</summary>${json(current.output)}</details></div><details><summary>查看这一阶段的输入</summary>${json(current.input)}</details><div class="detail-block"><h3>工具与记忆</h3><p>${run.context.evidence?.length?'已使用资料检索快照，来源与片段可在本阶段输入中查看。':'本次未使用检索片段。'}${esc(current.memory)}</p><p>${run.mode==='live'?'由本任务选定的模型生成；审核不代表外部事实已核实。':'采用固定模板 / 本地规则，未使用模型推理。'}</p></div>${logs.length>1?'<details><summary>所有阶段与历史记录（'+logs.length+'）</summary>'+logs.map(l=>'<h3>'+esc(stages[l.stage])+' · '+esc(l.snapshot_id.slice(0,8))+'</h3>'+friendly(l.agent,l.stage,l.output)).join('')+'</details>':''}${previousHistory}`;
  if(selected==='reviewer'&&run.review){$('details').insertAdjacentHTML('afterbegin',run.review.checks.map(c=>`<div class="review-check"><span>${esc(checks[c.name])}</span><span class="${esc(c.result)}">${c.result==='pass'?(run.mode==='live'?'模型判断通过':'模拟通过'):c.result==='fail'?'发现问题':'未完成'}</span></div>`).join(''));}
 }
 function renderRecovery(){
@@ -273,8 +315,8 @@ async function act(action,payload={}){
  if(action==='next'&&websiteSession?.auth_required)return backgroundCommand('step');
  if(action==='next'&&run?.mode==='live'&&!confirmLiveBudget(()=>act(action,payload)))return false;
  if(busy||!run)return false;busy=true;clearError();if(action==='next'&&run.mode==='live')run.in_flight=true;render();
- try{run=await api(`/api/runs/${run.run_id}/actions`,'POST',{action,version:run.status_version,key:crypto.randomUUID(),payload});clearError();viewVersion=null;selected=currentAgent();detailStage=null;if(action==='edit'){ops=await api('/api/operations');syncAccounts();}await history();return true;}
- catch(e){auto=false;error(e);try{run=await api('/api/runs/'+run.run_id);}catch(_){}return false;}
+ try{let command={action,version:run.status_version,key:crypto.randomUUID(),payload};if(action==='request_revision'){const signature=JSON.stringify([run.run_id,payload]);if(revisionCommand?.signature===signature)command=revisionCommand.command;else revisionCommand={signature,command};}run=await api(`/api/runs/${run.run_id}/actions`,'POST',command);if(action==='request_revision')revisionCommand=null;clearError();viewVersion=null;selected=currentAgent();detailStage=null;if(action==='edit'){ops=await api('/api/operations');syncAccounts();}await history();return true;}
+ catch(e){if(action==='request_revision'&&e.status>=400&&e.status<500&&e.status!==408)revisionCommand=null;auto=false;error(e);try{run=await api('/api/runs/'+run.run_id);}catch(_){}return false;}
  finally{busy=false;render();}
 }
 async function backgroundCommand(action,extra={}){
@@ -299,7 +341,7 @@ async function autoRun(){
  auto=false;render();
 }
 $('briefForm').addEventListener('submit',async e=>{e.preventDefault();if(busy)return;busy=true;clearError();e.submitter.disabled=true;
- try{const accountId=currentAccount()?.id,documentIds=[...$('materialDocumentSelect').selectedOptions].map(o=>o.value);if(documentIds.length>3)throw new Error('本次最多选择 3 份资料');run=await api('/api/runs','POST',{creation:await creationRequest(),...(websiteSession?.auth_required?{knowledge:{enabled:$('useKnowledge').checked,automatic_references:$('useAutomaticReferences').checked,document_ids:$('useKnowledge').checked?documentIds:[]}}:{}),...($('useWebResearch').checked?{web_research:{enabled:true,provider:$('webSearchProvider').value,targets:[$('webSearchTarget').value],queries:[$('webQuery1').value,$('webQuery2').value].map(q=>q.trim()).filter(Boolean)}}:{}),mode:$('mode').value,topic:$('topic').value,audience:$('audience').value,tone:$('tone').value,material:$('material').value,scenario:$('scenario').value,allow_hypothesis:$('hypothesis').checked,operations:{platform:$('targetPlatform').value,account_id:accountId,account:$('accountName').value,trend_id:chosenTrend?.id||null,hypothesis_id:chosenHypothesis?.id||null}});chosenHypothesis=null;selected='audience';detailStage=null;viewVersion=null;editing=false;$('editor').hidden=true;render();await history();}
+ try{const accountId=currentAccount()?.id,documentIds=[...$('materialDocumentSelect').selectedOptions].map(o=>o.value);if(documentIds.length>3)throw new Error('本次最多选择 3 份资料');run=await api('/api/runs','POST',{comment_feedback:commentFeedbackRequest(),creation:await creationRequest(),...(websiteSession?.auth_required?{knowledge:{enabled:$('useKnowledge').checked,automatic_references:$('useAutomaticReferences').checked,document_ids:$('useKnowledge').checked?documentIds:[]}}:{}),...($('useWebResearch').checked?{web_research:{enabled:true,provider:$('webSearchProvider').value,targets:[$('webSearchTarget').value],queries:[$('webQuery1').value,$('webQuery2').value].map(q=>q.trim()).filter(Boolean)}}:{}),mode:$('mode').value,topic:$('topic').value,audience:$('audience').value,tone:$('tone').value,material:$('material').value,scenario:$('scenario').value,allow_hypothesis:$('hypothesis').checked,operations:{platform:$('targetPlatform').value,account_id:accountId,account:$('accountName').value,trend_id:chosenTrend?.id||null,hypothesis_id:chosenHypothesis?.id||null}});chosenHypothesis=null;selected='audience';detailStage=null;viewVersion=null;editing=false;$('editor').hidden=true;render();await history();}
  catch(err){error(err);}finally{busy=false;e.submitter.disabled=false;if(run&&!$('workbench').hidden)render();}});
 $('history').addEventListener('click',async e=>{const b=e.target.closest('[data-run]');if(!b||busy||!dirtyGuard())return;auto=false;editing=false;$('editor').hidden=true;clearError();showPage('studio');try{run=await api('/api/runs/'+b.dataset.run);viewVersion=null;detailStage=null;selected=currentAgent();render();await history();}catch(err){error(err);}});
 $('newRun').onclick=()=>{if(busy||!dirtyGuard())return;showPage('studio');auto=false;editing=false;$('editor').hidden=true;$('workbench').hidden=true;$('welcome').hidden=false;renderMode($('mode').value);fillAccountBrief();clearError();};
@@ -331,9 +373,20 @@ $('editor').onsubmit=async e=>{e.preventDefault();const data={selected_title:$('
 $('accept').onclick=async()=>{if(await act('accept',{draft_ref:run.drafts.at(-1).ref,review_ref:run.review.ref}))toast('已确认当前版本，可以下载。');};
 $('adoptManual').onclick=async()=>{const draft=run.drafts.at(-1);if(await act('adopt_manual',{draft_ref:draft.ref,content_hash:draft.content_hash,acknowledge:true})){clearError();toast('已人工采用当前版本，审核意见保留，可以下载。');}};
 $('supplyForm').onsubmit=async e=>{e.preventDefault();if(await act('supplement',{material:$('supply').value,allow_hypothesis:$('supplyHypothesis').checked}))toast('补充已保存，请启动运行重新分析。');};
-$('versionSelect').onchange=e=>{const version=Number(e.target.value);viewVersion=version===run.drafts.length-1?null:version;renderDraft();};
+$('versionSelect').onchange=e=>{const version=Number(e.target.value);viewVersion=version===run.drafts.length-1?null:version;renderDraft();renderFeedbackAndRevision();};
+if($('useCommentFeedback'))$('useCommentFeedback').onchange=()=>{if(!$('useCommentFeedback').checked){resetCommentSelection();return;}$('commentFeedbackFields').hidden=false;refreshCommentNotes();};
+if($('refreshCommentNotes'))$('refreshCommentNotes').onclick=refreshCommentNotes;
+if($('activeAccount'))$('activeAccount').addEventListener('change',resetCommentSelection);
+if($('revisionInstruction'))$('revisionInstruction').addEventListener('input',()=>{if(!revisionBinding&&run?.drafts.length&&revisionTargetsLatest()){const d=run.drafts.at(-1);revisionBinding={runId:run.run_id,draftRef:d.ref,contentHash:d.content_hash};}});
+if($('revisionRequestForm'))$('revisionRequestForm').onsubmit=async e=>{
+ e.preventDefault();if(busy||!run?.drafts.length)return;
+ if(!revisionTargetsLatest()){error(new Error('当前查看的是历史稿件，请切回最新版本，阅读后再提交改稿要求。'));return;}
+ const d=run.drafts.at(-1),binding=revisionBinding||{runId:run.run_id,draftRef:d.ref,contentHash:d.content_hash};
+ if(binding.runId!==run.run_id||binding.draftRef!==d.ref||binding.contentHash!==d.content_hash){revisionBinding=null;error(new Error('稿件已变化，请查看最新稿后重新确认改稿要求。文字已保留。'));return;}
+ if(await act('request_revision',{draft_ref:binding.draftRef,content_hash:binding.contentHash,instruction:$('revisionInstruction').value})){$('revisionInstruction').value='';revisionBinding=null;toast('改稿要求已保存。点击连续运行执行 AI 改稿和复审，沿用本任务预算。');}
+};
 if($('compareVersions'))$('compareVersions').onchange=()=>renderDraft();
-window.addEventListener('beforeunload',e=>{if(editing){e.preventDefault();e.returnValue='';}});
+window.addEventListener('beforeunload',e=>{if(editing||hasUnsavedRevision()){e.preventDefault();e.returnValue='';}});
 document.addEventListener('DOMContentLoaded',async()=>{try{const session=await api('/api/session');csrf=session.csrf;if(session.auth_required&&!session.user){showLogin(session);return;}showWebsiteUser(session);applyModelStatus(session.provider);$('mode').value='simulation';$('scenario').disabled=$('mode').value==='live';renderMode($('mode').value);const rows=await history();if(rows.length){run=rows[0];selected=currentAgent();render();await history();}await initOperations();}catch(e){error(e);}});
 
 const materialFiles=$('materialFiles');
@@ -365,7 +418,9 @@ setInterval(async()=>{
 
 function applyModelStatus(value){
  provider=value;
- $('configMessage').textContent=provider.message+' · 整单最多'+(provider.run_attempts_max??16)+'次 / '+(provider.run_tokens_max??80000).toLocaleString()+' Token';
+ const message=provider.ready?provider.message:'尚未连接可用模型。可继续免费模拟，或前往“连接与设置 → 模型与搜索设置”选择厂商，填写模型、API Key 和连接地址；保存并用于新任务后，可测试连接（可能计费）。';
+ $('configMessage').textContent=message+' · 整单最多'+(provider.run_attempts_max??16)+'次 / '+(provider.run_tokens_max??80000).toLocaleString()+' Token';
+ $('configureModelConnection').hidden=Boolean(provider.ready);
  $('liveOption').disabled=!provider.ready;
  $('liveOption').textContent=provider.ready?'真实 AI · '+provider.model+'（消耗接口额度）':'真实 AI（请配置模型连接）';
  $('connectionStatus').textContent=(provider.provider||'模型')+'：'+(provider.ready?'已配置':'未配置');

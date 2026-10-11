@@ -58,6 +58,8 @@ class Store:
             active = db.execute('SELECT payload FROM runs WHERE owner=?', (owner,)).fetchall()
             require(not any(json.loads(row[0]).get('workflow_type','creation') == run.workflow_type and json.loads(row[0])['run_status'] not in ('SUCCEEDED','FAILED','CANCELLED','EXPIRED') for row in active),
                     'RUN_ALREADY_ACTIVE', '已有活跃任务')
+            from backend.comment_feedback import assert_visible
+            assert_visible(run,db)
             db.execute('INSERT INTO runs(id,owner,payload) VALUES(?,?,?)', (run.run_id,owner,json.dumps(asdict(run))))
         return run
 
@@ -70,7 +72,7 @@ class Store:
         payload = {} if payload is None else payload
         require(isinstance(payload,dict) and isinstance(key,str) and key, 'INVALID_INPUT', '命令参数无效')
         integer(expected_version, 'expected_version')
-        actions = ('start','cancel','branch','retry','join','supplement','draft','reviewed','accept','adopt_manual','edit','demo_step','demo_supplement')
+        actions = ('start','cancel','branch','retry','join','supplement','draft','reviewed','accept','adopt_manual','edit','request_revision','demo_step','demo_supplement')
         require(action in actions, 'INVALID_INPUT', '未知命令')
         fingerprint = digest({'version':expected_version,'action':action,'payload':payload})
         with self.connect() as db:
@@ -84,7 +86,7 @@ class Store:
             job = db.execute('SELECT status FROM runtime_jobs WHERE run_id=?',(run_id,)).fetchone() if db.has_table('runtime_jobs') else None
             if job and action!='cancel':
                 require(job[0] not in ('queued','running','pausing'),'JOB_ACTIVE','后台任务尚未停稳，请稍后重试')
-            if action in ('accept','adopt_manual','edit') and db.has_table('live_steps'):
+            if action in ('accept','adopt_manual','edit','request_revision') and db.has_table('live_steps'):
                 require(not db.execute("SELECT 1 FROM live_steps WHERE run_id=? AND state='running'",(run_id,)).fetchone(), 'JOB_ACTIVE', '模型正在执行，请等待完成')
             before = run.drafts[-1] if action == 'edit' and run.drafts else None
             getattr(run, action)(**payload)
@@ -93,7 +95,7 @@ class Store:
                 capture_edit(db, run, before)
             if job and action in ('accept','adopt_manual','cancel'):
                 db.execute("UPDATE runtime_jobs SET status='done',token=NULL WHERE run_id=?",(run_id,))
-            elif job and job[0] in ('paused','blocked') and action in ('edit','demo_supplement'):
+            elif job and action in ('edit','demo_supplement','request_revision'):
                 db.execute('UPDATE runtime_jobs SET thread_id=? WHERE run_id=?',(str(uuid4()),run_id))
             run.status_version += 1
             encoded = json.dumps(asdict(run), ensure_ascii=False)

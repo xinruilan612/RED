@@ -11,7 +11,7 @@
 
 围绕用户主题或产品资料，使用冻结的检索证据和可选评论问题完成创作及对话改稿；学习结构与表达方法，不复制原作者文字或经历，不捏造产品事实。保留每步输入、草稿和修订版本，按任务需求创作，不永久受精简测试稿长度限制；改稿后重新审核。
 
-本轮已联动实际 Prompt、三组冻结上下文和引用校验；具体实测范围与结果见阶段进度说明。运行入口为 backend/live.py::messages_for → backend/runtime.py → model_router.Calls；本卡片不被直接加载为运行提示词。原角色 ID、工具权限、示例与机器契约保留；下文历史实现记录不代表本轮已验证模型行为。
+b50c628 基线已联动实际 Prompt、三组冻结上下文和引用校验；本轮新增对话与评论能力的独立结果见阶段进度说明。运行入口为 backend/live.py::messages_for → backend/runtime.py → model_router.Calls；本卡片不被直接加载为运行提示词。原角色 ID、工具权限、示例与机器契约保留；下文历史实现记录不代表本轮已验证模型行为。
 
 ## 1. 职责
 
@@ -201,7 +201,7 @@ Brief + AccountProfile + AudienceInsight + ResearchPack
 
 ## 2026-10-10 公开高赞收藏风格案例适配
 
-当前提示词版本为 `four-role-v0.9-public-style-library1`。当前账号有效且满足已记录赞藏阈值的公开表达案例在创建任务时自动检索，无须每次手工选资料；最多3份不同案例，与手选商品事实资料分开后合并冻结。四角色共享 `retrieved_references`；空结果不补造案例，时间、指标与来源均保留，相关度不代表传播效果。
+此节记录历史 `four-role-v0.9-public-style-library1` 的风格库路径；当前提示词版本以 design_contract.json 的 runtime_extension.prompt_version 为准，分类三组检索见 ORIGINAL_CREATION.md。自动参考仅在用户开启 knowledge.automatic_references 时采用当前账号有效、已确认入库且领域/渠道/形式匹配的案例；关闭后不隐式注入，手选产品事实仍可使用。四角色共享冻结证据；空结果不补造案例，时间、指标与来源均保留，相关度不代表传播效果。
 
 策略比较参考并在why_account保留source_id、具体借鉴要点与本题改写方法；随后分别改写标题、开头、提纲结构、句段节奏及CTA。使用本题真实材料重新组织，不串接大段原文、不只替换关键词、不虚构自己的体验。发布文案不包含内部引用ID。
 

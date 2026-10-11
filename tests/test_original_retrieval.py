@@ -49,7 +49,10 @@ class OriginalRetrievalTests(unittest.TestCase):
         self.assertIn('NO_MATCHING_EXAMPLES',[g['code'] for g in result['gaps']])
         kb=Knowledge(self.store,use_configured_embeddings=False)
         result=kb.grouped_retrieve(self.owner,self.account,'面霜',self.target)
-        self.assertEqual(result['engine'],'unavailable');self.assertEqual(result['sources'],[])
+        self.assertEqual(result['engine'],'filtered-bm25-zh-bigram-v1');self.assertEqual(result['sources'],[])
+        self.assertIn('VECTOR_UNAVAILABLE',[gap['code'] for gap in result['gaps']])
+        self.assertEqual(result['filters']['examples']['candidate_count'],0)
+        self.assertEqual(result['filters']['examples']['vector_candidate_count'],0)
     def test_explicit_multidomain_and_form(self):
         target=classify_task({'domains':['digital','photography'],'format':'video_script'},{'topic':'面霜'})
         self.assertEqual(target['domains'],['digital','photography']);self.assertEqual(target['origin'],'user')

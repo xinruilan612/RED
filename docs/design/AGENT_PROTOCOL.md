@@ -1,10 +1,10 @@
 # 四 Agent 统一执行协议
 
-> **2026-10-10 改版阅读顺序**：先读[正式需求](CONNECTED_CREATOR_REQUIREMENTS.md)与[六阶段进度及代码核对](../CONNECTED_CREATOR_STATUS.md)。主线为主题/产品资料、可选联网与 RAG、四 Agent、对话改稿、发布或导出、选定公开笔记评论反馈。下文旧范围及“已实现/未实现”仅代表相应历史阶段，不作为当前可用性证明；冲突按新需求处理，不新增平台或后台。本轮只改说明，运行时 Prompt、业务、数据库与依赖未改。
+> **2026-10-11 当前阅读顺序**：先读[正式需求](CONNECTED_CREATOR_REQUIREMENTS.md)与[六阶段进度及代码核对](../CONNECTED_CREATOR_STATUS.md)。以 b50c628 为基线，先统一 AI 参考资料，再补真实产品差距；旧阶段“只改说明/仅第二阶段”限制不适用于本轮。主线为主题/产品资料、可选联网与 RAG、四 Agent、对话改稿、文字导出与选定公开笔记评论反馈。不新增图片、视频、预测、平台或后台。下文旧范围与完成记录仅作历史参考，当前可用性以新代码和本轮独立验收为准。
 
 > **当前需求（2026-10-10，已授权实施）**：[小红书连接、研究资料库与多模型](CONNECTED_CREATOR_REQUIREMENTS.md)。新增能力以该基线为准；下文旧阶段限制和完成记录保留其日期与实现边界，不作为拒绝新需求的依据。
 
-v0.3 · 设计待实现。本文规定路由与校验语义；[design_contract.json](design_contract.json) 是 ID、预算、状态、事件及权限名单的唯一机器来源。角色字段见 [Agent Cards](../agents/00_overview_and_all_agents.md)。发生差异须修订契约并通过测试，不能在提示词中静默覆盖。
+v0.3 · 历史设计契约，当前实现与差异见本页末节。本文规定路由与校验语义；[design_contract.json](design_contract.json) 是 ID、预算、状态、事件及权限名单的唯一机器来源。角色字段见 [Agent Cards](../agents/00_overview_and_all_agents.md)。发生差异须修订契约并通过测试，不能在提示词中静默覆盖。
 
 ## 1. 版本与状态
 
@@ -125,12 +125,12 @@ search_public_sources/fetch_source_text 的默认禁用保持为未授权任务�
 
 ## 2026-10-10 公开风格库自动检索协议
 
-`four-role-v0.9-public-style-library1` 保持 audience/research/content/reviewer 四角色及既有输出schema。服务层依据当前账号自动检索已入库、有效、公开、通过赞藏阈值的 expression_reference，最多3份不同文档；与用户选择的事实资料去重合并为任务冻结证据。不会因 knowledge.enabled=false 或未勾选文件而关闭此风格库路径；无当前账号时不推断其他账号身份，无命中时明确为空。
+历史 `four-role-v0.9-public-style-library1` 已被当前三组检索扩展，版本以 design_contract.json 的 runtime_extension.prompt_version 为准。保持 audience/research/content/reviewer 四角色及既有输出schema。已确认入库的样例仅在 knowledge.automatic_references=true 且领域、渠道、形式匹配时采用；false 明确关闭自动案例参考，用户手选事实资料仍可按授权使用。无当前账号时不推断其他账号身份，无命中时明确为空。具体冻结方法、样例、事实及索引见 ORIGINAL_CREATION.md。
 
 每阶段输入包括 `retrieved_references`。受众basis、研究prohibited_claims、创作策略why_account和审核limitations分别保留实际source_id与该角色的借鉴/限制说明，服务端验证引用至少关联一份本任务实际参考。发布字段仍只写读者文案；商品事实不因高互动案例被视为已核实。标题、开头、结构、节奏、CTA需针对本题重写，禁止大段拼接、特色表达照搬及虚构本人经历。
 
 本人同步案例检索按最近已核验公开笔记集合过滤，公开状态未知或私密默认排除。即使旧任务快照保留了原文，每次模型调用前也要重新核对该来源当前公开性，不满足时在付费预留前停止，不删除历史审计或自动改写旧快照。
 
-## 本轮改版协议目标（待实现）
+## 当前改版协议与验收边界（2026-10-11）
 
-阶段四联动 backend/live.py::messages_for、backend/runtime.py、backend/service.py 的上下文与工具调用，角色卡不会自动替换 Prompt。按用户选择冻结联网、评论和附加能力开关；关闭时不得隐式注入对应证据。四角色共享可追溯检索快照，返回补料、对话改稿和重试均保存版本并使相关旧审核失效。评论仅使用明确选定公开笔记的真实样本，标注笔记身份和获取时间。发布守卫独立于AI审核及稿件人工确认；未接通提供真实可用导出。以上是目标，当前机器契约和工具白名单本轮不改，实施时同步契约与测试。
+当前已存在 backend/live.py::messages_for、backend/runtime.py、backend/service.py 的三组RAG接线，角色卡不会自动替换 Prompt。按用户选择冻结联网、自动参考与评论开关；关闭时不得隐式注入对应证据。四角色共享可追溯检索快照，返回补料、对话改稿和重试均保存版本并使相关旧审核失效。评论仅使用明确选定公开笔记的真实样本，标注笔记身份、获取时间和样本范围，不将评论观点当产品事实或全部粉丝偏好。对话请求不是后台覆盖草稿的许可，基于指定版本产生新稿并复审。发布守卫独立于AI审核及稿件人工确认；当前采用文字导出和手工归档，不伪称自动发帖。差距实现后同步契约与测试，完成范围以状态页本轮证据为准。

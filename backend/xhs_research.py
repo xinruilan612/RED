@@ -211,7 +211,7 @@ class LocalResearchClient(LocalXHS):
             # Omitting filters uses the platform's default comprehensive results
             # without interacting with its unstable filter/hover controls.
             data=json.dumps({'keyword':query},ensure_ascii=False).encode(),
-            headers={'Authorization':'Bearer '+self.token_file.read_text().strip(), 'Content-Type':'application/json'})
+            headers={'Authorization':'Bearer '+self.token_file.read_text(encoding='utf-8').strip(), 'Content-Type':'application/json'})
         try:
             body=self.read_response(req)
             require(len(body)<=8_000_000,'XHS_RESPONSE','搜索响应过大')

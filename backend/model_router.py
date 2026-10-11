@@ -92,6 +92,10 @@ class Calls:
         sources += [{k:s.get(k) for k in ('source_id','document_id','version','url','source_type')}|{'content_hash':digest(s.get('text',''))} for s in run.context.get('evidence',[])]
         if run.context.get('operations'):
             sources.append({'id':'account-context','account_id':run.context['operations'].get('account_id'),'hash':digest(run.context['operations'])})
+        feedback=run.context.get('comment_feedback',{})
+        if feedback.get('enabled'):
+            sources.append({'id':'comment-feedback','account_id':feedback.get('account_id'),
+                            'note_ids':feedback.get('note_ids',[]),'hash':digest(feedback)})
         if visible_sources is not None:
             sources = visible_sources
         with self.store.connect() as db:

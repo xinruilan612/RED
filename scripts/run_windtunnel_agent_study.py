@@ -64,8 +64,8 @@ class StudyRunner:
         self.store = Store(self.workspace / "study.sqlite")
         self.service = Service(self.store, self.config, allow_windtunnel_live=True)
         self.service.executor.router.adapters[("deepseek", "deepseek-flash")] = self.client
-        self.tasks = {t["sample_id"]: t for t in json.loads((ROOT / "docs/windtunnel/agent_study/task_rubrics_candidate.json").read_text())["tasks"]}
-        self.samples = {s["sample_id"]: s for s in json.loads((ROOT / "docs/windtunnel/public_samples/manifest.json").read_text())["samples"]}
+        self.tasks = {t["sample_id"]: t for t in json.loads((ROOT / "docs/windtunnel/agent_study/task_rubrics_candidate.json").read_text(encoding='utf-8'))["tasks"]}
+        self.samples = {s["sample_id"]: s for s in json.loads((ROOT / "docs/windtunnel/public_samples/manifest.json").read_text(encoding='utf-8'))["samples"]}
 
     def questions(self, task):
         if not self.atomic_conditions:
@@ -106,7 +106,7 @@ class StudyRunner:
         folder = self.workspace / "cases" / sample_id / method
         result_path = folder / "result.json"
         if result_path.exists():
-            return json.loads(result_path.read_text())
+            return json.loads(result_path.read_text(encoding='utf-8'))
         folder.mkdir(parents=True, exist_ok=True)
         sample, task = self.samples[sample_id], self.tasks[sample_id]
         public = ROOT / "docs/windtunnel/public_samples"
@@ -211,7 +211,7 @@ class StudyRunner:
         if self.revision.endswith('.controlled'):
             value['code_hashes']['scripts/run_windtunnel_repair_probe.py'] = sha((ROOT/'scripts/run_windtunnel_repair_probe.py').read_bytes())
         if target.exists():
-            old = json.loads(target.read_text())
+            old = json.loads(target.read_text(encoding='utf-8'))
             if any(old.get(k) != value[k] for k in ("code_hashes", "baseline_prompt_sha256", "task_rubrics_sha256", "candidate_manifest_sha256", "input_file_hashes", 'revision', 'atomic_conditions', 'continue_after_unknown', 'model', 'thinking', 'output_tokens_max', 'effective_tasks_sha256', 'effective_samples_sha256')):
                 raise ValueError("Frozen inputs changed; refusing holdout continuation")
         else:
@@ -222,29 +222,29 @@ class StudyRunner:
         base = self.workspace / "readers"
         if base.exists():
             raise ValueError("Reader packets already exist; refusing overwrite")
-        with (ROOT/"docs/windtunnel/templates/assignment_key_RESEARCHER_ONLY.csv").open() as handle:
+        with (ROOT/"docs/windtunnel/templates/assignment_key_RESEARCHER_ONLY.csv").open(encoding='utf-8') as handle:
             mapping = {r["packet_id"]:r for r in csv.DictReader(handle)}
         for key in mapping.values():
             case = self.workspace / "cases" / key["sample_id"] / key["variant"]
             result_path, final_path = case/"result.json", case/"final.txt"
             if not result_path.is_file() or not final_path.is_file():
                 raise ValueError("Incomplete case; reader packets not created")
-            result = json.loads(result_path.read_text())
+            result = json.loads(result_path.read_text(encoding='utf-8'))
             valid = result.get("outcome") == "completed" or (result.get("outcome") == "failed" and result.get("error") and result.get("fallback"))
-            if not valid or result.get("final_sha256") != sha(final_path.read_text()):
+            if not valid or result.get("final_sha256") != sha(final_path.read_text(encoding='utf-8')):
                 raise ValueError("Invalid case outcome or manuscript hash; reader packets not created")
         for number in range(1, 7):
             reader = f"R{number:02}"
             folder = base / reader
             folder.mkdir(parents=True)
-            with (ROOT/f"docs/windtunnel/templates/reader_{reader}.csv").open() as handle:
+            with (ROOT/f"docs/windtunnel/templates/reader_{reader}.csv").open(encoding='utf-8') as handle:
                 tasks = list(csv.DictReader(handle))
             output = []
             for task in tasks:
                 packet = task["packet_id"]
                 key = mapping[packet]
                 source = self.workspace / "cases" / key["sample_id"] / key["variant"] / "final.txt"
-                text = source.read_text()
+                text = source.read_text(encoding='utf-8')
                 (folder/(packet+".txt")).write_text(text, encoding="utf-8")
                 output.append(dict(blind_id=packet, reading_order=int(task["reading_order"]), task_prompt=self.tasks[key["sample_id"]]["task_prompt"], manuscript_path=str((folder/(packet+".txt")).resolve()), manuscript_sha256=sha(text)))
             write_json(folder/"tasks.json", dict(reader_id=reader, participant_type="codex_proxy", tasks=output))

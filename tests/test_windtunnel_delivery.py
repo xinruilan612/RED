@@ -105,7 +105,12 @@ class WindtunnelPackageTests(unittest.TestCase):
         self.write("backend/new_delivery.py", "explicit safe addition")
         self.write(".env.example", "DEEPSEEK_API_KEY=\n")
         self.git("add", ".env.example")
-        self.root.joinpath("backend/link.py").symlink_to(self.root / "requirements.txt")
+        try:
+            self.root.joinpath("backend/link.py").symlink_to(self.root / "requirements.txt")
+        except OSError as exc:
+            if getattr(exc, 'winerror', None) == 1314:
+                self.skipTest('Windows symbolic-link privilege unavailable; full case runs on Linux')
+            raise
         self.git("add", "backend/link.py")
         result = build(self.root / "bundle.zip", root=self.root, extra=["backend/new_delivery.py"])
         with zipfile.ZipFile(result["archive"]) as archive:

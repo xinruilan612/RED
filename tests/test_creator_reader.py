@@ -13,6 +13,7 @@ from unittest.mock import Mock, patch
 
 from backend.creator_reader import collect_creator, run_reader, _reader_family, _signal_family
 from backend.xhs_local import LocalXHS
+from backend.private_files import is_private_file
 from scripts.xhs_creator_reader import bootstrap_cookies, private_json, ReaderStopped
 
 
@@ -28,7 +29,7 @@ class CreatorReaderTests(unittest.TestCase):
         path = Path(root)
         binding = path/'runtime/xhs-local/creator'/('a'*24)/'binding.json'
         private_json(binding, {'source_id': 'a'*24, 'creator_account_id': '123'})
-        executable = path/'runtime/mediacrawler/.venv/bin/python'
+        executable = path/'runtime/mediacrawler/.venv'/('Scripts/python.exe' if os.name == 'nt' else 'bin/python')
         executable.parent.mkdir(parents=True)
         executable.touch()
 
@@ -57,7 +58,7 @@ class CreatorReaderTests(unittest.TestCase):
             result = bootstrap_cookies(path)
             self.assertEqual(len(result), 1)
             self.assertNotIn('unrelated', result[0])
-            self.assertEqual(path.stat().st_mode & 0o777, 0o600)
+            self.assertTrue(is_private_file(path))
             private_json(path, {'version': 2, 'seed': 'not_exported', 'cookies': result})
             self.assertEqual(bootstrap_cookies(path), result)
             private_json(path, [])
@@ -81,7 +82,7 @@ class CreatorReaderTests(unittest.TestCase):
         family={10:(1,10,'old-start'),11:(10,99,'child-start')}
         current={10:(1,10,'new-start'),11:(1,99,'child-start')}
         with patch('backend.creator_reader._process_snapshot',return_value=current), \
-             patch('backend.creator_reader.os.killpg') as groups, \
+             patch('backend.creator_reader.os.killpg',create=True) as groups, \
              patch('backend.creator_reader.os.kill') as individual:
             _signal_family(family,signal.SIGTERM)
         groups.assert_not_called()
@@ -103,17 +104,57 @@ class CreatorReaderTests(unittest.TestCase):
             deadline=time.monotonic()+3
             running=True
             while time.monotonic()<deadline:
-                result=subprocess.run(['/bin/ps','-p',str(child),'-o','stat='],capture_output=True,text=True)
-                running=result.returncode==0 and bool(result.stdout.strip()) and not result.stdout.strip().startswith('Z')
+                running = self.process_running(child)
                 if not running:break
                 time.sleep(.05)
             self.assertFalse(running,'Detached descendant survived timeout cleanup')
             self.assertIsNone(unrelated.poll(),'Unrelated process was killed')
         finally:
             if child:
-                try:os.killpg(child,signal.SIGKILL)
+                try:
+                    if os.name != 'nt':os.killpg(child,signal.SIGKILL)
+                    elif self.process_running(child):os.kill(child,signal.SIGTERM)
                 except ProcessLookupError:pass
             unrelated.kill();unrelated.wait(timeout=3)
+
+    def test_reader_success_preserves_output_and_exit_status(self):
+        result = run_reader([sys.executable,'-X','utf8','-c',
+                             "import sys; print('中文验收'); print('stderr',file=sys.stderr); sys.exit(7)"],timeout=5)
+        self.assertEqual(result.returncode,7)
+        self.assertEqual(result.stdout.decode('utf-8').strip(),'中文验收')
+        self.assertEqual(result.stderr.decode('utf-8').strip(),'stderr')
+
+    def test_native_containment_failure_never_starts_the_reader(self):
+        with tempfile.TemporaryDirectory() as folder:
+            marker = Path(folder)/'should-not-exist'
+            command = [sys.executable,'-c',"from pathlib import Path; import sys; Path(sys.argv[1]).touch()",str(marker)]
+            if os.name == 'nt':
+                with patch('backend.windows_reader_process._assign_job',return_value=False):
+                    with self.assertRaises(OSError):run_reader(command,timeout=5)
+            else:
+                with patch('backend.creator_reader.subprocess.Popen',side_effect=OSError('fixture')):
+                    with self.assertRaises(OSError):run_reader(command,timeout=5)
+            self.assertFalse(marker.exists())
+
+    @staticmethod
+    def process_running(pid):
+        if os.name == 'nt':
+            import ctypes
+            from ctypes import wintypes
+            kernel = ctypes.WinDLL('kernel32',use_last_error=True)
+            kernel.OpenProcess.argtypes = (wintypes.DWORD,wintypes.BOOL,wintypes.DWORD)
+            kernel.OpenProcess.restype = wintypes.HANDLE
+            kernel.WaitForSingleObject.argtypes = (wintypes.HANDLE,wintypes.DWORD)
+            kernel.WaitForSingleObject.restype = wintypes.DWORD
+            kernel.CloseHandle.argtypes = (wintypes.HANDLE,)
+            handle = kernel.OpenProcess(0x100000,False,pid)  # SYNCHRONIZE, no mutation
+            if not handle:
+                if ctypes.get_last_error() == 87:return False  # process no longer exists
+                raise ctypes.WinError(ctypes.get_last_error())
+            try:return kernel.WaitForSingleObject(handle,0) == 258
+            finally:kernel.CloseHandle(handle)
+        result=subprocess.run(['/bin/ps','-p',str(pid),'-o','stat='],capture_output=True,text=True)
+        return result.returncode==0 and bool(result.stdout.strip()) and not result.stdout.strip().startswith('Z')
 
 
 if __name__ == '__main__':

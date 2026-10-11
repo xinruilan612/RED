@@ -9,6 +9,7 @@ import sys
 import tempfile
 
 from backend.contracts import DomainError, require
+from backend.private_files import private_binary_file
 
 MODEL_ID = 'openai/whisper-tiny'
 REVISION = '169d4a4341b33bc18d8881c4b69c2e104e1cc0af'
@@ -61,7 +62,7 @@ def _infer(audio, directory):
     manifest=MODEL_PATH/'youji-model-manifest.json'
     require(manifest.is_file(),'TRANSCRIPTION_UNAVAILABLE','请先运行本地转写模型安装脚本')
     try:
-        provenance=json.loads(manifest.read_text())
+        provenance=json.loads(manifest.read_text(encoding='utf-8'))
         require(provenance['model_id']==MODEL_ID and provenance['revision']==REVISION,
                 'TRANSCRIPTION_UNAVAILABLE','本地转写模型版本不匹配')
     except (ValueError,KeyError):
@@ -90,9 +91,8 @@ def transcribe_upload(data, *, filename, account_id, title, permission_confirmed
     require(isinstance(title,str) and 0<len(title.strip())<=200,'INVALID_INPUT','标题须为1至200字')
     with tempfile.TemporaryDirectory(prefix='youji-asr-') as folder:
         source=Path(folder)/('upload'+extension);audio=Path(folder)/'audio.f32'
-        fd=os.open(source,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)
-        with os.fdopen(fd,'wb') as handle:handle.write(data)
-        fd=os.open(audio,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600);os.close(fd)
+        with private_binary_file(source) as handle:handle.write(data)
+        with private_binary_file(audio):pass
         seconds=_decode(source,audio,extension)
         segments=_infer(audio,folder)
     require(isinstance(segments,list) and 0<len(segments)<=4,'TRANSCRIPTION_FAILED','未识别到有效语音')

@@ -1,5 +1,6 @@
 'use strict';
 let libraryLoad=0,sourceLoad=0,classificationEdit=0;
+const documentDrafts=new Map();
 function editableKnowledgeDocuments(docs){return docs.filter(d=>d.source_type!=='research_case');}
 pageInfo.library=['RESEARCH / 主题研究','先找资料，确认后再用于创作。','输入主题查看研究结果，选中需要的资料后加入当前账号，后续创作自动检索。'];
 async function renderLibrary(){
@@ -11,19 +12,7 @@ async function renderLibrary(){
   $('operationsContent').innerHTML=`<div class="section-toolbar"><div><h2>主题研究</h2><p id="ragLibraryCount" class="muted">${esc(currentAccount().name)} · ${docs.length} 份已有资料</p></div>${badge('原文与版本可追溯','neutral')}</div>${ragSearchPanel()}<details class="panel"><summary>补充自己的资料 / 高级检索</summary><div class="knowledge-grid"><section class="panel"><h2>添加或更新资料</h2><form id="documentForm"><label for="documentTarget">保存方式</label><select id="documentTarget"><option value="">新增资料</option>${editableKnowledgeDocuments(docs).map(d=>`<option value="${esc(d.id)}">更新：${esc(d.title)} · v${d.version}</option>`).join('')}</select><p class="helper">研究案例不在此处更新；需使用案例专用编辑接口，保留来源、资料用途和未读线索限制。</p><label for="documentTitle">资料标题</label><input id="documentTitle" maxlength="200" required placeholder="例如：品牌介绍 / 我的表达风格 / 产品事实"><label for="documentDomains">领域标签</label><input id="documentDomains" maxlength="250" placeholder="留空自动识别；多个领域用逗号分隔"><label for="documentMaterialType">材料用途</label><select id="documentMaterialType"><option value="fact">事实资料</option><option value="method">通用创作方法</option><option value="example">领域参考样例</option></select><label for="documentChannel">适用渠道</label><select id="documentChannel"><option value="">通用</option><option value="xiaohongshu">小红书</option></select><label for="documentFormat">适用形式</label><select id="documentFormat"><option value="">通用</option><option value="note">图文笔记</option><option value="video_script">短视频口播</option><option value="product_detail">商品详情</option></select><label for="documentFile">上传文件</label><input id="documentFile" type="file" accept=".txt,.md,.pdf,.docx"><p class="helper">支持 UTF-8 TXT、Markdown、文本型 PDF 和 Word .docx，单份最大 3 MB；PDF 最多 50 页。扫描 PDF 暂不支持 OCR。上传只做本地解析，不调用 AI。</p><label for="documentText">或粘贴正文</label><textarea id="documentText" rows="6" maxlength="100000" placeholder="粘贴真实资料；选了文件时以文件内容为准"></textarea><button class="primary" type="submit">保存并建立检索索引</button></form></section><section class="panel"><h2>试着检索资料</h2><p class="muted">输入问题或关键词查找相关原文；检索结果会显示当前方式，得分不代表事实可信程度。</p><form id="retrieveForm" class="search-line"><input id="retrieveQuery" maxlength="300" required aria-label="资料检索词" placeholder="例如：白衬衫的面料与护理"><button class="secondary">查找原文</button></form><div id="retrievalResult" class="source-results"><p class="helper">确认加入的参考资料用于后续创作；额外事实资料可在创作时勾选。</p></div></section></div></details><details class="panel"><summary id="ragExistingSummary">已有资料（${docs.length} 份）</summary><div id="ragExistingDocuments" class="source-results">${ragExistingDocuments(docs)}</div><div id="documentDetail"></div></details>`;
   bindRagSearch(account,request);
   $('documentTarget').onchange=()=>{const d=docs.find(d=>d.id===$('documentTarget').value);if(d)$('documentTitle').value=d.title;const c=d?.classification||d?.metadata?.classification||{};$('documentDomains').value=(c.domains||[]).join('、');$('documentMaterialType').value=c.material_type||'fact';$('documentChannel').value=c.channel||'';$('documentFormat').value=c.format||'';};
-  $('documentForm').onsubmit=async e=>{
-   e.preventDefault();const button=e.submitter;button.disabled=true;
-   const data={account_id:account,title:$('documentTitle').value};
-   const doc=docs.find(d=>d.id===$('documentTarget').value);if(doc){data.document_id=doc.id;data.expected_version=doc.version;}
-   const file=$('documentFile').files[0];
-   try{
-    data.classification=await documentClassificationRequest();
-    if(doc?.source_type==='research_case')throw new Error('研究案例请使用案例专用编辑接口，不能转为普通资料');
-    if(file){if(file.size>3000000)throw new Error('文件超过 3 MB');data.filename=file.name;data.file_base64=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=()=>reject(new Error('文件读取失败'));reader.readAsDataURL(file);});}
-    else data.text=$('documentText').value;
-    await api('/api/knowledge','POST',data);toast('资料已保存，后续创作可检索');if(account===activeAccountId&&currentPage==='library')await renderLibrary();
-   }catch(err){error(err);}finally{button.disabled=false;}
-  };
+  bindDocumentInput(account,request,docs);
   $('retrieveForm').onsubmit=async e=>{
    e.preventDefault();e.submitter.disabled=true;
    try{const result=await api('/api/knowledge/retrieve','POST',{account_id:account,query:$('retrieveQuery').value});if(account!==activeAccountId||currentPage!=='library')return;
@@ -34,12 +23,75 @@ async function renderLibrary(){
  }catch(err){error(err);}
 }
 
+function documentInputCurrent(account,request){return account===activeAccountId&&currentPage==='library'&&request===libraryLoad;}
+function documentInputFields(){return ['Target','Title','Domains','MaterialType','Channel','Format','Text'];}
+function captureDocumentInput(state){for(const name of documentInputFields())state.fields[name]=$('document'+name).value;}
+function readDocumentFile(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=()=>reject(new Error('文件读取失败，请换文件或改为粘贴；当前文字保留。'));reader.readAsDataURL(file);});}
+function documentPreviewMarkup(preview){
+ return `<h3>校对解析结果（尚未入库）</h3><p class="helper">原文件保留不变；只有点击下方确认按钮后，校对正文才用于 RAG。${preview.warnings.map(esc).join(' ')}</p>${preview.pages.map((p,i)=>`<label for="reviewedDocument-${i}">文本块 / 页 ${esc(p.page)}</label><textarea id="reviewedDocument-${i}" data-document-review="${i}" rows="6" maxlength="100000">${esc(p.text)}</textarea><details><summary>查看此块原始提取文字</summary><pre class="source-text">${esc(p.original_text)}</pre></details>`).join('')}<p id="documentReviewStatus" class="helper" aria-live="polite"></p><button id="confirmDocumentInput" class="primary" type="button">已校对，确认存入资料库</button><button id="backDocumentInput" class="quiet" type="button">返回修改 / 取消入库</button>`;
+}
+function bindDocumentInput(account,request,docs){
+ const form=$('documentForm'),state=documentDrafts.get(account)||{fields:{},file:null,preview:null,serial:0};
+ documentDrafts.set(account,state);
+ for(const [name,value] of Object.entries(state.fields))if($('document'+name))$('document'+name).value=value;
+ form.querySelector('button[type="submit"]').textContent='解析并预览（尚不入库）';
+ form.insertAdjacentHTML('afterend','<p id="documentInputStatus" class="helper" aria-live="polite"></p><button id="clearDocumentFile" class="quiet" type="button">清除所选文件，改用粘贴</button><section id="documentInputPreview" class="panel" hidden></section>');
+ const current=()=>documentInputCurrent(account,request);
+ const showFile=()=>{$('documentInputStatus').textContent=state.file?'已保留待解析文件：'+state.file.name+'；选择新文件可替换。':'可以上传文件或粘贴文本。返回修改会保留输入；刷新浏览器后需重新选择文件。';};
+ const invalidate=()=>{state.serial++;state.preview=null;state.payload=null;state.submitted=null;if(current()){$('documentInputPreview').hidden=true;$('documentInputPreview').innerHTML='';}};
+ form.addEventListener('input',()=>{captureDocumentInput(state);invalidate();});
+ form.addEventListener('change',()=>{captureDocumentInput(state);invalidate();});
+ $('documentFile').onchange=()=>{state.file=$('documentFile').files[0]||null;invalidate();showFile();};
+ $('clearDocumentFile').onclick=()=>{state.file=null;$('documentFile').value='';invalidate();showFile();$('documentText').focus();};
+ const showPreview=()=>{
+  const panel=$('documentInputPreview');panel.hidden=false;panel.innerHTML=documentPreviewMarkup(state.preview);
+  state.preview.pages.forEach((page,i)=>{$('reviewedDocument-'+i).oninput=()=>{page.text=$('reviewedDocument-'+i).value;};});
+  $('backDocumentInput').onclick=()=>{invalidate();showFile();$('documentText').focus();};
+  $('confirmDocumentInput').onclick=async()=>{
+   const button=$('confirmDocumentInput'),serial=state.serial;button.disabled=true;
+   $('backDocumentInput').disabled=true;
+   state.preview.pages.forEach((_,i)=>{$('reviewedDocument-'+i).readOnly=true;});
+   if(!state.submitted)state.submitted={...state.payload,input_review:{confirmed:true,source_sha256:state.preview.source_sha256,confirmation_id:state.confirmationId,pages:state.preview.pages.map(({page,text})=>({page,text}))}};
+   const submitted=state.submitted;
+   $('documentReviewStatus').textContent='正在保存校对版本…';
+   try{
+    const saved=await api('/api/knowledge','POST',submitted),receipt=saved.input_confirmation;
+    // A user may have started another input or switched accounts meanwhile.
+    if(documentDrafts.get(account)===state&&state.serial===serial)documentDrafts.delete(account);
+    if(current()&&state.serial===serial){
+     const notice=receipt&&receipt.confirmed_version!==receipt.current_version
+      ?'先前校对版本 v'+receipt.confirmed_version+' 已保存；当前资料已更新至 v'+receipt.current_version+'，本次重试未覆盖新版本'
+      :'已确认入库'+(receipt?'（v'+receipt.confirmed_version+'）':'')+'；原文件与校对版本均已保留';
+     toast(notice);await renderLibrary();
+    }
+   }catch(err){if(current()&&state.serial===serial){$('documentReviewStatus').textContent='保存未确认：'+err.message+'。输入已保留；重试会沿用同一次确认，不重复入库。要改正文请先返回修改并重新预览。';error(err);}}
+   finally{button.disabled=false;if(current()&&state.serial===serial)$('backDocumentInput').disabled=false;}
+  };
+ };
+ form.onsubmit=async e=>{
+  e.preventDefault();captureDocumentInput(state);invalidate();const serial=state.serial,button=e.submitter;button.disabled=true;
+  const data={account_id:account,title:state.fields.Title},file=state.file,text=state.fields.Text;
+  const doc=docs.find(d=>d.id===state.fields.Target);if(doc){data.document_id=doc.id;data.expected_version=doc.version;}
+  try{
+   data.classification=await documentClassificationRequest();
+   if(file){if(file.size>3000000)throw new Error('文件超过 3 MB，请换文件或改为粘贴');data.filename=file.name;data.file_base64=await readDocumentFile(file);}else data.text=text;
+   const preview=await api('/api/knowledge/preview','POST',data);
+   if(state.serial!==serial)return;
+   state.payload=data;state.preview=preview;state.confirmationId=crypto.randomUUID();
+   if(current()){showPreview();$('documentInputStatus').textContent='解析完成，尚未入库。请校对后确认，也可返回修改。';}
+  }catch(err){if(current()&&state.serial===serial){$('documentInputStatus').textContent='解析失败：'+err.message+'。原输入已保留，可换文件或清除文件后粘贴文字。';error(err);}}
+  finally{button.disabled=false;}
+ };
+ showFile();if(state.preview){showPreview();if(state.submitted)state.preview.pages.forEach((_,i)=>{$('reviewedDocument-'+i).readOnly=true;});}
+}
+
 function ragExistingDocuments(docs){return docs.map(d=>`<article class="document-row"><div><b>${esc(d.title)}</b>${ragDocumentMeta(d)}<p class="helper">v${d.version} · ${esc(({text:'粘贴文本',upload:'上传文件',web:'已读取网页',research_case:'研究案例'})[d.source_type])} · ${esc(new Date(d.updated_at*1000).toLocaleString())}</p></div><div class="buttons"><button class="quiet" data-document="${esc(d.id)}">查看原文</button><button class="quiet" data-classify-document="${esc(d.id)}">调整分类</button><button class="quiet" data-delete-document="${esc(d.id)}">移出资料库</button></div></article>`).join('')||'<p class="helper">还没有资料。可以先上传一份品牌或账号介绍。</p>';}
 function bindKnowledgeDocuments(docs,account){
   document.querySelectorAll('[data-classify-document]').forEach(b=>b.onclick=()=>openClassificationEditor(b.dataset.classifyDocument,account));
   document.querySelectorAll('[data-document]').forEach(b=>b.onclick=async()=>{
    try{const d=await api('/api/knowledge/'+b.dataset.document+'?account_id='+encodeURIComponent(account));if(account!==activeAccountId||currentPage!=='library')return;
     $('documentDetail').innerHTML=`<hr><h3>${esc(d.title)} · v${d.version}</h3><p class="helper">${d.versions.length} 个版本 · 原文指纹 ${esc(d.fingerprint.slice(0,16))}</p>${d.source_url?`<a href="${esc(d.source_url)}" target="_blank" rel="noopener noreferrer">查看网页来源 ↗</a>`:''}<p class="helper">${d.metadata.fetched_at?'读取时间：'+esc(d.metadata.fetched_at):''} ${d.metadata.published_at?'页面声明发布时间：'+esc(d.metadata.published_at):'发布时间未提供或未核实'}</p>${d.chunks.map(c=>`<details><summary>${d.metadata.location_type==='paragraph'?'段落 '+c.page:'第 '+c.page+' 页'} · 字符位置 ${c.offset}</summary><pre class="source-text">${esc(c.text)}</pre></details>`).join('')}`;
+    if(['text','upload'].includes(d.source_type))$('documentDetail').innerHTML+=`<p>${d.versions.map(v=>`<a class="button quiet" href="/api/knowledge/${encodeURIComponent(d.id)}/original?account_id=${encodeURIComponent(account)}&amp;version=${v.version}">下载 v${v.version} 原始输入</a>`).join(' ')}</p>${d.metadata.input_review?'<p class="helper">上方为已确认的校对正文；原始输入未被覆盖，下载可作对照。</p>':''}`;
    }catch(err){error(err);}
   });
   document.querySelectorAll('[data-delete-document]').forEach(b=>b.onclick=async()=>{
@@ -314,12 +366,12 @@ function ragErrorText(code){
 }
 
 async function documentClassificationRequest(prefix='document',explicit=false){
- const result={material_type:$(prefix+'MaterialType')?.value||'fact'},domains=($(prefix+'Domains')?.value||'').split(/[,，、]/).map(v=>v.trim()).filter(Boolean);
+ const result={material_type:$(prefix+'MaterialType')?.value||'fact'},domains=($(prefix+'Domains')?.value||'').split(/[,，、]/).map(v=>v.trim()).filter(Boolean),channel=$(prefix+'Channel')?.value,format=$(prefix+'Format')?.value;
  if(domains.length){const cfg=await api('/api/creation/taxonomy');result.domains=[...new Set(domains.map(value=>Object.keys(cfg.domains).find(key=>key===value||cfg.domains[key].label===value)||value))];}
- else if(result.material_type==='fact'){if(explicit)throw new Error('事实资料请填写所属领域');if($(prefix+'Channel')?.value||$(prefix+'Format')?.value)throw new Error('指定渠道或形式时，请同时填写事实资料的所属领域');return undefined;}
+ else if(result.material_type==='fact'){if(explicit)throw new Error('事实资料请填写所属领域');if(channel||format)throw new Error('指定渠道或形式时，请同时填写事实资料的所属领域');return undefined;}
  else if(result.material_type==='example')throw new Error('参考样例请填写所属领域');
- if($(prefix+'Channel')?.value)result.channel=$(prefix+'Channel').value;
- if($(prefix+'Format')?.value)result.format=$(prefix+'Format').value;
+ if(channel)result.channel=channel;
+ if(format)result.format=format;
  return result;
 }
 

@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from urllib.parse import urlsplit
 from backend.contracts import DomainError, require
+from backend.private_files import is_private_file, write_private_bytes
 
 
 def credential_environment(environ=None):
@@ -35,15 +36,13 @@ class CredentialVault:
             folder.mkdir(parents=True,exist_ok=True)
             path=folder/'credentials.key'
             if not path.exists():
-                import tempfile
-                fd,temporary=tempfile.mkstemp(prefix='.credentials-',dir=folder)
                 try:
-                    with os.fdopen(fd,'wb') as output:
-                        output.write(Fernet.generate_key());output.flush();os.fsync(output.fileno())
-                    try:os.link(temporary,path)
-                    except FileExistsError:pass
-                finally:os.unlink(temporary)
-            require(not path.is_symlink() and path.is_file() and path.stat().st_mode & 0o077==0,'CONFIG_INVALID','本地密钥文件必须是权限 0600 的普通文件')
+                    write_private_bytes(path,Fernet.generate_key())
+                except FileExistsError:
+                    pass  # Another process won initial creation; validate its file below.
+                except OSError:
+                    raise DomainError('CONFIG_INVALID','无法创建私密密钥文件；请使用支持用户权限的本地目录，或配置 MODEL_CREDENTIAL_KEY') from None
+            require(is_private_file(path),'CONFIG_INVALID','本地密钥必须是仅当前运行用户可读写的普通文件（Windows 私密 ACL / macOS、Linux 0600）；请收紧原文件权限，不要删除密钥')
             key=path.read_bytes()
         try:return Fernet(key)
         except (ValueError,TypeError):raise DomainError('CONFIG_INVALID','MODEL_CREDENTIAL_KEY 格式无效；需要 Fernet 主密钥') from None

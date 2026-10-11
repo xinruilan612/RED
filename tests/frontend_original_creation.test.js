@@ -12,7 +12,7 @@ test('creation request sends explicit domain/form goals but preserves blank auto
  const s=setup();assert.deepEqual(JSON.parse(JSON.stringify(await s.eval('creationRequest()'))),{channel:'xiaohongshu'});
  Object.assign(s.fields,{creationDomains:{value:'数码、摄影,数码'},creationFormat:{value:'video_script'},creationGoal:{value:'  选购比较  '},creationWordCount:{value:'300'}});
  assert.deepEqual(JSON.parse(JSON.stringify(await s.eval('creationRequest()'))),{channel:'xiaohongshu',domains:['digital','photography'],format:'video_script',goal:'选购比较',word_count:300});
- assert.match(app,/api\('\/api\/runs','POST',\{creation:await creationRequest\(\)/);
+ assert.match(app,/api\('\/api\/runs','POST',\{[^\n]*creation:await creationRequest\(\)/);
 });
 test('knowledge classification retains purpose and optional scope in actual save',async()=>{
  const s=setup();Object.assign(s.fields,{documentDomains:{value:'美妆，摄影'},documentMaterialType:{value:'example'},documentChannel:{value:'xiaohongshu'},documentFormat:{value:'note'}});

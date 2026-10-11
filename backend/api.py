@@ -305,6 +305,20 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
         except DomainError: raise
         except ValueError as e: raise DomainError('INVALID_INPUT',str(e)) from None
 
+    @app.post('/api/knowledge/preview')
+    def preview_document(data: dict,user=Depends(logged)):
+        auth.throttle('preview:'+user['owner'],40,3600)
+        try:return service.knowledge.preview(user['owner'],data)
+        except DomainError:raise
+        except ValueError as e:raise DomainError('INVALID_INPUT',str(e)) from None
+
+    @app.get('/api/knowledge/{document_id}/original')
+    def original_document(document_id: str,account_id: str,version: int,user=Depends(logged)):
+        from urllib.parse import quote
+        name,raw=service.knowledge.original(user['owner'],account_id,document_id,version)
+        return Response(raw,media_type='application/octet-stream',headers={
+            'Content-Disposition':"attachment; filename*=UTF-8''"+quote(name,safe='')})
+
     @app.get('/api/knowledge/{document_id}')
     def document(document_id: str,account_id: str,user=Depends(logged)):
         return service.knowledge.get(user['owner'],account_id,document_id)

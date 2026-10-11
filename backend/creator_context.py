@@ -21,6 +21,10 @@ def enrich(stage, value, context):
             account_context=identity, history_refs=[p['id'] for p in op.get('history', [])],
             competitor_observations=op.get('competitors', []),
             evidence_limit='历史仅为描述性记录；偏好与传播效果分开，竞品观察未经独立核验。')
+        feedback=context.get('comment_feedback',{})
+        if feedback.get('enabled'):
+            result['comment_evidence']={k:copy.deepcopy(feedback[k]) for k in
+                ('notes','sample_size','frozen_at','coverage','limitation')}
     if stage == 'research':
         trend = op.get('trend')
         result['topic_card'] = dict(topic=context['topic'], audience=profile.get('audience') or context['audience'],

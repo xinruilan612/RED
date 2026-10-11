@@ -117,7 +117,7 @@ class LocalXHS:
         require(path in allowed,'FORBIDDEN','同步器只允许身份、本人笔记和详情读取')
         require(path!='/api/v1/login/qrcode' or data is None,'FORBIDDEN','登录二维码仅允许固定 GET 请求')
         try:
-            token=self.token_file.read_text().strip()
+            token=self.token_file.read_text(encoding='utf-8').strip()
             req=urllib.request.Request(self.base+path,data=None if data is None else json.dumps(data).encode(),
                     headers={'Authorization':'Bearer '+token,'Content-Type':'application/json'})
             body=self.read_response(req)

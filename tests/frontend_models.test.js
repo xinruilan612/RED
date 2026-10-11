@@ -101,3 +101,30 @@ test('activation failure retains saved identity for retry and never reports succ
  assert.equal(toasts.length,0);assert.match(errors[0],/连接已保存，但切换失败/);
  await form.onsubmit({preventDefault(){}});assert.equal(s.calls[2][2].id,'new-id');assert.equal(s.calls[2][2].version,1);assert.equal('api_key' in s.calls[2][2],false);
 });
+
+test('revoked default stays unavailable until an explicit user selection',async()=>{
+ const s=setup();s.sandbox.currentPage='models';
+ s.sandbox.api=async path=>path==='/api/models'?{catalog:[],connections:[],default_connection_id:'revoked',ready:false,platform:{ready:true}}:{baidu:{version:1}};
+ await s.eval('renderModelSettings()');const html=s.element('operationsContent').innerHTML;
+ assert.match(html,/原默认连接已撤销或不可用/);assert.doesNotMatch(html,/当前用于新任务：平台 DeepSeek/);
+ assert.match(html,/value="connection:revoked" selected disabled/);
+ assert.match(s.element('modelConnectionEditor').innerHTML,/未自动切换或消耗平台额度/);
+});
+test('failed probe refreshes actual status without losing unsaved configuration or retrying',async()=>{
+ const s=setup(),errors=[];s.sandbox.currentPage='models';s.sandbox.window.confirm=()=>true;
+ s.element('modelConnectionEditor').innerHTML='保留未提交编辑';let refreshes=0;
+ s.sandbox.refreshModelStatus=async()=>{refreshes++;};s.sandbox.error=e=>errors.push(e.message);
+ s.sandbox.api=async(path,...args)=>{s.calls.push([path,...args]);if(path.endsWith('/test'))throw new Error('密钥无效，请编辑连接');return {connections:[{id:'id',version:2,test_status:'failed',last_tested:'刚刚'}]};};
+ await s.eval("testModelConnection({id:'id',label:'test',version:2})");
+ assert.equal(refreshes,1);assert.match(s.element('modelTestStatus-id').textContent,/上次测试失败/);
+ assert.equal(s.element('modelConnectionEditor').innerHTML,'保留未提交编辑');assert.match(errors[0],/密钥无效/);
+ assert.equal(s.calls.filter(c=>c[0].endsWith('/test')).length,1);
+});
+test('settings read failure offers an in-page non-billing retry',async()=>{
+ const s=setup(),globalErrors=[];s.sandbox.error=e=>globalErrors.push(e);s.sandbox.currentPage='models';s.sandbox.api=async()=>{throw new Error('网络暂时不可用');};
+ await s.eval('renderModelSettings()');assert.match(s.element('operationsContent').innerHTML,/重新读取配置（不调用模型）/);assert.match(s.element('operationsContent').innerHTML,/网络暂时不可用/);
+ s.sandbox.api=async path=>{s.calls.push([path]);return path==='/api/models'?{connections:[],catalog:[],platform:{ready:false}}:{baidu:{version:1}};};
+ await s.element('retryModelSettings').onclick();assert.match(s.element('operationsContent').innerHTML,/平台 DeepSeek 尚未配置/);
+ assert.doesNotMatch(s.element('operationsContent').innerHTML,/网络暂时不可用|配置读取失败/);assert.equal(globalErrors.length,0);
+ assert.ok(s.calls.every(c=>!c[0].includes('/test')));
+});

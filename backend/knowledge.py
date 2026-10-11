@@ -28,6 +28,23 @@ def tokens(text):
     return result
 
 
+def bm25_scores(query, rows):
+    """Score only the caller's authorized, already-filtered chunk rows."""
+    wanted=set(tokens(query))
+    documents=[(row,json.loads(row[6])) for row in rows]
+    n=len(documents);avg=sum(sum(terms.values()) for _,terms in documents)/max(1,n)
+    df={term:sum(term in terms for _,terms in documents) for term in wanted}
+    scores={}
+    for row,terms in documents:
+        matched=wanted & terms.keys()
+        # A lone accidental bigram in a long question is insufficient evidence.
+        if not matched or (len(wanted)>3 and len(matched)<2):continue
+        length=sum(terms.values())
+        scores[row[0]]=sum(math.log(1+(n-df[term]+0.5)/(df[term]+0.5))*(terms[term]*2.2)/
+                          (terms[term]+1.2*(.25+.75*length/max(1,avg))) for term in matched)
+    return scores
+
+
 def parse_file(name, data):
     require(isinstance(name,str) and 0<len(name)<=200 and 0<len(data)<=MAX_FILE,'INVALID_INPUT','文件大小需在 3 MB 内')
     suffix=name.rsplit('.',1)[-1].lower()
@@ -65,7 +82,8 @@ def parse_file(name, data):
 def chunks(pages):
     result=[]
     for page,text in pages:
-        text=text.replace('\x00','').replace('\r\n','\n').strip()
+        # Keep leading/trailing TABs: DOCX table rows use them for empty cells.
+        text=text.replace('\x00','').replace('\r\n','\n').strip(' \r\n')
         for start in range(0,len(text),650):
             excerpt=text[start:start+800]
             if excerpt.strip(): result.append({'page':page,'offset':start,'text':excerpt})
@@ -105,6 +123,8 @@ def document_is_public(db,owner,account,metadata,url):
 
 def assert_public_model_evidence(store,run,db,seen=None):
     """Recheck old snapshots before each model call; history remains unchanged."""
+    from backend.comment_feedback import assert_visible
+    assert_visible(run,db)
     seen=set() if seen is None else seen
     require(run.run_id not in seen,'SOURCE_VISIBILITY_CHANGED','来源任务关系无法确认，历史任务暂不可展示或发送模型')
     seen.add(run.run_id)
@@ -181,25 +201,47 @@ class Knowledge:
     def account(self, owner, account_id):
         return find_account(Operations(self.store).read(owner),account_id)
 
+    def preview(self, owner, data):
+        from backend.document_input import INPUT_FIELDS, preview
+        require(isinstance(data,dict) and set(data)<=INPUT_FIELDS,'INVALID_INPUT','资料预览字段无效')
+        self.account(owner,data.get('account_id'))
+        validate_text(data.get('title'),'资料标题',200)
+        if data.get('document_id'):
+            existing=self.get(owner,data['account_id'],data['document_id'])
+            require(existing['version']==data.get('expected_version'),'VERSION_CONFLICT','资料已更新，请重新选择版本')
+            require(existing['source_type']!='research_case','CASE_EDIT_REQUIRED','研究案例请使用案例专用编辑入口')
+        return preview(data)
+
     def save(self, owner, data, source_type='text', source_url='', metadata=None, *, transaction_guard=None, transaction_saved=None):
-        require(isinstance(data,dict) and set(data)<={'account_id','title','text','filename','file_base64','document_id','expected_version','classification'},'INVALID_INPUT','资料字段无效')
+        from backend.document_input import INPUT_FIELDS, read_input, reviewed_pages
+        require(isinstance(data,dict) and set(data)<=INPUT_FIELDS|{'input_review'},'INVALID_INPUT','资料字段无效')
         account=data.get('account_id');self.account(owner,account)
         title=validate_text(data.get('title'),'资料标题',200)
-        name=data.get('filename',title+'.txt')
-        if 'file_base64' in data:
-            require(isinstance(data['file_base64'],str) and len(data['file_base64'])<=4_000_000,'INVALID_INPUT','文件超过 3 MB')
-            try: raw=base64.b64decode(data['file_base64'],validate=True)
-            except (ValueError,TypeError): raise ValueError('文件编码无效') from None
-            pages=parse_file(name,raw); source_type='upload'
-        else:
-            text=validate_text(data.get('text'),'资料正文',MAX_TEXT)
-            raw=text.encode();pages=[(1,text)]
+        name,raw,pages=read_input(data)
+        if 'file_base64' in data:source_type='upload'
+        review=None
+        if 'input_review' in data:
+            require(source_type in ('text','upload'),'INVALID_INPUT','案例资料不能通过普通文档校对保存')
+            pages,review=reviewed_pages(data,raw,pages)
         parts=chunks(pages)
         fingerprint=hashlib.sha256(raw).hexdigest();now=int(time.time())
         identity=data.get('document_id') or str(uuid4())
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             if transaction_guard is not None: transaction_guard(db)
+            if review:
+                # Short writes are serialized on both supported databases. A
+                # repeated uncertain confirmation must not create another version.
+                receipts=db.execute('SELECT d.id,v.version,v.metadata FROM knowledge_versions v JOIN knowledge_documents d ON d.id=v.document_id WHERE d.owner=? AND d.account_id=? AND v.metadata LIKE ?',
+                                    (owner,account,'%'+review['confirmation_id']+'%')).fetchall()
+                for saved_id,saved_version,saved_meta in receipts:
+                    receipt=json.loads(saved_meta).get('input_review',{})
+                    if receipt.get('confirmation_id')==review['confirmation_id']:
+                        require(receipt.get('request_sha256')==review['request_sha256'],'VERSION_CONFLICT','确认请求已变化，请重新预览；先前保存的资料保留')
+                        result=self._get(db,owner,account,saved_id)
+                        result['input_confirmation']={**receipt,'document_id':saved_id,
+                            'confirmed_version':saved_version,'current_version':result['version'],'replayed':True}
+                        return result
             row=db.execute('SELECT version,status,source_type FROM knowledge_documents WHERE id=? AND owner=? AND account_id=?',(identity,owner,account)).fetchone()
             if data.get('document_id'):
                 require(row and row[1]=='active','RESOURCE_NOT_FOUND','资料不可访问')
@@ -219,6 +261,7 @@ class Knowledge:
             meta={**(metadata or {}),'title':title,'source_type':source_type,'source_url':source_url,'stored_at':now,
                   'location_type':'paragraph' if name.lower().endswith('.docx') else 'page','page_count':len(pages),
                   'extracted_chars':sum(len(text) for _,text in pages)}
+            if review:meta['input_review']={**review,'confirmed_at':now}
             from backend.creation_taxonomy import classify_document
             previous=json.loads(db.execute('SELECT metadata FROM knowledge_versions WHERE document_id=? AND version=?',(identity,row[0])).fetchone()[0]) if row else {}
             requested=data.get('classification', (metadata or {}).get('classification', previous.get('classification')))
@@ -227,7 +270,18 @@ class Knowledge:
             for part in parts:
                 db.execute('INSERT INTO knowledge_chunks VALUES(?,?,?,?,?,?,?)',(str(uuid4()),identity,version,part['page'],part['offset'],part['text'],json.dumps(Counter(tokens(part['text'])),ensure_ascii=False)))
             if transaction_saved is not None: transaction_saved(db,identity,version)
-        return self.get(owner,account,identity)
+        result=self.get(owner,account,identity)
+        if review:
+            result['input_confirmation']={**meta['input_review'],'document_id':identity,
+                'confirmed_version':version,'current_version':result['version'],'replayed':False}
+        return result
+
+    def original(self, owner, account, identity, version):
+        document=self.get_version(owner,account,identity,version)
+        self.assert_public_document(owner,account,document)
+        with self.store.connect() as db:
+            row=db.execute('SELECT original_base64 FROM knowledge_versions WHERE document_id=? AND version=?',(identity,version)).fetchone()
+        return document['filename'],base64.b64decode(row[0])
 
     def list(self, owner, account):
         self.account(owner,account)
@@ -239,13 +293,16 @@ class Knowledge:
     def get(self, owner, account, identity):
         self.account(owner,account)
         with self.store.connect() as db:
-            row=db.execute("SELECT title,version,source_type,source_url FROM knowledge_documents WHERE owner=? AND account_id=? AND id=? AND status='active'",(owner,account,identity)).fetchone()
-            require(row,'RESOURCE_NOT_FOUND','资料不可访问')
-            v=db.execute('SELECT fingerprint,metadata,filename FROM knowledge_versions WHERE document_id=? AND version=?',(identity,row[1])).fetchone()
-            require(document_is_public(db,owner,account,json.loads(v[1]),row[3]),'RESOURCE_NOT_FOUND','资料当前不可访问')
-            parts=db.execute('SELECT id,page,offset_start,text FROM knowledge_chunks WHERE document_id=? AND version=? ORDER BY page,offset_start',(identity,row[1])).fetchall()
-            versions=[dict(version=r[0],metadata=json.loads(r[1])) for r in db.execute('SELECT version,metadata FROM knowledge_versions WHERE document_id=? ORDER BY version DESC',(identity,))
-                      if document_is_public(db,owner,account,json.loads(r[1]),json.loads(r[1]).get('source_url',''))]
+            return self._get(db,owner,account,identity)
+
+    def _get(self, db, owner, account, identity):
+        row=db.execute("SELECT title,version,source_type,source_url FROM knowledge_documents WHERE owner=? AND account_id=? AND id=? AND status='active'",(owner,account,identity)).fetchone()
+        require(row,'RESOURCE_NOT_FOUND','资料不可访问')
+        v=db.execute('SELECT fingerprint,metadata,filename FROM knowledge_versions WHERE document_id=? AND version=?',(identity,row[1])).fetchone()
+        require(document_is_public(db,owner,account,json.loads(v[1]),row[3]),'RESOURCE_NOT_FOUND','资料当前不可访问')
+        parts=db.execute('SELECT id,page,offset_start,text FROM knowledge_chunks WHERE document_id=? AND version=? ORDER BY page,offset_start',(identity,row[1])).fetchall()
+        versions=[dict(version=r[0],metadata=json.loads(r[1])) for r in db.execute('SELECT version,metadata FROM knowledge_versions WHERE document_id=? ORDER BY version DESC',(identity,))
+                  if document_is_public(db,owner,account,json.loads(r[1]),json.loads(r[1]).get('source_url',''))]
         return dict(id=identity,title=row[0],version=row[1],source_type=row[2],source_url=row[3],fingerprint=v[0],metadata=json.loads(v[1]),filename=v[2],versions=versions,chunks=[dict(zip(('id','page','offset','text'),p),classification=json.loads(v[1]).get('classification',{}),source_url=row[3]) for p in parts])
 
     def assert_public_document(self,owner,account,document):
@@ -307,17 +364,11 @@ class Knowledge:
             rows=[r for r in rows if not own_synced_case(json.loads(r[11])) or public_note_id(r[8]) in public_ids]
         if approved_only:rows=[r for r in rows if json.loads(r[11]).get('research_case',{}).get('provenance',{}).get('human_confirmed') is True]
         if style_only:rows=[r for r in rows if style_case(json.loads(r[11]))]
-        documents=[(r,json.loads(r[6])) for r in rows]
-        n=len(documents);avg=sum(sum(t.values()) for _,t in documents)/max(1,n)
-        df={t:sum(t in terms for _,terms in documents) for t in wanted}
+        lexical_scores=bm25_scores(query,rows)
         results=[]
-        for r,terms in documents:
-            matched=wanted & terms.keys()
-            if not matched: continue
-            length=sum(terms.values())
-            score=sum(math.log(1+(n-df[t]+0.5)/(df[t]+0.5))*(terms[t]*2.2)/(terms[t]+1.2*(.25+.75*length/max(1,avg))) for t in matched)
-            # A lone accidental bigram in a long question is insufficient evidence.
-            if len(wanted)>3 and len(matched)<2: continue
+        for r in rows:
+            if r[0] not in lexical_scores:continue
+            score=lexical_scores[r[0]]
             metadata=json.loads(r[11])
             results.append(dict(source_id='kb:'+r[0],document_id=r[1],version=r[2],page=r[3],offset=r[4],text=r[5],title=r[7],url=r[8],source_type=r[9],filename=r[10],location_type=metadata.get('location_type','page'),evidence_role=metadata.get('evidence_role','source_material'),**evidence_metadata(metadata,r[1],r[2]),score=round(score,4),verification='原文片段匹配，来源真实性仍需核查'))
         results.sort(key=lambda x:(-x['score'],x['source_id']))
@@ -386,10 +437,10 @@ class Knowledge:
         return {'updated':len(changed),'document_ids':changed}
 
     def grouped_retrieve(self, owner, account, query, classification, document_ids=None, include_facts=True, include_references=True):
-        """Filter before real embeddings; rerank admitted vector candidates only.
+        """Filter before ranking; use explicit BM25 when real vectors are unavailable.
 
-        No BM25 fallback in this contract. Missing models and unavailable groups
-        are explicit gaps. Version metadata applies to every joined chunk.
+        A successful vector search with no matches stays empty. Neither ranking
+        path widens the authorized scope or borrows another domain's examples.
         """
         from backend.creation_taxonomy import classify_task, taxonomy
         from backend.embeddings import configured_embeddings, semantic_ranks, EmbeddingUnavailable
@@ -408,11 +459,11 @@ class Knowledge:
                 require(set(document_ids)<=available,'RESOURCE_NOT_FOUND','所选资料不属于当前账号或已失效')
             rows=[r for r in rows if document_is_public(db,owner,account,json.loads(r[11]),r[8])]
         domains=set(classification['domains']);channel=classification['channel'];form=classification['format']
-        groups={k:[] for k in ('methods','examples','facts')};filters={};gaps=[]
+        groups={k:[] for k in ('methods','examples','facts')};filters={};gaps=[];engines=set()
         cfg=taxonomy()['retrieval'];remaining=cfg['total_chars']
         provider=self.embedding_provider;note=''
         if provider is None and self.use_configured_embeddings:provider,note=configured_embeddings()
-        if provider is None:gaps.append({'code':'VECTOR_UNAVAILABLE','detail':note or '未配置真实向量模型，分组检索未执行'})
+        if provider is None:gaps.append({'code':'VECTOR_UNAVAILABLE','detail':note or '未配置真实向量模型；限定范围内使用 BM25 关键词检索','fallback':'bm25'})
         all_meta={r[0]:json.loads(r[11]) for r in rows}
         query_terms=set(tokens(query))
         # Product IDs must match exactly; avoids lending another SKU's specs.
@@ -436,11 +487,16 @@ class Knowledge:
                     if label.get('channel')!=channel and not (group=='methods' and label.get('channel')=='any'):continue
                     if label.get('format')!=form and not (group=='methods' and label.get('format')=='any'):continue
                 if group=='facts' and document_ids is not None and row[1] not in document_ids:continue
+                if group=='facts':
+                    terms=set(tokens(row[7]+' '+row[5]));matched=query_terms & terms
+                    if product_ids and not all(re.search(r'(?<![A-Za-z0-9_-])'+re.escape(p)+r'(?![A-Za-z0-9_-])',row[7]+' '+row[5],re.I) for p in product_ids):continue
+                    if not matched or (len(query_terms)>3 and len(matched)<2) or len(matched)/max(1,len(query_terms))<0.10:continue
                 candidates.append(row)
             filters[group]['candidate_count']=len(candidates)
             search_query=query if group=='facts' else (taxonomy()['formats'][form]['label']+' 原创写作 开篇 节奏 结构 表达 行动引导' if group=='methods' else ' '.join(taxonomy()['domains'][d]['label'] for d in domains)+' '+taxonomy()['formats'][form]['label']+' 开篇 结构 表达')
             filters[group]['vector_query']=search_query
-            ranked=[]
+            ranked=[];scores={};admitted=set()
+            ranking='vector' if provider is not None else 'bm25'
             if provider is not None and enabled:
                 try:
                     # Batch the already-filtered scope, then rank globally.
@@ -449,31 +505,44 @@ class Knowledge:
                         batch_order,batch_scores=semantic_ranks(provider,search_query,candidates[start:start+provider.max_chunks])
                         order.extend(batch_order);scores.update(batch_scores)
                     admitted=set(order)
-                    for row in candidates:
-                        if row[0] not in admitted:continue
-                        terms=set(tokens(row[7]+' '+row[5]));coverage=len(query_terms & terms)/max(1,len(query_terms))
-                        if group=='facts':
-                            if product_ids and not all(re.search(r'(?<![A-Za-z0-9_-])'+re.escape(p)+r'(?![A-Za-z0-9_-])',row[7]+' '+row[5],re.I) for p in product_ids):continue
-                            if not (query_terms & terms) or (len(query_terms)>3 and len(query_terms & terms)<2) or coverage<0.10:continue
-                        # Transparent deterministic rerank; not a cross encoder.
-                        rerank_terms=query_terms if group=='facts' else set(tokens(search_query))
-                        rerank_coverage=len(rerank_terms & terms)/max(1,len(rerank_terms))
-                        rank_score=.8*scores[row[0]]+.2*rerank_coverage
-                        ranked.append((rank_score,row,scores[row[0]],coverage))
-                    ranked.sort(key=lambda item:(-item[0],item[1][0]))
-                except EmbeddingUnavailable as error:gaps.append({'code':'VECTOR_UNAVAILABLE','group':group,'detail':str(error)})
-            filters[group]['vector_candidate_count']=len(ranked)
+                except EmbeddingUnavailable as error:
+                    # Discard any earlier batch's vectors; never mislabel a partial
+                    # vector result as a complete lexical or hybrid search.
+                    ranking='bm25'
+                    gaps.append({'code':'VECTOR_UNAVAILABLE','group':group,'detail':str(error),'fallback':'bm25'})
+            if enabled:
+                if ranking=='bm25':
+                    scores=bm25_scores(search_query,candidates);admitted=set(scores)
+                if candidates:engines.add(ranking)
+                for row in candidates:
+                    if row[0] not in admitted:continue
+                    terms=set(tokens(row[7]+' '+row[5]));coverage=len(query_terms & terms)/max(1,len(query_terms))
+                    # BM25 scores are lexical, not normalized semantic similarity.
+                    rerank_terms=query_terms if group=='facts' else set(tokens(search_query))
+                    rerank_coverage=len(rerank_terms & terms)/max(1,len(rerank_terms))
+                    similarity=scores[row[0]] if ranking=='vector' else None
+                    rank_score=.8*similarity+.2*rerank_coverage if similarity is not None else scores[row[0]]
+                    ranked.append((rank_score,row,similarity,coverage))
+                ranked.sort(key=lambda item:(-item[0],item[1][0]))
+            filters[group]['retrieval_mode']=ranking if enabled else 'disabled'
+            filters[group]['vector_candidate_count']=len(ranked) if ranking=='vector' else 0
+            filters[group]['lexical_candidate_count']=len(ranked) if ranking=='bm25' else 0
             seen=set()
             for score,row,similarity,coverage in ranked:
                 if len(groups[group])>=cfg['limits'][group] or remaining<=0:break
                 if row[1] in seen:continue
                 seen.add(row[1]);meta=all_meta[row[0]]
                 text=row[5][:min(cfg['chunk_chars'],remaining)];remaining-=len(text)
-                groups[group].append(dict(source_id='kb:'+row[0],document_id=row[1],version=row[2],page=row[3],offset=row[4],text=text,title=row[7],url=row[8],source_type=row[9],filename=row[10],location_type=meta.get('location_type','page'),evidence_role='source_material' if group=='facts' else 'expression_reference' if group=='examples' else 'creation_method',**evidence_metadata(meta,row[1],row[2]),score=round(score,6),semantic_score=round(similarity,6),topic_coverage=round(coverage,6),material_type=kind,verification='原文切片；事实须核验来源，样例仅供表达参考'))
+                groups[group].append(dict(source_id='kb:'+row[0],document_id=row[1],version=row[2],page=row[3],offset=row[4],text=text,title=row[7],url=row[8],source_type=row[9],filename=row[10],location_type=meta.get('location_type','page'),evidence_role='source_material' if group=='facts' else 'expression_reference' if group=='examples' else 'creation_method',**evidence_metadata(meta,row[1],row[2]),score=round(score,6),semantic_score=round(similarity,6) if similarity is not None else None,retrieval_mode=ranking,topic_coverage=round(coverage,6),material_type=kind,verification='原文切片；事实须核验来源，样例仅供表达参考'))
             if enabled and not groups[group]:gaps.append({'code':'NO_MATCHING_'+group.upper(),'group':group,'detail':'限定范围内无匹配材料，不使用无关资料补齐'})
         selected=[s for group in groups.values() for s in group]
         with self.store.connect() as db:db.execute('INSERT INTO retrieval_events VALUES(?,?,?,?,?,?)',(str(uuid4()),owner,account,query,json.dumps([s['source_id'] for s in selected]),int(time.time())))
-        return {'engine':'filtered-local-vector-rerank-v1' if provider else 'unavailable','reranker':'cosine-topic-coverage-v1','classification':classification,'groups':groups,'sources':selected,'filters':filters,'gaps':gaps,'insufficient':not groups['facts'],'context_chars':cfg['total_chars']-remaining,'limits':cfg,'embedding_note':note}
+        engines=engines or ({'vector'} if provider else {'bm25'})
+        engine=('filtered-local-vector-bm25-fallback-v1' if len(engines)>1 else
+                'filtered-bm25-zh-bigram-v1' if engines=={'bm25'} else 'filtered-local-vector-rerank-v1')
+        reranker='cosine-topic-coverage-v1' if engines=={'vector'} else 'per-group-vector-or-bm25' if len(engines)>1 else 'bm25-zh-bigram-v1'
+        if 'bm25' in engines:note=(note+'；' if note else '')+'缺失或不可用向量组已降级为限定范围 BM25；不是语义向量结果'
+        return {'engine':engine,'reranker':reranker,'classification':classification,'groups':groups,'sources':selected,'filters':filters,'gaps':gaps,'insufficient':not groups['facts'],'context_chars':cfg['total_chars']-remaining,'limits':cfg,'embedding_note':note}
 
     def classify(self, owner, account, document_id, expected_version, classification):
         """Relabel an owned version without editing source text or case provenance."""

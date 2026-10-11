@@ -14,8 +14,8 @@ class RefactorDocumentationTests(unittest.TestCase):
         self.assertTrue(progress.is_file())
         for entry in ('AGENTS.md', 'README.md'):
             text = (ROOT / entry).read_text()
-            self.assertIn(str(req.relative_to(ROOT)), text)
-            self.assertIn(str(progress.relative_to(ROOT)), text)
+            self.assertIn(req.relative_to(ROOT).as_posix(), text)
+            self.assertIn(progress.relative_to(ROOT).as_posix(), text)
         self.assertFalse((ROOT / 'docs/REFACTOR_REQUIREMENTS.md').exists())
         self.assertFalse((ROOT / 'docs/REFACTOR_PLAN.md').exists())
 
@@ -31,23 +31,21 @@ class RefactorDocumentationTests(unittest.TestCase):
         for label in ('已验证', '有代码但未验证', '缺失', '未知'):
             self.assertIn(label, progress)
 
-    def test_runtime_changes_remain_pending_in_every_role(self):
+    def test_role_cards_point_to_real_runtime_and_current_contract(self):
         for card in sorted((ROOT / 'docs/agents').glob('0[1-4]*.md')):
             text = card.read_text()
             with self.subTest(card=card.name):
-                if card.name.startswith('03_'):
-                    self.assertIn('本轮原创文案运行时职责', text)
-                    self.assertIn('已联动实际 Prompt', text)
-                else:
-                    self.assertIn('本轮改版目标职责（待运行时联动）', text)
-                    self.assertIn('新增职责尚待阶段四', text)
                 self.assertIn('backend/live.py::messages_for', text)
                 self.assertIn('本卡片不被直接加载为运行提示词', text)
+                self.assertIn('runtime_extension.prompt_version', text)
+                self.assertIn('knowledge.automatic_references', text)
+                self.assertNotIn('新增职责尚待阶段四', text)
 
-    def test_phase_two_scope_clarifications(self):
+    def test_current_scope_replaces_old_phase_restrictions(self):
         text = (ROOT / 'docs/design/CONNECTED_CREATOR_REQUIREMENTS.md').read_text()
-        for rule in ('仅第一阶段适用', '用户主动上传并授权的私有产品资料', '第二阶段允许完成检索', '全面提示词重写及完整对话改稿留到第四阶段'):
+        for rule in ('用户主动上传并授权的私有产品资料', '对话改稿', '不启用图片或视频入口', '第一阶段', '不延续为第二阶段禁令'):
             self.assertIn(rule, text)
+        self.assertNotIn('全面提示词重写及完整对话改稿留到第四阶段', text)
 
     def test_background_search_and_confirmation_scope(self):
         text=(ROOT/'docs/design/CONNECTED_CREATOR_REQUIREMENTS.md').read_text()
@@ -62,7 +60,7 @@ class RefactorDocumentationTests(unittest.TestCase):
         for rule in ('不填 0、不编造', '保留后台评论归纳能力、数据表与历史数据',
                      '不回传明文', 'SKP / SKAPP', '准确链接尚未确定',
                      '开发功能不等于授权替用户公开发帖',
-                     '仅第一阶段适用'):
+                     '历史小额测试预算不自动授权新调用'):
             self.assertIn(rule, text)
         self.assertNotRegex(text, r'https?://\S*(?:skapp|skp)')
 

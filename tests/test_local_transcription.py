@@ -3,12 +3,19 @@ from pathlib import Path
 import subprocess
 import unittest
 from unittest.mock import patch
+from types import SimpleNamespace
 
 from backend import local_transcription as asr
 from backend.contracts import DomainError
 
 
 class LocalTranscriptionTests(unittest.TestCase):
+    def setUp(self):
+        # Offline protocol tests do not require an optional ffmpeg installation.
+        dependency = patch.dict('sys.modules', {'imageio_ffmpeg': SimpleNamespace(get_ffmpeg_exe=lambda:'fixture-ffmpeg')})
+        dependency.start()
+        self.addCleanup(dependency.stop)
+
     def call(self,data=b'test',**extra):
         options=dict(filename='clip.wav',account_id='account',title='用户录音',permission_confirmed=True)
         options.update(extra)
@@ -25,8 +32,9 @@ class LocalTranscriptionTests(unittest.TestCase):
     def test_timestamps_provenance_private_temp_and_cleanup(self):
         seen=[]
         def decode(source,target,ext):
-            self.assertEqual(source.stat().st_mode&0o777,0o600)
-            self.assertEqual(target.stat().st_mode&0o777,0o600)
+            from backend.private_files import is_private_file
+            self.assertTrue(is_private_file(source))
+            self.assertTrue(is_private_file(target))
             self.assertEqual(source.name,'upload.wav');seen.append(source.parent)
             return 35
         segments=[{'start':0,'end':30,'text':'第一段'},{'start':30,'end':35,'text':'第二段'}]
@@ -78,17 +86,19 @@ class LocalTranscriptionTests(unittest.TestCase):
         self.assertFalse(paths[0].exists())
 
     def test_whisper_uses_structured_output_to_preserve_eos(self):
-        import numpy as np
         from types import SimpleNamespace
         from unittest.mock import Mock
+        class SequenceFixture:
+            def __init__(self, values):self.values=values
+            def __getitem__(self, index):return self.values[index[0]][index[1]]
         model=Mock()
         model.generation_config.eos_token_id=50257
-        model.generate.return_value=SimpleNamespace(sequences=np.array([[50258,33,50257]]))
+        model.generate.return_value=SimpleNamespace(sequences=SequenceFixture([[50258,33,50257]]))
         features=SimpleNamespace(input_features='features',attention_mask='mask')
         ids=asr._generate(model,features)
         self.assertEqual(ids[0,-1],50257)
         self.assertTrue(model.generate.call_args.kwargs['return_dict_in_generate'])
         self.assertFalse(model.generate.call_args.kwargs['return_timestamps'])
         self.assertEqual(model.generate.call_args.kwargs['attention_mask'],'mask')
-        model.generate.return_value=SimpleNamespace(sequences=np.array([[50258,33,44]]))
+        model.generate.return_value=SimpleNamespace(sequences=SequenceFixture([[50258,33,44]]))
         with self.assertRaises(DomainError):asr._generate(model,features)

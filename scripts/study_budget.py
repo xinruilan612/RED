@@ -10,6 +10,7 @@ import hashlib
 import json
 import sqlite3
 import time
+from contextlib import contextmanager
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from uuid import uuid4
@@ -56,8 +57,14 @@ class BudgetedClient:
             elif existing[0] != self.cap_micro:
                 raise DomainError('STUDY_BUDGET_INVALID', '已有账本预算不可重置或修改')
 
+    @contextmanager
     def _connect(self):
-        return sqlite3.connect(str(self.ledger_path), timeout=30)
+        db = sqlite3.connect(str(self.ledger_path), timeout=30)
+        try:
+            with db:  # sqlite3's transaction context does not close its handle.
+                yield db
+        finally:
+            db.close()
 
     def _check_bounded_adapter(self):
         from backend.provider import DeepSeek

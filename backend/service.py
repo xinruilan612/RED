@@ -80,7 +80,7 @@ class Service:
         require(mode in ('simulation','live'), 'INVALID_INPUT', '运行模式无效')
         policy=self.executor.router.policy(owner=owner if mode=='live' else None,connection_id=connection_id)
         if mode=='live':self.executor.router.ready(policy,owner)
-        context = validate_brief({k:v for k,v in data.items() if k not in ('mode','operations','knowledge','web_research','creation')})
+        context = validate_brief({k:v for k,v in data.items() if k not in ('mode','operations','knowledge','web_research','creation','comment_feedback')})
         from backend.web_research import selection as web_selection
         context['web_research']=web_selection(data.get('web_research'),mode)
         context['mode'] = mode
@@ -97,6 +97,8 @@ class Service:
         from backend.creation_taxonomy import classify_task
         context['creation_classification']=classify_task(data.get('creation'),context)
         account=context.get('operations',{}).get('account_id')
+        from backend.comment_feedback import freeze
+        context['comment_feedback']=freeze(self.store,owner,account,data.get('comment_feedback'))
         if selection['enabled']:
             require(account,'INVALID_INPUT','请先选择资料所属账号')
         if account and (selection['enabled'] or automatic_references):
@@ -123,7 +125,7 @@ class Service:
         data = parse(Command, data)
         require(set(data)=={'action','version','key','payload'}, 'INVALID_INPUT', '命令字段无效')
         action, payload = data['action'],data['payload']
-        require(isinstance(action,str) and action in ('next','edit','supplement','accept','adopt_manual','cancel','recover','repair_review'), 'INVALID_INPUT', '未知操作')
+        require(isinstance(action,str) and action in ('next','edit','request_revision','supplement','accept','adopt_manual','cancel','recover','repair_review'), 'INVALID_INPUT', '未知操作')
         integer(data['version'],'version')
         require(isinstance(data['key'],str) and 0<len(data['key'])<=100 and isinstance(payload,dict), 'INVALID_INPUT', '命令参数无效')
         run = self.store.get(run_id,owner)
@@ -143,6 +145,9 @@ class Service:
             return self.view(self.executor.step(run_id,owner,data['version'],data['key']))
         command = {'next':'demo_step','supplement':'demo_supplement'}.get(action,action)
         if action=='edit': payload={'content':validate_edit(payload)}
+        if action=='request_revision':
+            require(set(payload)=={'draft_ref','content_hash','instruction'} and
+                    all(isinstance(v,str) and v for v in payload.values()),'INVALID_INPUT','请选择准确稿件并填写改稿要求')
         if action=='supplement': require(set(payload)=={'material','allow_hypothesis'},'INVALID_INPUT','补料字段无效')
         if action=='accept': require(set(payload)=={'draft_ref','review_ref'} and all(isinstance(v,str) for v in payload.values()),'INVALID_INPUT','确认版本无效')
         if action=='adopt_manual':

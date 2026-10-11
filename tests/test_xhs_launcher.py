@@ -25,6 +25,7 @@ class XHSLauncherTests(unittest.TestCase):
             with self.assertRaises(SystemExit):main()
             self.assertIn('-headless=true',run.call_args.args[1])
             self.assertNotIn('-headless=false',run.call_args.args[1])
-            self.assertTrue(os.environ['COOKIES_PATH'].endswith('/runtime/xhs-local/session/cookies.json'))
+            from pathlib import Path
+            self.assertEqual(Path(os.environ['COOKIES_PATH']).parts[-4:],('runtime','xhs-local','session','cookies.json'))
             self.assertEqual(os.environ['AUTH_TOKEN'],'test-control')
             self.assertNotIn('test-control',str(run.call_args.args))

@@ -23,7 +23,7 @@ def next_creation_stage(run):
         web=run.context.get('web_research',{})
         return 'web_research' if web.get('enabled') and web.get('status')!='complete' else 'brief'
     if run.current_stage == 'reviewer':return 'review'
-    if run.review and run.review['decision']=='revision_required':return 'revise'
+    if run.context.get('pending_revision') or (run.review and run.review['decision']=='revision_required'):return 'revise'
     return next(stage for stage in CONTRACT['content_stages'] if stage not in {a['stage'] for a in run.artifacts})
 
 

@@ -207,5 +207,6 @@ def actions(run):
     if run.can_manual_adopt():
         if 'edit' not in result:result.append('edit')
         if not (run.review and run.review.get('decision')=='approved'):result.append('adopt_manual')
+    if run.can_request_revision():result.append('request_revision')
     if run.run_status=='SUCCEEDED': result+=['export']
     return result

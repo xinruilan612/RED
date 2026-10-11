@@ -51,6 +51,9 @@ def _signal_family(family, sig):
 
 
 def run_reader(command, **kwargs):
+    if os.name == 'nt':
+        from backend.windows_reader_process import run_reader as windows_reader
+        return windows_reader(command, cwd=ROOT, timeout=kwargs.get('timeout',240))
     process = subprocess.Popen(command, cwd=ROOT, stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE, start_new_session=True)
     try:
@@ -98,7 +101,7 @@ def collect_creator(source_id, runner=run_reader):
     binding = ROOT / 'runtime/xhs-local/creator' / source_id / 'binding.json'
     if not binding.is_file():
         return base
-    executable = ROOT / 'runtime/mediacrawler/.venv/bin/python'
+    executable = ROOT / 'runtime/mediacrawler/.venv' / ('Scripts/python.exe' if os.name == 'nt' else 'bin/python')
     if not executable.is_file():
         return {**base, 'error': 'CREATOR_RUNTIME_UNAVAILABLE'}
     try:

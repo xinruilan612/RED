@@ -6,7 +6,6 @@ private API calls, permission application, publication or comment writing.
 """
 import argparse
 import asyncio
-import fcntl
 import hashlib
 import json
 import os
@@ -17,6 +16,8 @@ from datetime import datetime, timezone
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+from backend.file_lock import exclusive_file_lock
+from backend.private_files import write_private_bytes
 HOME = 'https://creator.xiaohongshu.com/new/home'
 NOTES = 'https://creator.xiaohongshu.com/new/note-manager'
 PROFILE = 'https://www.xiaohongshu.com/explore'
@@ -51,16 +52,12 @@ class ReaderStopped(Exception):
 
 def private_json(path, value):
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-    temp = path.with_suffix('.tmp')
-    with os.fdopen(os.open(temp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600), 'w') as f:
-        json.dump(value, f, ensure_ascii=False)
-    os.replace(temp, path)
-    os.chmod(path, 0o600)
+    write_private_bytes(path, json.dumps(value, ensure_ascii=False).encode('utf-8'), replace=True)
 
 
 def bootstrap_cookies(path):
     """Existing explicitly bound connector session, filtered to this platform."""
-    raw = json.loads(path.read_text())
+    raw = json.loads(path.read_text(encoding='utf-8'))
     if isinstance(raw, dict):
         raw = raw.get('cookies')
     if not isinstance(raw, list):
@@ -166,7 +163,7 @@ async def read_pages(args, folder, binding):
             cookie_file = ROOT / 'runtime/xhs-local/session/cookies.json'
             fingerprint = hashlib.sha256(cookie_file.read_bytes()).hexdigest()
             bootstrap = folder / 'bootstrap.json'
-            previous = json.loads(bootstrap.read_text()) if bootstrap.exists() else {}
+            previous = json.loads(bootstrap.read_text(encoding='utf-8')) if bootstrap.exists() else {}
             if previous.get('fingerprint') != fingerprint:
                 await context.add_cookies(bootstrap_cookies(cookie_file))
                 private_json(bootstrap, {'fingerprint': fingerprint})
@@ -223,22 +220,20 @@ def main():
     if args.bind_account:
         if not re.fullmatch(r'[0-9A-Za-z_-]{1,40}', args.bind_account):
             parser.error('invalid creator account')
-        if binding_file.exists() and json.loads(binding_file.read_text()) != {'source_id': args.source_id, 'creator_account_id': args.bind_account}:
+        if binding_file.exists() and json.loads(binding_file.read_text(encoding='utf-8')) != {'source_id': args.source_id, 'creator_account_id': args.bind_account}:
             parser.error('binding is immutable; use a separately reviewed migration')
         private_json(binding_file, {'source_id': args.source_id, 'creator_account_id': args.bind_account})
     result = {'status': 'failed', 'source_id': args.source_id, 'source_method': 'creator_browser_dom',
               'observed_at': datetime.now(timezone.utc).isoformat(), 'source_updated_at': None,
               'account': None, 'notes': [], 'error': 'CREATOR_READER_FAILED'}
     try:
-        binding = json.loads(binding_file.read_text())
+        binding = json.loads(binding_file.read_text(encoding='utf-8'))
         if binding['source_id'] != args.source_id:
             raise ReaderStopped('CREATOR_IDENTITY_CHANGED')
-        with open(folder / 'reader.lock', 'w') as lock:
-            try:
-                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            except BlockingIOError:
-                raise ReaderStopped('CREATOR_BUSY') from None
+        with exclusive_file_lock(folder / 'reader.lock'):
             result = asyncio.run(read_pages(args, folder, binding))
+    except BlockingIOError:
+        result['error'] = 'CREATOR_BUSY'
     except ReaderStopped as exc:
         result['error'] = str(exc)
     except Exception:

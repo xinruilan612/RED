@@ -5,16 +5,68 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 function setup(){
  const elements=new Map();
+ const documentListeners=new Map();
  const element=id=>{if(!elements.has(id))elements.set(id,{hidden:false,disabled:false,value:'',textContent:'',innerHTML:'',selectedOptions:[],addEventListener(){},scrollIntoView(){},insertAdjacentHTML(_where,text){this.innerHTML+=text;}});return elements.get(id);};
- const sandbox={document:{getElementById:element,addEventListener(){},querySelector:element,querySelectorAll(){return [];}},window:{addEventListener(){},confirm(){return true;}},setInterval(){},setTimeout(){},clearTimeout(){},crypto:{randomUUID:()=> 'test-key'},websiteSession:{auth_required:true}};
+ const sandbox={document:{getElementById:element,addEventListener(type,listener){documentListeners.set(type,listener);},querySelector:element,querySelectorAll(){return [];}},window:{addEventListener(){},confirm(){return true;}},setInterval(){},setTimeout(){},clearTimeout(){},crypto:{randomUUID:()=> 'test-key'},websiteSession:{auth_required:true}};
  vm.createContext(sandbox);vm.runInContext(fs.readFileSync('frontend/app.js','utf8'),sandbox);
  vm.runInContext(`run={run_id:'run-1',mode:'live',current_stage:'brief',status_version:1,run_status:'RUNNING',context:{topic:'护肤',tone:'清楚',audience:'新手',web_research:{enabled:true,status:'pending',queries:['护肤']}},usage:{},drafts:[],node_runs:[],artifacts:[],events:[],snapshot_id:'snapshot',allowed_actions:['next','cancel'],background:{status:'paused'},in_flight:false};
  actualRenderDetails=renderDetails; actualRenderHuman=renderHuman; renderDetails=renderHuman=renderDraft=renderTimeline=renderCalls=()=>{};
  history=async()=>[]; currentAgent=()=> 'research'; calls=[]; confirmations=0;
  confirmLiveBudget=()=>{confirmations++;return true;};
  api=async(path,method,body)=>{calls.push(body);return run;};`,sandbox);
- return {sandbox,element,eval:code=>vm.runInContext(code,sandbox)};
+ return {sandbox,element,documentListeners,eval:code=>vm.runInContext(code,sandbox)};
 }
+
+test('missing platform key offers in-product model setup and preserves free simulation',()=>{
+ const s=setup();s.element('mode').value='simulation';
+ s.eval("applyModelStatus({ready:false,message:'请在项目根目录.env填写DEEPSEEK_API_KEY，然后重启服务',provider:'DeepSeek'})");
+ assert.match(s.element('configMessage').textContent,/连接与设置 → 模型与搜索设置/);
+ assert.match(s.element('configMessage').textContent,/API Key.*连接地址.*保存并用于新任务.*测试连接（可能计费）/);
+ assert.doesNotMatch(s.element('configMessage').textContent,/\.env|DEEPSEEK_API_KEY|重启/);
+ assert.equal(s.element('configureModelConnection').hidden,false);
+ assert.equal(s.element('liveOption').disabled,true);
+ assert.equal(s.element('mode').value,'simulation');
+ assert.equal(s.eval('calls.length'),0);
+});
+
+test('model setup button uses existing navigation without bypassing unsaved or busy guards',()=>{
+ const s=setup();const html=fs.readFileSync('frontend/index.html','utf8');
+ const buttonMarkup=html.match(/<button\b[^>]*id="configureModelConnection"[^>]*>/)?.[0];
+ assert.ok(buttonMarkup);assert.match(buttonMarkup,/type="button"/);
+ const route=buttonMarkup.match(/data-go-page="([^"]+)"/)?.[1];assert.equal(route,'models');
+ s.eval("pageInfo={};opsBusy=false;routes=[];showPage=page=>routes.push(page)");
+ vm.runInContext(fs.readFileSync('frontend/guidance.js','utf8'),s.sandbox);
+ const button={disabled:false,dataset:{goPage:route},hasAttribute:()=>false};
+ const click=()=>s.documentListeners.get('click')({target:{closest:()=>button}});
+ s.element('revisionInstruction').value='请改成更自然的语气';s.sandbox.window.confirm=()=>false;
+ click();assert.equal(s.eval('routes.length'),0);assert.equal(s.element('revisionInstruction').value,'请改成更自然的语气');
+ s.element('revisionInstruction').value='';s.eval('busy=true');click();assert.equal(s.eval('routes.length'),0);
+ s.eval('busy=false');click();assert.equal(s.eval('routes[0]'),'models');
+ assert.equal(s.eval('calls.length'),0);assert.equal(s.eval('confirmations'),0);
+});
+
+test('available platform and user model connections retain enabled live creation',()=>{
+ const s=setup();
+ for(const [provider,model] of [['DeepSeek','deepseek-chat'],['千问','qwen-plus']]){
+  s.sandbox.modelStatus={ready:true,provider,model,message:'连接可用',run_attempts_max:8,run_tokens_max:9000};
+  s.eval('applyModelStatus(modelStatus)');
+  assert.equal(s.element('configureModelConnection').hidden,true);
+  assert.equal(s.element('liveOption').disabled,false);
+  assert.equal(s.element('liveOption').textContent,`真实 AI · ${model}（消耗接口额度）`);
+  assert.equal(s.element('connectionStatus').textContent,provider+'：已配置');
+  assert.match(s.element('configMessage').textContent,/连接可用 · 整单最多8次/);
+ }
+ assert.equal(s.eval('calls.length'),0);
+});
+
+test('studio privacy and output attribution do not mislabel user selected models as DeepSeek',()=>{
+ const s=setup();const html=fs.readFileSync('frontend/index.html','utf8');
+ assert.match(html,/真实 AI 会向选定的模型供应商发送需求和选中的素材/);
+ assert.doesNotMatch(html,/真实 AI 会向 DeepSeek|先填写 \.env/);
+ s.eval("run.node_runs=[{agent:'audience',stage:'audience',snapshot_id:'snapshot',duration_ms:1,output:{primary_audience:'读者',basis:'分析',content_opportunities:[]}}];actualRenderDetails()");
+ assert.match(s.element('details').innerHTML,/由本任务选定的模型生成/);
+ assert.doesNotMatch(s.element('details').innerHTML,/由 DeepSeek 生成/);
+});
 test('next executes one background step and free research does not request model budget',async()=>{
  const s=setup();await s.eval("act('next')");assert.equal(s.eval('calls[0].action'),'step');assert.equal(s.eval('confirmations'),0);
  s.eval("run.context.web_research.status='complete'");await s.eval("act('next')");assert.equal(s.eval('confirmations'),1);

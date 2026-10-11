@@ -6,7 +6,7 @@ from backend.contracts import require
 
 
 def taxonomy():
-    return json.loads((Path(__file__).parent.parent/'config/creation_taxonomy.json').read_text())
+    return json.loads((Path(__file__).parent.parent/'config/creation_taxonomy.json').read_text(encoding='utf-8'))
 
 
 def _validated(value, document=False):

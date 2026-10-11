@@ -2,7 +2,7 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),crypto=require('node:crypto');
 const html=fs.readFileSync('frontend/index.html','utf8'),css=fs.readFileSync('frontend/style.css','utf8');
 test('existing sidebar remains byte-for-byte unchanged while adopting the right-side layout',()=>{
- const aside=html.match(/<aside class="sidebar">[\s\S]*?<\/aside>/)[0];
+ const aside=html.match(/<aside class="sidebar">[\s\S]*?<\/aside>/)[0].replace(/\r\n/g,'\n');
  assert.equal(crypto.createHash('sha256').update(aside).digest('hex'),'0602e6db046d9a379d9e775fd41c38cce6d132abb9ca59b379c7701fc09e255e');
 });
 test('draft and human decisions precede collapsed process and runtime details',()=>{

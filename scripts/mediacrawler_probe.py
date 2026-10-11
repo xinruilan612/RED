@@ -12,6 +12,8 @@ from types import MethodType
 from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from backend.private_files import write_private_bytes
 UPSTREAM = ROOT / 'runtime/mediacrawler'
 REVISION = 'e9dd17a16338c3915f2335bc609383d316e055f2'
 OUT = ROOT / 'runtime/mediacrawler-probe'
@@ -68,9 +70,7 @@ def clean_comments(items):
 
 
 def private_json(path, value):
-    fd = os.open(path, os.O_WRONLY|os.O_CREAT|os.O_TRUNC, 0o600)
-    with os.fdopen(fd,'w') as stream:
-        json.dump(value,stream,ensure_ascii=False,indent=2)
+    write_private_bytes(path, json.dumps(value,ensure_ascii=False,indent=2).encode('utf-8'), replace=True)
 
 
 async def run(url):
@@ -167,6 +167,6 @@ def main():
         print('Pinned MediaCrawler and isolated dependencies available. No browser/network collection started.')
         return
     if not args.profile_file: parser.error('--profile-file is required')
-    asyncio.run(run(json.loads(args.profile_file.read_text())['profile_url']))
+    asyncio.run(run(json.loads(args.profile_file.read_text(encoding='utf-8'))['profile_url']))
 
 if __name__=='__main__': main()
