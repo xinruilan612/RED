@@ -8,7 +8,6 @@ import subprocess
 import sys
 import time
 from urllib.parse import urlsplit
-import venv
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -23,6 +22,10 @@ def setup(root=ROOT):
         raise RuntimeError('Python 3.12 or newer is required.')
     interpreter = python_path(root)
     if not interpreter.exists():
+        try:
+            import venv
+        except ImportError:
+            raise RuntimeError('Creating a development environment requires the full Python 3.12+ installation with venv; the portable embedded Python cannot create it. Use the portable package launcher instead, or run setup with full Python.') from None
         venv.EnvBuilder(with_pip=True).create(root / 'runtime' / 'venv')
     subprocess.run([str(interpreter), '-m', 'pip', 'install', '-r', str(root / 'requirements.txt')], check=True, cwd=root)
     target = root / '.env'

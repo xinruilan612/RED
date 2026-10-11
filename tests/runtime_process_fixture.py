@@ -1,7 +1,12 @@
 """Test-only subprocess worker; not imported by the website or production worker."""
 import os
+import sys
 import threading
 from pathlib import Path
+
+# Embedded Python isolates sys.path instead of adding the script directory.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
 from backend.store import Store
 from backend.service import Service
 from backend.provider import Config

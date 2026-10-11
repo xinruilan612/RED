@@ -1,5 +1,6 @@
 import io
 from pathlib import Path
+import runpy
 import subprocess
 import tempfile
 import unittest
@@ -16,7 +17,6 @@ class LocalDevTests(unittest.TestCase):
         self.assertEqual(local_dev.python_path(root, False), root/'runtime/venv/bin/python')
 
     def test_contract_load_does_not_depend_on_system_encoding(self):
-        import runpy
         original = Path.read_text
         def windows_read(path, *args, **kwargs):
             kwargs.setdefault('encoding', 'ascii')
@@ -29,23 +29,52 @@ class LocalDevTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root/'.env').write_text('PRIVATE=keep', encoding='utf-8')
-            with patch.object(local_dev.venv, 'EnvBuilder') as builder, patch.object(local_dev.subprocess, 'run') as run:
+            virtualenv = Mock()
+            with patch.dict('sys.modules', {'venv': virtualenv}), patch.object(local_dev.subprocess, 'run') as run:
                 local_dev.setup(root)
             self.assertEqual((root/'.env').read_text(), 'PRIVATE=keep')
-            builder.return_value.create.assert_called_once_with(root/'runtime/venv')
+            virtualenv.EnvBuilder.assert_called_once_with(with_pip=True)
+            virtualenv.EnvBuilder.return_value.create.assert_called_once_with(root/'runtime/venv')
             self.assertEqual(run.call_args.kwargs, {'check': True, 'cwd': root})
 
     def test_setup_copies_template_only_after_success(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root/'.env.example').write_text('EXAMPLE=yes', encoding='utf-8')
-            with patch.object(local_dev.venv, 'EnvBuilder'), patch.object(local_dev.subprocess, 'run', side_effect=subprocess.CalledProcessError(1, 'pip')):
+            with patch.dict('sys.modules', {'venv': Mock()}), patch.object(local_dev.subprocess, 'run', side_effect=subprocess.CalledProcessError(1, 'pip')):
                 with self.assertRaises(subprocess.CalledProcessError):
                     local_dev.setup(root)
             self.assertFalse((root/'.env').exists())
-            with patch.object(local_dev.venv, 'EnvBuilder'), patch.object(local_dev.subprocess, 'run'):
+            with patch.dict('sys.modules', {'venv': Mock()}), patch.object(local_dev.subprocess, 'run'):
                 local_dev.setup(root)
             self.assertEqual((root/'.env').read_text(), 'EXAMPLE=yes')
+
+    def test_import_without_venv_is_supported(self):
+        with patch.dict('sys.modules', {'venv': None}):
+            namespace = runpy.run_path(str(local_dev.ROOT/'scripts/local_dev.py'))
+        self.assertTrue(callable(namespace['setup']))
+
+    def test_setup_without_venv_explains_full_python_requirement(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with patch.dict('sys.modules', {'venv': None}), patch.object(local_dev.subprocess, 'run') as run:
+                with self.assertRaisesRegex(RuntimeError, 'full Python 3.12.*with venv'):
+                    local_dev.setup(root)
+            run.assert_not_called()
+            self.assertFalse((root/'runtime').exists())
+            self.assertFalse((root/'.env').exists())
+
+    def test_existing_environment_does_not_require_venv_module(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            interpreter = local_dev.python_path(root)
+            interpreter.parent.mkdir(parents=True)
+            interpreter.touch()
+            (root/'.env').write_text('PRIVATE=keep', encoding='utf-8')
+            with patch.dict('sys.modules', {'venv': None}), patch.object(local_dev.subprocess, 'run') as run:
+                local_dev.setup(root)
+            self.assertEqual(run.call_args.args[0][0], str(interpreter))
+            self.assertEqual((root/'.env').read_text(encoding='utf-8'), 'PRIVATE=keep')
 
     def test_local_origin_only(self):
         self.assertEqual(local_dev.endpoint({'PUBLIC_ORIGIN':'http://localhost:9876/'}), ('127.0.0.1', 9876, 'http://localhost:9876'))

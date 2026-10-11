@@ -6,6 +6,8 @@
 
 ## 开发入口
 
+教师Windows便携包使用根目录“一键启动.cmd”；无需安装Python/PostgreSQL，首次创建独立SQLite，真实模型在网页内另配。构建入口 `scripts/package_teacher.py`，说明源文件 [评审包使用说明](packaging/teacher/README.txt)。它与下文开发用PostgreSQL启动器不同；包内不带作者密钥、已有账号库或平台登录状态。macOS不运行Windows二进制，原生Mac仍未验收。
+
 - [协作与工程约束](AGENTS.md)、[参赛要求](docs/CONTEST_REQUIREMENTS.md)
 - [架构与设计](docs/design/README.md)、[统一执行协议](docs/design/AGENT_PROTOCOL.md)
 - [四 Agent 说明](docs/agents/00_overview_and_all_agents.md)

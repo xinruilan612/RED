@@ -1,0 +1,67 @@
+有迹教师 Windows 便携包：第三方组件说明
+核对日期：2026-10-11
+
+本包默认使用本地 SQLite，不要求老师安装 PostgreSQL。
+随包保留原项目已经测试过的 PostgreSQL 驱动依赖，不会因此自动连接数据库。
+第三方组件按各自许可证提供，不将整个依赖集合统一声明为 MIT。
+
+一、Python 与依赖文件
+
+Python 为 python.org 官方 Windows x64 embeddable 私有运行时。
+运行时的精确版本、文件 SHA-256 以随包 manifest 为准。
+保留 python/LICENSE.txt 及官方运行时随附的第三方版权通知。
+第三方 Python 包位于 python/Lib/site-packages/，其 .dist-info 目录中的
+METADATA、LICENSE、licenses/、NOTICE 等仍与依赖一同保留。
+完整依赖及版本以随包依赖清单和 METADATA 为准。
+
+二、补充的版本对应许可证
+
+1. langsmith 0.13.0 — MIT
+   Copyright (c) 2023 LangChain
+   完整许可：app/packaging/teacher/licenses/LICENSE-langsmith.txt
+   官方版本源码：https://github.com/langchain-ai/langsmith-sdk/tree/v0.13.0
+   许可原文：https://raw.githubusercontent.com/langchain-ai/langsmith-sdk/v0.13.0/LICENSE
+   已核对该标签 python/langsmith/__init__.py 中版本为 0.13.0。
+
+2. sqlite-vec 0.1.9 — 本次采用其 MIT 许可选项
+   Copyright (c) 2024 Alex Garcia
+   完整许可：app/packaging/teacher/licenses/LICENSE-sqlite-vec-MIT.txt
+   官方版本源码：https://github.com/asg017/sqlite-vec/tree/v0.1.9
+   许可原文：https://raw.githubusercontent.com/asg017/sqlite-vec/v0.1.9/LICENSE-MIT
+   官方发行及源码归档：https://github.com/asg017/sqlite-vec/releases/tag/v0.1.9
+
+这两份补充许可保留完整上游版权与许可文本；不会替代其他依赖的许可。
+
+三、PostgreSQL 驱动（LGPL-3.0-only）
+
+保留的版本：psycopg 3.3.6、psycopg-binary 3.3.6、psycopg-pool 3.3.2。
+Copyright (C) 2020 The Psycopg Team（具体文件的版权声明继续保留）。
+原 LGPL 文本位于对应 .dist-info/licenses/LICENSE.txt；按实际发行布局查阅。
+这些驱动是可独立替换的 Python 包和动态扩展，并未静态合并到本项目程序。
+
+对应源码获取入口：
+  https://github.com/psycopg/psycopg/tree/3.3.6
+  https://github.com/psycopg/psycopg/archive/refs/tags/3.3.6.tar.gz
+  https://pypi.org/project/psycopg/3.3.6/#files
+  https://pypi.org/project/psycopg-binary/3.3.6/#files
+  https://pypi.org/project/psycopg-pool/3.3.2/#files
+
+psycopg_binary.libs/ 保存随官方 wheel 提供的 libpq、libssl、libcrypto
+动态库；保留它们的原文件名及目录关系，不从系统目录提取替代 DLL。
+其上游分别为 PostgreSQL 与 OpenSSL：
+  https://www.postgresql.org/about/licence/
+  https://github.com/openssl/openssl
+这些底层组件及驱动仍适用其原许可证，而不是本项目自定义许可。
+
+使用者可依各组件许可证研究、修改及替换这些开源库。本项目不额外禁止
+为了调试这些库的修改而进行的逆向工程。替换前应停止本程序，备份自己的
+数据，再使用兼容 Windows x64 / Python 3.12 的库及配套动态依赖，保留其
+元数据、许可证和原有包目录；替换后需重新验证启动与所用功能。
+替换库不要求修改本项目源代码；自改依赖后的运行结果不属于原包验收结果。
+
+四、其他边界
+
+保留 certifi、orjson 等组件各自的 MPL/Apache/BSD/MIT 等许可声明。
+本说明不是对全部第三方组件作统一重新授权；完整许可文本优先。
+不附带账号、API Key、Cookie、开发者数据库或小红书登录状态。
+不附带本轮不需要的生图、视频、浏览器采集器或额外模型权重。
