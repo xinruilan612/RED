@@ -27,7 +27,7 @@ def findings(content):
     return result
 
 
-def annotate_review(report, content):
+def annotate_review(report, content, *, allow_revision=False):
     """Preserve the response separately; downgrade only explicit copy leakage."""
     matches=findings(content)
     if not matches:return report
@@ -43,9 +43,13 @@ def annotate_review(report, content):
     for check in result['checks']:
         if check.get('name')=='usefulness_and_readability':
             check.update(result='fail',basis='正文包含创作过程或资料缺口说明，尚未区分内部说明与读者文案。')
-    # A human can still adopt this draft explicitly. This is not an approval gate.
-    result['decision']='needs_human';result['next_action']='request_human'
-    question='请核对正文里的资料说明：若关键结论缺少依据，请补充对应原文；若已有依据，请将内部说明与发布正文分开。'
-    if question not in result['human_questions']:result['human_questions'].append(question)
+    # Eligible original tasks use the existing bounded revision loop, never
+    # approval. A reviewer requesting actual missing facts still goes to a human.
+    if allow_revision and report.get('decision') in ('approved','revision_required') and not report.get('human_questions'):
+        result['decision']='revision_required';result['next_action']='revise'
+    else:
+        result['decision']='needs_human';result['next_action']='request_human'
+        question='请核对正文里的资料说明：若关键结论缺少依据，请补充对应原文；若已有依据，请将内部说明与发布正文分开。'
+        if question not in result['human_questions']:result['human_questions'].append(question)
     result['limitations'].append('本地表达对象检查检测到明确的创作过程用语；没有核实外部事实，也没有自动修改原稿。')
     return result

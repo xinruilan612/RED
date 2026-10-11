@@ -67,3 +67,39 @@ def collect(queries, before_request=lambda:None, searcher=None):
 def model_summary(report):
     """Do not send un-read snippets or full search responses to a model."""
     return {k:report[k] for k in ('status','queries','searched_at','limitation') if k in report}
+
+
+def attach_facts(context, report):
+    """Freeze authorized, actually read web bodies in the task's factual group.
+
+    Search snippets never enter this path. Task/topic filtering is independent
+    of publishing channel; paid nodes consume this one frozen selection.
+    """
+    if 'creation_classification' not in context:
+        context['evidence']=context.get('evidence',[])+report['sources']
+        return
+    import re
+    from backend.creation_taxonomy import infer_domains, taxonomy
+    classification=context['creation_classification'];domains=set(classification['domains'])
+    retrieval=context['creation_retrieval'];groups=retrieval['groups'];limits=taxonomy()['retrieval']
+    remaining=max(0,limits['total_chars']-sum(len(s['text']) for group in groups.values() for s in group))
+    wanted=set(tokens(context['topic']))
+    product_ids=set(re.findall(r'(?<![A-Za-z0-9_-])(?=[A-Za-z0-9_-]*\d)[A-Za-z][A-Za-z0-9_-]{1,}(?![A-Za-z0-9_-])',context['topic']))
+    accepted=[]
+    for source in report['sources']:
+        body=source.get('text','');topic_text=source.get('title','')+' '+body
+        tags=set(infer_domains(topic_text));matched=wanted & set(tokens(topic_text))
+        if not body or not matched or (len(wanted)>3 and len(matched)<2):continue
+        if domains!={'general'} and tags and not domains.intersection(tags):continue
+        if product_ids and not all(re.search(r'(?<![A-Za-z0-9_-])'+re.escape(p)+r'(?![A-Za-z0-9_-])',topic_text,re.I) for p in product_ids):continue
+        if len(groups['facts'])>=limits['limits']['facts'] or remaining<=0:break
+        record={**source,'text':body[:min(remaining,limits['chunk_chars'])],
+                'material_type':'fact','evidence_role':'source_material',
+                'classification':{'domains':sorted(tags & domains) or sorted(domains),'channel':'any','format':'any','material_type':'fact','origin':'task_scoped_web_read'}}
+        groups['facts'].append(record);accepted.append(record);remaining-=len(record['text'])
+    retrieval['sources']=[s for group in groups.values() for s in group]
+    retrieval['context_chars']=limits['total_chars']-remaining
+    retrieval['web_fact_filter']={'topic':context['topic'],'domains':sorted(domains),'channel':None,'read_body_only':True,'accepted':len(accepted)}
+    context['evidence']=retrieval['sources']
+    report['sources']=accepted
+    if not accepted:report['status']='insufficient'

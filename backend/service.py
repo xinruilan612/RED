@@ -80,7 +80,7 @@ class Service:
         require(mode in ('simulation','live'), 'INVALID_INPUT', '运行模式无效')
         policy=self.executor.router.policy(owner=owner if mode=='live' else None,connection_id=connection_id)
         if mode=='live':self.executor.router.ready(policy,owner)
-        context = validate_brief({k:v for k,v in data.items() if k not in ('mode','operations','knowledge','web_research')})
+        context = validate_brief({k:v for k,v in data.items() if k not in ('mode','operations','knowledge','web_research','creation')})
         from backend.web_research import selection as web_selection
         context['web_research']=web_selection(data.get('web_research'),mode)
         context['mode'] = mode
@@ -94,25 +94,24 @@ class Service:
         context['knowledge_selection']={**selection,'automatic_references':automatic_references}
         document_ids=selection.get('document_ids',[])
         require(isinstance(document_ids,list) and len(document_ids)<=3 and all(isinstance(x,str) and x for x in document_ids),'INVALID_INPUT','最多选择 3 份资料')
-        if selection['enabled']:
-            account=context.get('operations',{}).get('account_id')
-            require(account,'INVALID_INPUT','请先选择资料所属账号')
-            result=self.knowledge.retrieve(owner,account,(context['topic']+' '+context['audience'])[:300],limit=3,document_ids=document_ids if 'document_ids' in selection else None)
-            context['retrieval']=result
-            context['evidence']=result['sources']
+        from backend.creation_taxonomy import classify_task
+        context['creation_classification']=classify_task(data.get('creation'),context)
         account=context.get('operations',{}).get('account_id')
-        if account and automatic_references and context.get('operations',{}).get('platform')=='xiaohongshu':
-            # Authorized public style-library use is independent of optional fact selection.
-            style=self.knowledge.retrieve(owner,account,(context['topic']+' '+context['audience'])[:300],limit=3,style_only=True)
-            context['style_retrieval']=style
-            known={source['source_id'] for source in context.get('evidence',[])}
-            context['evidence']=context.get('evidence',[])+[source for source in style['sources'] if source['source_id'] not in known]
-        if account and automatic_references:
-            approved=self.knowledge.retrieve(owner,account,(context['topic']+' '+context['audience'])[:300],limit=3,approved_only=True)
-            if approved['sources']:
-                context['approved_retrieval']=approved
-                known={source['source_id'] for source in context.get('evidence',[])}
-                context['evidence']=context.get('evidence',[])+[source for source in approved['sources'] if source['source_id'] not in known]
+        if selection['enabled']:
+            require(account,'INVALID_INPUT','请先选择资料所属账号')
+        if account and (selection['enabled'] or automatic_references):
+            grouped=self.knowledge.grouped_retrieve(
+                owner,account,context['topic'][:300],context['creation_classification'],
+                document_ids=document_ids if 'document_ids' in selection else None,
+                include_facts=selection['enabled'],include_references=automatic_references)
+        else:
+            grouped={'classification':context['creation_classification'],
+                     'groups':{'methods':[],'examples':[],'facts':[]},'sources':[],
+                     'filters':{},'gaps':['未启用资料检索；仅使用本次用户素材'],
+                     'engine':'disabled'}
+        context['creation_retrieval']=grouped
+        context['retrieval']=grouped
+        context['evidence']=grouped['sources']
         if mode=='live': context['scenario']='standard'
         return self.view(self.store.create(owner,str(uuid4()),context))
 

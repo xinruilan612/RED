@@ -287,6 +287,11 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
         result=ResearchJobs(store).export(user['owner'],job_id)
         return Response(result['content'],media_type='text/markdown',headers={'Content-Disposition':'attachment; filename="youji-research-report.md"'})
 
+    @app.get('/api/creation/taxonomy')
+    def creation_taxonomy(user=Depends(logged)):
+        from backend.creation_taxonomy import taxonomy
+        return taxonomy()
+
     @app.get('/api/knowledge')
     def documents(account_id: str,user=Depends(logged)): return service.knowledge.list(user['owner'],account_id)
 
@@ -308,6 +313,11 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
     def delete_document(document_id: str,data: dict,user=Depends(logged)):
         require(set(data)=={'account_id','version'},'INVALID_INPUT','删除字段无效')
         return service.knowledge.delete(user['owner'],data['account_id'],document_id,data['version'])
+
+    @app.post('/api/knowledge/{document_id}/classification')
+    def classify_document(document_id: str,data: dict,user=Depends(logged)):
+        require(set(data)=={'account_id','version','classification'},'INVALID_INPUT','分类更新字段无效')
+        return service.knowledge.classify(user['owner'],data['account_id'],document_id,data['version'],data['classification'])
 
     @app.post('/api/knowledge/retrieve')
     def retrieve(data: dict,user=Depends(logged)):

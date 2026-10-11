@@ -113,9 +113,10 @@ class Calls:
                             normalize(run,stage,raw)
                         else:
                             from backend.citation_ids import repair
-                            from backend.live import material_records, normalize
+                            from backend.live import material_records, normalize, bounded_title_candidates
                             _,repairs=repair(stage,raw,material_records(run.context))
-                            require(repairs,'MODEL_OUTPUT_INVALID','上次输出未通过校验，已停止重复调用；请查看被拒绝的模型响应')
+                            _,title_adjustment=bounded_title_candidates(run,raw) if stage=='title' else (raw,None)
+                            require(repairs or title_adjustment,'MODEL_OUTPUT_INVALID','上次输出未通过校验，已停止重复调用；请查看被拒绝的模型响应')
                             normalize(run,stage,raw)
                     return json.loads(old[1]),old[2],old[0]
             db.execute('INSERT INTO live_lineage VALUES(?,?) ON CONFLICT(run_id) DO NOTHING',(run.run_id,run.run_id))

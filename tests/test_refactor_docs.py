@@ -35,8 +35,12 @@ class RefactorDocumentationTests(unittest.TestCase):
         for card in sorted((ROOT / 'docs/agents').glob('0[1-4]*.md')):
             text = card.read_text()
             with self.subTest(card=card.name):
-                self.assertIn('本轮改版目标职责（待运行时联动）', text)
-                self.assertIn('新增职责尚待阶段四', text)
+                if card.name.startswith('03_'):
+                    self.assertIn('本轮原创文案运行时职责', text)
+                    self.assertIn('已联动实际 Prompt', text)
+                else:
+                    self.assertIn('本轮改版目标职责（待运行时联动）', text)
+                    self.assertIn('新增职责尚待阶段四', text)
                 self.assertIn('backend/live.py::messages_for', text)
                 self.assertIn('本卡片不被直接加载为运行提示词', text)
 

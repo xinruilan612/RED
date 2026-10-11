@@ -1,5 +1,5 @@
 'use strict';
-let libraryLoad=0,sourceLoad=0;
+let libraryLoad=0,sourceLoad=0,classificationEdit=0;
 function editableKnowledgeDocuments(docs){return docs.filter(d=>d.source_type!=='research_case');}
 pageInfo.library=['RESEARCH / 主题研究','先找资料，确认后再用于创作。','输入主题查看研究结果，选中需要的资料后加入当前账号，后续创作自动检索。'];
 async function renderLibrary(){
@@ -8,15 +8,16 @@ async function renderLibrary(){
  try{
   const docs=await api('/api/knowledge?account_id='+encodeURIComponent(account));
   if(request!==libraryLoad||currentPage!=='library'||account!==activeAccountId)return;
-  $('operationsContent').innerHTML=`<div class="section-toolbar"><div><h2>主题研究</h2><p id="ragLibraryCount" class="muted">${esc(currentAccount().name)} · ${docs.length} 份已有资料</p></div>${badge('原文与版本可追溯','neutral')}</div>${ragSearchPanel()}<details class="panel"><summary>补充自己的资料 / 高级检索</summary><div class="knowledge-grid"><section class="panel"><h2>添加或更新资料</h2><form id="documentForm"><label for="documentTarget">保存方式</label><select id="documentTarget"><option value="">新增资料</option>${editableKnowledgeDocuments(docs).map(d=>`<option value="${esc(d.id)}">更新：${esc(d.title)} · v${d.version}</option>`).join('')}</select><p class="helper">研究案例不在此处更新；需使用案例专用编辑接口，保留来源、资料用途和未读线索限制。</p><label for="documentTitle">资料标题</label><input id="documentTitle" maxlength="200" required placeholder="例如：品牌介绍 / 我的表达风格 / 产品事实"><label for="documentFile">上传文件</label><input id="documentFile" type="file" accept=".txt,.md,.pdf,.docx"><p class="helper">支持 UTF-8 TXT、Markdown、文本型 PDF 和 Word .docx，单份最大 3 MB；PDF 最多 50 页。扫描 PDF 暂不支持 OCR。上传只做本地解析，不调用 AI。</p><label for="documentText">或粘贴正文</label><textarea id="documentText" rows="6" maxlength="100000" placeholder="粘贴真实资料；选了文件时以文件内容为准"></textarea><button class="primary" type="submit">保存并建立检索索引</button></form></section><section class="panel"><h2>试着检索资料</h2><p class="muted">输入问题或关键词查找相关原文；检索结果会显示当前方式，得分不代表事实可信程度。</p><form id="retrieveForm" class="search-line"><input id="retrieveQuery" maxlength="300" required aria-label="资料检索词" placeholder="例如：白衬衫的面料与护理"><button class="secondary">查找原文</button></form><div id="retrievalResult" class="source-results"><p class="helper">确认加入的参考资料用于后续创作；额外事实资料可在创作时勾选。</p></div></section></div></details><details class="panel"><summary id="ragExistingSummary">已有资料（${docs.length} 份）</summary><div id="ragExistingDocuments" class="source-results">${ragExistingDocuments(docs)}</div><div id="documentDetail"></div></details>`;
+  $('operationsContent').innerHTML=`<div class="section-toolbar"><div><h2>主题研究</h2><p id="ragLibraryCount" class="muted">${esc(currentAccount().name)} · ${docs.length} 份已有资料</p></div>${badge('原文与版本可追溯','neutral')}</div>${ragSearchPanel()}<details class="panel"><summary>补充自己的资料 / 高级检索</summary><div class="knowledge-grid"><section class="panel"><h2>添加或更新资料</h2><form id="documentForm"><label for="documentTarget">保存方式</label><select id="documentTarget"><option value="">新增资料</option>${editableKnowledgeDocuments(docs).map(d=>`<option value="${esc(d.id)}">更新：${esc(d.title)} · v${d.version}</option>`).join('')}</select><p class="helper">研究案例不在此处更新；需使用案例专用编辑接口，保留来源、资料用途和未读线索限制。</p><label for="documentTitle">资料标题</label><input id="documentTitle" maxlength="200" required placeholder="例如：品牌介绍 / 我的表达风格 / 产品事实"><label for="documentDomains">领域标签</label><input id="documentDomains" maxlength="250" placeholder="留空自动识别；多个领域用逗号分隔"><label for="documentMaterialType">材料用途</label><select id="documentMaterialType"><option value="fact">事实资料</option><option value="method">通用创作方法</option><option value="example">领域参考样例</option></select><label for="documentChannel">适用渠道</label><select id="documentChannel"><option value="">通用</option><option value="xiaohongshu">小红书</option></select><label for="documentFormat">适用形式</label><select id="documentFormat"><option value="">通用</option><option value="note">图文笔记</option><option value="video_script">短视频口播</option><option value="product_detail">商品详情</option></select><label for="documentFile">上传文件</label><input id="documentFile" type="file" accept=".txt,.md,.pdf,.docx"><p class="helper">支持 UTF-8 TXT、Markdown、文本型 PDF 和 Word .docx，单份最大 3 MB；PDF 最多 50 页。扫描 PDF 暂不支持 OCR。上传只做本地解析，不调用 AI。</p><label for="documentText">或粘贴正文</label><textarea id="documentText" rows="6" maxlength="100000" placeholder="粘贴真实资料；选了文件时以文件内容为准"></textarea><button class="primary" type="submit">保存并建立检索索引</button></form></section><section class="panel"><h2>试着检索资料</h2><p class="muted">输入问题或关键词查找相关原文；检索结果会显示当前方式，得分不代表事实可信程度。</p><form id="retrieveForm" class="search-line"><input id="retrieveQuery" maxlength="300" required aria-label="资料检索词" placeholder="例如：白衬衫的面料与护理"><button class="secondary">查找原文</button></form><div id="retrievalResult" class="source-results"><p class="helper">确认加入的参考资料用于后续创作；额外事实资料可在创作时勾选。</p></div></section></div></details><details class="panel"><summary id="ragExistingSummary">已有资料（${docs.length} 份）</summary><div id="ragExistingDocuments" class="source-results">${ragExistingDocuments(docs)}</div><div id="documentDetail"></div></details>`;
   bindRagSearch(account,request);
-  $('documentTarget').onchange=()=>{const d=docs.find(d=>d.id===$('documentTarget').value);if(d)$('documentTitle').value=d.title;};
+  $('documentTarget').onchange=()=>{const d=docs.find(d=>d.id===$('documentTarget').value);if(d)$('documentTitle').value=d.title;const c=d?.classification||d?.metadata?.classification||{};$('documentDomains').value=(c.domains||[]).join('、');$('documentMaterialType').value=c.material_type||'fact';$('documentChannel').value=c.channel||'';$('documentFormat').value=c.format||'';};
   $('documentForm').onsubmit=async e=>{
    e.preventDefault();const button=e.submitter;button.disabled=true;
    const data={account_id:account,title:$('documentTitle').value};
    const doc=docs.find(d=>d.id===$('documentTarget').value);if(doc){data.document_id=doc.id;data.expected_version=doc.version;}
    const file=$('documentFile').files[0];
    try{
+    data.classification=await documentClassificationRequest();
     if(doc?.source_type==='research_case')throw new Error('研究案例请使用案例专用编辑接口，不能转为普通资料');
     if(file){if(file.size>3000000)throw new Error('文件超过 3 MB');data.filename=file.name;data.file_base64=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=()=>reject(new Error('文件读取失败'));reader.readAsDataURL(file);});}
     else data.text=$('documentText').value;
@@ -33,8 +34,9 @@ async function renderLibrary(){
  }catch(err){error(err);}
 }
 
-function ragExistingDocuments(docs){return docs.map(d=>`<article class="document-row"><div><b>${esc(d.title)}</b>${ragDocumentMeta(d)}<p class="helper">v${d.version} · ${esc(({text:'粘贴文本',upload:'上传文件',web:'已读取网页',research_case:'研究案例'})[d.source_type])} · ${esc(new Date(d.updated_at*1000).toLocaleString())}</p></div><div class="buttons"><button class="quiet" data-document="${esc(d.id)}">查看原文</button><button class="quiet" data-delete-document="${esc(d.id)}">移出资料库</button></div></article>`).join('')||'<p class="helper">还没有资料。可以先上传一份品牌或账号介绍。</p>';}
+function ragExistingDocuments(docs){return docs.map(d=>`<article class="document-row"><div><b>${esc(d.title)}</b>${ragDocumentMeta(d)}<p class="helper">v${d.version} · ${esc(({text:'粘贴文本',upload:'上传文件',web:'已读取网页',research_case:'研究案例'})[d.source_type])} · ${esc(new Date(d.updated_at*1000).toLocaleString())}</p></div><div class="buttons"><button class="quiet" data-document="${esc(d.id)}">查看原文</button><button class="quiet" data-classify-document="${esc(d.id)}">调整分类</button><button class="quiet" data-delete-document="${esc(d.id)}">移出资料库</button></div></article>`).join('')||'<p class="helper">还没有资料。可以先上传一份品牌或账号介绍。</p>';}
 function bindKnowledgeDocuments(docs,account){
+  document.querySelectorAll('[data-classify-document]').forEach(b=>b.onclick=()=>openClassificationEditor(b.dataset.classifyDocument,account));
   document.querySelectorAll('[data-document]').forEach(b=>b.onclick=async()=>{
    try{const d=await api('/api/knowledge/'+b.dataset.document+'?account_id='+encodeURIComponent(account));if(account!==activeAccountId||currentPage!=='library')return;
     $('documentDetail').innerHTML=`<hr><h3>${esc(d.title)} · v${d.version}</h3><p class="helper">${d.versions.length} 个版本 · 原文指纹 ${esc(d.fingerprint.slice(0,16))}</p>${d.source_url?`<a href="${esc(d.source_url)}" target="_blank" rel="noopener noreferrer">查看网页来源 ↗</a>`:''}<p class="helper">${d.metadata.fetched_at?'读取时间：'+esc(d.metadata.fetched_at):''} ${d.metadata.published_at?'页面声明发布时间：'+esc(d.metadata.published_at):'发布时间未提供或未核实'}</p>${d.chunks.map(c=>`<details><summary>${d.metadata.location_type==='paragraph'?'段落 '+c.page:'第 '+c.page+' 页'} · 字符位置 ${c.offset}</summary><pre class="source-text">${esc(c.text)}</pre></details>`).join('')}`;
@@ -309,4 +311,39 @@ function bindRagSearch(account,request){
 function ragErrorText(code){
  if(/^XHS_SEARCH_HTTP_[0-9]{3}$/.test(code))return '本机 MCP 搜索接口返回 HTTP '+code.slice(-3)+'；未证实是平台上游状态，请查看读取记录';
  return ({XHS_TIMEOUT:'笔记读取超时，已有候选保留，可稍后重新搜索',XHS_CONNECTION:'本机连接器无法连接，请恢复服务后重试',XHS_PARSE:'连接器响应解析失败，不代表登录失效',XHS_STRUCTURE:'平台页面结构变化或笔记不匹配，需检查连接器适配',XHS_RESTRICTED:'平台限制了本次访问，请稍后再试，不会自动绕过或反复登录',XHS_IDENTITY_CHANGED:'连接器登录账号与当前绑定不同，请到账号连接页核对',XHS_SEARCH_TIMEOUT:'平台页面读取超时，本次没有生成替代资料',XHS_SEARCH_CONNECTION:'本机搜索连接器未连通，请检查服务',XHS_TRANSPORT:'连接器读取失败，请检查本机服务后重试',XHS_PARSE_FAILED:'平台内容解析失败，已取得的候选会保留',XHS_PAGE_CHANGED:'平台页面结构变化，连接器需要适配',XHS_LOGIN_REQUIRED:'需要本人重新登录小红书',XHS_STOPPED:'账号连接已暂停，请先恢复',XHS_BUSY:'账号正在同步，完成后可发起搜索',SOURCE_VISIBILITY_CHANGED:'资料的公开状态已变化，已隐藏相关内容'})[code]||'读取未完成，请检查来源状态后再试';
+}
+
+async function documentClassificationRequest(prefix='document',explicit=false){
+ const result={material_type:$(prefix+'MaterialType')?.value||'fact'},domains=($(prefix+'Domains')?.value||'').split(/[,，、]/).map(v=>v.trim()).filter(Boolean);
+ if(domains.length){const cfg=await api('/api/creation/taxonomy');result.domains=[...new Set(domains.map(value=>Object.keys(cfg.domains).find(key=>key===value||cfg.domains[key].label===value)||value))];}
+ else if(result.material_type==='fact'){if(explicit)throw new Error('事实资料请填写所属领域');if($(prefix+'Channel')?.value||$(prefix+'Format')?.value)throw new Error('指定渠道或形式时，请同时填写事实资料的所属领域');return undefined;}
+ else if(result.material_type==='example')throw new Error('参考样例请填写所属领域');
+ if($(prefix+'Channel')?.value)result.channel=$(prefix+'Channel').value;
+ if($(prefix+'Format')?.value)result.format=$(prefix+'Format').value;
+ return result;
+}
+
+async function openClassificationEditor(id,account){
+ const ticket=++classificationEdit;
+ try{
+  const d=await api('/api/knowledge/'+encodeURIComponent(id)+'?account_id='+encodeURIComponent(account));
+  if(ticket!==classificationEdit||account!==activeAccountId||currentPage!=='library')return;
+  const c=d.classification||d.metadata?.classification||{};
+  $('documentDetail').innerHTML=`<section class="panel"><h3>调整分类：${esc(d.title)}</h3><p class="helper">资料版本 ${esc(d.version)} · 当前标签来源：${esc(({user:'用户指定',inferred:'自动识别',backfill:'历史补充'})[c.origin]||c.origin||'未知')}。未知标签请补充；保存会建立新版本，保留原文与来源。</p><form id="classificationForm"><label for="classificationDomains">领域（多个用逗号分隔）</label><input id="classificationDomains" maxlength="250" placeholder="例如：美妆、摄影、数码、家具"><label for="classificationMaterialType">材料用途</label><select id="classificationMaterialType"><option value="">请选择用途</option><option value="method">通用创作方法</option><option value="example">领域参考样例</option><option value="fact">事实资料</option></select><label for="classificationChannel">适用渠道</label><select id="classificationChannel"><option value="any">通用 / 不限渠道</option><option value="xiaohongshu">小红书</option></select><label for="classificationFormat">适用形式</label><select id="classificationFormat"><option value="any">通用 / 不限形式</option><option value="note">图文笔记</option><option value="video_script">短视频口播</option><option value="product_detail">商品详情</option></select><button type="submit" class="primary">保存分类新版本</button><button id="classificationCancel" type="button" class="quiet">取消</button></form></section>`;
+  $('classificationDomains').value=(c.domains||[]).join('、');$('classificationMaterialType').value=c.material_type||'';$('classificationChannel').value=c.channel||'any';$('classificationFormat').value=c.format||'any';
+  $('classificationCancel').onclick=()=>{++classificationEdit;$('documentDetail').innerHTML='';};
+  $('classificationForm').onsubmit=e=>saveDocumentClassification(e,d,account,ticket);
+ }catch(err){if(ticket===classificationEdit&&account===activeAccountId&&currentPage==='library')error(err);}
+}
+async function saveDocumentClassification(e,d,account,ticket){
+ e.preventDefault();if(ticket!==classificationEdit||account!==activeAccountId||currentPage!=='library')return;
+ const button=e.submitter;if(button.disabled)return;button.disabled=true;
+ try{
+  if(!$('classificationMaterialType').value)throw new Error('请选择材料用途');
+  const classification=await documentClassificationRequest('classification',true);
+  if(ticket!==classificationEdit||account!==activeAccountId||currentPage!=='library')return;
+  await api('/api/knowledge/'+encodeURIComponent(d.id)+'/classification','POST',{account_id:account,version:d.version,classification});
+  if(ticket!==classificationEdit||account!==activeAccountId||currentPage!=='library')return;
+  toast('分类已保存为新版本，后续任务按新分类检索');++classificationEdit;await renderLibrary();
+ }catch(err){if(ticket===classificationEdit&&account===activeAccountId&&currentPage==='library')error(err);}finally{button.disabled=false;}
 }

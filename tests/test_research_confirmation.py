@@ -19,6 +19,7 @@ from backend.provider import Config
 from backend.research_jobs import ResearchJobs
 from backend.service import Service
 from backend.store import Store
+from test_original_retrieval import RecordingVectors
 
 MODEL = Path(__file__).resolve().parents[1]/'runtime/models/bge-small-zh-v1.5'
 
@@ -33,7 +34,7 @@ class PublicSearchFixture:
     def request(self, path, data):
         identity = data['feed_id'];self.calls.append(('read', identity))
         return {'note': {'noteId': identity, 'title': '白衬衫护理方法'+identity[0],
-                'desc': '白衬衫采用纯棉面料，用冷水轻柔洗涤后自然晾干。先指出护理误区，再给出分步清单，末尾邀请读者讨论洗涤习惯。样本'+identity[0],
+                'desc': '服饰图文笔记的表达样例：白衬衫护理。开篇用一个洗护问题吸引读者，结构分成面料、步骤、提醒三段，用短句控制节奏，结尾邀请讨论。白衬衫采用纯棉面料，用冷水轻柔洗涤后自然晾干。样本'+identity[0],
                 'time': 1767225600000, 'interactInfo': {'likedCount': '321', 'collectedCount': '180'},
                 'user': {'nickname': '公开案例作者'}}}
 
@@ -49,7 +50,7 @@ class ResearchConfirmationTests(unittest.TestCase):
         self.owner = 'approval-owner'
         self.service = Service(self.store, Config())
         self.account = Operations(self.store).read(self.owner)['accounts'][0]['id']
-        self.kb = Knowledge(self.store, use_configured_embeddings=False)
+        self.kb = Knowledge(self.store, embedding_provider=RecordingVectors(), use_configured_embeddings=False)
         self.service.knowledge = self.kb
         self.jobs = ResearchJobs(self.store)
         with self.store.connect() as db:
@@ -247,9 +248,9 @@ class ResearchConfirmationTests(unittest.TestCase):
     def test_confirmed_references_survive_restart_and_feed_four_role_messages(self):
         job = self.research();approved = self.approve(job)
         fresh_store = Store(self.db_url);fresh_service = Service(fresh_store, Config())
-        fresh_service.knowledge = Knowledge(fresh_store, use_configured_embeddings=False)
+        fresh_service.knowledge = Knowledge(fresh_store, embedding_provider=RecordingVectors(), use_configured_embeddings=False)
         result = self.create_run(fresh_service);run = fresh_store.get(result['run_id'], self.owner)
-        sources = run.context['style_retrieval']['sources']
+        sources = run.context['creation_retrieval']['groups']['examples']
         self.assertEqual({s['document_id'] for s in sources}, set(approved['document_ids']))
         expected = {s['source_id'] for s in sources};self.assertTrue(expected)
         # Reviewer messages require a draft, but this test never calls a model.
@@ -276,11 +277,20 @@ class ResearchConfirmationTests(unittest.TestCase):
         self.assertEqual(self.kb.retrieve(self.owner, self.account, '白衬衫护理')['sources'], [])
         approved = jobs.confirm(self.owner, job['id'], {'candidate_ids': [pending['candidates'][0]['id']], 'key': 'approve-web'})
         run = self.create_run()
-        self.assertEqual(run['context']['style_retrieval']['sources'], [])
-        self.assertEqual({s['document_id'] for s in run['context']['approved_retrieval']['sources']}, set(approved['document_ids']))
-        self.assertEqual({s['document_id'] for s in run['context']['evidence']}, set(approved['document_ids']))
+        self.assertEqual(run['context']['creation_retrieval']['groups']['examples'], [])
+        self.assertEqual(run['context']['evidence'], [])  # Unknown channel/form never enters as a fact.
+        self.assertIn('NO_MATCHING_EXAMPLES',[g['code'] for g in run['context']['creation_retrieval']['gaps']])
         doc = self.kb.get(self.owner, self.account, approved['document_ids'][0])
         self.assertTrue(doc['metadata']['research_case']['provenance']['human_confirmed'])
+        # Explicit classification can admit the approved web reference for this target.
+        self.kb.save(self.owner,{'account_id':self.account,'document_id':doc['id'],'expected_version':doc['version'],
+            'title':doc['title'],'text':doc['chunks'][0]['text'],
+            'classification':{'domains':['apparel'],'channel':'xiaohongshu','format':'note','material_type':'example'}},
+            source_type='research_case',source_url=doc['source_url'],metadata=doc['metadata'])
+        self.store.command(run['run_id'],self.owner,run['status_version'],str(uuid4()),'cancel',{})
+        rerun=self.create_run()
+        self.assertEqual({s['document_id'] for s in rerun['context']['creation_retrieval']['groups']['examples']},set(approved['document_ids']))
+        self.assertEqual(rerun['context']['creation_retrieval']['groups']['facts'],[])
 
     def test_cancellation_between_selection_and_save_blocks_late_ingestion(self):
         job = self.research();original_save = self.jobs.cases.save
@@ -382,5 +392,11 @@ class PostgresResearchConfirmationTests(ResearchConfirmationTests):
         self.assertTrue(all(s['semantic_score'] > 0.4 for s in result['sources']))
         service = Service(fresh_store, Config());service.knowledge = kb
         created = self.create_run(service)
-        self.assertEqual(created['context']['style_retrieval']['engine'], 'hybrid-bm25-local-rrf-v1')
-        self.assertEqual({s['source_id'] for s in created['context']['evidence']}, {s['source_id'] for s in result['sources']})
+        self.assertEqual(created['context']['creation_retrieval']['engine'], 'filtered-local-vector-rerank-v1')
+        grouped=kb.grouped_retrieve(self.owner,self.account,'白衬衫纯棉面料冷水护理',
+            {'domains':['apparel'],'channel':'xiaohongshu','format':'note'},include_facts=False)
+        self.assertTrue(grouped['groups']['examples'])
+        self.assertTrue(all(s['semantic_score']>=0.4 for s in grouped['groups']['examples']))
+        self.assertTrue({s['document_id'] for s in grouped['groups']['examples']}<=set(approved['document_ids']))
+        self.assertEqual({s['source_id'] for s in created['context']['evidence']}, {s['source_id'] for s in grouped['sources']})
+        self.assertEqual(grouped['groups']['facts'],[])

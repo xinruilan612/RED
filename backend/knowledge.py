@@ -76,6 +76,8 @@ def evidence_metadata(metadata, document_id, version):
     case=metadata.get('research_case',{})
     return {'content_kind':case.get('content_kind','text'),
             'source_scope':'current_account',
+            'body_kind':case.get('provenance',{}).get('body_kind',case.get('content_kind','text')),
+            'classification':metadata.get('classification',{}),
             'case_ref':({'document_id':document_id,'version':version,'platform':case.get('platform'),
                          'published_at':case.get('published_at'),'observed_at':case.get('observed_at'),
                          'assessment_status':case.get('assessment',{}).get('status'),
@@ -180,7 +182,7 @@ class Knowledge:
         return find_account(Operations(self.store).read(owner),account_id)
 
     def save(self, owner, data, source_type='text', source_url='', metadata=None, *, transaction_guard=None, transaction_saved=None):
-        require(isinstance(data,dict) and set(data)<={'account_id','title','text','filename','file_base64','document_id','expected_version'},'INVALID_INPUT','资料字段无效')
+        require(isinstance(data,dict) and set(data)<={'account_id','title','text','filename','file_base64','document_id','expected_version','classification'},'INVALID_INPUT','资料字段无效')
         account=data.get('account_id');self.account(owner,account)
         title=validate_text(data.get('title'),'资料标题',200)
         name=data.get('filename',title+'.txt')
@@ -217,6 +219,10 @@ class Knowledge:
             meta={**(metadata or {}),'title':title,'source_type':source_type,'source_url':source_url,'stored_at':now,
                   'location_type':'paragraph' if name.lower().endswith('.docx') else 'page','page_count':len(pages),
                   'extracted_chars':sum(len(text) for _,text in pages)}
+            from backend.creation_taxonomy import classify_document
+            previous=json.loads(db.execute('SELECT metadata FROM knowledge_versions WHERE document_id=? AND version=?',(identity,row[0])).fetchone()[0]) if row else {}
+            requested=data.get('classification', (metadata or {}).get('classification', previous.get('classification')))
+            meta['classification']=(previous['classification'] if requested is previous.get('classification') and requested is not None else classify_document(requested,title,' '.join(t for _,t in pages),meta))
             db.execute('INSERT INTO knowledge_versions VALUES(?,?,?,?,?,?)',(identity,version,fingerprint,base64.b64encode(raw).decode(),name,json.dumps(meta,ensure_ascii=False)))
             for part in parts:
                 db.execute('INSERT INTO knowledge_chunks VALUES(?,?,?,?,?,?,?)',(str(uuid4()),identity,version,part['page'],part['offset'],part['text'],json.dumps(Counter(tokens(part['text'])),ensure_ascii=False)))
@@ -240,7 +246,7 @@ class Knowledge:
             parts=db.execute('SELECT id,page,offset_start,text FROM knowledge_chunks WHERE document_id=? AND version=? ORDER BY page,offset_start',(identity,row[1])).fetchall()
             versions=[dict(version=r[0],metadata=json.loads(r[1])) for r in db.execute('SELECT version,metadata FROM knowledge_versions WHERE document_id=? ORDER BY version DESC',(identity,))
                       if document_is_public(db,owner,account,json.loads(r[1]),json.loads(r[1]).get('source_url',''))]
-        return dict(id=identity,title=row[0],version=row[1],source_type=row[2],source_url=row[3],fingerprint=v[0],metadata=json.loads(v[1]),filename=v[2],versions=versions,chunks=[dict(zip(('id','page','offset','text'),p)) for p in parts])
+        return dict(id=identity,title=row[0],version=row[1],source_type=row[2],source_url=row[3],fingerprint=v[0],metadata=json.loads(v[1]),filename=v[2],versions=versions,chunks=[dict(zip(('id','page','offset','text'),p),classification=json.loads(v[1]).get('classification',{}),source_url=row[3]) for p in parts])
 
     def assert_public_document(self,owner,account,document):
         """External exports must recheck privacy even when reading audit versions."""
@@ -263,7 +269,7 @@ class Knowledge:
         metadata=json.loads(row[1])
         return dict(id=identity,title=metadata['title'],version=version,source_type=metadata['source_type'],
                     source_url=metadata['source_url'],fingerprint=row[0],metadata=metadata,filename=row[2],
-                    chunks=[dict(zip(('id','page','offset','text'),part)) for part in parts])
+                    chunks=[dict(zip(('id','page','offset','text'),part),classification=metadata.get('classification',{}),source_url=metadata.get('source_url','')) for part in parts])
 
     def delete(self, owner, account, identity, version):
         self.account(owner,account)
@@ -358,3 +364,143 @@ class Knowledge:
         with self.store.connect() as db:
             db.execute('INSERT INTO retrieval_events VALUES(?,?,?,?,?,?)',(str(uuid4()),owner,account,query,json.dumps([r['source_id'] for r in selected]),int(time.time())))
         return {'engine':engine,'embedding_note':embedding_note,'query':query,'sources':selected,'insufficient':not selected,'note':'相关度用于排序，不是事实置信度；仅检索当前账号有效资料'}
+
+    def backfill_classifications(self, owner, account):
+        """Append labelled versions; never mutate immutable historical metadata."""
+        from backend.creation_taxonomy import classify_document
+        self.account(owner,account)
+        changed=[]
+        with self.store.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            rows=db.execute("SELECT d.id,d.title,d.version,v.fingerprint,v.original_base64,v.filename,v.metadata FROM knowledge_documents d JOIN knowledge_versions v ON v.document_id=d.id AND v.version=d.version WHERE d.owner=? AND d.account_id=? AND d.status='active'",(owner,account)).fetchall()
+            for identity,title,version,fingerprint,raw,name,packed in rows:
+                meta=json.loads(packed)
+                if meta.get('classification'):continue
+                parts=db.execute('SELECT page,offset_start,text,terms FROM knowledge_chunks WHERE document_id=? AND version=? ORDER BY page,offset_start',(identity,version)).fetchall()
+                meta['classification']=classify_document(None,title,' '.join(p[2] for p in parts),meta)
+                meta['classification_backfill']={'previous_version':version,'at':int(time.time()),'method':'keyword_inference_v1'}
+                db.execute('INSERT INTO knowledge_versions VALUES(?,?,?,?,?,?)',(identity,version+1,fingerprint,raw,name,json.dumps(meta,ensure_ascii=False)))
+                for part in parts:db.execute('INSERT INTO knowledge_chunks VALUES(?,?,?,?,?,?,?)',(str(uuid4()),identity,version+1,*part))
+                db.execute('UPDATE knowledge_documents SET version=?,updated_at=? WHERE id=?',(version+1,int(time.time()),identity))
+                changed.append(identity)
+        return {'updated':len(changed),'document_ids':changed}
+
+    def grouped_retrieve(self, owner, account, query, classification, document_ids=None, include_facts=True, include_references=True):
+        """Filter before real embeddings; rerank admitted vector candidates only.
+
+        No BM25 fallback in this contract. Missing models and unavailable groups
+        are explicit gaps. Version metadata applies to every joined chunk.
+        """
+        from backend.creation_taxonomy import classify_task, taxonomy
+        from backend.embeddings import configured_embeddings, semantic_ranks, EmbeddingUnavailable
+        self.account(owner,account)
+        query=validate_text(query,'检索内容',1000)
+        original_origin=classification.get('origin')
+        classification=classify_task(classification,{'topic':query})
+        if original_origin in ('user','inferred'):classification['origin']=original_origin
+        if document_ids is not None:
+            require(isinstance(document_ids,list) and len(document_ids)<=3 and all(isinstance(x,str) and x for x in document_ids),'INVALID_INPUT','最多选择3份事实资料')
+            document_ids=list(dict.fromkeys(document_ids))
+        with self.store.connect() as db:
+            rows=db.execute("SELECT c.id,c.document_id,c.version,c.page,c.offset_start,c.text,c.terms,d.title,d.source_url,d.source_type,v.filename,v.metadata FROM knowledge_chunks c JOIN knowledge_documents d ON d.id=c.document_id AND d.version=c.version JOIN knowledge_versions v ON v.document_id=c.document_id AND v.version=c.version WHERE d.owner=? AND d.account_id=? AND d.status='active'",(owner,account)).fetchall()
+            if document_ids:
+                available={r[1] for r in rows}
+                require(set(document_ids)<=available,'RESOURCE_NOT_FOUND','所选资料不属于当前账号或已失效')
+            rows=[r for r in rows if document_is_public(db,owner,account,json.loads(r[11]),r[8])]
+        domains=set(classification['domains']);channel=classification['channel'];form=classification['format']
+        groups={k:[] for k in ('methods','examples','facts')};filters={};gaps=[]
+        cfg=taxonomy()['retrieval'];remaining=cfg['total_chars']
+        provider=self.embedding_provider;note=''
+        if provider is None and self.use_configured_embeddings:provider,note=configured_embeddings()
+        if provider is None:gaps.append({'code':'VECTOR_UNAVAILABLE','detail':note or '未配置真实向量模型，分组检索未执行'})
+        all_meta={r[0]:json.loads(r[11]) for r in rows}
+        query_terms=set(tokens(query))
+        # Product IDs must match exactly; avoids lending another SKU's specs.
+        product_ids=set(re.findall(r'(?<![A-Za-z0-9_-])(?=[A-Za-z0-9_-]*\d)[A-Za-z][A-Za-z0-9_-]{1,}(?![A-Za-z0-9_-])',query))
+        for group,kind in (('methods','method'),('examples','example'),('facts','fact')):
+            enabled=include_facts if group=='facts' else include_references
+            filters[group]={'owner':owner,'account_id':account,'material_type':kind,'domains':sorted(domains),
+                            'channel':None if group=='facts' else channel,'format':None if group=='facts' else form,
+                            'allow_general':group=='methods','document_ids':document_ids if group=='facts' else None,'enabled':bool(enabled)}
+            candidates=[]
+            for row in rows:
+                meta=all_meta[row[0]];label=meta.get('classification',{})
+                if not enabled or not meta.get('retrieval_eligible',True) or label.get('material_type')!=kind:continue
+                case=meta.get('research_case',{})
+                if case.get('review_required') or case.get('content_kind')=='lead':continue
+                if case.get('provenance',{}).get('visibility') in ('private','friends_only'):continue
+                if group=='facts' and (meta.get('evidence_role') in ('expression_reference','reference_only') or case.get('evidence_role') in ('expression_reference','reference_only')):continue
+                tags=set(label.get('domains',[]))
+                if not (tags & domains or (group=='methods' and (not tags or 'general' in tags))):continue
+                if group!='facts':
+                    if label.get('channel')!=channel and not (group=='methods' and label.get('channel')=='any'):continue
+                    if label.get('format')!=form and not (group=='methods' and label.get('format')=='any'):continue
+                if group=='facts' and document_ids is not None and row[1] not in document_ids:continue
+                candidates.append(row)
+            filters[group]['candidate_count']=len(candidates)
+            search_query=query if group=='facts' else (taxonomy()['formats'][form]['label']+' 原创写作 开篇 节奏 结构 表达 行动引导' if group=='methods' else ' '.join(taxonomy()['domains'][d]['label'] for d in domains)+' '+taxonomy()['formats'][form]['label']+' 开篇 结构 表达')
+            filters[group]['vector_query']=search_query
+            ranked=[]
+            if provider is not None and enabled:
+                try:
+                    # Batch the already-filtered scope, then rank globally.
+                    scores={};order=[]
+                    for start in range(0,len(candidates),provider.max_chunks):
+                        batch_order,batch_scores=semantic_ranks(provider,search_query,candidates[start:start+provider.max_chunks])
+                        order.extend(batch_order);scores.update(batch_scores)
+                    admitted=set(order)
+                    for row in candidates:
+                        if row[0] not in admitted:continue
+                        terms=set(tokens(row[7]+' '+row[5]));coverage=len(query_terms & terms)/max(1,len(query_terms))
+                        if group=='facts':
+                            if product_ids and not all(re.search(r'(?<![A-Za-z0-9_-])'+re.escape(p)+r'(?![A-Za-z0-9_-])',row[7]+' '+row[5],re.I) for p in product_ids):continue
+                            if not (query_terms & terms) or (len(query_terms)>3 and len(query_terms & terms)<2) or coverage<0.10:continue
+                        # Transparent deterministic rerank; not a cross encoder.
+                        rerank_terms=query_terms if group=='facts' else set(tokens(search_query))
+                        rerank_coverage=len(rerank_terms & terms)/max(1,len(rerank_terms))
+                        rank_score=.8*scores[row[0]]+.2*rerank_coverage
+                        ranked.append((rank_score,row,scores[row[0]],coverage))
+                    ranked.sort(key=lambda item:(-item[0],item[1][0]))
+                except EmbeddingUnavailable as error:gaps.append({'code':'VECTOR_UNAVAILABLE','group':group,'detail':str(error)})
+            filters[group]['vector_candidate_count']=len(ranked)
+            seen=set()
+            for score,row,similarity,coverage in ranked:
+                if len(groups[group])>=cfg['limits'][group] or remaining<=0:break
+                if row[1] in seen:continue
+                seen.add(row[1]);meta=all_meta[row[0]]
+                text=row[5][:min(cfg['chunk_chars'],remaining)];remaining-=len(text)
+                groups[group].append(dict(source_id='kb:'+row[0],document_id=row[1],version=row[2],page=row[3],offset=row[4],text=text,title=row[7],url=row[8],source_type=row[9],filename=row[10],location_type=meta.get('location_type','page'),evidence_role='source_material' if group=='facts' else 'expression_reference' if group=='examples' else 'creation_method',**evidence_metadata(meta,row[1],row[2]),score=round(score,6),semantic_score=round(similarity,6),topic_coverage=round(coverage,6),material_type=kind,verification='原文切片；事实须核验来源，样例仅供表达参考'))
+            if enabled and not groups[group]:gaps.append({'code':'NO_MATCHING_'+group.upper(),'group':group,'detail':'限定范围内无匹配材料，不使用无关资料补齐'})
+        selected=[s for group in groups.values() for s in group]
+        with self.store.connect() as db:db.execute('INSERT INTO retrieval_events VALUES(?,?,?,?,?,?)',(str(uuid4()),owner,account,query,json.dumps([s['source_id'] for s in selected]),int(time.time())))
+        return {'engine':'filtered-local-vector-rerank-v1' if provider else 'unavailable','reranker':'cosine-topic-coverage-v1','classification':classification,'groups':groups,'sources':selected,'filters':filters,'gaps':gaps,'insufficient':not groups['facts'],'context_chars':cfg['total_chars']-remaining,'limits':cfg,'embedding_note':note}
+
+    def classify(self, owner, account, document_id, expected_version, classification):
+        """Relabel an owned version without editing source text or case provenance."""
+        from backend.creation_taxonomy import classify_document
+        self.account(owner,account)
+        require(type(expected_version) is int and expected_version>0,'INVALID_INPUT','资料版本无效')
+        # Validate independently before opening a write transaction.
+        require(isinstance(classification,dict),'INVALID_INPUT','请选择资料分类')
+        label=classify_document(classification,'','')
+        with self.store.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            row=db.execute("SELECT d.version,d.source_url,v.fingerprint,v.original_base64,v.filename,v.metadata FROM knowledge_documents d JOIN knowledge_versions v ON v.document_id=d.id AND v.version=d.version WHERE d.id=? AND d.owner=? AND d.account_id=? AND d.status='active'",(document_id,owner,account)).fetchone()
+            require(row is not None,'RESOURCE_NOT_FOUND','资料不可访问')
+            require(row[0]==expected_version,'VERSION_CONFLICT','资料已更新，请刷新后重新分类')
+            meta=json.loads(row[5])
+            require(document_is_public(db,owner,account,meta,row[1]),'RESOURCE_NOT_FOUND','资料当前不可访问')
+            case=meta.get('research_case',{})
+            require(case.get('provenance',{}).get('visibility') not in ('private','friends_only'),'RESOURCE_NOT_FOUND','资料当前不可访问')
+            expression_roles={'expression_reference','reference_only'}
+            require(not (label['material_type']=='fact' and (meta.get('evidence_role') in expression_roles or case.get('evidence_role') in expression_roles)),
+                    'CASE_EDIT_REQUIRED','表达参考不能仅通过分类改成事实；请在案例编辑中核对并修改证据用途')
+            previous=meta.get('classification')
+            meta['classification']=label
+            meta['classification_change']={'previous_version':row[0],'previous_classification':previous,'at':int(time.time()),'method':'user_classification_only'}
+            version=row[0]+1
+            db.execute('INSERT INTO knowledge_versions VALUES(?,?,?,?,?,?)',(document_id,version,row[2],row[3],row[4],json.dumps(meta,ensure_ascii=False)))
+            parts=db.execute('SELECT page,offset_start,text,terms FROM knowledge_chunks WHERE document_id=? AND version=? ORDER BY page,offset_start',(document_id,row[0])).fetchall()
+            for part in parts:db.execute('INSERT INTO knowledge_chunks VALUES(?,?,?,?,?,?,?)',(str(uuid4()),document_id,version,*part))
+            db.execute('UPDATE knowledge_documents SET version=?,updated_at=? WHERE id=?',(version,int(time.time()),document_id))
+        return self.get(owner,account,document_id)

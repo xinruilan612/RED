@@ -76,6 +76,40 @@ class DurableTests(unittest.TestCase):
         self.assertEqual(json.loads(raw)['decision'],'approved')
         self.assertIn('adopt_manual',self.service.view(run)['allowed_actions'])
 
+    def test_original_known_facts_editorial_leakage_revises_and_reaudits(self):
+        from test_original_creation_http import RoutingVectors
+        self.action('cancel',{})
+        account=self.service.operations.read(self.owner)['accounts'][0]['id']
+        self.service.knowledge.embedding_provider=RoutingVectors()
+        self.service.knowledge.save(self.owner,dict(account_id=account,title='公共资料测试',
+            text='公共资料测试：公开资料包含三项说明。',
+            classification=dict(domains=['general'],channel='any',format='any',material_type='fact')))
+        self.run_id=self.service.create(self.owner,dict(topic='公共资料测试',audience='读者',tone='清楚',
+            material='公开资料包含三项说明。',allow_hypothesis=True,mode='live',
+            creation=dict(domains=['general'],channel='xiaohongshu',format='note'),
+            knowledge=dict(enabled=True,automatic_references=False),
+            operations=dict(account_id=account,platform='xiaohongshu',account='测试账号')))['run_id']
+        base=self.model.complete
+        def leaked_once(messages):
+            value,tokens=base(messages)
+            if self.model.calls[-1]=='body':value['body']='素材里没有更细依据，后续找到来源再补一版。'
+            if self.model.calls[-1]=='revise':value.update(selected_title='候选一',body='公开资料包含三项说明。')
+            return value,tokens
+        self.model.complete=leaked_once
+        self.start();Worker(self.service).once()
+        run=self.run_value()
+        self.assertEqual(run.wait_reason,'final_confirmation',self.job())
+        self.assertEqual(len(run.drafts),2)
+        self.assertEqual(self.model.calls.count('revise'),1)
+        self.assertEqual(self.model.calls.count('review'),2)
+        self.assertEqual(len(self.model.calls),10)
+        first_review=next(n['output'] for n in run.node_runs if n['stage']=='review')
+        self.assertEqual(first_review['decision'],'revision_required')
+        self.assertTrue(any(i['issue_id'].startswith('copy-boundary-') for i in first_review['issues']))
+        self.assertEqual(first_review['human_questions'],[])
+        self.assertTrue(all(i['result']=='resolved' for i in run.review['previous_issue_results']))
+        self.assertEqual(run.drafts[-1]['content']['body'],'公开资料包含三项说明。')
+
     def test_received_analysis_id_typo_replays_free_and_keeps_raw_audit(self):
         from unittest.mock import patch
         base=self.model.complete
@@ -101,6 +135,40 @@ class DurableTests(unittest.TestCase):
         with self.store.connect() as db:
             raw=db.execute("SELECT response_json FROM live_calls WHERE run_id=? AND stage='audience'",(run.run_id,)).fetchone()[0]
         self.assertEqual(json.loads(raw)['observations'][0]['source_id'],'usermaterial')
+
+    def test_received_six_titles_replays_without_extra_call_and_keeps_raw_response(self):
+        from unittest.mock import patch
+        base=self.model.complete
+        def surplus(messages):
+            value,tokens=base(messages)
+            stage=self.model.calls[-1]
+            if stage=='title':
+                value['candidates']=['标题'+str(i) for i in range(6)]
+                value['reasons']=['理由'+str(i) for i in range(6)]
+                value['selected']='标题5'
+            if stage=='body':value['selected_title']=json.loads(messages[1]['content'])['upstream']['title']['selected']
+            return value,tokens
+        self.model.complete=surplus
+        with patch('backend.live.bounded_title_candidates',side_effect=lambda run,value:(value,None)):
+            self.start();Worker(self.service).once()
+        self.assertEqual(self.job()['status'],'blocked')
+        self.assertEqual(self.model.calls.count('title'),1)
+        self.assertFalse(self.run_value().drafts)
+        self.start();Worker(self.service).once()
+        run=self.run_value()
+        self.assertEqual(run.wait_reason,'final_confirmation',self.job())
+        self.assertEqual(self.model.calls.count('title'),1)
+        self.assertEqual(len(self.model.calls),8)
+        title=next(n for n in run.node_runs if n['stage']=='title')
+        self.assertEqual(title['output']['candidates'],['标题0','标题1','标题2','标题3','标题5'])
+        self.assertEqual(title['output']['reasons'],['理由0','理由1','理由2','理由3','理由5'])
+        self.assertEqual(title['output_normalizations'][0]['kept_indices'],[0,1,2,3,5])
+        with self.store.connect() as db:
+            raw=db.execute("SELECT response_json,state FROM live_calls WHERE run_id=? AND stage='title'",(run.run_id,)).fetchall()
+        self.assertEqual(len(raw),1)
+        self.assertEqual(raw[0][1],'validated')
+        self.assertEqual(json.loads(raw[0][0])['candidates'],['标题'+str(i) for i in range(6)])
+        self.assertEqual(json.loads(raw[0][0])['reasons'],['理由'+str(i) for i in range(6)])
 
     def test_unmatched_analysis_quote_stays_blocked_without_extra_call(self):
         base=self.model.complete
@@ -293,7 +361,7 @@ class DurableTests(unittest.TestCase):
         self.assertEqual(self.job()['status'],'blocked')
         old_snapshot=self.run_value().snapshot_id
         self.step('retry_research',queries=['洁面 保湿'])
-        success={'status':'complete','searches':[],'reads':[],'sources':[{'source_id':'test-source','text':'公开原文'}]}
+        success={'status':'complete','searches':[],'reads':[],'sources':[{'source_id':'test-source','text':'公开护肤资料原文：洁面后按产品说明保湿。'}]}
         with patch('backend.web_research.collect',return_value=success):Worker(self.service).once()
         run=self.run_value()
         self.assertEqual(self.job()['status'],'paused',self.job())
@@ -348,14 +416,17 @@ class DurableTests(unittest.TestCase):
         self.action('cancel',{})
         fixture=json.loads((Path(__file__).parent/'public_materials.json').read_text())['sources'][0]
         account=self.service.operations.read(self.owner)['accounts'][0]['id']
-        self.service.knowledge.save(self.owner,dict(account_id=account,title=fixture['title'],text=fixture['text']),source_type='editorial_summary',source_url=fixture['url'],metadata=fixture)
-        data=dict(topic='胶囊衣橱',audience='虚构读者',tone='清楚',material='',mode='live',allow_hypothesis=True,
+        from test_original_creation_http import RoutingVectors
+        self.service.knowledge.embedding_provider=RoutingVectors()
+        self.service.knowledge.save(self.owner,dict(account_id=account,title=fixture['title'],text=fixture['text'],classification=dict(domains=['apparel'],channel='any',format='any',material_type='fact')),source_type='editorial_summary',source_url=fixture['url'],metadata=fixture)
+        data=dict(creation=dict(domains=['apparel'],channel='xiaohongshu',format='note'),topic='胶囊衣橱',audience='虚构读者',tone='清楚',material='',mode='live',allow_hypothesis=True,
                   operations=dict(account_id=account,platform='xiaohongshu',account='虚构账号'),knowledge={'enabled':True})
         self.run_id=self.service.create(self.owner,data)['run_id']
         self.start();Worker(self.service).once()
         self.assertEqual(self.run_value().wait_reason,'final_confirmation',self.job())
         for node in self.run_value().node_runs:
             self.assertTrue(node['input']['materials'][0]['source_id'].startswith('kb:'))
+            self.assertEqual(node['input']['creation_classification']['domains'],['apparel'])
         for call in self.service.executor.public(self.run_value())['calls']:
             self.assertTrue(any(source.get('url')==fixture['url'] for source in call['sources']))
             self.assertEqual(call['snapshot_id'],self.run_value().snapshot_id)

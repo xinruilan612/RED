@@ -20,6 +20,7 @@ from backend.service import Service
 from backend.store import Store
 from backend.worker import Worker
 import test_research_confirmation as confirmation
+from test_original_creation_http import RoutingVectors
 
 
 class EvidenceModel:
@@ -30,9 +31,10 @@ class EvidenceModel:
         payload = json.loads(messages[1]['content'])
         self.calls.append((stage, payload))
         result = schema(stage)
-        source = (payload['retrieved_references'] or [s for s in payload['materials'] if s['source_id'].startswith('kb:')])[0]
+        source = payload['materials'][0]
+        reference = (payload['retrieved_references'] or [source])[0]
         source_id = source['source_id']
-        attribution = source_id + '：借鉴问题到清单的结构，不移植产品事实。'
+        attribution = reference['source_id'] + '：借鉴问题到清单的结构，不移植产品事实。'
         if stage == 'audience': result['basis'] = attribution
         if stage == 'research':
             result['facts'] = [{'source_id': source_id, 'quote': source['text']}]
@@ -40,11 +42,11 @@ class EvidenceModel:
         if stage == 'strategy': result['why_account'] = attribution
         if stage == 'body':
             result['selected_title'] = '候选一'
-            result['body'] = '先提出护理问题，再按清单整理自己的产品资料。'
+            result['body'] = source['text']
         if stage == 'review':
             result['limitations'] = [attribution]
             result['checks'][-2]['result'] = 'unknown'
-            result['claim_map'] = [{'excerpt': '护理问题', 'source_id': source_id, 'quote': source['text']}]
+            result['claim_map'] = [{'excerpt': source['text'], 'source_id': source_id, 'quote': source['text']}]
         return result, 120
 
 
@@ -65,9 +67,14 @@ class RuntimeEvidenceTests(unittest.TestCase):
         self.model = EvidenceModel()
         self.config = Config('fixture-key-never-sent')
         self.service = Service(self.store, self.config, self.model)
+        self.kb.embedding_provider=RoutingVectors()
         self.service.knowledge = self.kb
         self.approved = self.approve(self.research())
+        for identity in self.approved['document_ids']:
+            doc=self.kb.get(self.owner,self.account,identity)
+            self.kb.save(self.owner,dict(account_id=self.account,title=doc['title'],text=doc['chunks'][0]['text'],document_id=identity,expected_version=doc['version'],classification=dict(domains=['apparel'],channel='xiaohongshu',format='note',material_type='example')),source_type='research_case',source_url=doc['source_url'],metadata=doc['metadata'])
         self.run_id = self.service.create(self.owner, {
+            'creation': {'domains':['apparel'],'channel':'xiaohongshu','format':'note'},
             'topic': '白衬衫纯棉面料冷水护理', 'audience': '白衬衫读者', 'tone': '清楚',
             'material': '用户产品仅确认纯棉面料。', 'allow_hypothesis': True,
             'mode': 'live', 'web_research': {'enabled': False, 'queries': []},
@@ -93,9 +100,9 @@ class RuntimeEvidenceTests(unittest.TestCase):
         for stage, payload in self.model.calls:
             with self.subTest(stage=stage):
                 self.assertEqual({s['source_id'] for s in payload['retrieved_references']}, expected)
-                self.assertTrue(all(s['version'] == 1 and s['url'] and s['case_ref']['observed_at'] for s in payload['retrieved_references']))
+                self.assertTrue(all(s['version'] == 2 and s['url'] and s['case_ref']['observed_at'] for s in payload['retrieved_references']))
                 self.assertNotIn('web_research', payload)
-        self.assertIn(run.review['claim_map'][0]['source_id'], expected)
+        self.assertEqual(run.review['claim_map'][0]['source_id'], 'user-material')
         calls = self.service.executor.public(run)['calls']
         self.assertEqual(len(calls), 8)
         for call in calls:
@@ -126,11 +133,13 @@ class RuntimeEvidenceTests(unittest.TestCase):
     def test_selected_private_material_excludes_automatic_references_and_network(self):
         selected = self.kb.save(self.owner, {
             'account_id': self.account, 'title': '授权产品资料',
+            'classification':dict(domains=['apparel'],channel='any',format='any',material_type='fact'),
             'text': '白衬衫纯棉面料护理问题：产品洗标建议冷水轻柔洗涤，避免高温烘干。'})
         self.service.action(self.owner, self.run_id, {
             'action': 'cancel', 'version': self.run_value().status_version,
             'key': 'cancel-for-explicit-selection', 'payload': {}})
         packet = {
+            'creation': {'domains':['apparel'],'channel':'xiaohongshu','format':'note'},
             'topic': '白衬衫纯棉面料冷水护理', 'audience': '白衬衫读者', 'tone': '清楚',
             'material': '', 'allow_hypothesis': True, 'mode': 'live',
             'web_research': {'enabled': False, 'queries': []},
@@ -180,6 +189,7 @@ class RuntimeEvidenceTests(unittest.TestCase):
             self.kb.get(self.owner, other, self.approved['document_ids'][0])
         self.service.action(self.owner, self.run_id, {'action': 'cancel', 'version': self.run_value().status_version, 'key': 'cancel-before-account-change', 'payload': {}})
         created = self.service.create(self.owner, {
+            'creation': {'domains':['apparel'],'channel':'xiaohongshu','format':'note'},
             'topic': '白衬衫纯棉面料冷水护理', 'audience': '读者', 'tone': '清楚',
             'material': '独立账号资料', 'allow_hypothesis': True, 'mode': 'live',
             'operations': {'account_id': other, 'platform': 'xiaohongshu', 'account': '第二个独立账号'}})
@@ -193,7 +203,7 @@ class RuntimeEvidenceTests(unittest.TestCase):
         model = EvidenceModel()
         with patch('backend.api.settings', return_value={}):
             app = create_app(self.store, self.config, origin='http://testserver', invite='', client=model)
-        app.state.service.knowledge = Knowledge(self.store, use_configured_embeddings=False)
+        app.state.service.knowledge = Knowledge(self.store, embedding_provider=RoutingVectors())
         with TestClient(app) as client:
             csrf = client.get('/api/session').json()['csrf']
             def post(url, data):
@@ -226,9 +236,13 @@ class RuntimeEvidenceTests(unittest.TestCase):
                 'candidate_ids': [job['candidates'][0]['id']], 'key': 'http-confirm'})
             self.assertEqual(response.status_code, 200, response.text)
             document_ids = set(response.json()['document_ids'])
+            for doc_id in document_ids:
+                kb=app.state.service.knowledge;doc=kb.get(owner,account,doc_id)
+                kb.save(owner,dict(account_id=account,title=doc['title'],text=doc['chunks'][0]['text'],document_id=doc_id,expected_version=doc['version'],classification=dict(domains=['apparel'],channel='xiaohongshu',format='note',material_type='example')),source_type='research_case',source_url=doc['source_url'],metadata=doc['metadata'])
             with patch('backend.web_research.collect', side_effect=AssertionError('network disabled')) as collect:
                 response = post('/api/runs', {
-                    'topic': '白衬衫纯棉面料冷水护理', 'audience': '白衬衫读者', 'tone': '清楚',
+                    'creation': {'domains':['apparel'],'channel':'xiaohongshu','format':'note'},
+            'topic': '白衬衫纯棉面料冷水护理', 'audience': '白衬衫读者', 'tone': '清楚',
                     'material': '用户产品仅确认纯棉面料。', 'allow_hypothesis': True,
                     'mode': 'live', 'web_research': {'enabled': False, 'queries': []},
                     'operations': {'account_id': account, 'platform': 'xiaohongshu', 'account': 'HTTP测试账号'}})
@@ -247,7 +261,7 @@ class RuntimeEvidenceTests(unittest.TestCase):
             self.assertEqual({source['document_id'] for source in sources}, document_ids)
             self.assertEqual(len(model.calls), 8)
             expected = {source['source_id'] for source in sources}
-            self.assertIn(run['review']['claim_map'][0]['source_id'], expected)
+            self.assertEqual(run['review']['claim_map'][0]['source_id'], 'user-material')
             for _, payload in model.calls:
                 self.assertEqual({source['source_id'] for source in payload['retrieved_references']}, expected)
 

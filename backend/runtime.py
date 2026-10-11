@@ -99,8 +99,9 @@ class Runtime:
             db.execute('BEGIN IMMEDIATE')
             current=self.jobs.guard(db,self.job,committing=True)
             require(current.snapshot_id==run.snapshot_id,'VERSION_CONFLICT','调查输入已变化')
+            from backend.web_research import attach_facts
+            attach_facts(current.context,report)
             current.context['web_research']={**web,**report}
-            current.context['evidence']=current.context.get('evidence',[])+report['sources']
             current.event('tool.completed' if report['status']=='complete' else 'tool.failed',tool='public_web_research',status=report['status'],source_count=len(report['sources']))
             self.write(db,current)
         require(report['status']=='complete','SOURCE_UNAVAILABLE','没有读到相关网页正文，已停止在模型调用前。请查看联网记录，调整搜索词后新建任务。')
@@ -156,6 +157,9 @@ class Runtime:
             from backend.citation_ids import repair
             _,repairs=repair(stage,value,live.material_records(run.context))
             if repairs:log['citation_repairs']=repairs
+            if stage=='title':
+                _,adjustment=live.bounded_title_candidates(run,value)
+                if adjustment:log['output_normalizations']=[adjustment]
         else:
             # Template execution shares graph persistence without pretending to call a model.
             if stage in ('audience','research'):

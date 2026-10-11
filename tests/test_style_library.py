@@ -16,6 +16,7 @@ from backend.provider import Config
 from backend.service import Service
 from backend.store import Store
 from backend.xhs_sync import XHSSync
+from test_original_retrieval import RecordingVectors
 
 
 class StyleModel:
@@ -40,7 +41,7 @@ class StyleLibraryTests(unittest.TestCase):
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.store=Store(Path(self.temp.name)/'style.sqlite')
         self.owner='owner';self.account=Operations(self.store).read(self.owner)['accounts'][0]['id']
-        self.kb=Knowledge(self.store,use_configured_embeddings=False)
+        self.kb=Knowledge(self.store,embedding_provider=RecordingVectors(),use_configured_embeddings=False)
         self.model=StyleModel();self.service=Service(self.store,Config('fixture-key'),self.model)
         self.service.knowledge=self.kb
     def tearDown(self):self.temp.cleanup()
@@ -70,7 +71,7 @@ class StyleLibraryTests(unittest.TestCase):
                 result=self.create(**({'knowledge':knowledge} if knowledge is not None else {}))
                 run=self.store.get(result['run_id'],self.owner)
                 self.assertEqual([s['document_id'] for s in run.context['evidence']],[doc['id']])
-                self.assertEqual(run.context['style_retrieval']['sources'],run.context['evidence'])
+                self.assertEqual(run.context['creation_retrieval']['groups']['examples'],run.context['evidence'])
                 self.store.command(run.run_id,self.owner,run.status_version,str(uuid4()),'cancel',{})
         self.kb.delete(self.owner,self.account,doc['id'],1)
         self.assertEqual(self.store.get(run.run_id,self.owner).context['evidence'],run.context['evidence'])
@@ -93,9 +94,9 @@ class StyleLibraryTests(unittest.TestCase):
         docs=[self.save(text=('白衬衫护理纯棉面料冷水清洗。'*130)+str(i)) for i in range(4)]
         fact=self.save(case_changes={'evidence_role':'product_fact'})
         result=self.create(knowledge={'enabled':True,'document_ids':[fact['id']]})
-        ctx=result['context'];styles=ctx['style_retrieval']['sources']
+        ctx=result['context'];styles=ctx['creation_retrieval']['groups']['examples']
         self.assertEqual(len(styles),3);self.assertEqual(len({s['document_id'] for s in styles}),3)
-        self.assertTrue(all(len(s['text'])<=400 for s in ctx['evidence']))
+        self.assertTrue(all(len(s['text'])<=700 for s in ctx['evidence']))
         self.assertIn(fact['id'],{s['document_id'] for s in ctx['evidence']})
         self.assertTrue(all(s['evidence_role']=='expression_reference' for s in styles))
 
@@ -108,7 +109,7 @@ class StyleLibraryTests(unittest.TestCase):
             self.assertEqual(data['retrieved_references'][0]['document_id'],doc['id'])
             for phrase in ('retrieved_references','标题','开头','结构','节奏','CTA','source_id'):
                 self.assertIn(phrase,instruction)
-            self.assertIn('不能把案例中的产品功效',instruction)
+            self.assertIn('个人经历',instruction);self.assertIn('事实',instruction)
         nodes=result['node_runs'];self.assertEqual({n['agent'] for n in nodes},{'audience','research','content','reviewer'})
         for stage,field in [('audience','basis'),('research','prohibited_claims'),('strategy','why_account'),('review','limitations')]:
             value=next(n['output'] for n in nodes if n['stage']==stage)
@@ -260,7 +261,7 @@ class PostgresStyleLibraryTests(StyleLibraryTests):
         with psycopg.connect(self.base,autocommit=True) as db:db.execute('CREATE SCHEMA '+self.schema)
         self.store=Store(self.base+('&' if '?' in self.base else '?')+'options=-csearch_path%3D'+self.schema)
         self.owner='owner';self.account=Operations(self.store).read(self.owner)['accounts'][0]['id']
-        self.kb=Knowledge(self.store,use_configured_embeddings=False)
+        self.kb=Knowledge(self.store,embedding_provider=RecordingVectors(),use_configured_embeddings=False)
         self.model=StyleModel();self.service=Service(self.store,Config('fixture-key'),self.model)
         self.service.knowledge=self.kb
     def tearDown(self):
