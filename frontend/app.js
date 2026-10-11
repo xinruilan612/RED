@@ -5,7 +5,8 @@ const names={audience:'受众与竞品洞察',research:'热点与证据研究',c
 const stages={analysis:'分析',audience:'受众分析',research:'素材分析',strategy:'策略',outline:'提纲',hook:'开头',title:'标题',body:'正文',revise:'按意见改稿',review:'审核'};
 const states={QUEUED:'准备开始',RUNNING:'可以继续执行',WAITING_USER:'等待你的决定',SUCCEEDED:'已确认完成',CANCELLED:'已取消',FAILED:'执行失败',RETRY_WAIT:'等待重试',EXPIRED:'已过期'};
 const checks={brief_fit:'符合需求',audience_fit:'受众相关',usefulness_and_readability:'实用与易读',title_body_alignment:'标题与正文一致',evidence_integrity:'证据完整',experience_authenticity:'经历真实',originality_risk:'原创风险',privacy_and_policy:'隐私与规则'};
-let provider=null,polling=false,materialDocsCache=[],confirmedLiveRuns=new Set();
+let provider=null,polling=false,materialDocsCache=[],confirmedLiveRuns=new Set(),materialRefreshes=new Map();
+let cancellationRun=null,pendingLiveBudget=null;
 let csrf='',run=null,selected='audience',busy=false,auto=false,editing=false,viewVersion=null,detailStage=null,toastTimer,chosenHypothesis=null;
 async function api(path,method='GET',body){
  const r=await fetch(path,{method,headers:method==='POST'?{'Content-Type':'application/json','X-CSRF-Token':csrf}:{},body:body===undefined?undefined:JSON.stringify(body)});
@@ -35,20 +36,35 @@ function renderMaterialUploads(){
 }
 async function refreshMaterialDocuments(){
  if(!websiteSession?.auth_required||!currentAccount())return;
- try{const docs=await api('/api/knowledge?account_id='+encodeURIComponent(currentAccount().id));materialDocsCache=materialDocsCache.filter(d=>d.account_id!==currentAccount().id).concat(docs.map(d=>({id:d.id,account_id:currentAccount().id,title:d.title,version:d.version,filename:d.filename||d.title,locations:d.metadata?.page_count||0,location_type:d.metadata?.location_type||'page',text_chars:d.metadata?.extracted_chars||0})));renderMaterialUploads();}
- catch(e){error(e);}
+ const account=currentAccount().id;
+ if(materialRefreshes.has(account))return materialRefreshes.get(account);
+ const request=(async()=>{
+  try{const docs=await api('/api/knowledge?account_id='+encodeURIComponent(account));materialDocsCache=materialDocsCache.filter(d=>d.account_id!==account).concat(docs.map(d=>({id:d.id,account_id:account,title:d.title,version:d.version,filename:d.filename||d.title,locations:d.metadata?.page_count||0,location_type:d.metadata?.location_type||'page',text_chars:d.metadata?.extracted_chars||0})));if(currentAccount()?.id===account)renderMaterialUploads();}
+  catch(e){if(currentAccount()?.id===account)error(e);}
+ })();
+ materialRefreshes.set(account,request);
+ try{await request;}finally{if(materialRefreshes.get(account)===request)materialRefreshes.delete(account);}
 }
-function confirmLiveBudget(){
+function liveBudgetKey(task){return JSON.stringify([task.run_id,task.snapshot_id,task.model_policy||task.context?.model_policy||null]);}
+function confirmLiveBudget(resume){
  if(!run||run.mode!=='live'||!provider)return true;
- if(confirmedLiveRuns.has(run.run_id))return true;
+ if(confirmedLiveRuns.has(liveBudgetKey(run)))return true;
  const frozen=Object.values(run.model_policy?.routes||run.context?.model_policy?.routes||{})[0]||provider;
  const calls=provider.run_attempts_max??16,tokens=provider.run_tokens_max??80000,runUsd=frozen.run_budget_usd??0.10,dayUsd=frozen.day_budget_usd??0.50;
  const experiment=run.testing_budget;
  const experimentNotice=experiment?`本轮参考预算：¥${Number(experiment.target_cny).toFixed(2)}，希望约写 ${experiment.target_runs} 轮；已计入约¥${Number(experiment.spent_cny).toFixed(4)}，已进行 ${experiment.run_count} 轮（包含未完成任务）。\n接近或超过参考预算会提示，不因金额或轮数超出而停止。${experiment.warning||''}\n\n`:'';
- const accepted=window.confirm(`即将调用真实模型，可能产生费用。\n\n${experimentNotice}\n\n本任务硬上限：最多 ${calls} 次调用、${tokens.toLocaleString()} Token、$${Number(runUsd).toFixed(2)}；今日累计上限 $${Number(dayUsd).toFixed(2)}。\n上传资料最多 3 段，联网资料最多再加 3 段（每段最多 400 字）；达到任一上限会由服务器停止，不自动重试。\n\n现在开始吗？`);
- if(accepted)confirmedLiveRuns.add(run.run_id);
- return accepted;
+ pendingLiveBudget={runId:run.run_id,snapshotId:run.snapshot_id,budgetKey:liveBudgetKey(run),resume};
+ $('liveBudgetMessage').textContent=`即将调用真实模型，可能产生费用。\n\n${experimentNotice}\n本任务硬上限：最多 ${calls} 次调用、${tokens.toLocaleString()} Token、$${Number(runUsd).toFixed(2)}；今日累计上限 $${Number(dayUsd).toFixed(2)}。\n按本次冻结分类读取通用方法、匹配样例与独立事实；实际材料可在稿件依据中查看；达到任一上限会由服务器停止，不自动重试。`;
+ $('liveBudgetConfirmation').hidden=false;$('liveBudgetConfirmation').scrollIntoView({behavior:'smooth',block:'center'});
+ return false;
 }
+$('declineLiveBudget').onclick=()=>{pendingLiveBudget=null;$('liveBudgetConfirmation').hidden=true;};
+$('approveLiveBudget').onclick=async()=>{
+ const pending=pendingLiveBudget;pendingLiveBudget=null;$('liveBudgetConfirmation').hidden=true;
+ if(!pending)return;
+ if(busy||run?.run_id!==pending.runId||run.snapshot_id!==pending.snapshotId||liveBudgetKey(run)!==pending.budgetKey){error(new Error('任务或素材已变化，请重新确认费用。'));return;}
+ confirmedLiveRuns.add(pending.budgetKey);if(typeof pending.resume==='function')await pending.resume();
+};
 async function history(){
  const rows=(await api('/api/runs')).filter(r=>r.workflow_type!=='windtunnel'&&(typeof matchesAccount!=='function'||matchesAccount(r)));
  $('history').innerHTML=rows.length?rows.map(r=>`<button data-run="${esc(r.run_id)}" class="${run?.run_id===r.run_id?'selected':''}">${esc(r.context.topic||'旧任务')}<small>${esc(states[r.run_status])} · ${r.drafts.length} 个版本</small></button>`).join(''):'<p class="helper">还没有创作记录</p>';
@@ -68,12 +84,29 @@ function renderMode(mode){
  $('modeNotice').textContent=live?'四个角色调用所选模型；每次输出与用量可查看。可结合账号资料与已读取来源；事实仍需核查，最终由你确认。':'这是免费模拟流程，使用固定模板和本地规则，没有调用真实 AI。';
  $('detailMode').textContent=live?'真实 AI 产物':'模拟产物';
 }
+function nextStepGuidance(task){
+ const allowed=task.allowed_actions||[];
+ if(task.run_status==='SUCCEEDED')return '稿件已确认，可以下载。如需发布，请另行确认账号与稿件；确认创作不等于发布成功。';
+ if(editing&&task.review_execution?.exhausted)return '保存会创建新版本，不调用 AI。但本任务复审次数已用完，保存后只能继续手动修改，或知晓问题后人工采用；旧审核不会变成新版本通过。';
+ if(editing)return '你正在修改稿件。保存会创建新版本，不调用 AI；之后可申请复审，或知晓问题后人工采用。';
+ if(task.in_flight)return '正在处理，结果会自动保存并更新。可以先阅读已有稿件；无需重复点击或刷新。';
+ if(task.review_execution?.blocked)return task.review_execution.message;
+ if(allowed.includes('supplement'))return '请先补充下方缺失素材或选择假设权限，再继续分析；不能用虚构经历填补证据。';
+ if(task.current_stage==='reviewer'&&task.drafts.length&&!task.review)return '新版本已保存，尚未完成复审。点击“复审当前版本”查看审核意见；真实 AI 复审会计入费用。';
+ if(task.review?.decision==='revision_required')return '先看下方具体问题，再手动修改或按意见改稿。改稿后仍需重新审核。';
+ if(allowed.includes('accept'))return '先检查正文和事实，再确认当前版本。需要修改时另存新版本，原审核不沿用。';
+ if(allowed.includes('adopt_manual'))return '当前版本尚未通过有效审核。可继续修改/复审，或明确知晓已有问题后人工采用。';
+ if(task.run_status==='FAILED')return '本次执行失败，已有稿件和记录保留。先看具体错误，再决定是否从失败步骤继续，不必新建重复任务。';
+ if(['CANCELLED','EXPIRED'].includes(task.run_status))return '本任务已停止，旧版本仍可查看。需要继续创作时新建一份需求。';
+ return '需求已保存。点“连续运行”生成初稿并停在人工处理处；想逐步了解过程，可点“执行下一步”。过程和来源在下方按需展开。';
+}
 function render(){
  if(!run)return;
  if(errorSource==='run')clearError();
  renderWebResearch();
  renderMode(run.mode);
  renderTestingBudget();
+ if($('workbenchGuide'))$('workbenchGuide').textContent=nextStepGuidance(run);
  $('modelCalls').textContent=(run.usage?.model_calls||0)+' 次';
  $('modelCost').textContent=run.mode==='live'?'≤ $'+Number(run.usage.cost_upper_estimate_usd||0).toFixed(4)+' 估算':'¥0.00（模拟）';
  if(run.run_status==='FAILED'){const last=run.events.filter(e=>e.type==='agent.failed').at(-1);error(new Error(last?.payload.message||'执行失败，请查看运行记录'),'run');}
@@ -89,7 +122,7 @@ function render(){
  $('recover').hidden=!allowed.includes('recover');$('next').hidden=!allowed.includes('next');$('auto').hidden=!allowed.includes('next');$('cancel').hidden=!allowed.includes('cancel');
  $('next').textContent=run.current_stage==='reviewer'?'执行复审 / 审核 →':run.review?.decision==='revision_required'?'按意见改稿 →':'执行下一步 →';
  $('auto').textContent=background?(run.in_flight?'暂停后台任务':'后台运行到人工处理'):(auto?'停止自动运行':'自动运行到人工处理');
- if(background){$('next').hidden=!allowed.includes('next')||run.in_flight;$('auto').hidden=!allowed.includes('next')&&!run.in_flight;$('auto').textContent=run.in_flight?'暂停执行':'连续运行到人工处理';$('next').textContent=run.current_stage==='brief'&&run.context.web_research?.enabled&&run.context.web_research.status!=='complete'?'执行一步：联网搜索 →':'执行下一步，看结果 →';}
+ if(background){$('next').hidden=!allowed.includes('next')||run.in_flight;$('auto').hidden=!allowed.includes('next')&&!run.in_flight;$('auto').textContent=run.in_flight?'暂停执行':'连续运行到人工处理';$('next').textContent=run.current_stage==='brief'&&run.context.web_research?.enabled&&run.context.web_research.status!=='complete'?'执行一步：联网搜索 →':run.current_stage==='reviewer'?'复审当前版本 →':'执行下一步，看结果 →';}
  if(['insufficient','searching'].includes(run.context.web_research?.status)&&!run.in_flight){$('next').hidden=true;$('auto').hidden=true;}
  const node=(key,num,sub)=>{
  const logs=run.node_runs.filter(n=>n.agent===key&&n.snapshot_id===run.snapshot_id);
@@ -214,11 +247,14 @@ function draftEvidenceHTML(d){
 }
 function renderDraft(){
  $('draftPanel').hidden=!run.drafts.length;if(!run.drafts.length)return;
- if(viewVersion===null||viewVersion>=run.drafts.length)viewVersion=run.drafts.length-1;
- $('versionSelect').innerHTML=run.drafts.map((d,i)=>`<option value="${i}" ${i===viewVersion?'selected':''}>版本 ${i+1}${run.accepted_ref===d.ref?' · 已确认':''}</option>`).join('');
- const i=viewVersion,d=run.drafts[i],prev=run.drafts[i-1];
+ if(viewVersion!==null&&(!Number.isInteger(viewVersion)||viewVersion<0||viewVersion>=run.drafts.length))viewVersion=null;
+ const i=viewVersion??run.drafts.length-1,d=run.drafts[i],prev=run.drafts[i-1];
+ $('versionSelect').innerHTML=run.drafts.map((d,index)=>`<option value="${index}" ${index===i?'selected':''}>版本 ${index+1}${run.accepted_ref===d.ref?' · 已确认':''}</option>`).join('');
+ if($('compareVersionsWrap'))$('compareVersionsWrap').hidden=!prev;
+ if(!prev&&$('compareVersions'))$('compareVersions').checked=false;
+ const compare=prev&&$('compareVersions')?.checked;
  const changes=prev?['selected_title','body','cta','tags'].filter(k=>JSON.stringify(prev.content[k])!==JSON.stringify(d.content[k])).map(k=>({selected_title:'标题',body:'正文',cta:'互动引导',tags:'标签'})[k]):[];
- $('draftView').innerHTML=(prev?'<p class="change-summary">与上一版相比：'+(changes.length?'修改了 '+changes.join('、'):'文字内容未变化')+'。左侧旧稿，右侧当前所选稿。</p><div class="draft-columns">'+draftHTML(prev,i-1)+draftHTML(d,i,true)+'</div>':draftHTML(d,i));
+ $('draftView').innerHTML=(compare?'<p class="change-summary">与上一版相比：'+(changes.length?'修改了 '+changes.join('、'):'文字内容未变化')+'。左侧旧稿，右侧当前所选稿。</p><div class="draft-columns">'+draftHTML(prev,i-1)+draftHTML(d,i,true)+'</div>':draftHTML(d,i));
  $('draftView').insertAdjacentHTML('beforeend',draftEvidenceHTML(d));
  const candidates=run.artifacts.find(a=>a.stage==='title')?.value;
  if(candidates&&run.allowed_actions.includes('edit')&&!editing)$('draftView').insertAdjacentHTML('beforeend','<details><summary>比较候选标题 / 选择后重新审核</summary>'+candidates.candidates.map((t,n)=>`<div class="candidate-row"><div><b>${esc(t)}</b><p class="muted">${esc(candidates.reasons?.[n]||'历史版本未记录理由')}</p></div><button data-title-choice="${n}" ${t===run.drafts.at(-1).content.selected_title?'disabled':''}>选用并复审</button></div>`).join('')+'</details>');
@@ -235,7 +271,7 @@ function renderCalls(){
 }
 async function act(action,payload={}){
  if(action==='next'&&websiteSession?.auth_required)return backgroundCommand('step');
- if(action==='next'&&run?.mode==='live'&&!confirmLiveBudget())return false;
+ if(action==='next'&&run?.mode==='live'&&!confirmLiveBudget(()=>act(action,payload)))return false;
  if(busy||!run)return false;busy=true;clearError();if(action==='next'&&run.mode==='live')run.in_flight=true;render();
  try{run=await api(`/api/runs/${run.run_id}/actions`,'POST',{action,version:run.status_version,key:crypto.randomUUID(),payload});clearError();viewVersion=null;selected=currentAgent();detailStage=null;if(action==='edit'){ops=await api('/api/operations');syncAccounts();}await history();return true;}
  catch(e){auto=false;error(e);try{run=await api('/api/runs/'+run.run_id);}catch(_){}return false;}
@@ -244,7 +280,7 @@ async function act(action,payload={}){
 async function backgroundCommand(action,extra={}){
  if(busy||!run)return false;
  const searchOnly=action==='step'&&run.current_stage==='brief'&&run.context.web_research?.enabled&&run.context.web_research.status!=='complete';
- if(['start','step'].includes(action)&&!searchOnly&&run.mode==='live'&&!confirmLiveBudget())return false;
+ if(['start','step'].includes(action)&&!searchOnly&&run.mode==='live'&&!confirmLiveBudget(()=>backgroundCommand(action,extra)))return false;
  let commandError=null;busy=true;clearError();render();
  try{run=await api(`/api/runs/${run.run_id}/background`,'POST',{action,version:run.status_version,key:crypto.randomUUID(),...extra});clearError();selected=currentAgent();detailStage=null;await history();return true;}
  catch(e){commandError=e;error(e);try{run=await api('/api/runs/'+run.run_id);}catch(_){}return false;}
@@ -252,7 +288,7 @@ async function backgroundCommand(action,extra={}){
 }
 async function autoRun(){
  if(websiteSession?.auth_required)return backgroundCommand(run.in_flight?'pause':'start');
- if(run?.mode==='live'&&!confirmLiveBudget())return;
+ if(run?.mode==='live'&&!confirmLiveBudget(autoRun))return;
  if(auto){auto=false;render();return;}auto=true;render();
  while(auto&&run?.allowed_actions.includes('next')){
   if(!await act('next'))break;
@@ -272,11 +308,18 @@ $('recover').onclick=()=>act('recover');
 $('repairReview').onclick=async()=>{if(await act('repair_review')){clearError();selected='human';render();$('humanPanel').scrollIntoView({behavior:'smooth',block:'center'});toast('已有审核意见已整理。请按提示补充资料或修改稿件；本次没有调用 AI。');}};
 $('next').onclick=()=>act('next');$('auto').onclick=autoRun;
 $('cancel').onclick=async()=>{
- if(!window.confirm('取消当前任务？已有版本会保留。已发送给模型的请求可能仍产生费用。'))return;
+ cancellationRun={runId:run.run_id,snapshotId:run.snapshot_id};$('cancelConfirmation').hidden=false;$('cancelConfirmation').scrollIntoView({behavior:'smooth',block:'center'});
+};
+$('keepTask').onclick=()=>{cancellationRun=null;$('cancelConfirmation').hidden=true;};
+$('confirmCancel').onclick=async()=>{
+ const pending=cancellationRun;cancellationRun=null;
+ $('cancelConfirmation').hidden=true;
+ if(!pending||run?.run_id!==pending.runId||run.snapshot_id!==pending.snapshotId){error(new Error('当前任务已变化，请重新选择要取消的任务。'));return;}
  auto=false;editing=false;$('editor').hidden=true;
  if(!busy){await act('cancel');return;}
  try{
-  const latest=await api('/api/runs/'+run.run_id);
+  const latest=await api('/api/runs/'+pending.runId);
+  if(run?.run_id!==pending.runId||run.snapshot_id!==pending.snapshotId){error(new Error('当前任务已变化，请重新确认取消。'));return;}
   run=await api('/api/runs/'+latest.run_id+'/actions','POST',{action:'cancel',version:latest.status_version,key:crypto.randomUUID(),payload:{}});
   render();await history();
  }catch(e){error(e);}
@@ -288,7 +331,8 @@ $('editor').onsubmit=async e=>{e.preventDefault();const data={selected_title:$('
 $('accept').onclick=async()=>{if(await act('accept',{draft_ref:run.drafts.at(-1).ref,review_ref:run.review.ref}))toast('已确认当前版本，可以下载。');};
 $('adoptManual').onclick=async()=>{const draft=run.drafts.at(-1);if(await act('adopt_manual',{draft_ref:draft.ref,content_hash:draft.content_hash,acknowledge:true})){clearError();toast('已人工采用当前版本，审核意见保留，可以下载。');}};
 $('supplyForm').onsubmit=async e=>{e.preventDefault();if(await act('supplement',{material:$('supply').value,allow_hypothesis:$('supplyHypothesis').checked}))toast('补充已保存，请启动运行重新分析。');};
-$('versionSelect').onchange=e=>{viewVersion=Number(e.target.value);renderDraft();};
+$('versionSelect').onchange=e=>{const version=Number(e.target.value);viewVersion=version===run.drafts.length-1?null:version;renderDraft();};
+if($('compareVersions'))$('compareVersions').onchange=()=>renderDraft();
 window.addEventListener('beforeunload',e=>{if(editing){e.preventDefault();e.returnValue='';}});
 document.addEventListener('DOMContentLoaded',async()=>{try{const session=await api('/api/session');csrf=session.csrf;if(session.auth_required&&!session.user){showLogin(session);return;}showWebsiteUser(session);applyModelStatus(session.provider);$('mode').value='simulation';$('scenario').disabled=$('mode').value==='live';renderMode($('mode').value);const rows=await history();if(rows.length){run=rows[0];selected=currentAgent();render();await history();}await initOperations();}catch(e){error(e);}});
 

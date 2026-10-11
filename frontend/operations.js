@@ -14,6 +14,7 @@ function showPage(page){
  $('studioView').hidden=page!=='studio';$('operationsView').hidden=page==='studio';
  [$('pageEyebrow').textContent,$('pageTitle').textContent,$('pageDescription').textContent]=pageInfo[page];
  document.querySelectorAll('[data-page]').forEach(b=>{const active=b.dataset.page===page;b.classList.toggle('active',active);b.setAttribute('aria-current',active?'page':'false');if(active){const group=b.closest?.('details');if(group)group.open=true;}});
+ if(typeof renderPageTools==='function')renderPageTools(page);
  clearError();if(ops&&page!=='studio')renderOperations();window.scrollTo({top:0});
 }
 async function initOperations(){ops=await api('/api/operations');syncAccounts();if(run&&!matchesAccount(run)){run=null;$('workbench').hidden=true;$('welcome').hidden=false;fillAccountBrief();}showPage(location.hash.slice(1)||'studio');await history();}
@@ -102,7 +103,15 @@ async function savePublishedArchive(e){
 
 function latestMetrics(){const map=new Map();for(const m of accountRows('metrics'))map.set(m.publication_id+':'+m.window,m);return [...map.values()].reverse();}
 function renderMemory(){
- $('operationsContent').innerHTML=`<div class="ops-hero memory-hero"><div><span class="eyebrow">从记录中学习，由你决定如何使用</span><h2>经验有来源，也可以撤销。</h2><p>指标 → 自动生成复盘建议 → 你接受 → 下次同账号创作读取。</p></div>${badge(accountRows('memories').filter(m=>m.status==='accepted').length+' 条已接受经验')}</div><div class="memory-list">${accountRows('memories').map(m=>`<article class="panel memory-card"><div class="card-top"><div>${badge(platformNames[m.platform])} ${badge(m.source_type==='simulation'?'演示经验':'用户数据经验','amber')}</div>${badge(memoryStates[m.status],'neutral')}</div><h2>${esc(m.observation.split('；')[0])}</h2><p class="memory-advice">${esc(m.text)}</p><p class="muted">${esc(m.account)} · ${m.window} · ${m.sample_size} 篇样本</p><p class="helper">${esc(m.limitation)}</p><details><summary>查看证据与使用范围</summary><p class="readable">${esc(m.observation)}</p><p>指标快照 ${esc(m.metric_id.slice(0,8))} · 发布记录 ${esc(m.publication_id.slice(0,8))}</p><p>仅用于同平台、同账号的${m.source_type==='simulation'?'模拟':'真实 AI'}创作。修正指标后，相关经验会自动失效。</p></details><div class="buttons">${m.status==='proposed'?`<button class="primary" data-memory="${m.id}" data-status="accepted">接受为下次实验建议</button><button class="quiet" data-memory="${m.id}" data-status="rejected">暂不采用</button>`:m.status==='accepted'?`<button class="quiet" data-memory="${m.id}" data-status="revoked">撤销此经验</button>`:''}</div></article>`).join('')||empty('还没有复盘经验','在数据复盘中录入指标并生成建议，再来决定是否采用。')}</div>`;
+ const memories=accountRows('memories');
+ const cards=memories.map(m=>`<article class="panel memory-card"><div class="card-top"><div>${badge(platformNames[m.platform])} ${badge(m.source_type==='simulation'?'演示经验':'用户数据经验','amber')}</div>${badge(memoryStates[m.status],'neutral')}</div><h2>${esc(m.observation.split('；')[0])}</h2><p class="memory-advice">${esc(m.text)}</p><p class="muted">${esc(m.account)} · ${m.window} · ${m.sample_size} 篇样本</p><p class="helper">${esc(m.limitation)}</p><details><summary>查看证据与使用范围</summary><p class="readable">${esc(m.observation)}</p><p>指标快照 ${esc(m.metric_id.slice(0,8))} · 发布记录 ${esc(m.publication_id.slice(0,8))}</p><p>仅用于同平台、同账号的${m.source_type==='simulation'?'模拟':'真实 AI'}创作。修正指标后，相关经验会自动失效。</p></details><div class="buttons">${m.status==='proposed'?`<button class="primary" data-memory="${m.id}" data-status="accepted">接受为下次实验建议</button><button class="quiet" data-memory="${m.id}" data-status="rejected">暂不采用</button>`:m.status==='accepted'?`<button class="quiet" data-memory="${m.id}" data-status="revoked">撤销此经验</button>`:''}</div></article>`).join('');
+ $('operationsContent').innerHTML=`<div class="ops-hero memory-hero"><div><span class="eyebrow">有证据才积累，不强行得出结论</span><h2>经验有来源，也可以撤销。</h2><p>记录实际表现 → 分析 → 你接受建议 → 下次同账号复用。</p></div>${badge(memories.filter(m=>m.status==='accepted').length+' 条已接受经验')}</div><div class="memory-list">${cards||empty('目前没有可采用的经验',memoryNextStep())+'<button class="secondary" data-go-page="metrics">查看数据复盘与下一步 →</button>'}</div>`;
+}
+function memoryNextStep(){
+ const reports=accountRows('analyses').filter(a=>a.status!=='superseded');
+ if(!reports.length)return '还没有分析记录。先在“作品与复盘”保存一次指标，再点“分析这条记录”。';
+ if(reports.every(a=>a.status==='insufficient'))return '已保存分析，但观察窗口或可比样本不足，因此没有生成经验。按复盘提示补足 24 小时、72 小时或 7 天观察；不要填造缺失数据。';
+ return '已有复盘，但尚无满足证据条件的候选经验。查看复盘的限制与下一次建议；不会强行生成经验。';
 }
 document.querySelector('.workspace-nav').onclick=e=>{const b=e.target.closest('[data-page]');if(b&&!busy&&dirtyGuard()){auto=false;showPage(b.dataset.page);}};
 $('clearTrend').onclick=()=>{chosenTrend=null;$('selectedTrend').hidden=true;$('clearTrend').hidden=true;};

@@ -44,3 +44,12 @@ body{background:#f5f6f2}main{max-width:1560px;padding:36px 40px 24px;margin-left
 .workspace-nav .nav-group .nav{font-size:12px;padding:8px;gap:8px;min-height:34px}
 .recent-creations{margin-top:14px}.sidebar .recent-creations .history{max-height:150px;margin-top:5px}
 @media(max-width:720px){.workspace-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible;gap:4px}.workspace-nav .nav{width:100%;display:flex;text-align:left;font-size:12px;padding:9px;white-space:normal}.workspace-nav .nav-group{grid-column:1/-1}.nav-group-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.sidebar .recent-creations .history{display:block}.recent-creations{margin-top:8px}}
+
+/* Adopted right-side workbench layout; existing sidebar rules above are unchanged. */
+/* Safari before 18 needs the prefixed equivalent of the sticky header blur. */
+.account-bar{-webkit-backdrop-filter:blur(12px)}
+.page-tools{display:flex;gap:8px;flex-wrap:wrap;margin:-10px 0 22px}.page-tools button{font-size:12px}.page-tools .active{background:var(--light);border-color:#a9c6b0;color:var(--green)}
+.getting-started{margin-bottom:24px}.guide-steps{list-style:none;padding:0;margin:12px 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}.guide-steps li{display:flex;gap:12px;align-items:start}.guide-check{color:var(--green);font-size:20px}.guide-steps p{font-size:12px;color:var(--muted);margin:8px 0}.guide-steps button{font-size:12px;padding:7px 10px}.guide-steps .done .guide-check{background:var(--light);border-radius:50%;padding:0 5px}
+.creation-options,#materialFileBox{border-top:1px solid var(--line);margin:18px 0;padding:4px 0 12px}.process-disclosure{margin:22px 0}.process-disclosure>summary{font-size:13px;padding:12px 16px;border:1px solid var(--line);border-radius:8px;background:#fff}.process-disclosure .workflow-grid{margin-top:15px}.process-disclosure .timeline-panel{margin-top:12px}
+@media(max-width:1100px){.intro{display:block}.guide-steps{grid-template-columns:1fr}}
+@media(max-width:720px){.page-tools{gap:5px}.page-tools button{padding:8px;font-size:11px}}
