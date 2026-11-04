@@ -20,8 +20,8 @@
       "bytes": 945
     },
     ".gitattributes": {
-      "sha256": "86874669a4b2f5a301fcc6c86fec937122f528e62e7ce0e7a8b6e625d84846d0",
-      "bytes": 508
+      "sha256": "6beb0e9d3ecc3232b806b984ac9e791c064f06696dc54303b08ae2f70d8b7e8d",
+      "bytes": 884
     },
     ".gitignore": {
       "sha256": "89e6ff948b5264993bdef241f588c9d4573eca22eb66d576a22337f425128894",
@@ -1436,16 +1436,16 @@
       "bytes": 122934
     },
     "docs/evidence/windtunnel/ACCEPTANCE-20261021.md": {
-      "sha256": "16a752bcb3d456cb2bbfdffad3fe8bc989a8569cc0463ed6fc6f85a66cd783ac",
-      "bytes": 5211
+      "sha256": "8246476ac0a86602c9618cc201fbc35ada0ace4066e96abaf9c67eab636a39e7",
+      "bytes": 5203
     },
     "docs/evidence/windtunnel/EXAMPLE-20261021.md": {
-      "sha256": "bc27a46688843536ebe4a0a5f172721a016456bb19010091d3beb182bf7b9f3f",
-      "bytes": 3622
+      "sha256": "8c73c9a2378f0ec6ef9554d7295e3fe09cb5e7531555565856395f1c64f428f7",
+      "bytes": 3616
     },
     "docs/evidence/windtunnel/P20-EXPERIMENT-20261021.md": {
-      "sha256": "c3eafd3e31778125d8a8f87f2b35e842bd911b090252770a57b832a24ab9f786",
-      "bytes": 3626
+      "sha256": "83e076621fa96fbfbbef486ce836fec91c6fc9de75542a5025ecfb711bb8570b",
+      "bytes": 3618
     },
     "docs/evidence/windtunnel/P20-FINAL-DRAFT-20261021.md": {
       "sha256": "00180253fcf63479d9ae0de79e6744aa324d8ced6238d91e180d9f5feac5cd44",
@@ -1528,8 +1528,8 @@
       "bytes": 32043
     },
     "docs/submission/01_技术方案-精简.md": {
-      "sha256": "d503afe55b739f9167fef5908c1dc18d7ab635742bb3177e04ee9da0d280c943",
-      "bytes": 29896
+      "sha256": "56ca933ae65fb74655ca79cd8dbcc4c19a54eab203ca8b0257ba377c321bfa60",
+      "bytes": 29895
     },
     "docs/submission/01_技术方案.md": {
       "sha256": "06e407fc2e6b992b3564670409ef9f89e2e775f4ea7bf8cd8a41af6179703f74",
@@ -4504,8 +4504,8 @@
       "bytes": 7445
     },
     "tests/test_web_reference_links.py": {
-      "sha256": "0827cad79e6cc2b59a54c11da5d4e3bb9e932698233c3b5d5c31696513c473de",
-      "bytes": 9987
+      "sha256": "b152c339cce1787b93716a44e90036f842786f997cebcae3e09144e615e344f4",
+      "bytes": 9986
     },
     "tests/test_web_research.py": {
       "sha256": "8cb3076a1ac2daa52f477e215c8411c6dc8ce68aa49b3d56a3c24df4b214e9ba",

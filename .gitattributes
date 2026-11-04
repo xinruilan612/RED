@@ -6,3 +6,15 @@ docs/windtunnel/public_samples/sources/*.html -whitespace
 docs/evidence/review-20261102/ratings/developer-self-scores-original.csv -text
 docs/evidence/final-20261103/test-logs/*.log -text -diff
 docs/evidence/final-20261103/live-study/public/human-review/originals/*.csv -text
+
+# Keep publication binaries and original tabular evidence byte-exact.
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.docx binary
+*.pptx binary
+*.csv -text whitespace=cr-at-eol
+*.log -text -diff
+docs/evidence/final-20261103/live-study/public/human-review/originals/*.csv -whitespace
+docs/evidence/review-20261102/ratings/developer-self-scores-original.csv -whitespace

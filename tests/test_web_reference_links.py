@@ -168,4 +168,3 @@ class ReferenceRuntimeTests(unittest.TestCase):
         with self.store.connect() as db:
             self.assertIsNotNone(db.execute('SELECT 1 FROM live_calls WHERE run_id=?',(self.run_id,)).fetchone())
         with self.assertRaises(DomainError):self.step('retry_research')
-
