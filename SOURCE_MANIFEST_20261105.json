@@ -372,8 +372,8 @@
       "bytes": 9728
     },
     "docs/RELEASE_20261105.md": {
-      "sha256": "10fe8501cad1990eb896c7365d41884e12c7123bf9f7b3cf2978252ecf3eef24",
-      "bytes": 3614
+      "sha256": "5ffdda139736ca9dae9cbe71aefaad050453c497ec87da2af6a5d0f25a4024bd",
+      "bytes": 3981
     },
     "docs/WEB_DEMO_VALIDATION.md": {
       "sha256": "599f30ba8b1a4b00f1926182d2ab413df4a100dfafff554358663ae8c793f269",
@@ -1179,9 +1179,13 @@
       "sha256": "06b74fa9178bbf0883580cb180608bed6c7e957bb1adbe31bd67f0b4766cbe7a",
       "bytes": 646665
     },
+    "docs/evidence/github-20261105/github-release.png": {
+      "sha256": "5bb83fb9c152053bbaf43f2831317e74150382e5d34928cc8c8dd4b2b5eb3b31",
+      "bytes": 653034
+    },
     "docs/evidence/github-20261105/有迹-佐证材料-GitHub补充版-20261105.pdf": {
-      "sha256": "0ad3a9f484f61a396cc5b481c20a0f22e72b9b9627fa650200935de2937b0be1",
-      "bytes": 1469698
+      "sha256": "7bb1aca7227e6b0e896a9d69ce9f1051c0f23ca002d6520afd19b0e935f8399e",
+      "bytes": 1478349
     },
     "docs/evidence/original-creation/REPORT.md": {
       "sha256": "46012b4dd392213d371b63b9cc8fa702988d0e8e4f6547ee699670b825fded4f",
