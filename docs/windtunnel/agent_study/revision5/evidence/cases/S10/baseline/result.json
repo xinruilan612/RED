@@ -1,0 +1,87 @@
+{
+  "sample_id": "S10",
+  "method": "baseline",
+  "participant_type": "codex_proxy",
+  "revision": "v5",
+  "draft_kind": "public_official_tutorial_excerpt",
+  "adaptation": "layout and attribution only; original English text",
+  "deletion_design": null,
+  "source_url": "https://docs.python.org/3.12/howto/argparse.html#introducing-optional-arguments",
+  "original_sha256": "097a75cb3cc6e2bbe535cba19ca4f53a63d7283298cae24749c47145dac0915f",
+  "material_sha256": "097a75cb3cc6e2bbe535cba19ca4f53a63d7283298cae24749c47145dac0915f",
+  "outcome": "completed",
+  "error": null,
+  "automatic_adoption": true,
+  "human_author": false,
+  "issues": [
+    {
+      "explanation": "The draft is missing an explicit statement, tied to the task, that with no --verbosity the value of args.verbosity is None and the program prints nothing.",
+      "evidence": "Draft says args.verbosity is given None, but does not connect this to the no-output case (\"$ python prog.py\" followed by blank output)."
+    },
+    {
+      "explanation": "The draft does not explicitly explain that bare --verbosity errors because the option expects one argument, although the transcript shows it.",
+      "evidence": "Draft includes \"$ python prog.py --verbosity\" and \"error: argument --verbosity: expected one argument\" but does not explain the reason in prose."
+    },
+    {
+      "explanation": "The draft shows the --verbose add_argument call and says store_true implies False, but does not explicitly contrast enabled output with default/no-output behavior in the same way the task asks.",
+      "evidence": "Draft has requested add_argument code, but enabled/default output is only shown through example transcripts."
+    },
+    {
+      "explanation": "The draft does not explicitly state why --verbose 1 errors: the flag is store_true, so it takes no value and the extra 1 is an unrecognized argument.",
+      "evidence": "Draft says \"It complains when you specify a value\" but does not tie this to \"error: unrecognized arguments: 1\"."
+    },
+    {
+      "explanation": "The draft provides the -v alias add_argument and -v output, but does not explicitly say what the help text reflects (the short -v option aliasing --verbose).",
+      "evidence": "Draft ends with \"Note that the new ability is also reflected in the help text\" and the help output shows \"-v, --verbose\", but does not state that the help reflects the new short alias."
+    }
+  ],
+  "run_id": "5fa0c8ff-6b90-4a17-90d7-49ea2f870e8d",
+  "wall_seconds": 6.107,
+  "final_sha256": "527b1af88d93b62048125b7f1779496eb848b81d3fe6f49ce557a78bbe5606eb",
+  "changed": true,
+  "calls": [
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 2124,
+      "output_tokens": 1508,
+      "total_tokens": 3632,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "issues": [
+          {
+            "explanation": "The draft is missing an explicit statement, tied to the task, that with no --verbosity the value of args.verbosity is None and the program prints nothing.",
+            "evidence": "Draft says args.verbosity is given None, but does not connect this to the no-output case (\"$ python prog.py\" followed by blank output)."
+          },
+          {
+            "explanation": "The draft does not explicitly explain that bare --verbosity errors because the option expects one argument, although the transcript shows it.",
+            "evidence": "Draft includes \"$ python prog.py --verbosity\" and \"error: argument --verbosity: expected one argument\" but does not explain the reason in prose."
+          },
+          {
+            "explanation": "The draft shows the --verbose add_argument call and says store_true implies False, but does not explicitly contrast enabled output with default/no-output behavior in the same way the task asks.",
+            "evidence": "Draft has requested add_argument code, but enabled/default output is only shown through example transcripts."
+          },
+          {
+            "explanation": "The draft does not explicitly state why --verbose 1 errors: the flag is store_true, so it takes no value and the extra 1 is an unrecognized argument.",
+            "evidence": "Draft says \"It complains when you specify a value\" but does not tie this to \"error: unrecognized arguments: 1\"."
+          },
+          {
+            "explanation": "The draft provides the -v alias add_argument and -v output, but does not explicitly say what the help text reflects (the short -v option aliasing --verbose).",
+            "evidence": "Draft ends with \"Note that the new ability is also reflected in the help text\" and the help output shows \"-v, --verbose\", but does not state that the help reflects the new short alias."
+          }
+        ],
+        "revised_text": "Introducing Optional arguments\n\nSo far we have been playing with positional arguments. Let us\nhave a look on how to add optional ones:\n\nimport argparse\nparser = argparse.ArgumentParser()\nparser.add_argument(\"--verbosity\", help=\"increase output verbosity\")\nargs = parser.parse_args()\nif args.verbosity:\n    print(\"verbosity turned on\")\n\nAnd the output:\n\n$ python prog.py --verbosity 1\nverbosity turned on\n$ python prog.py\n$ python prog.py --help\nusage: prog.py [-h] [--verbosity VERBOSITY]\n\noptions:\n  -h, --help            show this help message and exit\n  --verbosity VERBOSITY\n                        increase output verbosity\n$ python prog.py --verbosity\nusage: prog.py [-h] [--verbosity VERBOSITY]\nprog.py: error: argument --verbosity: expected one argument\n\nHere is what is happening:\n\nThe program is written so as to display something when --verbosity is\nspecified and display nothing when not.\n\nTo show that the option is actually optional, there is no error when running\nthe program without it. Note that by default, if an optional argument isn't\nused, the relevant variable, in this case args.verbosity, is\ngiven None as a value, which is the reason it fails the truth\ntest of the if statement. That is why running `python prog.py` with no\n`--verbosity` produces no output: `args.verbosity` is `None`, so the `if`\nblock is skipped.\n\nWhen only `--verbosity` is written without a value, the program errors.\nThe help text shows that the option requires a value, `--verbosity VERBOSITY`,\nand argparse reports that one is missing:\n\nprog.py: error: argument --verbosity: expected one argument\n\nThe help message is a bit different.\n\nWhen using the --verbosity option, one must also specify some value,\nany value.\n\nThe above example accepts arbitrary integer values for --verbosity, but for\nour simple program, only two values are actually useful, True or False.\nLet's modify the code accordingly:\n\nimport argparse\nparser = argparse.ArgumentParser()\nparser.add_argument(\"--verbose\", help=\"increase output verbosity\",\n                    action=\"store_true\")\nargs = parser.parse_args()\nif args.verbose:\n    print(\"verbosity turned on\")\n\nAnd the output:\n\n$ python prog.py --verbose\nverbosity turned on\n$ python prog.py --verbose 1\nusage: prog.py [-h] [--verbose]\nprog.py: error: unrecognized arguments: 1\n$ python prog.py --help\nusage: prog.py [-h] [--verbose]\n\noptions:\n  -h, --help  show this help message and exit\n  --verbose   increase output verbosity\n\nHere is what is happening:\n\nThe option is now more of a flag than something that requires a value.\nWe even changed the name of the option to match that idea.\nNote that we now specify a new keyword, action, and give it the value\n\"store_true\". This means that, if the option is specified,\nassign the value True to args.verbose.\nNot specifying it implies False. So when `--verbose` is used, the program\nprints \"verbosity turned on\"; when it is omitted, `args.verbose` is `False`,\nso nothing is printed.\n\nIt complains when you specify a value, in true spirit of what flags\nactually are. Because `action=\"store_true\"` makes `--verbose` a flag that\ntakes no value, `python prog.py --verbose 1` treats the `1` as an extra,\nunrecognized argument:\n\nprog.py: error: unrecognized arguments: 1\n\nNotice the different help text.\n\nShort options\n\nIf you are familiar with command line usage,\nyou will notice that I haven't yet touched on the topic of short\nversions of the options. It's quite simple:\n\nimport argparse\nparser = argparse.ArgumentParser()\nparser.add_argument(\"-v\", \"--verbose\", help=\"increase output verbosity\",\n                    action=\"store_true\")\nargs = parser.parse_args()\nif args.verbose:\n    print(\"verbosity turned on\")\n\nAnd here goes:\n\n$ python prog.py -v\nverbosity turned on\n$ python prog.py --help\nusage: prog.py [-h] [-v]\n\noptions:\n  -h, --help     show this help message and exit\n  -v, --verbose  increase output verbosity\n\nNote that the new ability is also reflected in the help text. Using `python\nprog.py -v` prints \"verbosity turned on\", just like `--verbose`, and the\nhelp output now lists the short option together with the long option as\n`-v, --verbose`, showing that `-v` is an alias for `--verbose`."
+      }
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 1.753908,
+    "reserved_unknown_cny": 0.04281,
+    "committed_upper_cny": 1.796718,
+    "calls": 138,
+    "unknown_calls": 1
+  }
+}

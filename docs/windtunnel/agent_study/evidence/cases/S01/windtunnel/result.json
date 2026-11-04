@@ -1,0 +1,125 @@
+{
+  "sample_id": "S01",
+  "method": "windtunnel",
+  "participant_type": "codex_proxy",
+  "source_url": "https://docs.python.org/3.12/tutorial/introduction.html#text",
+  "original_sha256": "c8ebcdaad0604b93f0811cac9ed7f73f0560cd9f77d3f66374b8a845346036c3",
+  "material_sha256": "c8ebcdaad0604b93f0811cac9ed7f73f0560cd9f77d3f66374b8a845346036c3",
+  "outcome": "failed",
+  "error": {
+    "code": "STUDY_WORKFLOW_BLOCKED",
+    "message": "阅读引文不在稿件中"
+  },
+  "automatic_adoption": true,
+  "human_author": false,
+  "fallback": "latest preserved draft; does not imply successful review",
+  "run_id": "bca722e0-191a-49ee-9254-38b71b709b5d",
+  "wall_seconds": 6.235,
+  "final_sha256": "c8ebcdaad0604b93f0811cac9ed7f73f0560cd9f77d3f66374b8a845346036c3",
+  "changed": false,
+  "calls": [
+    {
+      "stage": "wt_conditions",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 272,
+      "output_tokens": 500,
+      "total_tokens": 772,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "conditions": [
+          {
+            "question": "读者能否从稿件中指出 `word[-1]` 与 `word[2:5]` 在 `word='Python'` 时各自的预期字符串结果？",
+            "scene": "负索引与切片结果说明",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "读者能否解释 `word[42]` 与 `word[42:]` 在稿中所述的不同后果，而不是只记一个报错结论？",
+            "scene": "越界索引与越界切片的区别",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "读者能否说明把首字符改成 `J` 时，为什么需要生成新字符串，以及稿件建议的生成方式？",
+            "scene": "字符串不可变与重新赋值/拼接",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "读者能否指出 `prefix 'thon'` 失败的原因，并说出稿件认可的正确拼接方式？",
+            "scene": "前缀拼接失败原因与正确写法",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "读者能否说明打印 Windows 路径 `C:\\some\\name` 时，稿件建议如何保留反斜线？",
+            "scene": "转义反斜线输出",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "读者能否复述稿件关于 raw 字符串结尾限制的说明，并判断其为何不能以单个反斜线结尾？",
+            "scene": "raw 字符串结尾限制",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "读者能否为上述每一项在稿件中定位到对应证据段落，而不是仅凭记忆作答？",
+            "scene": "定位稿内证据",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "读者能否区分“解释结果”与“执行代码”这两种任务要求，并按稿件说明完成前者？",
+            "scene": "不执行代码的排错说明",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "读者能否用同事可理解的语言组织一段排错说明，覆盖负索引、切片、越界、不可变、拼接、转义和 raw 结尾限制？",
+            "scene": "面向同事的排错说明撰写",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "读者能否指出稿件中哪些表述只适用于 Python 3.12 的入门语境，而不被误当作所有版本的通用结论？",
+            "scene": "版本相关表述边界",
+            "source_ids": [],
+            "origin": "author"
+          }
+        ]
+      }
+    },
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 2615,
+      "output_tokens": 716,
+      "total_tokens": 3331,
+      "outcome": "invalid",
+      "error": "阅读引文不在稿件中",
+      "response": {
+        "results": [
+          {
+            "condition_id": "6a7604cf-d33d-439f-bfb9-8a88b56d98f3",
+            "status": "pass",
+            "answer": "Take word = 'Python' and prefix = 'Py'. word[-1] is the last character: 'n'. word[2:5] slices from position 2 included to 5 excluded: 'tho'. word[42] raises IndexError: string index out of range because the word only has 6 characters. word[42:] is an out-of-range slice and is handled gracefully: it returns ''. Strings are immutable, so word[0] = 'J' raises TypeError: 'str' object does not support item assignment. To change the first character to J, create a new string, e.g. 'J' + word[1:] -> 'Jython'. prefix 'thon' fails because you cannot concatenate a variable and a string literal; it raises SyntaxError: invalid syntax. The correct way is to use +: prefix + 'thon' -> 'Python'. When printing a Windows path C:\\some\\name, 'C:\\some\\name' lets \\n mean newline, so print(r'C:\\some\\name') preserves the backslashes and prints C:\\some\\name. Raw strings have the limitation that a raw string may not end in an odd number of \\ characters; see the FAQ entry for more information and workarounds.",
+            "excerpt": ">>> word[-1]  # last character\n'n'\n\n>>> word[2:5]  # characters from position 2 (included) to 5 (excluded)\n'tho'\n\n>>> word[42]  # the word only has 6 characters\nTraceback (most recent call last):\n  File \"<stdin>\", line 1, in <module>\nIndexError: string index out of range\n\n>>> word[42:]\n''\n\n>>> word[0] = 'J'\nTraceback (most recent call last):\n  File \"<stdin>\", line 1, in <module>\nTypeError: 'str' object does not support item assignment\n\nIf you need a different string, you should create a new one:\n\n>>> 'J' + word[1:]\n'Jython'\n\n>>> prefix = 'Py'\n>>> prefix 'thon'  # can't concatenate a variable and a string literal\n  File \"<stdin>\", line 1\n    prefix 'thon'\n           ^^^^^^\nSyntaxError: invalid syntax\n\nIf you want to concatenate variables or a variable and a literal, use +:\n\n>>> prefix + 'thon'\n'Python'\n\n>>> print('C:\\some\\name')  # here \\n means newline!\nC:\\some\name\n>>> print(r'C:\\some\\name')  # note the r before the quote\nC:\\some\\name\n\nThere is one subtle aspect to raw strings: a raw string may not end in\nan odd number of \\ characters; see\nthe FAQ entry for more information\nand workarounds.",
+            "reason": "稿件逐字包含所有要求的情形、输出/报错及 raw 字符串限制。"
+          }
+        ]
+      }
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 0.041886,
+    "reserved_unknown_cny": 0.0,
+    "committed_upper_cny": 0.041886,
+    "calls": 3,
+    "unknown_calls": 0
+  }
+}

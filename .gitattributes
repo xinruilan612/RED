@@ -1,8 +1,8 @@
-# Historical byte fingerprints must survive Windows checkout unchanged.
-docs/submission/evidence/baseline-source/** -text
-
-# POSIX launchers must not acquire CRLF when checked out on Windows.
-*.sh text eol=lf
-*.command text eol=lf
-# Native command prompts use CRLF, without changing historical snapshots.
-*.cmd text eol=crlf
+* text=auto eol=lf
+# Reproducible source/evidence hashes must survive Windows autocrlf checkouts.
+# Exact official HTML evidence keeps upstream whitespace and download hashes.
+docs/windtunnel/public_samples/license.html -whitespace
+docs/windtunnel/public_samples/sources/*.html -whitespace
+docs/evidence/review-20261102/ratings/developer-self-scores-original.csv -text
+docs/evidence/final-20261103/test-logs/*.log -text -diff
+docs/evidence/final-20261103/live-study/public/human-review/originals/*.csv -text

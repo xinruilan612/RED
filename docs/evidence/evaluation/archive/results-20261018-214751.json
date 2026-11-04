@@ -1,0 +1,229 @@
+{
+  "schema": "youji-evaluation-results/1",
+  "gold_set_hash": "d3e0afc7d669cb2203200dc6751fe09ae9d1f22e0edee26a0f46d1942d90ec9a",
+  "origin": "http://127.0.0.1:8890",
+  "budget_authorized_usd": 0.5,
+  "account_id": "d6130df6-e7db-4e06-9d42-a68aa29f0ada",
+  "records": [
+    {
+      "arm": "A",
+      "item_id": "G01",
+      "status": "done",
+      "retrieval_mode": "none",
+      "draft": {
+        "selected_title": "陶土玫瑰色+透明方管，这支唇釉的视觉关键词是什么？",
+        "body": "选唇釉时，你更先看颜色，还是先看包装？\n\n雾桃B01唇釉提供一个明确答案：陶土玫瑰色号——带暖调的低饱和玫瑰，不偏粉、不偏棕，是介于气质与温柔之间的中间值。\n\n净含量3克，装在透明方管中。管身通透，能直接看到膏体颜色，补妆前一眼确认余量。\n\n刷头为斜面设计，边缘贴合唇线，涂抹时可兼顾清晰勾勒与自然晕染。\n\n没有复杂参数，只有三个可感知的要素：色名、管型、刷型。",
+        "cta": "你日常更倾向收藏‘一眼认出’的包装，还是‘上嘴才懂’的颜色？",
+        "tags": [
+          "唇釉推荐",
+          "雾桃B01",
+          "陶土玫瑰",
+          "彩妆包装",
+          "唇部彩妆"
+        ]
+      },
+      "calls": 1,
+      "references": [],
+      "arm_a_tokens": 585,
+      "cost_usd": 0.000669,
+      "arm_a_request_id": "chatcmpl-74dd8fcd-b733-9799-b8ef-a425571e8668",
+      "score": {
+        "chars": 181,
+        "fact_support": {
+          "total": 3,
+          "supported": 0,
+          "rate": 0.0,
+          "evidence": [
+            {
+              "sentence": "雾桃B01唇釉提供一个明确答案：陶土玫瑰色号——带暖调的低饱和玫瑰，不偏粉、不偏棕，是介于气质与温柔之间的中间值",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "净含量3克，装在透明方管中",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "雾桃B01",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            }
+          ]
+        },
+        "forbidden": {
+          "hits": [],
+          "any_hit": false,
+          "patterns": 5
+        },
+        "coverage": {
+          "total": 4,
+          "covered": 4,
+          "rate": 1.0,
+          "evidence": [
+            {
+              "point": "色号陶土玫瑰",
+              "best_overlap": 0.8,
+              "sentence": "雾桃B01唇釉提供一个明确答案：陶土玫瑰色号——带暖调的低饱和玫瑰，不偏粉、不偏棕，是介于气质与温柔之间的中间值",
+              "covered": true
+            },
+            {
+              "point": "净含量3克",
+              "best_overlap": 1.0,
+              "sentence": "净含量3克，装在透明方管中",
+              "covered": true
+            },
+            {
+              "point": "包装透明方管",
+              "best_overlap": 0.6,
+              "sentence": "陶土玫瑰色+透明方管，这支唇釉的视觉关键词是什么",
+              "covered": true
+            },
+            {
+              "point": "斜面刷头",
+              "best_overlap": 0.666667,
+              "sentence": "刷头为斜面设计，边缘贴合唇线，涂抹时可兼顾清晰勾勒与自然晕染",
+              "covered": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "B",
+      "item_id": "G01",
+      "status": "failed",
+      "detail": "409 {\"error\":{\"code\":\"RUN_ALREADY_ACTIVE\",\"message\":\"已有活跃任务\"}}",
+      "score": {
+        "chars": 0,
+        "fact_support": {
+          "total": 0,
+          "supported": 0,
+          "rate": null,
+          "evidence": []
+        },
+        "forbidden": {
+          "hits": [],
+          "any_hit": false,
+          "patterns": 5
+        },
+        "coverage": {
+          "total": 4,
+          "covered": 0,
+          "rate": 0.0,
+          "evidence": [
+            {
+              "point": "色号陶土玫瑰",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "净含量3克",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "包装透明方管",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "斜面刷头",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "C",
+      "item_id": "G01",
+      "status": "failed",
+      "detail": "409 {\"error\":{\"code\":\"RUN_ALREADY_ACTIVE\",\"message\":\"已有活跃任务\"}}",
+      "score": {
+        "chars": 0,
+        "fact_support": {
+          "total": 0,
+          "supported": 0,
+          "rate": null,
+          "evidence": []
+        },
+        "forbidden": {
+          "hits": [],
+          "any_hit": false,
+          "patterns": 5
+        },
+        "coverage": {
+          "total": 4,
+          "covered": 0,
+          "rate": 0.0,
+          "evidence": [
+            {
+              "point": "色号陶土玫瑰",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "净含量3克",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "包装透明方管",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "斜面刷头",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "notes": [
+    "真实模型调用；A 组为单次直写，直接在默认模型连接上执行、不经运行账本，其费用按 token 估算并记入 arm_a_spent_usd"
+  ],
+  "arm_a_spent_usd": 0.000669,
+  "cost_estimate_usd": 0.000669,
+  "summary": {
+    "A": {
+      "n": 1,
+      "fact_support_rate": 0.0,
+      "expected_point_coverage": 1.0,
+      "forbidden_hit_rate": 0.0,
+      "mean_body_chars": 181.0
+    },
+    "B": {
+      "n": 1,
+      "fact_support_rate": null,
+      "expected_point_coverage": 0.0,
+      "forbidden_hit_rate": 0.0,
+      "mean_body_chars": 0.0
+    },
+    "C": {
+      "n": 1,
+      "fact_support_rate": null,
+      "expected_point_coverage": 0.0,
+      "forbidden_hit_rate": 0.0,
+      "mean_body_chars": 0.0
+    }
+  }
+}

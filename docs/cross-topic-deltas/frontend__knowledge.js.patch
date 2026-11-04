@@ -1,0 +1,191 @@
+--- a/frontend/knowledge.js
++++ b/frontend/knowledge.js
+@@ -86,7 +86,7 @@
+ function ragDocumentMeta(d){const c=d.metadata?.research_case;if(!c)return '';const m=c.metrics||{};return `<p class="helper">点赞 ${esc(m.likes??'未知')} · 收藏 ${esc(m.favorites??'未知')}${d.source_url?' · '+researchSourceLink(d.source_url,'原文来源'):''}</p>`;}
+ const ragSourceCapabilities=new Map(),ragSearchAttempts=new Map();
+ const ragSelections=new Map(),ragConfirmKeys=new Map(),ragConfirmingJobs=new Set(),ragPendingAccounts=new Set();
+-const ragViewState=new Map(),ragRefreshVersions=new Map(),ragSubmitting=new Set(),ragActiveJobs=new Map();
++const ragViewState=new Map(),ragRefreshVersions=new Map(),ragSubmitting=new Set(),ragActiveJobs=new Map(),ragJobsCache=new Map(),ragPollFailures=new Map(),ragSubmitVersions=new Map();
+ function saveRagView(account){
+  const state=ragViewState.get(account)||{};
+  for(const id of ['ragQuery','ragProvider','ragTarget','ragLikes','ragFavorites','ragSort'])state[id]=$(id).value;
+@@ -155,22 +155,93 @@
+   form.onsubmit=e=>{e.preventDefault();return confirmRagSelection(account,request,job,selected(),form);};
+  });
+ }
+-async function refreshRagJobs(account,request){
++function ragPastDeadline(job){const end=job.status==='queued'?job.queue_deadline_at:job.deadline_at;return ragPending(job)&&typeof end==='number'&&Date.now()>end*1000;}
++function ragPending(job){return ['queued','running','confirming'].includes(job.status);}
++function ragCanonicalQuery(value){return String(value||'').trim().replace(/\s+/g,' ');}
++function ragScope(payload){
++ const provider=payload.provider||'',targets=payload.targets||(provider==='xhs_local'?['xiaohongshu']:['web']);
++ const filters=provider==='xhs_local'?(payload.style_filters||{min_likes:100,min_favorites:50,sort_by:'likes'}):{};
++ return JSON.stringify({account:payload.account_id||activeAccountId,queries:(payload.queries||[]).map(ragCanonicalQuery),provider,targets:[...targets].sort(),role:payload.evidence_role||'expression_reference',confirmation:payload.confirmation_required!==false,filters:{min_likes:filters.min_likes,min_favorites:filters.min_favorites,sort_by:filters.sort_by}});
++}
++function ragSearchPayload(account){
++ const provider=$('ragProvider').value,payload={account_id:account,queries:[$('ragQuery').value],provider,targets:[provider==='xhs_local'?'xiaohongshu':provider==='wikipedia'?'web':$('ragTarget').value||'web'],evidence_role:'expression_reference',permission_confirmed:true,confirmation_required:true};
++ if(provider==='xhs_local')payload.style_filters={min_likes:Number($('ragLikes').value),min_favorites:Number($('ragFavorites').value),sort_by:$('ragSort').value};
++ return payload;
++}
++function ragCurrentJob(account,jobs){
++ const state=ragViewState.get(account)||{};
++ if(state.jobId){const job=jobs.find(j=>j.id===state.jobId);if(job&&(!state.scope||ragScope(job)===state.scope))return job;}
++ if(state.scope)return null;
++ return jobs.find(j=>!$('ragQuery').value||ragScope(j)===ragScope(ragSearchPayload(account)))||null;
++}
++function ragJobStatus(j,stale=false){
++ if(stale&&ragPending(j))return '状态刷新中断，以下为上次记录';
++ if(j.status==='cancelled')return '已取消';
++ const outcome=typeof j.outcome==='string'?j.outcome:j.outcome?.kind;
++ const count=(j.candidates||[]).length,failures=[...(j.items||[]),...(j.attempts||[])].some(i=>i.error);
++ if(j.status==='done'&&(j.documents||[]).length)return '导入已完成';
++ if(['zero_results','empty','no_results','empty_results'].includes(outcome))return '搜索完成，平台未返回候选';
++ if(outcome==='invalid_results')return '平台返回内容无法解析为候选';
++ if(outcome==='filtered_all')return '平台返回了结果，本次均不符合可用条件';
++ if(outcome==='timeout'||outcome==='queue_timeout')return outcome==='queue_timeout'?'任务排队超时':'搜索或读取超时';
++ if(outcome==='search_failed')return count?'搜索中断，已有候选保留':'搜索失败，未取得候选';
++ if(['all_details_failed','all_reads_failed','detail_failed'].includes(outcome))return '候选详情全部读取失败';
++ if(['partial_success','partial','partial_results'].includes(outcome)||(count&&failures))return '部分成功，已有候选保留';
++ if(['done','failed','partial','interrupted'].includes(j.status)&&!count){
++  if(failures||j.error)return '搜索或读取失败，未取得可用候选';
++  return j.status==='done'?'搜索完成，本次没有可用候选':'搜索未完成，尚未取得可用候选';
++ }
++ return ({queued:'等待研究',running:'正在后台搜索与读取',confirming:'正在导入所选资料',awaiting_confirmation:'待你确认',done:'搜索完成',partial:'部分成功',failed:'搜索失败',interrupted:'读取中断'})[j.status]||j.status;
++}
++function ragJobTrace(j){
++ const queries=j.canonical_queries||j.queries||[],raw=j.raw_queries||[],trace=Array.isArray(j.trace)?j.trace:[],counts=j.counts||{},reuse=j.reuse||{};
++ const phaseNames={queued:'排队等待',identity_initial:'核对连接账号',search:'平台搜索',detail:'读取笔记详情',identity_final:'复核连接账号',complete:'已结束'};
++ const countNames={raw_count:'原始结果',parsed_count:'可解析结果',filtered_count:'过滤数量',detail_success_count:'详情成功',detail_failed_count:'详情失败',candidate_count:'候选',importable_count:'可入库'};
++ const summary=Object.entries(countNames).filter(([key])=>counts[key]!=null).map(([key,name])=>name+' '+counts[key]).join(' · ');
++ return `<p class="helper">实际查询：${esc(queries.join(' / '))}${raw.length&&JSON.stringify(raw)!==JSON.stringify(queries)?' · 输入原文：'+esc(raw.join(' / ')):''}${j.reused_running===true||reuse.kind==='active_task'?' · 复用同范围运行中任务':reuse.kind==='idempotent_task'?' · 恢复同一次提交':''}${reuse.cache_hit===false?' · 未使用结果缓存':''}</p>${j.phase?`<p class="helper">阶段：${esc(phaseNames[j.phase]||j.phase)}${summary?' · '+esc(summary):''}</p>`:''}${j.error_origin||j.mcp_http_status?`<p class="helper">错误来源：${esc(j.error_origin||'未提供')}${j.mcp_http_status?' · 本机 MCP HTTP '+esc(j.mcp_http_status):''}；不能据此推断平台上游 HTTP 状态。</p>`:''}${trace.length?`<details><summary>本次搜索读取记录</summary>${trace.map(t=>`<p class="helper">${esc(phaseNames[t.phase]||t.phase||'读取')} · ${esc(t.query||'')} · ${esc(t.status||'')} ${t.error?' · '+esc(ragErrorText(t.error)):''}${t.mcp_http_status?' · 本机 MCP HTTP '+esc(t.mcp_http_status):''}</p>`).join('')}</details>`:''}`;
++}
++function ragJobPanel(j,account,stale=false){
++ const state=ragViewState.get(account)||{};if(state.jobId===j.id&&state.reuse&&!j.reuse)j={...j,reuse:state.reuse};
++ const pending=ragPending;
++ return `<article class="detail-block"><h3>${esc((j.queries||[]).join(' / '))}</h3><p class="helper">${esc(ragJobStatus(j,stale))} · 搜索到 ${(j.candidates||[]).length} 条候选${(j.documents||[]).length?` · 已加入 ${j.documents.length} 条资料`:''}${j.error?' · '+esc(ragErrorText(j.error)):''}</p>${j.error==='XHS_LOGIN_REQUIRED'?'<a class="button quiet" href="#connections">登录 / 重新连接</a>':''}${pending(j)&&!stale?`<p class="helper">正在搜索 / 读取，已有 ${Array.isArray(j.reads)?j.reads.length:0} 条读取记录；已有候选保留在下方。</p><button type="button" class="quiet" data-rag-cancel="${esc(j.id)}">取消任务</button>`:''}${['failed','interrupted','partial','cancelled'].includes(j.status)?'<p class="helper">已取得的候选保留；可保留关键词重新搜索，或使用“改为粘贴资料”。</p>':''}${[...(j.items||[]),...(j.attempts||[])].filter(i=>i.error).length?`<details><summary>${(j.candidates||[]).length?'部分读取未完成':'读取失败记录'}（${[...(j.items||[]),...(j.attempts||[])].filter(i=>i.error).length}）</summary>${[...(j.items||[]),...(j.attempts||[])].filter(i=>i.error).map(i=>`<p class="helper">${esc(i.title||'单篇笔记')}：${esc(ragErrorText(i.error))}</p>`).join('')}</details>`:''}${ragJobTrace(j)}${(j.candidates||[]).length?ragCandidatePanel(j,account):pending(j)?'<p>候选将显示在本页；搜索不会打开外站或自动入库。</p>':''}${(j.documents||[]).length?`<a class="button quiet" href="/api/research/jobs/${encodeURIComponent(j.id)}/export">导出已确认资料</a>`:''}</article>`;
++}
++function renderRagJobList(account,request,jobs,stale=false){
++ const current=ragCurrentJob(account,jobs),history=jobs.filter(j=>j.id!==current?.id),state=ragViewState.get(account)||{};
++ const scroll=state.restoreScroll?state.scroll||0:typeof window!=='undefined'?window.scrollY:0;state.restoreScroll=false;
++ const interrupted=stale?'<p class="issue">状态刷新中断，不能确认后台当前进度。已取得的候选保留；请使用“刷新研究记录”恢复。</p>':'';
++ $('ragJobResult').innerHTML=interrupted+(current?`<section aria-label="当前搜索">${ragJobPanel(current,account,stale)}</section>`:'<p class="helper">当前输入尚无已选择的搜索任务，点击“搜索资料”开始。</p>')+(history.length?`<details data-rag-history><summary>历史研究（${history.length} 条，不属于当前搜索）</summary>${history.map(j=>ragJobPanel(j,account,stale)).join('')}</details>`:'');
++ bindRagCandidates(jobs,account,request);
++ document.querySelectorAll('[data-rag-cancel]').forEach(button=>button.onclick=async()=>{button.disabled=true;try{await api('/api/research/jobs/'+encodeURIComponent(button.dataset.ragCancel)+'/cancel','POST',{});ragSearchAttempts.delete(account);await refreshRagJobs(account,request);}catch(err){error(err);button.disabled=false;}});
++ if(typeof window!=='undefined')window.scrollTo?.(0,scroll);
++ return current;
++}
++function ragUpdateSearchButton(account){
++ const cap=ragSourceCapabilities.get(account)?.find(p=>p.id===$('ragProvider').value);
++ $('ragSearchButton').disabled=ragSubmitting.has(account)||cap?.can_attempt===false;
++}
++async function ragBoundedRequest(path,method='GET',body){
++ let timer;try{return await Promise.race([api(path,method,body),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('状态请求超时，请刷新研究记录；不会自动重发搜索')),20000);})]);}
++ finally{if(typeof clearTimeout==='function')clearTimeout(timer);}
++}
++async function refreshRagJobs(account,request,automatic=false){
+  if(request!==libraryLoad||account!==activeAccountId||currentPage!=='library')return;
+  const version=(ragRefreshVersions.get(account)||0)+1;ragRefreshVersions.set(account,version);
+- const jobs=await api('/api/research/jobs?account_id='+encodeURIComponent(account));
+- if(request!==libraryLoad||account!==activeAccountId||currentPage!=='library'||version!==ragRefreshVersions.get(account))return;
+- const pending=j=>['queued','running','confirming'].includes(j.status),state=ragViewState.get(account)||{};
+- const shown=state.jobId?[...jobs.filter(j=>j.id===state.jobId),...jobs.filter(j=>j.id!==state.jobId).slice(0,3)]:jobs.slice(0,5);
+- const names={queued:'等待研究',running:'正在后台搜索与读取',confirming:'正在导入所选资料',awaiting_confirmation:'待你确认',done:'导入已完成',partial:'部分完成',failed:'搜索失败',interrupted:'读取中断',cancelled:'已取消'};
+- const scroll=state.restoreScroll?state.scroll||0:typeof window!=='undefined'?window.scrollY:0;state.restoreScroll=false;ragActiveJobs.set(account,jobs.filter(pending));
+- $('ragJobResult').innerHTML=shown.map(j=>`<article class="detail-block"><h3>${esc((j.queries||[]).join(' / '))}</h3><p class="helper">${esc(j.status==='done'&&!(j.documents||[]).length?'搜索完成':names[j.status]||j.status)} · 搜索到 ${(j.candidates||[]).length} 条候选${(j.documents||[]).length?` · 已加入 ${j.documents.length} 条资料`:''}${j.error?' · '+esc(ragErrorText(j.error)):''}</p>${j.error==='XHS_LOGIN_REQUIRED'?'<a class="button quiet" href="#connections">登录 / 重新连接</a>':''}${pending(j)?`<p class="helper">正在搜索 / 读取，已有 ${Array.isArray(j.reads)?j.reads.length:0} 条读取记录；已有候选保留在下方。</p><button type="button" class="quiet" data-rag-cancel="${esc(j.id)}">取消任务</button>`:''}${['failed','interrupted','partial','cancelled'].includes(j.status)?'<p class="helper">已取得的候选保留；可保留关键词重新搜索，或使用“改为粘贴资料”。</p>':''}${[...(j.items||[]),...(j.attempts||[])].filter(i=>i.error).length?`<details><summary>部分读取未完成（${[...(j.items||[]),...(j.attempts||[])].filter(i=>i.error).length}）</summary>${[...(j.items||[]),...(j.attempts||[])].filter(i=>i.error).map(i=>`<p class="helper">${esc(i.title||'单篇笔记')}：${esc(ragErrorText(i.error))}</p>`).join('')}</details>`:''}${(j.candidates||[]).length?ragCandidatePanel(j,account):pending(j)?'<p>候选将显示在本页；搜索不会打开外站或自动入库。</p>':''}${(j.documents||[]).length?`<a class="button quiet" href="/api/research/jobs/${encodeURIComponent(j.id)}/export">导出已确认资料</a>`:''}</article>`).join('');
+- bindRagCandidates(shown,account,request);
+- document.querySelectorAll('[data-rag-cancel]').forEach(button=>button.onclick=async()=>{button.disabled=true;try{await api('/api/research/jobs/'+encodeURIComponent(button.dataset.ragCancel)+'/cancel','POST',{});ragSearchAttempts.delete(account);await refreshRagJobs(account,request);}catch(err){error(err);button.disabled=false;}});
+- if(typeof window!=='undefined')window.scrollTo?.(0,scroll);
+- if(jobs.some(pending)){ragPendingAccounts.add(account);setTimeout(()=>{if(version===ragRefreshVersions.get(account))refreshRagJobs(account,request).catch(error);},4000);}
+- else{ragPendingAccounts.delete(account);ragSearchAttempts.delete(account);}
+- $('ragSearchButton').disabled=ragSubmitting.has(account)||jobs.some(j=>pending(j)&&(j.queries||[]).join(' / ')===$('ragQuery').value.trim());
++ if(!automatic)ragPollFailures.delete(account);
++ const valid=()=>request===libraryLoad&&account===activeAccountId&&currentPage==='library'&&version===ragRefreshVersions.get(account);
++ let jobs;
++ try{jobs=await ragBoundedRequest('/api/research/jobs?account_id='+encodeURIComponent(account));}
++ catch(err){
++  if(!valid())return;
++  const failures=(ragPollFailures.get(account)||0)+1;ragPollFailures.set(account,failures);
++  renderRagJobList(account,request,ragJobsCache.get(account)||[],true);ragUpdateSearchButton(account);
++  if(failures<=2)setTimeout(()=>{if(valid())refreshRagJobs(account,request,true);},4000*failures);
++  return;
++ }
++ if(!valid())return;
++ ragPollFailures.delete(account);ragJobsCache.set(account,jobs);ragActiveJobs.set(account,jobs.filter(ragPending));
++ const expired=ragCurrentJob(account,jobs);const current=renderRagJobList(account,request,jobs,!!expired&&ragPastDeadline(expired));ragUpdateSearchButton(account);
++ if(current&&ragPending(current)&&!ragPastDeadline(current)){ragPendingAccounts.add(account);setTimeout(()=>{if(valid())refreshRagJobs(account,request,true);},4000);}
++ else{ragPendingAccounts.delete(account);if(current)ragSearchAttempts.delete(account);}
+ }
+ async function loadRagCapabilities(account,request){
+  const [settings,sync]=await Promise.all([api('/api/search/settings'),api('/api/social/sync?account_id='+encodeURIComponent(account))]);
+@@ -183,13 +254,15 @@
+   const label=({xhs_local:'小红书公开笔记',bing:'通用网页',baidu:'百度搜索',wikipedia:'百科资料'})[option.value];
+   option.textContent=label+(cap?.can_attempt?' · 可尝试，尚未核验':' · 当前不可用');
+  }
+- const selected=providers.find(p=>p.id===$('ragProvider').value);
++ const previousProvider=$('ragProvider').value;
++ const selected=providers.find(p=>p.id===previousProvider);
+  if(!selected?.can_attempt)$('ragProvider').value=providers.find(p=>p.can_attempt)?.id||'';
+  $('ragSearchButton').disabled=!providers.some(p=>p.can_attempt);
+- $('ragProvider').onchange();
++ if(previousProvider!==$('ragProvider').value)$('ragProvider').onchange();
++ else $('ragCapabilityNote').textContent=selected?.status_note||'来源尚未实测';
+ }
+ function ragSearchRequest(account,payload){
+- const fingerprint=JSON.stringify(payload),previous=ragSearchAttempts.get(account);
++ const fingerprint=ragScope(payload),previous=ragSearchAttempts.get(account);
+  if(previous?.fingerprint===fingerprint)return {...payload,key:previous.key};
+  const attempt={fingerprint,key:crypto.randomUUID()};ragSearchAttempts.set(account,attempt);return {...payload,key:attempt.key};
+ }
+@@ -200,24 +273,40 @@
+   const cap=ragSourceCapabilities.get(account)?.find(p=>p.id===provider);
+   $('ragCapabilityNote').textContent=cap?.status_note||'来源尚未实测；本次成功取得正文才构成读取证据。';
+  };
+- $('ragProvider').onchange=()=>{updateSource();saveRagView(account);};updateSource();
+- for(const id of ['ragQuery','ragTarget','ragLikes','ragFavorites','ragSort'])$(id).oninput=()=>{saveRagView(account);$('ragSearchButton').disabled=ragSubmitting.has(account);};
++ const changeScope=()=>{
++  const state=ragViewState.get(account)||{},scope=ragScope(ragSearchPayload(account));
++  if(state.scope!==scope){state.scope=scope;state.jobId=null;ragViewState.set(account,state);ragRefreshVersions.set(account,(ragRefreshVersions.get(account)||0)+1);ragSubmitVersions.set(account,(ragSubmitVersions.get(account)||0)+1);renderRagJobList(account,request,ragJobsCache.get(account)||[]);}
++  saveRagView(account);ragUpdateSearchButton(account);
++ };
++ $('ragProvider').onchange=()=>{updateSource();changeScope();};updateSource();
++ for(const id of ['ragQuery','ragTarget','ragLikes','ragFavorites','ragSort'])$(id).oninput=changeScope;
+  $('ragRefresh').onclick=()=>refreshRagJobs(account,request).catch(error);
+  $('ragPaste').onclick=()=>{const form=$('documentForm');const details=form?.closest?.('details');if(details)details.open=true;$('documentText')?.focus?.();};
+- $('ragSearchForm').onsubmit=async e=>{e.preventDefault();if(ragSubmitting.has(account))return;const b=e.submitter;b.disabled=true;ragSubmitting.add(account);saveRagView(account);
+- try{
+-  const provider=$('ragProvider').value,cap=ragSourceCapabilities.get(account)?.find(p=>p.id===provider);
+-  if((ragActiveJobs.get(account)||[]).some(j=>j.provider===provider&&(j.queries||[]).join(' / ')===$('ragQuery').value.trim())){await refreshRagJobs(account,request);return;}
+-  if(cap&& !cap.can_attempt)throw new Error('此来源当前不可用，请切换来源或粘贴有权使用的资料');
+-  const payload={account_id:account,queries:[$('ragQuery').value.trim()],provider,targets:[provider==='xhs_local'?'xiaohongshu':provider==='wikipedia'?'web':$('ragTarget').value||'web'],evidence_role:'expression_reference',permission_confirmed:true,confirmation_required:true};
+-  if(provider==='xhs_local')payload.style_filters={min_likes:Number($('ragLikes').value),min_favorites:Number($('ragFavorites').value),sort_by:$('ragSort').value};
+-  const job=await api('/api/research/jobs','POST',ragSearchRequest(account,payload));const state=ragViewState.get(account)||{};state.jobId=job.id;ragViewState.set(account,state);saveRagView(account);ragPendingAccounts.add(account);await refreshRagJobs(account,request);
+- }catch(err){error(err);}finally{ragSubmitting.delete(account);b.disabled=(ragActiveJobs.get(account)||[]).some(j=>j.provider===$('ragProvider').value&&(j.queries||[]).join(' / ')===$('ragQuery').value.trim());}};
++ $('ragSearchForm').onsubmit=async e=>{
++  e.preventDefault();if(ragSubmitting.has(account))return;
++  const payload=ragSearchPayload(account),scope=ragScope(payload),sequence=(ragSubmitVersions.get(account)||0)+1;
++  ragSubmitVersions.set(account,sequence);ragSubmitting.add(account);e.submitter.disabled=true;saveRagView(account);
++  const state=ragViewState.get(account)||{};state.scope=scope;state.jobId=null;ragViewState.set(account,state);
++  ragRefreshVersions.set(account,(ragRefreshVersions.get(account)||0)+1);
++  const valid=()=>request===libraryLoad&&account===activeAccountId&&currentPage==='library'&&sequence===ragSubmitVersions.get(account)&&scope===ragScope(ragSearchPayload(account));
++  try{
++   const cap=ragSourceCapabilities.get(account)?.find(p=>p.id===payload.provider);
++   if(cap&&!cap.can_attempt)throw new Error('此来源当前不可用，请切换来源或粘贴有权使用的资料');
++   let job=(ragActiveJobs.get(account)||[]).find(j=>ragScope(j)===scope);
++   if(job)job={...job,reused_running:true,reuse:{kind:'active_task',cache_hit:false}};
++   else{renderRagJobList(account,request,ragJobsCache.get(account)||[]);job=await ragBoundedRequest('/api/research/jobs','POST',ragSearchRequest(account,payload));}
++   if(!valid())return;
++   const currentState=ragViewState.get(account)||{};currentState.jobId=job.id;currentState.scope=scope;currentState.reuse=job.reuse;ragViewState.set(account,currentState);saveRagView(account);
++   const cached=[job,...(ragJobsCache.get(account)||[]).filter(j=>j.id!==job.id)];ragJobsCache.set(account,cached);renderRagJobList(account,request,cached);
++   ragPendingAccounts.add(account);await refreshRagJobs(account,request);
++  }catch(err){if(valid())error(err);}
++  finally{ragSubmitting.delete(account);if(request===libraryLoad&&account===activeAccountId&&currentPage==='library')ragUpdateSearchButton(account);}
++ };
+  loadRagCapabilities(account,request).catch(err=>{if(request===libraryLoad&&account===activeAccountId&&currentPage==='library'){$('ragCapabilityNote').textContent='无法核对来源配置，请刷新页面后重试，或粘贴自己的资料。';error(err);}});
+  refreshRagJobs(account,request).catch(error);
+ }
+
+ function ragErrorText(code){
+- if(/^XHS_SEARCH_HTTP_[0-9]{3}$/.test(code))return '平台搜索页面读取失败（'+code.slice(-3)+'），请稍后重试；不代表登录失效';
++ if(/^XHS_SEARCH_HTTP_[0-9]{3}$/.test(code))return '本机 MCP 搜索接口返回 HTTP '+code.slice(-3)+'；未证实是平台上游状态，请查看读取记录';
+  return ({XHS_TIMEOUT:'笔记读取超时，已有候选保留，可稍后重新搜索',XHS_CONNECTION:'本机连接器无法连接，请恢复服务后重试',XHS_PARSE:'连接器响应解析失败，不代表登录失效',XHS_STRUCTURE:'平台页面结构变化或笔记不匹配，需检查连接器适配',XHS_RESTRICTED:'平台限制了本次访问，请稍后再试，不会自动绕过或反复登录',XHS_IDENTITY_CHANGED:'连接器登录账号与当前绑定不同，请到账号连接页核对',XHS_SEARCH_TIMEOUT:'平台页面读取超时，本次没有生成替代资料',XHS_SEARCH_CONNECTION:'本机搜索连接器未连通，请检查服务',XHS_TRANSPORT:'连接器读取失败，请检查本机服务后重试',XHS_PARSE_FAILED:'平台内容解析失败，已取得的候选会保留',XHS_PAGE_CHANGED:'平台页面结构变化，连接器需要适配',XHS_LOGIN_REQUIRED:'需要本人重新登录小红书',XHS_STOPPED:'账号连接已暂停，请先恢复',XHS_BUSY:'账号正在同步，完成后可发起搜索',SOURCE_VISIBILITY_CHANGED:'资料的公开状态已变化，已隐藏相关内容'})[code]||'读取未完成，请检查来源状态后再试';
+ }

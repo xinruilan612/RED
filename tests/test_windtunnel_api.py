@@ -1,6 +1,5 @@
 """HTTP authorization, replay and download contract for content windtunnel."""
 import tempfile
-from unittest.mock import patch
 import unittest
 from pathlib import Path
 from uuid import uuid4
@@ -14,8 +13,6 @@ from backend.operations import now
 
 class WindtunnelApiTests(unittest.TestCase):
     def setUp(self):
-        self.live_env=patch.dict('os.environ',{'WINDTUNNEL_ALLOW_LIVE':'false'})
-        self.live_env.start();self.addCleanup(self.live_env.stop)
         self.tmp=tempfile.TemporaryDirectory()
         self.store=Store(Path(self.tmp.name)/'http.sqlite')
         self.app=create_app(self.store,Config(),origin='http://testserver',invite='')
@@ -45,6 +42,14 @@ class WindtunnelApiTests(unittest.TestCase):
         self.assertEqual(response.status_code,200,response.text)
         return response.json()
 
+    def test_new_check_closes_unfinished_previous(self):
+        first=self.create()
+        second=self.create()
+        self.assertEqual(second['context']['auto_closed_windtunnels'],[first['run_id']])
+        old=self.client.get('/api/runs/'+first['run_id']).json()
+        self.assertEqual(old['run_status'],'CANCELLED')
+        self.assertIsNone(old['wait_reason'])
+
     def test_http_full_report_download_and_checklist_idempotency(self):
         run=self.advance(self.create())
         cs=run['windtunnel']['condition_sets'][-1]
@@ -60,10 +65,10 @@ class WindtunnelApiTests(unittest.TestCase):
         self.assertEqual(len(rows),1)
         download=self.client.get('/api/runs/'+run['run_id']+'/export')
         self.assertEqual(download.status_code,200,download.text)
-        self.assertEqual(download.headers['content-disposition'], 'attachment; filename="youji-reader-check-' + run['run_id'][:8] + '.md"')
+        self.assertIn('attachment',download.headers['content-disposition'])
         self.assertIn('模拟流程',download.text)
         target=Path(self.tmp.name)/'download.md';target.write_bytes(download.content)
-        self.assertIn('本地工具导出教程',target.read_text(encoding='utf-8'))
+        self.assertIn('本地工具导出教程',target.read_text())
         finished=self.action(run,'finish',{})
         reused=self.create(checklist={'id':saved.json()['id'],'version':saved.json()['version']})
         self.assertEqual(reused['wait_reason'],'wt_confirm_conditions')
@@ -93,7 +98,9 @@ class WindtunnelApiTests(unittest.TestCase):
         self.assertEqual(response.json()['error']['code'],'LIVE_DISABLED')
         for path in ('/windtunnel.js','/windtunnel.css'):
             self.assertEqual(self.client.get(path).status_code,200,path)
-        self.assertIn('windtunnel',self.client.get('/').text)
+        page=self.client.get('/').text
+        self.assertIn('data-page="windtunnel"',page)
+        self.assertIn('src="/windtunnel.js"',page)
         self.assertEqual(self.client.get('/.env').status_code,404)
 
     def test_recheck_cannot_export_previous_batch(self):

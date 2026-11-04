@@ -1,0 +1,735 @@
+{
+  "schema_version": 1,
+  "source_commit": "6f925cf",
+  "scope": "6个官方公开素材构造任务，同事实边界A/E流程探索；E补料仅重复已有事实或明确未知。配置差异为三算法开关，新增调用开销计入；未做人类独立盲评，不估计普遍文章质量因果增益。 官方公开资料构造任务，不是用户投稿或真实创作者试用。未完成独立人工盲评，不能报告人工质量提升。",
+  "data_kind": "public-source-constructed",
+  "is_user_submission": false,
+  "has_human_quality_scores": false,
+  "registered_tasks": [
+    "REAL-D01",
+    "REAL-D02",
+    "REAL-H01",
+    "REAL-H02",
+    "REAL-S01",
+    "REAL-S02"
+  ],
+  "registered_groups": [
+    "A",
+    "E"
+  ],
+  "registered_cells": 12,
+  "draft_cells": 6,
+  "complete_paired_tasks": [
+    "REAL-D01",
+    "REAL-D02",
+    "REAL-H01"
+  ],
+  "failed_cells": 1,
+  "not_run_cells": 5,
+  "stop_reason": "unknown_usage_stop",
+  "cases": [
+    {
+      "id": "REAL-D01-A",
+      "task_id": "REAL-D01",
+      "group": "A",
+      "status": "draft_ready_human_review_pending",
+      "model_calls": 8,
+      "unknown_calls": 0,
+      "elapsed_seconds": 94.282,
+      "title_characters": 13,
+      "body_characters": 230,
+      "cta_characters": 22,
+      "word_budget": 300,
+      "known_upper_micro": 263672,
+      "unknown_reserved_micro": 0,
+      "review_decision": "needs_human",
+      "call_statuses": [
+        {
+          "stage": "audience",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "research",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "strategy",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "outline",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "hook",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "title",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "body",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "review",
+          "status": "validated",
+          "error": null
+        }
+      ],
+      "prompt_versions": [
+        "four-role-v1.1-optin-comments-user-revision1"
+      ],
+      "model_versions": [
+        "qwen/qwen-plus"
+      ],
+      "input_hashes": [
+        "0a29c6d8f77ac6676c360d2348568c47372914c00df1488f9fbcbf0919159e28",
+        "3cc519efbfedea033e1ff069f9c6d0af5df32b4e57efe97f6a96edd944dd27d0",
+        "4f754daf721b4081341d41e35cb51ba0ff67be620a239f3780b1e0cee12ba90b",
+        "580f1b26e2583b360661ada71bb9dd4ada3b8f2c47c0378571bbc143fbfe5a57",
+        "a957940570252d39d4640e0ed9f6a8c41ede519af3ee218f6852496150535958",
+        "c8c5d67c09feb071f4a3c39fa6ae10f2cf35a22d7b9b3afc37bc75e3872d3ace",
+        "dea27477dd412ba5aa8c70c601c18cd90e220f51b33a36427ba74f03d1263650",
+        "ebbe7919e867899940362e0def6898475409b886586f8e269a40bb2278144581"
+      ]
+    },
+    {
+      "id": "REAL-D01-E",
+      "task_id": "REAL-D01",
+      "group": "E",
+      "status": "draft_ready_human_review_pending",
+      "model_calls": 8,
+      "unknown_calls": 0,
+      "elapsed_seconds": 112.131,
+      "title_characters": 18,
+      "body_characters": 151,
+      "cta_characters": 17,
+      "word_budget": 300,
+      "known_upper_micro": 340984,
+      "unknown_reserved_micro": 0,
+      "review_decision": "needs_human",
+      "call_statuses": [
+        {
+          "stage": "audience",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "research",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "strategy",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "outline",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "hook",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "title",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "body",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "review",
+          "status": "invalid",
+          "error": "审核引用无法匹配当前稿件"
+        }
+      ],
+      "prompt_versions": [
+        "four-role-v1.1-optin-comments-user-revision1+evidence-creation-v2"
+      ],
+      "model_versions": [
+        "qwen/qwen-plus"
+      ],
+      "input_hashes": [
+        "150474f55cbe64956fe4eced358ff6f62d073cb3c819d6d9e6233fb5924cc64e",
+        "658fce174b58beff5a187ed7489f2a6a67fee44c1e3c6061daf85277d9e6ccbe",
+        "86d7751d0508948439b6cd221357d90d9d16e32250574ca9b74069b6d70b2e6f",
+        "8a09cf8b6184b525c00bcc7a6e3ac3dcbe02ffb7916e045c70ff61a91393a05d",
+        "9000f623e684c7e42ef4b69f996609f135ae5ce847b557b6fe511adcfd0c359e",
+        "a213c0ec8758f4d6656ba4811c438e9f2b5989407a2b4b8205e1e6734972f853",
+        "a75186470877e8cdba496f898d7b661b20227b3c3206147c103598a672483739",
+        "c7503be81878fa756a956889c1d0d1d697f9d60615a5c91216b2d89f61aa402b"
+      ]
+    },
+    {
+      "id": "REAL-D02-A",
+      "task_id": "REAL-D02",
+      "group": "A",
+      "status": "draft_ready_human_review_pending",
+      "model_calls": 8,
+      "unknown_calls": 0,
+      "elapsed_seconds": 102.992,
+      "title_characters": 14,
+      "body_characters": 276,
+      "cta_characters": 16,
+      "word_budget": 300,
+      "known_upper_micro": 293528,
+      "unknown_reserved_micro": 0,
+      "review_decision": "approved",
+      "call_statuses": [
+        {
+          "stage": "research",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "audience",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "strategy",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "outline",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "hook",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "title",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "body",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "review",
+          "status": "validated",
+          "error": null
+        }
+      ],
+      "prompt_versions": [
+        "four-role-v1.1-optin-comments-user-revision1"
+      ],
+      "model_versions": [
+        "qwen/qwen-plus"
+      ],
+      "input_hashes": [
+        "03b7e504577f71c56a83f74d398eef512e52cbcd101a3eafad7834ca29e5828f",
+        "37ec741fb1f31319498d33cd8a754e01bc5a03de99e7dd17c65bae38848418b3",
+        "9f66a9587a1ad53f514d97ccfa9c0e7561d5e1dfd7b4ec8a1ea82208f3422735",
+        "a38c7aeb1ec81b39ddb27d19e1c69a050144f00f127d97c51fae268610cd78f9",
+        "a6967b597ff1cf6fa6bd1420becad4fb82e444259e05976af42c0f5f9585672a",
+        "c937c8f678023faee6449cb3cb07d9a4d265964831f52af02cd008b2ee23f0f8",
+        "cda8d58527a6b23800887297ab22f08411c1fed9491650b0ae1dce743cadf2df",
+        "d9c7654463966dc9f8a8397ad2152261394696bb22cb6df326ada3d60a0aad61"
+      ]
+    },
+    {
+      "id": "REAL-D02-E",
+      "task_id": "REAL-D02",
+      "group": "E",
+      "status": "draft_ready_human_review_pending",
+      "model_calls": 10,
+      "unknown_calls": 0,
+      "elapsed_seconds": 126.038,
+      "title_characters": 16,
+      "body_characters": 195,
+      "cta_characters": 28,
+      "word_budget": 300,
+      "known_upper_micro": 422624,
+      "unknown_reserved_micro": 0,
+      "review_decision": "approved",
+      "call_statuses": [
+        {
+          "stage": "research",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "audience",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "audience",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "research",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "strategy",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "outline",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "hook",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "title",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "body",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "review",
+          "status": "validated",
+          "error": null
+        }
+      ],
+      "prompt_versions": [
+        "four-role-v1.1-optin-comments-user-revision1+evidence-creation-v2"
+      ],
+      "model_versions": [
+        "qwen/qwen-plus"
+      ],
+      "input_hashes": [
+        "093466d32b8b41fb4fa6b556985a513a0bb322950556dd11de3d571c4f3c46c7",
+        "209b41e43d9d52edf1b84ea43f1f535b238033779fba6315c762086734051124",
+        "46ee6836bf139649601be99b8ea425f282a3f5de83fc6c9649ea5b886efe4717",
+        "4d6cf846dc3d3bdbc6ed9900a2007808d82d2fbeb6656fc9de0ce1c3b2ceec76",
+        "543dcef92c36f58606c7dae43a754913227420b726355f461d2194c518e2a90e",
+        "550c55f5873edfac6952a683d1e536383802ec75077687b2d747463a84b96356",
+        "9f5d57fe279fdb7b9fc817a99dfb1ea83234befd3e5ce855f8af8fe154856ff6",
+        "a095a61e39050228e4e47d5bdfd94423f0146644e898424d803d27ffae1bf5ea",
+        "a93de22a6841d35aef7d5507c09f39a76a062007f8a54d1f7b33252fdeb3f138",
+        "c516f989461834fcd8d1bf4917be96352f8e718e1e266ff49eaeb433d8d1d9d1"
+      ]
+    },
+    {
+      "id": "REAL-H01-A",
+      "task_id": "REAL-H01",
+      "group": "A",
+      "status": "draft_ready_human_review_pending",
+      "model_calls": 8,
+      "unknown_calls": 0,
+      "elapsed_seconds": 89.347,
+      "title_characters": 17,
+      "body_characters": 191,
+      "cta_characters": 35,
+      "word_budget": 300,
+      "known_upper_micro": 265912,
+      "unknown_reserved_micro": 0,
+      "review_decision": "needs_human",
+      "call_statuses": [
+        {
+          "stage": "research",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "audience",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "strategy",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "outline",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "hook",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "title",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "body",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "review",
+          "status": "validated",
+          "error": null
+        }
+      ],
+      "prompt_versions": [
+        "four-role-v1.1-optin-comments-user-revision1"
+      ],
+      "model_versions": [
+        "qwen/qwen-plus"
+      ],
+      "input_hashes": [
+        "06a9898b7237778a9866732eaa3bc261f58c7de067af5668f38614f652829e3c",
+        "15f433ee478bba879fe0589a376c61aeda089d461f67b222973fd0b07373b2f1",
+        "1c93d7047fb94b4d8a02e029f72b32635ec17cf70d8c89583d8b546d33e27ebd",
+        "2cbd9784671b3d354bba4b1d481e996d2d54229e3fa80358fe41502fe836af54",
+        "668769f0af32a319f095bac3ba07ae31e79fe45584e5d19b39432947e0243a98",
+        "bf7deed04c976a5113cfd26eb9da28579f28dd536cc5c7633e278d02ec8a646b",
+        "df90c4a60793e85da5fd5c79853cd0966a9e96f5b2e47a2fc62c4d90b5d367a1",
+        "f9814d9d8789c64f209ec5e3545b13317371bf21c9276caebf8c7f673f214e8a"
+      ]
+    },
+    {
+      "id": "REAL-H01-E",
+      "task_id": "REAL-H01",
+      "group": "E",
+      "status": "draft_ready_human_review_pending",
+      "model_calls": 8,
+      "unknown_calls": 0,
+      "elapsed_seconds": 108.054,
+      "title_characters": 14,
+      "body_characters": 127,
+      "cta_characters": 20,
+      "word_budget": 300,
+      "known_upper_micro": 350152,
+      "unknown_reserved_micro": 0,
+      "review_decision": "needs_human",
+      "call_statuses": [
+        {
+          "stage": "research",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "audience",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "strategy",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "outline",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "hook",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "title",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "body",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "review",
+          "status": "invalid",
+          "error": "审核引用无法匹配当前稿件"
+        }
+      ],
+      "prompt_versions": [
+        "four-role-v1.1-optin-comments-user-revision1+evidence-creation-v2"
+      ],
+      "model_versions": [
+        "qwen/qwen-plus"
+      ],
+      "input_hashes": [
+        "1bae7af34887d73dd0d65595c40040c9a2c2832d84a5331896247ee4be4d4197",
+        "45f440904fd861cd5103bc5e65387d6c59a4c7849173417779c52dc3e7726975",
+        "4af7181bc0cde0c15123ffed3e04c9f97d5ef6ce7d56d85be682fb0fa3b72350",
+        "758ea4001184a7d358f05c8c707b331808ebd6d2adc3a9068d155ad88cb3b484",
+        "8beb9e60fe2f432e31cba00746893edc20b2500a105ca649c653f4f5c6f1d94b",
+        "a55a916fb93092af089ec4bdf08227df08d33a8812d7490fcb0b8613fbf058dd",
+        "a9cf7660439f283aa4c4c1ba49ce763c2066fe20835d73a83a2c1aedace5c2c0",
+        "bb2d057d4796c662c967248431c6d8379c67b429a8e4ac5c14e5c46b1b12c99e"
+      ]
+    },
+    {
+      "id": "REAL-H02-A",
+      "task_id": "REAL-H02",
+      "group": "A",
+      "status": "failed_unknown_usage",
+      "model_calls": 5,
+      "unknown_calls": 1,
+      "elapsed_seconds": 36.878,
+      "title_characters": null,
+      "body_characters": null,
+      "cta_characters": null,
+      "word_budget": 300,
+      "known_upper_micro": 129352,
+      "unknown_reserved_micro": 172008,
+      "review_decision": null,
+      "call_statuses": [
+        {
+          "stage": "research",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "audience",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "strategy",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "outline",
+          "status": "validated",
+          "error": null
+        },
+        {
+          "stage": "hook",
+          "status": "failed",
+          "error": "模型连接失败、超时或返回无效数据；用量可能已产生，未自动重试"
+        }
+      ],
+      "prompt_versions": [
+        "four-role-v1.1-optin-comments-user-revision1"
+      ],
+      "model_versions": [
+        "qwen/qwen-plus"
+      ],
+      "input_hashes": [
+        "2c78660aa9989e68560bde122fb362b854efd2aa8928117672c4969258d910f7",
+        "91db79bbb507478d11e9da99ada231be9bb9bca2d296a27dab50a35e898639c7",
+        "c95eb31233ab32a2a84ace194615ba5228889e9367d54fb8c94f4ebf71144e2e",
+        "e69b8a3c329ba138d1f5d08779aaee657407f18cc23c9f4276f778192110e19a",
+        "eb6e7edb040eeed7635d649f2fe54d6a6905fb0dcd95631ca3b9eacebb9fa9b7"
+      ]
+    },
+    {
+      "id": "REAL-H02-E",
+      "task_id": "REAL-H02",
+      "group": "E",
+      "status": "not_run_after_safety_stop",
+      "model_calls": 0,
+      "elapsed_seconds": null,
+      "title_characters": null,
+      "body_characters": null,
+      "known_upper_micro": 0,
+      "unknown_reserved_micro": 0,
+      "word_budget": 300
+    },
+    {
+      "id": "REAL-S01-A",
+      "task_id": "REAL-S01",
+      "group": "A",
+      "status": "not_run_after_safety_stop",
+      "model_calls": 0,
+      "elapsed_seconds": null,
+      "title_characters": null,
+      "body_characters": null,
+      "known_upper_micro": 0,
+      "unknown_reserved_micro": 0,
+      "word_budget": 300
+    },
+    {
+      "id": "REAL-S01-E",
+      "task_id": "REAL-S01",
+      "group": "E",
+      "status": "not_run_after_safety_stop",
+      "model_calls": 0,
+      "elapsed_seconds": null,
+      "title_characters": null,
+      "body_characters": null,
+      "known_upper_micro": 0,
+      "unknown_reserved_micro": 0,
+      "word_budget": 300
+    },
+    {
+      "id": "REAL-S02-A",
+      "task_id": "REAL-S02",
+      "group": "A",
+      "status": "not_run_after_safety_stop",
+      "model_calls": 0,
+      "elapsed_seconds": null,
+      "title_characters": null,
+      "body_characters": null,
+      "known_upper_micro": 0,
+      "unknown_reserved_micro": 0,
+      "word_budget": 300
+    },
+    {
+      "id": "REAL-S02-E",
+      "task_id": "REAL-S02",
+      "group": "E",
+      "status": "not_run_after_safety_stop",
+      "model_calls": 0,
+      "elapsed_seconds": null,
+      "title_characters": null,
+      "body_characters": null,
+      "known_upper_micro": 0,
+      "unknown_reserved_micro": 0,
+      "word_budget": 300
+    }
+  ],
+  "cost_upper_micro": {
+    "previous_cumulative": 4800336,
+    "known_new": 2066224,
+    "unknown_reserved": 172008,
+    "new_conservative_total": 2238232,
+    "known_cumulative": 6866560,
+    "conservative_cumulative": 7038568
+  },
+  "cost_scope": "按每Token 8微元的已核对保守上界折算；未知用量继续保留预留，不是供应商实际账单。",
+  "provenance": {
+    "dataset_sha256": "4c728483710eec54d9ddf30abf6848c1e96eee9434d31b976188d21223d024fe",
+    "summary_source_sha256": "171182493ffd162f6c0038c44ad541ad3b2c3c5495db15f0a53632701b0239a7",
+    "receipt_hashes": {
+      "REAL-D01-A": {
+        "source_sha256": "1cf175e57f913da618475e54c1663bcb37af84ded422320ef4279a4b565a54cc",
+        "public_sha256": "8825e4b55a2383736e6f5504e2d49e292435f8f15b76fc84c4ddefdbd609de6f"
+      },
+      "REAL-D01-E": {
+        "source_sha256": "92b121cf501bd4be6ffa312aaf3216faac84d43cc886199c604cba10ddb77df8",
+        "public_sha256": "f34cb0f59986f2bfc022f66e969a28a0260752085356142bea5d20c2f942031d"
+      },
+      "REAL-D02-A": {
+        "source_sha256": "66925a2182c6cec28d9e6f2455ebbfacaa9200e53e0a8dad07ed9158bdbdc4c0",
+        "public_sha256": "9c32fa8f5d2e97848c27fd4b19580c5719d1efe8954b02282092373f7cd8f929"
+      },
+      "REAL-D02-E": {
+        "source_sha256": "e6343f3a2a72b51bb8ed0242b16825b3977891a33b9563efabbc744fbfd56b31",
+        "public_sha256": "83a6dee7d85ce5a1cb91544c5fa7e77af5e4c226d77546f640dc19b0d8faa594"
+      },
+      "REAL-H01-A": {
+        "source_sha256": "475a3384560a1ae6a35211053cef1abeb79a2e80ac66075ea6e882afa5a01b77",
+        "public_sha256": "82f9067f165ce1ea6d8650d9a78783bb02113ee33ac8f4b34cc4a614c36521ad"
+      },
+      "REAL-H01-E": {
+        "source_sha256": "a00c5abecabccddaec69cd000560f667b82b24cc10dade8a4a6b9548aff26317",
+        "public_sha256": "926d17dd28cdd8b9448b05cbdd1c00e9af533609bae7c61ddc7583f13fb7c04d"
+      },
+      "REAL-H02-A": {
+        "source_sha256": "74e3c45c7a6414f1f05a899e334d268f231a4dd0796e79b9720034edff943b05",
+        "public_sha256": "95e6e9a035eec80fade5bcd636bc3d5921196fa72e2c2ee137c54098436b8992"
+      }
+    },
+    "experiment": {
+      "data_kind": "public-source-constructed",
+      "is_user_submission": false,
+      "has_human_quality_scores": false,
+      "groups": [
+        "A",
+        "E"
+      ],
+      "task_ids": [
+        "REAL-D01",
+        "REAL-D02",
+        "REAL-H01",
+        "REAL-H02",
+        "REAL-S01",
+        "REAL-S02"
+      ],
+      "authorized_cumulative_cny": 10.0,
+      "comparison_scope": "6个官方公开素材构造任务，同事实边界A/E流程探索；E补料仅重复已有事实或明确未知。配置差异为三算法开关，新增调用开销计入；未做人类独立盲评，不估计普遍文章质量因果增益。",
+      "evidence_scope": "官方公开资料构造任务，不是用户投稿或真实创作者试用。未完成独立人工盲评，不能报告人工质量提升。",
+      "provenance": {
+        "dataset_sha256": "4c728483710eec54d9ddf30abf6848c1e96eee9434d31b976188d21223d024fe",
+        "fixed_answers_sha256": "59c2f576fcd94dbaca28d504e640ccb1c936ec96943e49e0b6eab31dc6f9e709",
+        "initial_input_sha256": {
+          "REAL-D01": "049a5164d1d2e1f0342a6f6762718695a326859cb3335b19348ca31bb1f31b5a",
+          "REAL-D02": "c356f93d7c141e70dae0a00ee9f20deebb8f1e169e9fa8f8967b56e9061d877b",
+          "REAL-H01": "8e9cfb25781e5e3aa5066a102ad932c20597e0df11a2b1c24d8cd0d50533c6b2",
+          "REAL-H02": "ac84d02e236d88fd73007e128aad4e261d27248ea40470b3ffb548872a47eeda",
+          "REAL-S01": "2cd5488a5e8e8b9cb4e7cf71974b07f6badd4f3b62153d21be10b2d864381ddd",
+          "REAL-S02": "e4b6fed503df9454f378a71d345a63bc7605cbdb8ee82214defa942194fd3ab0"
+        },
+        "sources": {
+          "REAL-D01": {
+            "source_id": "official:REAL-D01",
+            "source_urls": [
+              "https://www.apple.com.cn/newsroom/2024/10/apples-all-new-mac-mini-is-even-more-mighty-and-more-mini/"
+            ],
+            "original_data_kind": "researcher_constructed_task_with_real_official_source"
+          },
+          "REAL-D02": {
+            "source_id": "official:REAL-D02",
+            "source_urls": [
+              "https://www.logi.com/zh-cn/shop/p/m650-signature-wireless-mouse"
+            ],
+            "original_data_kind": "researcher_constructed_task_with_real_official_source"
+          },
+          "REAL-H01": {
+            "source_id": "official:REAL-H01",
+            "source_urls": [
+              "https://www.ikea.cn/cn/zh/p/lack-side-table-white-10449909/"
+            ],
+            "original_data_kind": "researcher_constructed_task_with_real_official_source"
+          },
+          "REAL-H02": {
+            "source_id": "official:REAL-H02",
+            "source_urls": [
+              "https://www.ikea.cn/cn/zh/p/billy-bookcase-white-s89545291/"
+            ],
+            "original_data_kind": "researcher_constructed_task_with_real_official_source"
+          },
+          "REAL-S01": {
+            "source_id": "official:REAL-S01",
+            "source_urls": [
+              "https://docs.github.com/zh/pages/getting-started-with-github-pages/creating-a-github-pages-site"
+            ],
+            "original_data_kind": "researcher_constructed_task_with_real_official_source"
+          },
+          "REAL-S02": {
+            "source_id": "official:REAL-S02",
+            "source_urls": [
+              "https://support.google.com/docs/answer/6281888?hl=zh-Hans"
+            ],
+            "original_data_kind": "researcher_constructed_task_with_real_official_source"
+          }
+        }
+      }
+    }
+  },
+  "quality_conclusion": null,
+  "quality_status": "awaiting_independent_blind_reviews",
+  "warnings": [
+    "模型approved不代表事实已独立核实；needs_human保留待核查意见。",
+    "正文字符按Python Unicode码点计数，CTA单列，不含标签，不与token混用。",
+    "只对已完成的三对六稿组织盲评，保留所有预注册失败/未运行格，不能作为六任务全部完成。"
+  ]
+}

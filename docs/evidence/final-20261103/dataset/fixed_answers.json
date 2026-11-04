@@ -1,0 +1,66 @@
+{
+  "schema": "youji-no-extra-facts-answers/1",
+  "policy": "协调人封存；只在实际追问时使用；内容仅重申初始已知或未知，不增加组间事实。",
+  "items": [
+    {
+      "task_id": "REAL-D01",
+      "question_id": "REAL-D01-q1",
+      "question": "是否有自己的实测或当前价格资料？",
+      "fixed_answer": "没有新增事实：仍按初始材料介绍2024款M4的已知尺寸、配置与接口；无亲测和当前价格资料，不补充这些结论。",
+      "answer_sha256": "6c3d422691158e1fb34b7d46683e3968ab2dae68b8b164f2be6499098eca5c10",
+      "status": "sealed_predeclared_no_additional_product_information",
+      "new_facts_added": false,
+      "fallback_for_unmatched_questions": "本次没有相应新增资料；仅按初始材料和原有限制继续。"
+    },
+    {
+      "task_id": "REAL-D02",
+      "question_id": "REAL-D02-q1",
+      "question": "你的具体手型、系统版本或使用感受是什么？",
+      "fixed_answer": "没有新增事实：本任务未提供具体个人手型、系统版本或亲测记录；请保留官方分款与连接信息，不替用户补出体验。",
+      "answer_sha256": "fadaca721497d57ef0da1d3bae6343dca5b541793e67b3813be6b079df055846",
+      "status": "sealed_predeclared_no_additional_product_information",
+      "new_facts_added": false,
+      "fallback_for_unmatched_questions": "本次没有相应新增资料；仅按初始材料和原有限制继续。"
+    },
+    {
+      "task_id": "REAL-H01",
+      "question_id": "REAL-H01-q1",
+      "question": "你家位置和实际摆放重量是否已测量？",
+      "fixed_answer": "没有新增事实：本任务没有家庭尺寸或实际摆放测量记录；只重复已给55×55×45厘米及桌面10公斤限制，保留现场核对提醒。",
+      "answer_sha256": "cff233389016fa46971840155075bdef5059bc8a964c01d4710700ba9b452782",
+      "status": "sealed_predeclared_no_additional_product_information",
+      "new_facts_added": false,
+      "fallback_for_unmatched_questions": "本次没有相应新增资料；仅按初始材料和原有限制继续。"
+    },
+    {
+      "task_id": "REAL-H02",
+      "question_id": "REAL-H02-q1",
+      "question": "你的墙体、层高和紧固件是什么？",
+      "fixed_answer": "没有新增事实：墙体、现场层高和紧固件型号都未提供；只能保留初始材料的尺寸、承重和安全固定要求，不编具体安装方案。",
+      "answer_sha256": "250f54b171b02a61e906787860c2297cd10fd781c6707e77f3f2b05934d2f281",
+      "status": "sealed_predeclared_no_additional_product_information",
+      "new_facts_added": false,
+      "fallback_for_unmatched_questions": "本次没有相应新增资料；仅按初始材料和原有限制继续。"
+    },
+    {
+      "task_id": "REAL-S01",
+      "question_id": "REAL-S01-q1",
+      "question": "是否已经有仓库、付费套餐或发布成功回执？",
+      "fixed_answer": "没有新增事实：未提供现有仓库、付费套餐和部署回执；仍按初始官方流程做检查说明，不声称已经发布。",
+      "answer_sha256": "3ccf1fa6b867cef52141169fdba5971fc18a0928eb3c4ec343801b4109d2e9c9",
+      "status": "sealed_predeclared_no_additional_product_information",
+      "new_facts_added": false,
+      "fallback_for_unmatched_questions": "本次没有相应新增资料；仅按初始材料和原有限制继续。"
+    },
+    {
+      "task_id": "REAL-S02",
+      "question_id": "REAL-S02-q1",
+      "question": "已经有多少人填写，是否有真实反馈结果？",
+      "fixed_answer": "没有新增事实：没有实际发出问卷，也没有任何真人填写或回收结果；按初始素材介绍流程，不能编人数或满意度。",
+      "answer_sha256": "17794d5f5ea850ed4d26abfc65f31d77ec324b986ca2de816f96674028ff2d66",
+      "status": "sealed_predeclared_no_additional_product_information",
+      "new_facts_added": false,
+      "fallback_for_unmatched_questions": "本次没有相应新增资料；仅按初始材料和原有限制继续。"
+    }
+  ]
+}

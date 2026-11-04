@@ -18,7 +18,7 @@ def outputs():
         part = card.split('## 6. 允许的 Skills')[1].split('## 7.')[0]
         for name, method in re.findall(r'^- `([^`]+)`：(.*)$', part, re.M):
             skills.append(f'| {role} | `{name}` | {method} |')
-    registry = '# Tool / Skill 注册表\n\n由 scripts/sync_agent_cards.py 从独立角色卡生成，请勿直接编辑。所有接口均为设计，尚未实现。权限另由 design_contract.json 校验。\n\n## Tools\n\n| 角色 | ID | 行为 | 限制 |\n| --- | --- | --- | --- |\n'+'\n'.join(rows)+'\n\nexport_bundle 仅允许 Orchestrator 服务身份，在有效审核及用户确认后调用；不属于 Agent 权限。公开搜索/抓取默认禁用，启用条件见 [执行协议](AGENT_PROTOCOL.md)。\n\n## Skills\n\n| 角色 | ID | 方法 |\n| --- | --- | --- |\n'+'\n'.join(skills)+'\n'
+    registry = '# Tool / Skill 注册表\n\n由 scripts/sync_agent_cards.py 从独立角色卡生成，请勿直接编辑。所有接口均为设计，尚未实现。权限另由 design_contract.json 校验。当前扩展见 [已批准需求基线](CONNECTED_CREATOR_REQUIREMENTS.md)，planned 不代表已实现。\n\n## Tools\n\n| 角色 | ID | 行为 | 限制 |\n| --- | --- | --- | --- |\n'+'\n'.join(rows)+'\n\nexport_bundle 仅允许 Orchestrator 服务身份，在有效审核及用户确认后调用；不属于 Agent 权限。公开搜索/抓取默认禁用，启用条件见 [执行协议](AGENT_PROTOCOL.md)。\n\n## Skills\n\n| 角色 | ID | 方法 |\n| --- | --- | --- |\n'+'\n'.join(skills)+'\n'
     return {overview: merged, ROOT/'docs/design/AGENT_REGISTRY.md': registry}
 
 if __name__ == '__main__':

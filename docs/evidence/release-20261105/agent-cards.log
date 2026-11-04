@@ -1,0 +1,13 @@
+test_budget_and_capability_defaults_are_bounded (test_agent_contracts.AgentContractTests.test_budget_and_capability_defaults_are_bounded) ... ok
+test_content_example_has_full_public_text_surface (test_agent_contracts.AgentContractTests.test_content_example_has_full_public_text_surface) ... ok
+test_generated_merge_and_registry_are_current (test_agent_contracts.AgentContractTests.test_generated_merge_and_registry_are_current) ... ok
+test_memory_domains_and_events_are_unambiguous (test_agent_contracts.AgentContractTests.test_memory_domains_and_events_are_unambiguous) ... ok
+test_research_example_does_not_authorize_unsupported_claims (test_agent_contracts.AgentContractTests.test_research_example_does_not_authorize_unsupported_claims) ... ok
+test_review_gate_has_no_score_escape (test_agent_contracts.AgentContractTests.test_review_gate_has_no_score_escape) ... ok
+test_role_examples_and_privileges_match_contract (test_agent_contracts.AgentContractTests.test_role_examples_and_privileges_match_contract) ... ok
+test_analytics_extension_is_separate_from_creation_and_matches_runtime (test_agent_contracts.OperationsContractTests.test_analytics_extension_is_separate_from_creation_and_matches_runtime) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.004s
+
+OK

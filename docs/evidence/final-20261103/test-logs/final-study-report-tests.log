@@ -1,0 +1,8 @@
+test_all_preregistered_cells_failures_cost_and_character_counts_preserved (test_build_final_study_report.FinalStudyReportTests.test_all_preregistered_cells_failures_cost_and_character_counts_preserved) ... ok
+test_missing_receipt_or_changed_dataset_refuses_silent_incomplete_evidence (test_build_final_study_report.FinalStudyReportTests.test_missing_receipt_or_changed_dataset_refuses_silent_incomplete_evidence) ... ok
+test_only_sanitized_receipts_published_and_each_reviewer_zip_excludes_mapping (test_build_final_study_report.FinalStudyReportTests.test_only_sanitized_receipts_published_and_each_reviewer_zip_excludes_mapping) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.022s
+
+OK

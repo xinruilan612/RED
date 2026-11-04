@@ -1,0 +1,47 @@
+{
+  "original_csv_sha256_verified": true,
+  "download_and_archived_bytes_identical": true,
+  "rating_rows": 18,
+  "rating_values": 90,
+  "recomputed_group_overall": {
+    "A": 3.9555555555555557,
+    "E": 3.8222222222222224
+  },
+  "frozen_trace_observations": [
+    {
+      "task": "REAL-D01-E",
+      "source_generation_commit": "6f925cf",
+      "body_chars": 151,
+      "planning_budget": 300.0,
+      "selected_estimated_chars": 111,
+      "unallocated_estimated_budget": 189.0,
+      "slots": 9,
+      "warning_slots": 3,
+      "scope": "原始冻结轨迹；不是原因证明、已实现增益或新稿"
+    },
+    {
+      "task": "REAL-D02-E",
+      "source_generation_commit": "6f925cf",
+      "body_chars": 195,
+      "planning_budget": 300.0,
+      "selected_estimated_chars": 179,
+      "unallocated_estimated_budget": 121.0,
+      "slots": 7,
+      "warning_slots": 1,
+      "scope": "原始冻结轨迹；不是原因证明、已实现增益或新稿"
+    },
+    {
+      "task": "REAL-H01-E",
+      "source_generation_commit": "6f925cf",
+      "body_chars": 127,
+      "planning_budget": 300.0,
+      "selected_estimated_chars": 80,
+      "unallocated_estimated_budget": 220.0,
+      "slots": 9,
+      "warning_slots": 3,
+      "scope": "原始冻结轨迹；不是原因证明、已实现增益或新稿"
+    }
+  ],
+  "new_paid_calls": 0,
+  "quality_improvement_demonstrated": false
+}

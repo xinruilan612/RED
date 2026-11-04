@@ -1,0 +1,75 @@
+--- a/tests/frontend_rag_library.test.js
++++ b/tests/frontend_rag_library.test.js
+@@ -6,7 +6,7 @@
+  const sandbox={pageInfo:{},activeAccountId:'a',currentPage:'library',crypto:{randomUUID:()=> 'key-'+(++serial)},URL,Set,Map,
+   esc:v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),
+   api:async(...a)=>{calls.push(a);return a[0].includes('/jobs?')?[]:{};},error:e=>errors.push(e),toast(){},$:element,
+-  document:{querySelectorAll:()=>[]},setTimeout:fn=>timers.push(fn)};
++  document:{querySelectorAll:()=>[]},setTimeout:fn=>{timers.push(fn);return fn;},clearTimeout:fn=>{const i=timers.indexOf(fn);if(i>=0)timers.splice(i,1);}};
+  vm.createContext(sandbox);vm.runInContext(fs.readFileSync('frontend/knowledge.js','utf8'),sandbox);
+  return {sandbox,calls,errors,timers,element,run:s=>vm.runInContext(s,sandbox)};
+ }
+@@ -54,7 +54,7 @@
+  const s=setup();let resolve;s.sandbox.api=()=>new Promise(r=>resolve=r);const pending=s.run("refreshRagJobs('a',0)");s.sandbox.activeAccountId='other';resolve([{id:'j',queries:['OLD'],status:'awaiting_confirmation',candidates:[candidate]}]);await pending;assert.equal(s.element('ragJobResult').innerHTML,'');
+ });
+ test('search errors stay actionable without treating timeout as logged out',()=>{
+- const s=setup();assert.match(s.run("ragErrorText('XHS_SEARCH_HTTP_500')"),/平台搜索页面读取失败/);assert.match(s.run("ragErrorText('XHS_SEARCH_TIMEOUT')"),/超时/);assert.doesNotMatch(s.run("ragErrorText('XHS_SEARCH_TIMEOUT')"),/已失效|XHS_/);
++ const s=setup();assert.match(s.run("ragErrorText('XHS_SEARCH_HTTP_500')"),/本机 MCP 搜索接口返回 HTTP 500/);assert.match(s.run("ragErrorText('XHS_SEARCH_TIMEOUT')"),/超时/);assert.doesNotMatch(s.run("ragErrorText('XHS_SEARCH_TIMEOUT')"),/已失效|XHS_/);
+ });
+
+ test('XHS hides irrelevant web scope and only user links target a new tab',()=>{
+@@ -82,7 +82,7 @@
+  assert.match(s.element('ragJobResult').innerHTML,/新主题/);assert.doesNotMatch(s.element('ragJobResult').innerHTML,/旧主题/);
+ });
+ test('running job exposes cancellation and duplicate submissions are guarded',async()=>{
+- const s=setup();fill(s);s.sandbox.api=async(...args)=>{s.calls.push(args);return args[0].includes('/jobs?')?[{id:'j',provider:'xhs_local',queries:['美妆'],status:'running'}]:{};};
++ const s=setup();fill(s);s.sandbox.api=async(...args)=>{s.calls.push(args);return args[0].includes('/jobs?')?[{id:'j',provider:'xhs_local',queries:['美妆'],style_filters:{min_likes:100,min_favorites:50,sort_by:'favorites'},status:'running'}]:args[0].includes('/settings')?{providers:[]}:{bound:true};};
+  s.run("bindRagSearch('a',0)");await s.run("refreshRagJobs('a',0)");
+  assert.match(s.element('ragJobResult').innerHTML,/data-rag-cancel="j"/);fill(s);
+  await s.element('ragSearchForm').onsubmit({preventDefault(){},submitter:{}});assert.equal(s.calls.filter(c=>c[1]==='POST').length,0);
+@@ -147,3 +147,45 @@
+  await s.run("refreshRagJobs('a',0)");const html=s.element('ragJobResult').innerHTML;assert.match(html,/正在搜索 \/ 读取，已有 1 条读取记录/);assert.doesNotMatch(html,/已执行 0 次搜索/);
+  const panel=s.run('ragSearchPanel()');assert.match(panel,/本次平台返回的候选按可得互动排序/);assert.match(panel,/不代表全站最高/);
+ });
++
++
++test('scope identity includes source, range and filters while folding query whitespace',()=>{
++ const s=setup();s.sandbox.p={account_id:'a',queries:['  大衣   护理  '],provider:'xhs_local',targets:['xiaohongshu'],style_filters:{min_likes:100,min_favorites:50,sort_by:'likes'}};
++ const original=s.run('ragScope(p)');s.sandbox.p.queries=['大衣 护理'];assert.equal(s.run('ragScope(p)'),original);
++ s.sandbox.p.style_filters.sort_by='favorites';assert.notEqual(s.run('ragScope(p)'),original);
++ s.sandbox.p.provider='bing';assert.notEqual(s.run('ragScope(p)'),original);
++ s.sandbox.p.targets=['jd'];const jd=s.run('ragScope(p)');s.sandbox.p.targets=['web'];assert.notEqual(s.run('ragScope(p)'),jd);
++});
++test('current search and other themes are separated into a collapsed history section',()=>{
++ const s=setup();s.sandbox.jobs=[{id:'old',queries:['旧主题'],provider:'bing',status:'running'},{id:'new',queries:['新主题'],provider:'bing',status:'done'}];
++ s.run("ragViewState.set('a',{jobId:'new',scope:ragScope(jobs[1])});renderRagJobList('a',0,jobs)");
++ const html=s.element('ragJobResult').innerHTML,current=html.split('<details data-rag-history>')[0];assert.match(current,/新主题/);assert.doesNotMatch(current,/旧主题/);assert.match(html,/<details data-rag-history><summary>历史研究/);
++});
++test('polling failure is explicit, retains candidates and retries status at most twice',async()=>{
++ const s=setup();s.sandbox.jobs=[{id:'j',queries:['主题'],status:'running',candidates:[candidate]}];s.run("ragJobsCache.set('a',jobs)");s.sandbox.api=async()=>{throw new Error('network down');};
++ await s.run("refreshRagJobs('a',0)");await s.run("refreshRagJobs('a',0,true)");await s.run("refreshRagJobs('a',0,true)");
++ assert.equal(s.timers.length,2);const html=s.element('ragJobResult').innerHTML;assert.match(html,/状态刷新中断/);assert.match(html,/公开取得的完整笔记正文/);assert.doesNotMatch(html,/正在后台搜索与读取/);
++});
++test('a hung status request gets a bounded failure instead of infinite running',async()=>{
++ const s=setup();s.sandbox.api=()=>new Promise(()=>{});const pending=s.run("refreshRagJobs('a',0)");s.timers.shift()();await pending;assert.match(s.element('ragJobResult').innerHTML,/状态刷新中断/);
++});
++test('editing the scope while POST is pending prevents its late response from taking over',async()=>{
++ const s=setup();fill(s,'bing');let resolve;s.sandbox.api=async(path,method)=>{if(method==='POST')return new Promise(r=>resolve=r);if(path.includes('/jobs?'))return [];if(path.includes('/settings'))return {providers:[{id:'bing',can_attempt:true}]};return {bound:false};};
++ s.run("bindRagSearch('a',0)");await s.run("refreshRagJobs('a',0)");const pending=s.element('ragSearchForm').onsubmit({preventDefault(){},submitter:{}});
++ s.element('ragQuery').value='不同的新主题';s.element('ragQuery').oninput();resolve({id:'old',queries:['美妆'],provider:'bing',status:'queued'});await pending;
++ assert.equal(s.run("ragViewState.get('a').jobId"),null);assert.equal(s.element('ragQuery').value,'不同的新主题');assert.doesNotMatch(s.element('ragJobResult').innerHTML,/data-rag-cancel="old"/);
++});
++test('terminal outcomes distinguish real empty results, parse failure and all-detail failure',()=>{
++ const s=setup();for(const [outcome,label]of [['empty_results','平台未返回候选'],['invalid_results','无法解析'],['filtered_all','均不符合'],['detail_failed','全部读取失败'],['search_failed','搜索失败'],['queue_timeout','排队超时']]){
++  s.sandbox.job={status:'done',outcome,candidates:[],documents:[]};assert.match(s.run('ragJobStatus(job)'),new RegExp(label));
++ }
++ s.sandbox.job={status:'cancelled',outcome:'empty_results'};assert.equal(s.run('ragJobStatus(job)'),'已取消');
++});
++test('job details show canonical query and local MCP errors without claiming upstream HTTP',()=>{
++ const s=setup();s.sandbox.job={queries:['主题 研究'],raw_queries:[' 主题   研究 '],phase:'complete',counts:{raw_count:4,detail_failed_count:2},reuse:{kind:'active_task',cache_hit:false},error_origin:'local_mcp',mcp_http_status:500};
++ const html=s.run('ragJobTrace(job)');assert.match(html,/实际查询：主题 研究/);assert.match(html,/输入原文/);assert.match(html,/复用同范围运行中任务/);assert.match(html,/未使用结果缓存/);assert.match(html,/本机 MCP HTTP 500/);assert.match(html,/不能据此推断平台上游/);
++});
++test('unrelated pending history does not keep current completed search polling',async()=>{
++ const s=setup();s.sandbox.jobs=[{id:'new',queries:['新主题'],status:'done'},{id:'old',queries:['旧主题'],status:'running'}];s.run("ragViewState.set('a',{jobId:'new'})");s.sandbox.api=async()=>s.sandbox.jobs;
++ await s.run("refreshRagJobs('a',0)");assert.equal(s.timers.length,0);
++});

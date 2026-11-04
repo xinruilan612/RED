@@ -6,7 +6,7 @@ from backend.contracts import DomainError
 
 class Command(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
-    action: Literal['next', 'edit', 'supplement', 'accept', 'adopt_manual', 'cancel', 'recover', 'repair_review']
+    action: Literal['next', 'edit', 'retitle', 'review_current', 'request_revision', 'supplement', 'skip_questions', 'accept', 'adopt_manual', 'cancel', 'recover', 'repair_review']
     version: int = Field(ge=0)
     key: str = Field(min_length=1, max_length=100)
     payload: dict
@@ -14,8 +14,9 @@ class Command(BaseModel):
 
 class JobCommand(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
-    action: Literal['start', 'pause', 'step', 'retry_research']
+    action: Literal['start', 'pause', 'step', 'retry_research', 'research_and_regenerate']
     queries: list[str] | None = None
+    references_only: bool | None = None
     version: int = Field(ge=0)
     key: str = Field(min_length=1, max_length=100)
 

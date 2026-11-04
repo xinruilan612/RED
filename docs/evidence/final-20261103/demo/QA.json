@@ -1,0 +1,100 @@
+{
+  "audio_track_seconds": 101.30666666666667,
+  "audio_tracks": 1,
+  "decoded_audio_samples": 2233812,
+  "format": "MP4/H.264 with offline synthesized narration",
+  "height": 1080,
+  "limitations": [
+    "11/3 v2实跑历史，v3仅离线修正未重新生成",
+    "未涵盖Windows原生运行、人工采用或发布",
+    "无独立人评质量结论"
+  ],
+  "output_sha256": "288c524f06a4e15a7aa5aa788eb272148716a67b86265bc6493dc56aadc7411b",
+  "presentation": "截图拼接讲解，非连续录屏；截图原文件未修改",
+  "scenes": [
+    {
+      "decoded_frame": "decoded-01.png",
+      "duration_seconds": 10,
+      "narration_seconds": 8.878458049886621,
+      "start_seconds": 0,
+      "title": "有迹\n有依据的创作"
+    },
+    {
+      "decoded_frame": "decoded-02.png",
+      "duration_seconds": 10,
+      "narration_seconds": 9.109750566893425,
+      "start_seconds": 10,
+      "title": "从需求与事实开始"
+    },
+    {
+      "decoded_frame": "decoded-03.png",
+      "duration_seconds": 10,
+      "narration_seconds": 8.786621315192743,
+      "start_seconds": 20,
+      "title": "RAG 分清资料用途"
+    },
+    {
+      "decoded_frame": "decoded-04.png",
+      "duration_seconds": 10,
+      "narration_seconds": 8.425034013605442,
+      "start_seconds": 30,
+      "title": "后台协作与留痕"
+    },
+    {
+      "decoded_frame": "decoded-05.png",
+      "duration_seconds": 16,
+      "narration_seconds": 14.85124716553288,
+      "start_seconds": 40,
+      "title": "规划指标必须纠错"
+    },
+    {
+      "decoded_frame": "decoded-06.png",
+      "duration_seconds": 10,
+      "narration_seconds": 9.039455782312926,
+      "start_seconds": 56,
+      "title": "四 Agent 分工协作"
+    },
+    {
+      "decoded_frame": "decoded-07.png",
+      "duration_seconds": 12,
+      "narration_seconds": 11.217913832199546,
+      "start_seconds": 66,
+      "title": "依据与版本可追溯"
+    },
+    {
+      "decoded_frame": "decoded-08.png",
+      "duration_seconds": 12,
+      "narration_seconds": 10.288208616780045,
+      "start_seconds": 78,
+      "title": "保守交接，保留问题"
+    },
+    {
+      "decoded_frame": "decoded-09.png",
+      "duration_seconds": 12,
+      "narration_seconds": 11.308163265306122,
+      "start_seconds": 90,
+      "title": "验证证据与下一步"
+    }
+  ],
+  "source_screenshot_sha256": {
+    "01-running.png": "f7b971697f1be2e4794c9942c4fc423b7e71b5809e6efe4bf79b1b9b98d98378",
+    "02-plan.png": "a528ffa651a1a8f6216345baeb3e3a78d2eedc120fc71c25595f0c8d580df343",
+    "03-evidence.png": "dc3331d9506b338d6cdba7f6b2af37bbfe6222fe04d8e8bd7c9054741d1f49a3",
+    "04-agents.png": "2a778db40cd6b26c4170239a44de35dc7281a40c130ae8315d797a576e821d31",
+    "05-review.png": "21585bdd345e21f1a66583eac061fb151451ee0cf5c297b52ce3925e5c8624d1",
+    "06-library.png": "9ca4c7c41f8abe7fa01756624e9d2850c7670ab5b73df026b3804b6ea4be64b6",
+    "07-input.png": "2db36066a6f44289dea332881de822f1d1281b3d8019cc8b666debf250399466"
+  },
+  "video_seconds": 102,
+  "video_tracks": 1,
+  "width": 1920,
+  "visual_review": {
+    "method": "assistant inspected nine AVAsset-decoded scene midpoint images with view_image",
+    "scenes_inspected": 9,
+    "text_overflow_observed": false,
+    "source_screenshot_manipulation": false,
+    "credentials_observed": false,
+    "human_playback_acceptance": false
+  },
+  "audio_qa_scope": "音轨完成PCM解码且有非零样本；未声称真人听审或Windows播放器实测。"
+}

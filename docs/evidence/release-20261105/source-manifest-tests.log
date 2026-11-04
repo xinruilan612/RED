@@ -1,0 +1,8 @@
+test_delivered_source_matches_manifest (test_source_release_manifest.SourceReleaseManifestTests.test_delivered_source_matches_manifest) ... ok
+test_manifest_cannot_read_outside_repository (test_source_release_manifest.SourceReleaseManifestTests.test_manifest_cannot_read_outside_repository) ... ok
+test_modified_source_cannot_pass (test_source_release_manifest.SourceReleaseManifestTests.test_modified_source_cannot_pass) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.076s
+
+OK

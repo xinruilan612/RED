@@ -1,0 +1,221 @@
+{
+  "sample_id": "S05",
+  "method": "windtunnel",
+  "participant_type": "codex_proxy",
+  "revision": "v3",
+  "source_url": "https://docs.python.org/3.12/tutorial/datastructures.html#dictionaries",
+  "original_sha256": "5ae9dd634db54503543ac690d00aaba9b7ca8c69e2091cb09f491a1a934abbbc",
+  "material_sha256": "5ae9dd634db54503543ac690d00aaba9b7ca8c69e2091cb09f491a1a934abbbc",
+  "outcome": "failed",
+  "error": {
+    "code": "STUDY_WORKFLOW_BLOCKED",
+    "message": "引用无法匹配支持材料"
+  },
+  "automatic_adoption": true,
+  "human_author": false,
+  "fallback": "latest preserved draft; does not imply successful review",
+  "run_id": "8b26221a-07f7-4612-9308-0cc31aad4625",
+  "wall_seconds": 10.136,
+  "final_sha256": "5ae9dd634db54503543ac690d00aaba9b7ca8c69e2091cb09f491a1a934abbbc",
+  "changed": false,
+  "calls": [
+    {
+      "stage": "wt_conditions",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 278,
+      "output_tokens": 563,
+      "total_tokens": 841,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "conditions": [
+          {
+            "question": "你希望读者在完成通讯录示例后，能准确复述哪一步“新增/修改/删除”操作对应的字典状态变化？",
+            "scene": "Python 3.12 beginner tutorial，字典增删改查结果演示",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "你计划让读者根据哪些稿内文字证据自行写出最终字典，而不是由教程直接给出答案？",
+            "scene": "依据稿件推导 tel 最终内容",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "你希望读者如何用稿内证据解释 list(tel) 与 sorted(tel) 的结果差异？",
+            "scene": "字典键视图转换与排序输出",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "你希望读者用哪个表达式检查 guido 是否存在，并期望结果如何呈现？",
+            "scene": "成员检查与布尔结果说明",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "你希望读者在“再读取 sape”时说明会发生什么，以及应引用稿内哪类证据？",
+            "scene": "删除键后的访问行为",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "你希望读者如何判断“用列表作键”是否可行，并说明原因？",
+            "scene": "字典键必须可哈希的约束",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "你希望读者如何判断“用含列表的元组作键”是否可行，并说明原因？",
+            "scene": "元组键内部含可变对象时的可行性",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "你希望教程把每一步操作后的字典状态以什么粒度呈现，便于初学者对照检查？",
+            "scene": "分步状态跟踪与自我校验",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "你希望读者在回答中避免执行代码，那么稿内证据应以什么形式组织，才足以支撑结论？",
+            "scene": "不执行代码时的静态推导",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "你希望读者最终输出哪些内容：最终字典、list(tel)、sorted(tel)、存在性表达式、sape 读取说明、键可行性判断，是否需要固定顺序？",
+            "scene": "练习答案结构规范",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "如果读者对“含列表的元组作键”产生分歧，你希望他们回到稿内哪一段证据来统一判断？",
+            "scene": "争议点澄清与证据引用",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "你希望这份问题清单用于作者自检还是读者练习，问法是否需要调整？",
+            "scene": "教学材料设计用途确认",
+            "source_ids": [],
+            "origin": "author"
+          }
+        ]
+      }
+    },
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 1581,
+      "output_tokens": 996,
+      "total_tokens": 2577,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "results": [
+          {
+            "condition_id": "1cafd8c6-0f6f-4a5d-9202-e723fd1e11c2",
+            "status": "unclear",
+            "answer": "无法按给定步骤完整推导最终字典，因为稿件未说明对已有键 jack 赋新值 5000 时旧值被遗忘的具体行为。稿件示例只展示了新增键、删除键、新增另一个键，以及最终字典为 {'jack': 4098, 'guido': 4127, 'irv': 4127}；从该示例无法直接推出题设步骤中“将 jack 改为 5000”后最终应为 {'jack': 5000, 'guido': 4127, 'irv': 4127}。",
+            "excerpt": ">>> tel = {'jack': 4098, 'sape': 4139}\n>>> tel['guido'] = 4127\n>>> tel\n{'jack': 4098, 'sape': 4139, 'guido': 4127}\n>>> tel['jack']\n4098\n>>> del tel['sape']\n>>> tel['irv'] = 4127\n>>> tel\n{'jack': 4098, 'guido': 4127, 'irv': 4127}",
+            "reason": "仅根据稿件判断"
+          },
+          {
+            "condition_id": "e0837d4b-2d16-41cb-8352-b82cc7e7c3f7",
+            "status": "unclear",
+            "answer": "若沿用稿件示例最终字典 tel = {'jack': 4098, 'guido': 4127, 'irv': 4127}，则 list(tel) 为 ['jack', 'guido', 'irv']，sorted(tel) 为 ['guido', 'irv', 'jack']；但题设步骤包含“将 jack 改为 5000”，该步骤在稿件示例中未展示，因此无法依据稿件确认以此步骤得到的 tel 后 list(tel) 和 sorted(tel) 是否仍完全相同。",
+            "excerpt": ">>> list(tel)\n['jack', 'guido', 'irv']\n>>> sorted(tel)\n['guido', 'irv', 'jack']",
+            "reason": "仅根据稿件判断"
+          },
+          {
+            "condition_id": "99f1979f-f4c3-490a-9d68-af13a7b3cc2e",
+            "status": "unclear",
+            "answer": "稿件示例对示例 tel 给出了表达式 'guido' in tel，结果为 True；但题设步骤中对 jack 赋新值 5000 未被稿件示例覆盖，因此不能依据稿件断言题设步骤后的同一表达式结果。",
+            "excerpt": ">>> 'guido' in tel\nTrue",
+            "reason": "仅根据稿件判断"
+          },
+          {
+            "condition_id": "3536f744-515f-4ac8-ae41-aa5e35e84e69",
+            "status": "pass",
+            "answer": "再读取 sape 会出错；如果写作 tel['sape']，因为 sape 已用 del tel['sape'] 删除，所以用不存在的键提取值时是错误。",
+            "excerpt": "It is an error to extract a value\nusing a non-existent key.",
+            "reason": "仅根据稿件判断"
+          },
+          {
+            "condition_id": "0f2150c8-5136-456e-87c6-21b2150820db",
+            "status": "pass",
+            "answer": "用列表作键不可行，因为列表是可变对象，可被原地修改；含列表的元组作键也不可行，因为元组一旦直接或间接含有可变对象，就不能用作键。稿件明确：键可以是任何不可变类型；元组只有在只含字符串、数字或元组时才可作键；不能使用列表作键。",
+            "excerpt": "Tuples can be used\nas keys if they contain only strings, numbers, or tuples; if a tuple contains\nany mutable object either directly or indirectly, it cannot be used as a key.\nYou can’t use lists as keys, since lists can be modified in place using index\nassignments, slice assignments, or methods like append() and\nextend().",
+            "reason": "仅根据稿件判断"
+          }
+        ]
+      }
+    },
+    {
+      "stage": "wt_verify",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 3506,
+      "output_tokens": 518,
+      "total_tokens": 4024,
+      "outcome": "invalid",
+      "error": "引用无法匹配支持材料",
+      "response": {
+        "results": [
+          {
+            "condition_id": "1cafd8c6-0f6f-4a5d-9202-e723fd1e11c2",
+            "status": "unclear",
+            "reason": "reading.status为unclear，按规则必须输出unclear。",
+            "citations": []
+          },
+          {
+            "condition_id": "e0837d4b-2d16-41cb-8352-b82cc7e7c3f7",
+            "status": "unclear",
+            "reason": "reading.status为unclear，按规则必须输出unclear。",
+            "citations": []
+          },
+          {
+            "condition_id": "99f1979f-f4c3-490a-9d68-af13a7b3cc2e",
+            "status": "unclear",
+            "reason": "reading.status为unclear，按规则必须输出unclear。",
+            "citations": []
+          },
+          {
+            "condition_id": "3536f744-515f-4ac8-ae41-aa5e35e84e69",
+            "status": "pass",
+            "reason": "reading.status为pass，材料支持答案。",
+            "citations": [
+              {
+                "source_id": "540c391a-937e-4dbf-9603-0676c1463f1c",
+                "quote": "It is an error to extract a value using a non-existent key."
+              }
+            ]
+          },
+          {
+            "condition_id": "0f2150c8-5136-456e-87c6-21b2150820db",
+            "status": "pass",
+            "reason": "reading.status为pass，材料支持答案。",
+            "citations": [
+              {
+                "source_id": "540c391a-937e-4dbf-9603-0676c1463f1c",
+                "quote": "Tuples can be used as keys if they contain only strings, numbers, or tuples; if a tuple contains any mutable object either directly or indirectly, it cannot be used as a key. You can’t use lists as keys, since lists can be modified in place using index assignments, slice assignments, or methods like append() and extend()."
+              }
+            ]
+          }
+        ],
+        "new_issues": []
+      }
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 0.670082,
+    "reserved_unknown_cny": 0.04281,
+    "committed_upper_cny": 0.712892,
+    "calls": 63,
+    "unknown_calls": 1
+  }
+}

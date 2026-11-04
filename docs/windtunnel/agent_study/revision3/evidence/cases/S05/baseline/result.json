@@ -1,0 +1,60 @@
+{
+  "sample_id": "S05",
+  "method": "baseline",
+  "participant_type": "codex_proxy",
+  "revision": "v3",
+  "source_url": "https://docs.python.org/3.12/tutorial/datastructures.html#dictionaries",
+  "original_sha256": "5ae9dd634db54503543ac690d00aaba9b7ca8c69e2091cb09f491a1a934abbbc",
+  "material_sha256": "5ae9dd634db54503543ac690d00aaba9b7ca8c69e2091cb09f491a1a934abbbc",
+  "outcome": "completed",
+  "error": null,
+  "automatic_adoption": true,
+  "human_author": false,
+  "issues": [
+    {
+      "explanation": "The requested task asks for a modified sequence that changes jack's value to 5000, but the supplied material only documents the original sequence where jack remains 4098 and there is no instruction for overwriting jack. The final dictionary, list(tel), and sorted(tel) values for the modified sequence are not supported by the material and cannot be derived without inventing facts.",
+      "evidence": "The material's only full example is: >>> tel = {'jack': 4098, 'sape': 4139} ... >>> tel {'jack': 4098, 'guido': 4127, 'irv': 4127}. No step sets jack to 5000."
+    },
+    {
+      "explanation": "The task asks to explain what happens when reading sape after deletion; the material states abstractly that extracting a value using a non-existent key is an error, but does not provide the concrete exception name or message in this section, so a concrete result would be added knowledge.",
+      "evidence": "The material says: 'It is an error to extract a value using a non-existent key.' No exception type is shown."
+    }
+  ],
+  "run_id": "99ad6af4-0e10-4cb6-8ec7-a9c1ff66c0b5",
+  "wall_seconds": 3.724,
+  "final_sha256": "5ae9dd634db54503543ac690d00aaba9b7ca8c69e2091cb09f491a1a934abbbc",
+  "changed": false,
+  "calls": [
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 2012,
+      "output_tokens": 1018,
+      "total_tokens": 3030,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "issues": [
+          {
+            "explanation": "The requested task asks for a modified sequence that changes jack's value to 5000, but the supplied material only documents the original sequence where jack remains 4098 and there is no instruction for overwriting jack. The final dictionary, list(tel), and sorted(tel) values for the modified sequence are not supported by the material and cannot be derived without inventing facts.",
+            "evidence": "The material's only full example is: >>> tel = {'jack': 4098, 'sape': 4139} ... >>> tel {'jack': 4098, 'guido': 4127, 'irv': 4127}. No step sets jack to 5000."
+          },
+          {
+            "explanation": "The task asks to explain what happens when reading sape after deletion; the material states abstractly that extracting a value using a non-existent key is an error, but does not provide the concrete exception name or message in this section, so a concrete result would be added knowledge.",
+            "evidence": "The material says: 'It is an error to extract a value using a non-existent key.' No exception type is shown."
+          }
+        ],
+        "revised_text": "5.5. Dictionaries\n\nAnother useful data type built into Python is the dictionary (see\nMapping Types — dict). Dictionaries are sometimes found in other languages as\n“associative memories” or “associative arrays”.  Unlike sequences, which are\nindexed by a range of numbers, dictionaries are indexed by keys, which can be\nany immutable type; strings and numbers can always be keys.  Tuples can be used\nas keys if they contain only strings, numbers, or tuples; if a tuple contains\nany mutable object either directly or indirectly, it cannot be used as a key.\nYou can’t use lists as keys, since lists can be modified in place using index\nassignments, slice assignments, or methods like append() and\nextend().\n\nIt is best to think of a dictionary as a set of key: value pairs,\nwith the requirement that the keys are unique (within one dictionary). A pair of\nbraces creates an empty dictionary: {}. Placing a comma-separated list of\nkey:value pairs within the braces adds initial key:value pairs to the\ndictionary; this is also the way dictionaries are written on output.\n\nThe main operations on a dictionary are storing a value with some key and\nextracting the value given the key.  It is also possible to delete a key:value\npair with del. If you store using a key that is already in use, the old\nvalue associated with that key is forgotten.  It is an error to extract a value\nusing a non-existent key.\n\nPerforming list(d) on a dictionary returns a list of all the keys\nused in the dictionary, in insertion order (if you want it sorted, just use\nsorted(d) instead). To check whether a single key is in the\ndictionary, use the in keyword.\n\nHere is a small example using a dictionary:\n\n>>> tel = {'jack': 4098, 'sape': 4139}\n>>> tel['guido'] = 4127\n>>> tel\n{'jack': 4098, 'sape': 4139, 'guido': 4127}\n>>> tel['jack']\n4098\n>>> del tel['sape']\n>>> tel['irv'] = 4127\n>>> tel\n{'jack': 4098, 'guido': 4127, 'irv': 4127}\n>>> list(tel)\n['jack', 'guido', 'irv']\n>>> sorted(tel)\n['guido', 'irv', 'jack']\n>>> 'guido' in tel\nTrue\n>>> 'jack' not in tel\nFalse\n\nThe dict() constructor builds dictionaries directly from sequences of\nkey-value pairs:\n\n>>> dict([('sape', 4139), ('guido', 4127), ('jack', 4098)])\n{'sape': 4139, 'guido': 4127, 'jack': 4098}\n\nIn addition, dict comprehensions can be used to create dictionaries from\narbitrary key and value expressions:\n\n>>> {x: x**2 for x in (2, 4, 6)}\n{2: 4, 4: 16, 6: 36}\n\nWhen the keys are simple strings, it is sometimes easier to specify pairs using\nkeyword arguments:\n\n>>> dict(sape=4139, guido=4127, jack=4098)\n{'sape': 4139, 'guido': 4127, 'jack': 4098}"
+      }
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 0.642736,
+    "reserved_unknown_cny": 0.04281,
+    "committed_upper_cny": 0.685546,
+    "calls": 60,
+    "unknown_calls": 1
+  }
+}

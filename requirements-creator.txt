@@ -1,0 +1,2 @@
+# Optional, isolated creator DOM reader. Install its Chromium browser separately.
+playwright==1.61.0

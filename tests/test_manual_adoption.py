@@ -47,10 +47,31 @@ class ManualAdoptionTests(unittest.TestCase):
         self.assertEqual(self.run['acceptance']['mode'], 'manual_override')
         self.assertEqual(self.run['acceptance']['acknowledged_issues'], review['issues'])
         self.assertEqual(self.act('adopt_manual', payload, version=version, key=key)['status_version'], version + 1)
-        self.assertIn('用户人工采用', self.service.export(self.owner, self.run['run_id']))
-        self.assertIn('未通过 AI 审核', self.service.export(self.owner, self.run['run_id']))
+        exported = self.service.export(self.owner, self.run['run_id'])
+        self.assertNotIn('用户人工采用', exported)
+        self.assertNotIn('未通过 AI 审核', exported)
+        self.assertIn(self.run['drafts'][-1]['content']['body'], exported)
         reloaded = Store(self.store.path).get(self.run['run_id'], self.owner)
         self.assertEqual(reloaded.acceptance, self.run['acceptance'])
+
+    def test_confirmed_title_can_be_shortened_without_model_or_content_change(self):
+        self.act('adopt_manual', self.payload())
+        before = copy.deepcopy(self.run['drafts'][-1]['content'])
+        review = copy.deepcopy(self.run['review'])
+        old_ref = self.run['accepted_ref']
+        self.act('retitle', {'title':'短标题'})
+        self.assertEqual(self.run['run_status'], 'SUCCEEDED')
+        self.assertNotEqual(self.run['accepted_ref'], old_ref)
+        self.assertEqual(self.run['drafts'][-1]['content']['selected_title'], '短标题')
+        self.assertEqual(self.run['drafts'][-1]['content']['body'], before['body'])
+        self.assertEqual(self.run['drafts'][-1]['content']['cta'], before['cta'])
+        self.assertEqual(self.run['review'], review)
+        self.assertEqual(self.run['acceptance']['title_correction']['from_title'], before['selected_title'])
+        exported = self.service.export(self.owner, self.run['run_id'])
+        self.assertIn('# 短标题', exported)
+        self.assertIn(before['body'], exported)
+        self.assertNotIn('AI 创作稿', exported)
+        with self.assertRaises(DomainError): self.act('retitle', {'title':'短标题'})
 
     def test_exact_version_ack_owner_and_terminal_guards(self):
         for changes in ({'acknowledge':False}, {'draft_ref':'stale'}, {'content_hash':'stale'}):

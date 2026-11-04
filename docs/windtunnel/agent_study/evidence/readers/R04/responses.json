@@ -1,0 +1,221 @@
+{
+  "reader_id": "R04",
+  "participant_type": "codex_proxy",
+  "human_reading_seconds": null,
+  "responses": [
+    {
+      "blind_id": "P4752",
+      "answer_found": true,
+      "answer_text": "1. 依次执行 tel['guido']=4127、tel['jack']=5000、del tel['sape']、tel['irv']=4127，最终 {'jack': 5000, 'guido': 4127, 'irv': 4127}。\n2. list(tel) 为 ['jack', 'guido', 'irv']；sorted(tel) 为 ['guido', 'irv', 'jack']。\n3. 'guido' in tel 为 True。\n4. 再读取 tel['sape'] 会报错；稿件未提供异常的具体名称。\n5. 列表不能作键，因可原地修改；含列表的元组也不能作键，因直接包含可变对象。",
+      "evidence": [
+        {
+          "point": 1,
+          "quote": "If you store using a key that is already in use, the old\nvalue associated with that key is forgotten."
+        },
+        {
+          "point": 2,
+          "quote": ">>> list(tel)\n['jack', 'guido', 'irv']\n>>> sorted(tel)\n['guido', 'irv', 'jack']"
+        },
+        {
+          "point": 3,
+          "quote": ">>> 'guido' in tel\nTrue"
+        },
+        {
+          "point": 4,
+          "quote": "It is an error to extract a value\nusing a non-existent key."
+        },
+        {
+          "point": 5,
+          "quote": "if a tuple contains\nany mutable object either directly or indirectly, it cannot be used as a key.\nYou can’t use lists as keys, since lists can be modified in place using index\nassignments, slice assignments, or methods like append() and\nextend()."
+        }
+      ],
+      "perceived_difficulty_1_to_5": 2,
+      "missing_information": [
+        "读取不存在键时的具体异常名称未提供"
+      ],
+      "open_feedback": "操作和顺序清楚，jack的新值需要依据覆盖规则推导。"
+    },
+    {
+      "blind_id": "P1591",
+      "answer_found": true,
+      "answer_text": "1. 转成字符串称 serializing（序列化），从字符串重建称 deserializing（反序列化）。\n2. import json；x=[1,'simple','list']；json.dumps(x) 产生字符串 '[1, \"simple\", \"list\"]'。\n3. 已打开文本文件 f：写用 json.dump(x, f)，读用 x = json.load(f)。\n4. 文本 JSON 文件读写均指定 encoding=\"utf-8\"，JSON 文件必须为 UTF-8。\n5. 不可信 pickle 反序列化可能执行任意代码，且它专用于 Python；JSON 可处理列表、字典，任意类实例需要额外工作，具体办法稿件未提供。",
+      "evidence": [
+        {
+          "point": 1,
+          "quote": "called serializing.  Reconstructing the data from the string representation\nis called deserializing."
+        },
+        {
+          "point": 2,
+          "quote": ">>> x = [1, 'simple', 'list']\n>>> json.dumps(x)\n'[1, \"simple\", \"list\"]'"
+        },
+        {
+          "point": 3,
+          "quote": "json.dump(x, f)\n\nTo decode the object again, if f is a binary file or\ntext file object which has been opened for reading:\n\nx = json.load(f)"
+        },
+        {
+          "point": 4,
+          "quote": "JSON files must be encoded in UTF-8. Use encoding=\"utf-8\" when opening\nJSON file as a text file for both of reading and writing."
+        },
+        {
+          "point": 5,
+          "quote": "deserializing pickle data coming from an untrusted source can execute\narbitrary code, if the data was crafted by a skilled attacker."
+        }
+      ],
+      "perceived_difficulty_1_to_5": 1,
+      "missing_information": [
+        "任意类实例的具体 JSON 序列化办法未提供"
+      ],
+      "open_feedback": "序列化、文件函数和安全限制容易定位。"
+    },
+    {
+      "blind_id": "P9283",
+      "answer_found": true,
+      "answer_text": "1. 用 open('log.txt', 'a', encoding=\"utf-8\") 保留内容并追加；w 会擦除已有同名文件。\n2. 用 with，结束时自动正确关闭文件，即使发生异常。\n3. readline() 返回 '' 表示文件结束，返回 '\\n' 表示空白行。\n4. 用 with open('log.txt', encoding=\"utf-8\") as f，再 for line in f: print(line, end='') 逐行读取，内存效率好；无 size 的 read() 一次读完整文件，可能超出内存。\n5. JPEG 源用 rb、目标用 wb，读写 bytes 对象；二进制模式不能指定 encoding，文本模式的换行转换会破坏二进制数据。",
+      "evidence": [
+        {
+          "point": 1,
+          "quote": "'w'\nfor only writing (an existing file with the same name will be erased), and\n'a' opens the file for appending; any data written to the file is\nautomatically added to the end."
+        },
+        {
+          "point": 2,
+          "quote": "The advantage is that the file is properly closed\nafter its suite finishes, even if an exception is raised at some\npoint."
+        },
+        {
+          "point": 3,
+          "quote": "if f.readline() returns an empty string, the end of the file\nhas been reached, while a blank line is represented by '\\n', a string\ncontaining only a single newline."
+        },
+        {
+          "point": 4,
+          "quote": ">>> for line in f:\n...     print(line, end='')"
+        },
+        {
+          "point": 5,
+          "quote": "Appending a 'b' to the mode opens the file in binary mode.\nBinary mode data is read and written as bytes objects.\nYou can not specify encoding when opening file in binary mode."
+        }
+      ],
+      "perceived_difficulty_1_to_5": 2,
+      "missing_information": [],
+      "open_feedback": "稿件较长，但文件模式和逐行读取的依据完整。"
+    },
+    {
+      "blind_id": "P7084",
+      "answer_found": true,
+      "answer_text": "1. 整数重试捕获 ValueError；Ctrl-C 引发 KeyboardInterrupt，不能由该 ValueError 处理器匹配。\n2. 匹配异常发生后跳过 try 剩余语句，执行匹配 except，之后继续 try/except 块后；最多执行一个处理器。\n3. 子类处理器应置于父类之前：示例 D、C、B 顺序输出 B、C、D；改为 B 优先则输出 B、B、B，因首个匹配者执行。\n4. else 放在所有 except 后，try 无异常时执行；避免捕获并非受保护代码引发的异常。\n5. 意外 Exception 记录后重新 raise，让调用方继续处理；try 所调用函数内部甚至间接调用的异常也可捕获。",
+      "evidence": [
+        {
+          "point": 1,
+          "quote": "...     except ValueError:\n...         print(\"Oops!  That was no valid number.  Try again...\")"
+        },
+        {
+          "point": 2,
+          "quote": "At most one handler will be executed."
+        },
+        {
+          "point": 3,
+          "quote": "Note that if the except clauses were reversed (with except B first), it\nwould have printed B, B, B — the first matching except clause is triggered."
+        },
+        {
+          "point": 4,
+          "quote": "The use of the else clause is better than adding additional code to\nthe try clause because it avoids accidentally catching an exception\nthat wasn’t raised by the code being protected by the try …\nexcept statement."
+        },
+        {
+          "point": 5,
+          "quote": "The most common pattern for handling Exception is to print or log\nthe exception and then re-raise it (allowing a caller to handle the\nexception as well):"
+        }
+      ],
+      "perceived_difficulty_1_to_5": 2,
+      "missing_information": [],
+      "open_feedback": "父子类顺序的示例直接说明输出差异。"
+    },
+    {
+      "blind_id": "P7699",
+      "answer_found": true,
+      "answer_text": "1. 最初不传 --verbosity 时 args.verbosity=None，if 判断失败，不输出内容。\n2. 仅写 --verbosity 缺少必需的一个值，报 expected one argument。\n3. parser.add_argument(\"--verbose\", help=\"increase output verbosity\", action=\"store_true\")；启用值 True，缺省 False；启用输出 verbosity turned on。\n4. --verbose 已无需值，--verbose 1 的 1 不被识别，报 unrecognized arguments: 1。\n5. parser.add_argument(\"-v\", \"--verbose\", help=\"increase output verbosity\", action=\"store_true\")；-v 输出 verbosity turned on；help 显示 -v, --verbose 以及用法 [-v]。",
+      "evidence": [
+        {
+          "point": 1,
+          "quote": "given None as a value, which is the reason it fails the truth\ntest of the if statement."
+        },
+        {
+          "point": 2,
+          "quote": "prog.py: error: argument --verbosity: expected one argument"
+        },
+        {
+          "point": 3,
+          "quote": "parser.add_argument(\"--verbose\", help=\"increase output verbosity\",\n                    action=\"store_true\")"
+        },
+        {
+          "point": 4,
+          "quote": "prog.py: error: unrecognized arguments: 1"
+        },
+        {
+          "point": 5,
+          "quote": "parser.add_argument(\"-v\", \"--verbose\", help=\"increase output verbosity\",\n                    action=\"store_true\")"
+        }
+      ],
+      "perceived_difficulty_1_to_5": 1,
+      "missing_information": [],
+      "open_feedback": "输入、输出和 help 的变化都直接展示了。"
+    },
+    {
+      "blind_id": "P2194",
+      "answer_found": true,
+      "answer_text": "1. [x*2 for x in vec if x >= 0] 得到 [0, 4, 8]。\n2. [num for elem in [[1, 2], [3, 4]] for num in elem] 得到 [1, 2, 3, 4]。\n3. 元组目标必须加括号，例如 [(x, x**2) for x in range(6)]；漏括号的稿内例子引发 SyntaxError。\n4. 两个 for 和一个 if 顺序与普通嵌套循环一致：第一个 for 为外层，第二个为内层，if 筛选后 append((x, y))。\n5. 普通 for 创建或覆盖 x，循环后 x 仍存在；稿内列表推导式平方例子避免该变量副作用。",
+      "evidence": [
+        {
+          "point": 1,
+          "quote": "[x*2 for x in vec if x >= 0]\nResult:\n[0, 4, 8]"
+        },
+        {
+          "point": 2,
+          "quote": "[num for elem in [[1, 2], [3, 4]] for num in elem]\nResult:\n[1, 2, 3, 4]"
+        },
+        {
+          "point": 3,
+          "quote": "the tuple expression must be parenthesized."
+        },
+        {
+          "point": 4,
+          "quote": "The first for is the outer loop; the second for is the inner loop; the if filters the inner results."
+        },
+        {
+          "point": 5,
+          "quote": "Note that this creates (or overwrites) a variable named x that still exists after the loop completes."
+        }
+      ],
+      "perceived_difficulty_1_to_5": 1,
+      "missing_information": [],
+      "open_feedback": "小抄已有五项对应表达式与解释，容易查找。"
+    },
+    {
+      "blind_id": "P4697",
+      "answer_found": true,
+      "answer_text": "1. from pathlib import Path；p = Path('.') 表示当前目录。\n2. [x for x in p.iterdir() if x.is_dir()] 列出当前目录子目录。\n3. list(p.glob('**/*.py')) 递归收集目录树中的 .py 文件。\n4. p=Path('/etc')；q=p / 'init.d' / 'reboot'，拼接为 /etc/init.d/reboot；示例 q.resolve() 为 /etc/rc.d/init.d/halt，这只是示例机器的结果。\n5. 示例 q.exists() 为 True，q.is_dir() 为 False，即路径存在但不是目录；with q.open() as f: f.readline() 读首行，示例为 '#!/bin/bash\\n'，不保证各电脑相同。",
+      "evidence": [
+        {
+          "point": 1,
+          "quote": ">>> from pathlib import Path\n\nListing subdirectories:\n\n>>> p = Path('.')"
+        },
+        {
+          "point": 2,
+          "quote": ">>> [x for x in p.iterdir() if x.is_dir()]"
+        },
+        {
+          "point": 3,
+          "quote": ">>> list(p.glob('**/*.py'))"
+        },
+        {
+          "point": 4,
+          "quote": ">>> q = p / 'init.d' / 'reboot'\n>>> q\nPosixPath('/etc/init.d/reboot')\n>>> q.resolve()\nPosixPath('/etc/rc.d/init.d/halt')"
+        },
+        {
+          "point": 5,
+          "quote": ">>> q.exists()\nTrue\n>>> q.is_dir()\nFalse\n\nOpening a file:\n\n>>> with q.open() as f: f.readline()\n...\n'#!/bin/bash\\n'"
+        }
+      ],
+      "perceived_difficulty_1_to_5": 1,
+      "missing_information": [],
+      "open_feedback": "示例简短，resolve 只有结果，没有详细原理说明。"
+    }
+  ]
+}

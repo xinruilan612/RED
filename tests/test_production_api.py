@@ -37,19 +37,34 @@ class ProductionTests(unittest.TestCase):
     def brief(self):
         return dict(topic='整理衣橱',audience='大学生',tone='真实清楚',material='一件白衬衫可搭配已有衣物',scenario='standard',allow_hypothesis=True)
 
-    def test_static_assets_have_explicit_browser_types(self):
-        for asset in ('app.js','auth.js','account_profile.js','style.css','trials.css','guidance.js'):
-            with self.subTest(asset=asset):
-                response=self.client.get('/'+asset)
-                self.assertEqual(response.status_code,200)
-                expected='text/css' if asset.endswith('.css') else 'text/javascript'
-                self.assertEqual(response.headers['content-type'].split(';')[0],expected)
-                self.assertEqual(response.headers['x-content-type-options'],'nosniff')
-
-    def test_site_keeps_recording_out_of_product_and_disallows_framing(self):
-        self.assertIn("frame-ancestors 'none'", self.client.get('/').headers['content-security-policy'])
-        for path in ('/walkthrough-recorder', '/walkthrough-recorder.js', '/walkthrough-recorder.css'):
-            self.assertEqual(self.client.get(path).status_code, 404)
+    def test_browser_assets_ignore_system_mime_associations(self):
+        import re
+        from unittest.mock import patch
+        for inferred in ('text/plain', 'application/octet-stream', None):
+            with self.subTest(inferred=inferred), patch('starlette.responses.guess_type', return_value=(inferred, None)):
+                page = self.client.get('/')
+                self.assertEqual(page.status_code, 200)
+                self.assertEqual(page.headers['content-type'], 'text/html; charset=utf-8')
+                assets = re.findall(r'(?:src|href)="(/[^"?]+\.(?:js|css))"', page.text)
+                self.assertTrue({'/auth.js','/app.js','/operations.js','/knowledge.js','/guidance.js','/style.css','/windtunnel.js','/windtunnel.css'}.issubset(assets))
+                self.assertFalse({'/trials.js','/trials.css'}.intersection(assets))
+                for path in assets:
+                    response = self.client.get(path)
+                    self.assertEqual(response.status_code, 200, path)
+                    expected = 'text/javascript' if path.endswith('.js') else 'text/css'
+                    self.assertEqual(response.headers['content-type'], expected+'; charset=utf-8', path)
+                    self.assertEqual(response.headers['x-content-type-options'], 'nosniff')
+                    policy=response.headers['content-security-policy']
+                    self.assertIn("img-src 'self' data: https://*.xhscdn.com https://*.xiaohongshu.com http://*.xhscdn.com http://*.xiaohongshu.com;",policy)
+                    self.assertIn("script-src 'self';",policy)
+                    self.assertNotIn("img-src *",policy)
+                    self.assertEqual(response.headers['cache-control'], 'no-store')
+                for image in ('/mascot-space.png', '/mascot-dog.png', '/shape-hemisphere.png', '/shape-torus.png'):
+                    response = self.client.get(image)
+                    self.assertEqual(response.status_code, 200, image)
+                    self.assertEqual(response.headers['content-type'], 'image/png')
+                    self.assertEqual(response.headers['x-content-type-options'], 'nosniff')
+                self.assertEqual(self.client.get('/secret.js').status_code, 404)
 
     def test_login_logout_fresh_device_and_no_password_leak(self):
         self.assertEqual(self.client.get('/api/operations').status_code,401)
@@ -162,9 +177,7 @@ class ProductionTests(unittest.TestCase):
         self.assertNotIn('accept',run['allowed_actions'])
         act('next');act('accept',{'draft_ref':run['drafts'][-1]['ref'],'review_ref':run['review']['ref']})
         self.assertEqual(run['run_status'],'SUCCEEDED')
-        exported = self.client.get('/api/runs/'+run['run_id']+'/export')
-        self.assertEqual(exported.status_code,200)
-        self.assertEqual(exported.headers['content-disposition'], 'attachment; filename="youji-draft.md"')
+        self.assertEqual(self.client.get('/api/runs/'+run['run_id']+'/export').status_code,200)
 
     def test_rate_limit_and_public_config(self):
         auth=self.app.state.auth

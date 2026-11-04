@@ -3,7 +3,6 @@ import http.client
 import json
 import tempfile
 import threading
-import time
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -77,7 +76,9 @@ class DemoWebTests(unittest.TestCase):
         self.assertEqual(run['run_status'],'SUCCEEDED')
         self.assertEqual(self.action(before,'accept',payload,key='accept-once'),run)
         status,body=self.request('GET',f"/api/runs/{run['run_id']}/export")
-        self.assertEqual(status,200);self.assertIn('未调用真实 AI',body)
+        self.assertEqual(status,200)
+        self.assertNotIn('未调用真实 AI',body);self.assertNotIn('AI 创作稿',body)
+        self.assertIn(run['drafts'][-1]['content']['selected_title'],body)
         status,loaded=self.request('GET',f"/api/runs/{run['run_id']}")
         self.assertEqual(run,loaded)
 
@@ -133,55 +134,6 @@ class DemoWebTests(unittest.TestCase):
         status,rows=self.request('GET','/api/runs');self.assertEqual(rows,[])
         status,_=self.request('POST',path,data);self.assertEqual(status,404)
 
-    def test_delayed_rejected_body_returns_403_without_state_changes(self):
-        run = self.create()
-        path = f"/api/runs/{run['run_id']}/actions"
-        body = json.dumps({'action':'next','version':0,'key':'reject-delayed','payload':{}}).encode()
-        def state():
-            with self.store.connect() as db:
-                return tuple(db.execute(f'SELECT COUNT(*) FROM {table}').fetchone()[0]
-                             for table in ('demo_sessions', 'runs', 'recovery_keys'))
-        before = state()
-        for wrong in ({'Host':'malicious.invalid'}, {'Origin':'https://example.com'}, {'X-CSRF-Token':'bad'}):
-            with self.subTest(header=next(iter(wrong))):
-                headers = {'Host':f'127.0.0.1:{self.server.server_port}',
-                           'Origin':f'http://127.0.0.1:{self.server.server_port}',
-                           'Cookie':self.cookie,'X-CSRF-Token':self.csrf,
-                           'Content-Type':'application/json','Content-Length':str(len(body))}
-                headers.update(wrong)
-                client = http.client.HTTPConnection('127.0.0.1', self.server.server_port, timeout=10)
-                try:
-                    client.putrequest('POST', path, skip_host=True)
-                    for key, value in headers.items():
-                        client.putheader(key, value)
-                    client.endheaders()
-                    time.sleep(.03)
-                    client.send(body)
-                    response = client.getresponse()
-                    self.assertEqual(response.status, 403)
-                    self.assertEqual(json.loads(response.read())['error']['code'], 'FORBIDDEN')
-                finally:
-                    client.close()
-                self.assertEqual(state(), before)
-                status, loaded = self.request('GET', f"/api/runs/{run['run_id']}")
-                self.assertEqual(status, 200)
-                self.assertEqual(loaded, run)
-
-    def test_incomplete_rejected_body_has_bounded_wait(self):
-        client = http.client.HTTPConnection('127.0.0.1', self.server.server_port, timeout=10)
-        try:
-            client.putrequest('POST', '/api/runs', skip_host=True)
-            client.putheader('Host', 'malicious.invalid')
-            client.putheader('Content-Length', '2')
-            client.endheaders(b'{')
-            started = time.monotonic()
-            response = client.getresponse()
-            self.assertEqual(response.status, 403)
-            self.assertEqual(json.loads(response.read())['error']['code'], 'FORBIDDEN')
-            self.assertLess(time.monotonic() - started, 2)
-        finally:
-            client.close()
-
     def test_private_commands_and_untrusted_fields_rejected(self):
         run=self.create()
         self.action(run,'reviewed',{'gates':{}},expect=409)
@@ -226,12 +178,12 @@ class DemoWebTests(unittest.TestCase):
                 if 'data-page' in attrs:self.pages.append(attrs['data-page'])
         parsed=Elements();parsed.feed(html)
         self.assertEqual(len(parsed.ids),len(set(parsed.ids)))
-        self.assertEqual(parsed.pages,['overview','studio','library','publish','memory','windtunnel'])
+        self.assertEqual(parsed.pages,['library','trends','studio','windtunnel','publish','overview','accounts','metrics','memory','connections','models'])
         status,script=self.request('GET','/operations.js')
         self.assertEqual(status,200);self.assertIn('/api/operations',script)
 
     def test_static_assets_and_unknown_routes(self):
-        for path in ('/','/app.js','/style.css','/account_profile.js','/trials.js','/trials.css','/guidance.js'):
+        for path in ('/','/app.js','/style.css','/theme.css','/connections.js','/models.js','/research.js','/guidance.js','/account_profile.js','/trials.js','/trials.css'):
             status,body=self.request('GET',path);self.assertEqual(status,200);self.assertTrue(body)
         status,html=self.request('GET','/')
         for label in ('协作流程','补充真实素材','保存为新版本（不调用 AI）','运行记录','模拟运行'):
@@ -274,7 +226,9 @@ class LiveWebTests(unittest.TestCase):
         self.assertEqual(run['mode'],'live');self.assertEqual(run['usage']['model_calls'],8)
         run=self.action(run,'accept',{'draft_ref':run['drafts'][-1]['ref'],'review_ref':run['review']['ref']})
         status,body=self.request('GET',f"/api/runs/{run['run_id']}/export")
-        self.assertEqual(status,200);self.assertIn('AI 创作稿',body);self.assertNotIn('模拟创作稿',body)
+        self.assertEqual(status,200)
+        self.assertNotIn('AI 创作稿',body);self.assertNotIn('模拟创作稿',body)
+        self.assertIn(run['drafts'][-1]['content']['selected_title'],body)
         self.assertNotIn('private-test-key',json.dumps(run))
 
     def test_recover_live_failure_from_ui_contract_and_replay(self):

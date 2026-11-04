@@ -1,0 +1,16 @@
+{
+  "status": "received_user_confirmed_independent",
+  "paired_tasks": [
+    "REAL-D01",
+    "REAL-D02",
+    "REAL-H01"
+  ],
+  "articles": 6,
+  "reviewers": 3,
+  "mapping_not_for_reviewers": true,
+  "quality_improvement": false,
+  "received_rows": 18,
+  "received_scores": 90,
+  "identity_basis": "用户于2026-11-03明确确认三份由三位未参与开发的人分别填写；未另外核验身份",
+  "results": "human-review/RESULTS.md"
+}

@@ -70,8 +70,8 @@ def build_snapshot(state, account_id, source_type):
 def prompt_for(snapshot, week_start, source_type):
     system = '''你是有迹的账号运营策划 Agent。只依据输入中的当前账号档案、作品、用户录入信号、真实记录指标和已确认经验制定一周可执行计划。
 不要把模拟记录说成真实表现；source_type=simulation 时明确标记为演示数据。没有记录就说没有，不推断涨粉、爆款或因果。目标决定内容组合：涨粉要有吸引新受众、证明方法、展示差异、建立信任等不同任务；卖货要覆盖使用场景、产品证据、比较/顾虑、购买行动；获客要呈现问题、过程、案例、适配对象和低门槛下一步。仅作为按账号情况选择的策划思路，不是固定模板。
-计划必须贴合账号平台、定位、受众、栏目、表达风格、禁用表达及时间/素材条件。根据已发布作品主动避免简单重复；每篇需有不同标题、格式或切入角度。按目标受众真正能做的下一步设计成功信号，不许保证结果。作品少或数据空缺时在 data_gaps 明说，并在理由里说明本条主要由档案假设而来。basis_refs 只能引用输入提供的 available_basis_refs 中的 id；没有来源支撑时用 profile 字段引用，且在 data_gaps 说明。
-只返回符合此 JSON 结构的对象：{"weekly_summary":"...","data_gaps":["..."],"tasks":[{"day_offset":0,"pillar":"...","title":"...","format":"...","angle":"...","action":"...","reason":"...","success_signal":"...","basis_refs":["profile.goal"]}]}。tasks 数量必须等于 weekly_frequency，day_offset 为 0-6 且互不重复。不得输出 markdown。'''
+计划必须贴合账号平台、定位、受众、栏目、表达风格、禁用表达及时间/素材条件。根据已发布作品主动避免简单重复；每篇标题和切入角度必须不同。format 只能填 image_text（图文）或 video_script（短视频口播）；当 weekly_frequency ≥3 时，至少两条必须使用不同的 format，否则计划会被拒绝。按目标受众真正能做的下一步设计成功信号，不许保证结果。作品少或数据空缺时在 data_gaps 明说，并在理由里说明本条主要由档案假设而来。basis_refs 只能引用输入提供的 available_basis_refs 中的 id；没有来源支撑时用 profile:字段 形式的引用，且在 data_gaps 说明。
+只返回符合此 JSON 结构的对象：{"weekly_summary":"...","data_gaps":["..."],"tasks":[{"day_offset":0,"pillar":"...","title":"...","format":"image_text","angle":"...","action":"...","reason":"...","success_signal":"...","basis_refs":["profile:goal"]}]}。tasks 数量必须等于 weekly_frequency，day_offset 为 0-6 且互不重复。不得输出 markdown。'''
     user = {'week_start':week_start,'source_type':source_type,
             'allowed_pillars':_items(snapshot['profile']['pillars']) or ['常青内容'],
             'account_reality':snapshot}
@@ -121,9 +121,8 @@ class OperationsPlanner:
         except (TypeError,ValueError): raise DomainError('INVALID_INPUT','周开始日期无效') from None
         require(start.weekday()==0,'INVALID_INPUT','请选择周一作为计划开始日期')
         self.executor.calls.config=self.executor.config
-        router=self.executor.router; policy=router.policy('operations')
-        fixture=all(r['provider']=='fixture' for r in policy['routes'].values())
-        require(self.executor.config.ready or fixture,'KEY_REQUIRED','请先配置模型 API Key；生成前不会自动调用模型')
+        router=self.executor.router; policy=router.policy('operations',owner)
+        router.ready(policy,owner)
         fingerprint=digest({k:v for k,v in data.items() if k!='key'})
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')

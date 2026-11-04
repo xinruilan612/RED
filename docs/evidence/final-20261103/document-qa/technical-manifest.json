@@ -1,0 +1,67 @@
+{
+  "page_count": 10,
+  "scope": "post human review update",
+  "review_date": "2026-11-03",
+  "artifacts": [
+    {
+      "file": "有迹-技术方案与核心算法说明-20261103.docx",
+      "bytes": 55816,
+      "sha256": "2408fa7fa9d732d06a3ae7eb503f1a29937ccfbfb9223584ff1b88960eb55455"
+    },
+    {
+      "file": "有迹-技术方案与核心算法说明-20261103.pdf",
+      "bytes": 838669,
+      "sha256": "ead0ff3fc057dae267ba522e17a24167b13e59b7c62ae79696b5dde63e651452"
+    },
+    {
+      "file": "_qa/有迹-技术方案与核心算法说明-20261103/page-1.png",
+      "bytes": 476080,
+      "sha256": "3ab0f5f7dcf84d4ee33591db879ebc7278af218270fc94b0a8f95b85b07a20ad"
+    },
+    {
+      "file": "_qa/有迹-技术方案与核心算法说明-20261103/page-2.png",
+      "bytes": 478215,
+      "sha256": "75c1341e10061a78f9de173c5463a026e0a24f7285b3d35c2cc8d6907b52d8e2"
+    },
+    {
+      "file": "_qa/有迹-技术方案与核心算法说明-20261103/page-3.png",
+      "bytes": 519294,
+      "sha256": "8387229354aa94fea610740479349c67fb933584446aa5b57bdbcb65056aeeb4"
+    },
+    {
+      "file": "_qa/有迹-技术方案与核心算法说明-20261103/page-4.png",
+      "bytes": 510906,
+      "sha256": "1ec3e450f3b5d69f6dc6091dab317bc4c3a11d5938684a6161de8bdc870da65e"
+    },
+    {
+      "file": "_qa/有迹-技术方案与核心算法说明-20261103/page-5.png",
+      "bytes": 531747,
+      "sha256": "6b54638996cf6dbfb2d647300751e885c877efbb198ec7b28b26038af9d0cafa"
+    },
+    {
+      "file": "_qa/有迹-技术方案与核心算法说明-20261103/page-6.png",
+      "bytes": 470991,
+      "sha256": "fd9ce6453a24246a4ea8ba58ae571e89e71fae37034ab7b279febf3b6b187e92"
+    },
+    {
+      "file": "_qa/有迹-技术方案与核心算法说明-20261103/page-7.png",
+      "bytes": 407584,
+      "sha256": "04c7006e267966f1fd3835b7c79bd0f2fded68864e280e9259855dfde0f0fa73"
+    },
+    {
+      "file": "_qa/有迹-技术方案与核心算法说明-20261103/page-8.png",
+      "bytes": 504347,
+      "sha256": "2a638915767b04648ee902aacaf967a2d35453b4e2233af3d7600c7ea0814ce6"
+    },
+    {
+      "file": "_qa/有迹-技术方案与核心算法说明-20261103/page-9.png",
+      "bytes": 562893,
+      "sha256": "91ca96c5a2ca308bf930e67b6e3f24db94f5c9d534f36f612e63e8005af393b7"
+    },
+    {
+      "file": "_qa/有迹-技术方案与核心算法说明-20261103/page-10.png",
+      "bytes": 533192,
+      "sha256": "da92fbc71eb0c2a042d58da81924a91048eb3f7a266441b601917e29cf0da557"
+    }
+  ]
+}

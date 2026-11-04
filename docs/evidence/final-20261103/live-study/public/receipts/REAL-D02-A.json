@@ -1,0 +1,4367 @@
+{
+  "snapshot_id": "d5a06df7-46b0-4076-b985-14e70e618ef3",
+  "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+  "schema_version": 2,
+  "run_status": "WAITING_USER",
+  "current_stage": "reviewer",
+  "wait_reason": "final_confirmation",
+  "status_version": 19,
+  "iteration": 0,
+  "supplements": 0,
+  "context": {
+    "topic": "罗技Signature M650按手型与连接方式介绍",
+    "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+    "tone": "清楚自然克制",
+    "material": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：罗技官方建议中小手型考虑M650、大手型考虑M650 L，左利手对应M650 L Left。\nF2：SmartWheel滚动既提供逐行定位，也支持长页面快速滚动，通过轻弹手指切换。\nF3：连接方式包括低功耗蓝牙和Logi Bolt USB接收器。\nF4：官方列出Windows、macOS、Linux、iPadOS、Android等支持平台。\n【完整限制】官方支持平台名单不等于本次用户每台设备均已测试，购买前仍需核对具体系统与接口。本次读取未取得电池寿命、DPI数值、机身尺寸的正文参数，FAQ标题不能当作答案。没有作者亲测、实时价格或全网对比，不写完全无声、提升效率百分比、最适合所有人的结论。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+    "scenario": "standard",
+    "allow_hypothesis": false,
+    "algorithm_options": {
+      "enabled": false,
+      "ask_questions": false
+    },
+    "web_research": {
+      "enabled": false,
+      "queries": [],
+      "provider": "bing",
+      "targets": [
+        "web"
+      ],
+      "status": "pending"
+    },
+    "mode": "live",
+    "material_policy": "available_only",
+    "material_policy_version": "available-only-v1",
+    "model_policy": {
+      "version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "routes": {
+        "audience": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "research": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "strategy": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "outline": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "hook": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "title": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "body": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "revise": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "review": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        }
+      },
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1"
+    },
+    "operations": {
+      "platform": "xiaohongshu",
+      "account": "我的账号",
+      "account_id": "[已隐去]",
+      "hypothesis_id": null,
+      "profile": {
+        "id": "5285e961-e866-5533-b51e-87cd6014586e",
+        "name": "我的账号",
+        "platform": "xiaohongshu",
+        "aliases": [
+          "我的账号"
+        ],
+        "revision": 1,
+        "profile": {
+          "positioning": "",
+          "audience": "",
+          "tone": "",
+          "pillars": "",
+          "goal": "",
+          "resources": "",
+          "banned": "",
+          "weekly_frequency": 3
+        },
+        "revisions": []
+      },
+      "trend": null,
+      "memories": [],
+      "active_hypothesis": null,
+      "experiment_memory": [],
+      "history": [],
+      "metrics": [],
+      "competitors": [],
+      "preferences": []
+    },
+    "knowledge_selection": {
+      "enabled": false,
+      "automatic_references": true
+    },
+    "creation_classification": {
+      "domains": [
+        "digital"
+      ],
+      "channel": "xiaohongshu",
+      "format": "note",
+      "word_count": 300,
+      "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+      "origin": "user",
+      "ambiguities": []
+    },
+    "comment_feedback": {
+      "enabled": false,
+      "note_ids": [],
+      "notes": [],
+      "samples": []
+    },
+    "creation_retrieval": {
+      "engine": "filtered-bm25-zh-bigram-v1",
+      "reranker": "bm25-zh-bigram-v1",
+      "classification": {
+        "domains": [
+          "digital"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "word_count": 300,
+        "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+        "origin": "user",
+        "ambiguities": []
+      },
+      "groups": {
+        "methods": [],
+        "examples": [
+          {
+            "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+            "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+            "version": 1,
+            "page": 1,
+            "offset": 0,
+            "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n你可能想要一个直接答案，但决定还缺少自己的需求。\n\n虚构规格页登记型号X15，尺寸为15厘米，未提供其他测试。\n\n把选择拆成三个步骤：确认目标、核对资料、记录仍然未知的地方。\n\n不要把参考人物的个人记录移植到当前任务。\n\n愿意的话，留下最想确认的一项条件。",
+            "title": "虚构选购结构参考-REAL-D02",
+            "url": "",
+            "source_type": "text",
+            "filename": "虚构选购结构参考-REAL-D02.txt",
+            "location_type": "page",
+            "evidence_role": "expression_reference",
+            "content_kind": "text",
+            "source_scope": "current_account",
+            "body_kind": "text",
+            "classification": {
+              "domains": [
+                "digital"
+              ],
+              "channel": "xiaohongshu",
+              "format": "note",
+              "material_type": "example",
+              "origin": "user"
+            },
+            "case_ref": null,
+            "score": 1.356752,
+            "semantic_score": null,
+            "retrieval_mode": "bm25",
+            "topic_coverage": 0.0,
+            "material_type": "example",
+            "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+          },
+          {
+            "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+            "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+            "version": 1,
+            "page": 1,
+            "offset": 0,
+            "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是桌面连接。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+            "title": "虚构选购结构参考-REAL-D01",
+            "url": "",
+            "source_type": "text",
+            "filename": "虚构选购结构参考-REAL-D01.txt",
+            "location_type": "page",
+            "evidence_role": "expression_reference",
+            "content_kind": "text",
+            "source_scope": "current_account",
+            "body_kind": "text",
+            "classification": {
+              "domains": [
+                "digital"
+              ],
+              "channel": "xiaohongshu",
+              "format": "note",
+              "material_type": "example",
+              "origin": "user"
+            },
+            "case_ref": null,
+            "score": 1.204767,
+            "semantic_score": null,
+            "retrieval_mode": "bm25",
+            "topic_coverage": 0.083333,
+            "material_type": "example",
+            "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+          }
+        ],
+        "facts": []
+      },
+      "sources": [
+        {
+          "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+          "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+          "version": 1,
+          "page": 1,
+          "offset": 0,
+          "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n你可能想要一个直接答案，但决定还缺少自己的需求。\n\n虚构规格页登记型号X15，尺寸为15厘米，未提供其他测试。\n\n把选择拆成三个步骤：确认目标、核对资料、记录仍然未知的地方。\n\n不要把参考人物的个人记录移植到当前任务。\n\n愿意的话，留下最想确认的一项条件。",
+          "title": "虚构选购结构参考-REAL-D02",
+          "url": "",
+          "source_type": "text",
+          "filename": "虚构选购结构参考-REAL-D02.txt",
+          "location_type": "page",
+          "evidence_role": "expression_reference",
+          "content_kind": "text",
+          "source_scope": "current_account",
+          "body_kind": "text",
+          "classification": {
+            "domains": [
+              "digital"
+            ],
+            "channel": "xiaohongshu",
+            "format": "note",
+            "material_type": "example",
+            "origin": "user"
+          },
+          "case_ref": null,
+          "score": 1.356752,
+          "semantic_score": null,
+          "retrieval_mode": "bm25",
+          "topic_coverage": 0.0,
+          "material_type": "example",
+          "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+        },
+        {
+          "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+          "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+          "version": 1,
+          "page": 1,
+          "offset": 0,
+          "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是桌面连接。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+          "title": "虚构选购结构参考-REAL-D01",
+          "url": "",
+          "source_type": "text",
+          "filename": "虚构选购结构参考-REAL-D01.txt",
+          "location_type": "page",
+          "evidence_role": "expression_reference",
+          "content_kind": "text",
+          "source_scope": "current_account",
+          "body_kind": "text",
+          "classification": {
+            "domains": [
+              "digital"
+            ],
+            "channel": "xiaohongshu",
+            "format": "note",
+            "material_type": "example",
+            "origin": "user"
+          },
+          "case_ref": null,
+          "score": 1.204767,
+          "semantic_score": null,
+          "retrieval_mode": "bm25",
+          "topic_coverage": 0.083333,
+          "material_type": "example",
+          "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+        }
+      ],
+      "filters": {
+        "methods": {
+          "owner": "[已隐去]",
+          "account_id": "[已隐去]",
+          "material_type": "method",
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "allow_general": true,
+          "document_ids": null,
+          "enabled": true,
+          "candidate_count": 0,
+          "vector_query": "图文笔记 原创写作 开篇 节奏 结构 表达 行动引导",
+          "retrieval_mode": "bm25",
+          "vector_candidate_count": 0,
+          "lexical_candidate_count": 0
+        },
+        "examples": {
+          "owner": "[已隐去]",
+          "account_id": "[已隐去]",
+          "material_type": "example",
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "allow_general": false,
+          "document_ids": null,
+          "enabled": true,
+          "candidate_count": 2,
+          "vector_query": "数码 图文笔记 开篇 结构 表达",
+          "retrieval_mode": "bm25",
+          "vector_candidate_count": 0,
+          "lexical_candidate_count": 2
+        },
+        "facts": {
+          "owner": "[已隐去]",
+          "account_id": "[已隐去]",
+          "material_type": "fact",
+          "domains": [
+            "digital"
+          ],
+          "channel": null,
+          "format": null,
+          "allow_general": false,
+          "document_ids": null,
+          "enabled": false,
+          "candidate_count": 0,
+          "vector_query": "罗技Signature M650按手型与连接方式介绍",
+          "retrieval_mode": "disabled",
+          "vector_candidate_count": 0,
+          "lexical_candidate_count": 0
+        }
+      },
+      "gaps": [
+        {
+          "code": "VECTOR_UNAVAILABLE",
+          "detail": "本地语义检索已关闭，使用 BM25",
+          "fallback": "bm25"
+        },
+        {
+          "code": "NO_MATCHING_METHODS",
+          "group": "methods",
+          "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+        }
+      ],
+      "insufficient": true,
+      "context_chars": 376,
+      "limits": {
+        "limits": {
+          "methods": 2,
+          "examples": 3,
+          "facts": 4
+        },
+        "total_chars": 5200,
+        "chunk_chars": 700
+      },
+      "embedding_note": "本地语义检索已关闭，使用 BM25；缺失或不可用向量组已降级为限定范围 BM25；不是语义向量结果"
+    },
+    "retrieval": {
+      "engine": "filtered-bm25-zh-bigram-v1",
+      "reranker": "bm25-zh-bigram-v1",
+      "classification": {
+        "domains": [
+          "digital"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "word_count": 300,
+        "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+        "origin": "user",
+        "ambiguities": []
+      },
+      "groups": {
+        "methods": [],
+        "examples": [
+          {
+            "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+            "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+            "version": 1,
+            "page": 1,
+            "offset": 0,
+            "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n你可能想要一个直接答案，但决定还缺少自己的需求。\n\n虚构规格页登记型号X15，尺寸为15厘米，未提供其他测试。\n\n把选择拆成三个步骤：确认目标、核对资料、记录仍然未知的地方。\n\n不要把参考人物的个人记录移植到当前任务。\n\n愿意的话，留下最想确认的一项条件。",
+            "title": "虚构选购结构参考-REAL-D02",
+            "url": "",
+            "source_type": "text",
+            "filename": "虚构选购结构参考-REAL-D02.txt",
+            "location_type": "page",
+            "evidence_role": "expression_reference",
+            "content_kind": "text",
+            "source_scope": "current_account",
+            "body_kind": "text",
+            "classification": {
+              "domains": [
+                "digital"
+              ],
+              "channel": "xiaohongshu",
+              "format": "note",
+              "material_type": "example",
+              "origin": "user"
+            },
+            "case_ref": null,
+            "score": 1.356752,
+            "semantic_score": null,
+            "retrieval_mode": "bm25",
+            "topic_coverage": 0.0,
+            "material_type": "example",
+            "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+          },
+          {
+            "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+            "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+            "version": 1,
+            "page": 1,
+            "offset": 0,
+            "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是桌面连接。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+            "title": "虚构选购结构参考-REAL-D01",
+            "url": "",
+            "source_type": "text",
+            "filename": "虚构选购结构参考-REAL-D01.txt",
+            "location_type": "page",
+            "evidence_role": "expression_reference",
+            "content_kind": "text",
+            "source_scope": "current_account",
+            "body_kind": "text",
+            "classification": {
+              "domains": [
+                "digital"
+              ],
+              "channel": "xiaohongshu",
+              "format": "note",
+              "material_type": "example",
+              "origin": "user"
+            },
+            "case_ref": null,
+            "score": 1.204767,
+            "semantic_score": null,
+            "retrieval_mode": "bm25",
+            "topic_coverage": 0.083333,
+            "material_type": "example",
+            "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+          }
+        ],
+        "facts": []
+      },
+      "sources": [
+        {
+          "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+          "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+          "version": 1,
+          "page": 1,
+          "offset": 0,
+          "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n你可能想要一个直接答案，但决定还缺少自己的需求。\n\n虚构规格页登记型号X15，尺寸为15厘米，未提供其他测试。\n\n把选择拆成三个步骤：确认目标、核对资料、记录仍然未知的地方。\n\n不要把参考人物的个人记录移植到当前任务。\n\n愿意的话，留下最想确认的一项条件。",
+          "title": "虚构选购结构参考-REAL-D02",
+          "url": "",
+          "source_type": "text",
+          "filename": "虚构选购结构参考-REAL-D02.txt",
+          "location_type": "page",
+          "evidence_role": "expression_reference",
+          "content_kind": "text",
+          "source_scope": "current_account",
+          "body_kind": "text",
+          "classification": {
+            "domains": [
+              "digital"
+            ],
+            "channel": "xiaohongshu",
+            "format": "note",
+            "material_type": "example",
+            "origin": "user"
+          },
+          "case_ref": null,
+          "score": 1.356752,
+          "semantic_score": null,
+          "retrieval_mode": "bm25",
+          "topic_coverage": 0.0,
+          "material_type": "example",
+          "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+        },
+        {
+          "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+          "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+          "version": 1,
+          "page": 1,
+          "offset": 0,
+          "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是桌面连接。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+          "title": "虚构选购结构参考-REAL-D01",
+          "url": "",
+          "source_type": "text",
+          "filename": "虚构选购结构参考-REAL-D01.txt",
+          "location_type": "page",
+          "evidence_role": "expression_reference",
+          "content_kind": "text",
+          "source_scope": "current_account",
+          "body_kind": "text",
+          "classification": {
+            "domains": [
+              "digital"
+            ],
+            "channel": "xiaohongshu",
+            "format": "note",
+            "material_type": "example",
+            "origin": "user"
+          },
+          "case_ref": null,
+          "score": 1.204767,
+          "semantic_score": null,
+          "retrieval_mode": "bm25",
+          "topic_coverage": 0.083333,
+          "material_type": "example",
+          "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+        }
+      ],
+      "filters": {
+        "methods": {
+          "owner": "[已隐去]",
+          "account_id": "[已隐去]",
+          "material_type": "method",
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "allow_general": true,
+          "document_ids": null,
+          "enabled": true,
+          "candidate_count": 0,
+          "vector_query": "图文笔记 原创写作 开篇 节奏 结构 表达 行动引导",
+          "retrieval_mode": "bm25",
+          "vector_candidate_count": 0,
+          "lexical_candidate_count": 0
+        },
+        "examples": {
+          "owner": "[已隐去]",
+          "account_id": "[已隐去]",
+          "material_type": "example",
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "allow_general": false,
+          "document_ids": null,
+          "enabled": true,
+          "candidate_count": 2,
+          "vector_query": "数码 图文笔记 开篇 结构 表达",
+          "retrieval_mode": "bm25",
+          "vector_candidate_count": 0,
+          "lexical_candidate_count": 2
+        },
+        "facts": {
+          "owner": "[已隐去]",
+          "account_id": "[已隐去]",
+          "material_type": "fact",
+          "domains": [
+            "digital"
+          ],
+          "channel": null,
+          "format": null,
+          "allow_general": false,
+          "document_ids": null,
+          "enabled": false,
+          "candidate_count": 0,
+          "vector_query": "罗技Signature M650按手型与连接方式介绍",
+          "retrieval_mode": "disabled",
+          "vector_candidate_count": 0,
+          "lexical_candidate_count": 0
+        }
+      },
+      "gaps": [
+        {
+          "code": "VECTOR_UNAVAILABLE",
+          "detail": "本地语义检索已关闭，使用 BM25",
+          "fallback": "bm25"
+        },
+        {
+          "code": "NO_MATCHING_METHODS",
+          "group": "methods",
+          "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+        }
+      ],
+      "insufficient": true,
+      "context_chars": 376,
+      "limits": {
+        "limits": {
+          "methods": 2,
+          "examples": 3,
+          "facts": 4
+        },
+        "total_chars": 5200,
+        "chunk_chars": 700
+      },
+      "embedding_note": "本地语义检索已关闭，使用 BM25；缺失或不可用向量组已降级为限定范围 BM25；不是语义向量结果"
+    },
+    "evidence": [
+      {
+        "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+        "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+        "version": 1,
+        "page": 1,
+        "offset": 0,
+        "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n你可能想要一个直接答案，但决定还缺少自己的需求。\n\n虚构规格页登记型号X15，尺寸为15厘米，未提供其他测试。\n\n把选择拆成三个步骤：确认目标、核对资料、记录仍然未知的地方。\n\n不要把参考人物的个人记录移植到当前任务。\n\n愿意的话，留下最想确认的一项条件。",
+        "title": "虚构选购结构参考-REAL-D02",
+        "url": "",
+        "source_type": "text",
+        "filename": "虚构选购结构参考-REAL-D02.txt",
+        "location_type": "page",
+        "evidence_role": "expression_reference",
+        "content_kind": "text",
+        "source_scope": "current_account",
+        "body_kind": "text",
+        "classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example",
+          "origin": "user"
+        },
+        "case_ref": null,
+        "score": 1.356752,
+        "semantic_score": null,
+        "retrieval_mode": "bm25",
+        "topic_coverage": 0.0,
+        "material_type": "example",
+        "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+      },
+      {
+        "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+        "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+        "version": 1,
+        "page": 1,
+        "offset": 0,
+        "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是桌面连接。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+        "title": "虚构选购结构参考-REAL-D01",
+        "url": "",
+        "source_type": "text",
+        "filename": "虚构选购结构参考-REAL-D01.txt",
+        "location_type": "page",
+        "evidence_role": "expression_reference",
+        "content_kind": "text",
+        "source_scope": "current_account",
+        "body_kind": "text",
+        "classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example",
+          "origin": "user"
+        },
+        "case_ref": null,
+        "score": 1.204767,
+        "semantic_score": null,
+        "retrieval_mode": "bm25",
+        "topic_coverage": 0.083333,
+        "material_type": "example",
+        "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+      }
+    ],
+    "runtime_execution": {
+      "mode": "automatic"
+    }
+  },
+  "artifacts": [
+    {
+      "stage": "strategy",
+      "value": {
+        "angle": "按手型与连接方式拆解M650选购条件",
+        "reader": "小红书上想理性选鼠的中小创作者和普通用户",
+        "promise": "明确列出官方建议的手型适配逻辑、两种连接方式及多平台支持范围，并标注所有未公开参数与需自行核对项",
+        "tone": "清楚自然克制",
+        "assumptions": [
+          "读者关注实际适配而非营销话术",
+          "读者会自行核对设备兼容性",
+          "读者不期待未提供的参数或亲测结论"
+        ],
+        "candidate_angles": [
+          "手型匹配逻辑+连接方式选择路径",
+          "平台兼容清单+使用前必核事项"
+        ],
+        "cta": "收藏前，先对照你的手型和系统版本",
+        "why_account": "kb:aab706a0-afc2-4270-9376-65693cac0c42：借鉴‘买之前先问自己’节奏与‘已知/待确认’分栏逻辑；本题改写为直接陈述F1-F4事实，删去虚构场景与强制互动指令，保留克制语气和边界提示",
+        "content_brief": {
+          "account_id": "[已隐去]",
+          "profile_revision": 1,
+          "goal": "先验证内容是否对目标受众有用",
+          "core_viewpoint": "按手型与连接方式拆解M650选购条件",
+          "audience": "小红书上想理性选鼠的中小创作者和普通用户",
+          "content_type": "图文笔记",
+          "hook_options": [
+            "手型匹配逻辑+连接方式选择路径",
+            "平台兼容清单+使用前必核事项"
+          ],
+          "evidence_scope": "引用用户素材与检索原文；历史表现与竞品观察不能证明正文事实",
+          "cta": "收藏前，先对照你的手型和系统版本",
+          "banned": "",
+          "publishing_window": "由用户安排；暂无经过验证的最佳发布时间",
+          "recommendation_reason": "kb:aab706a0-afc2-4270-9376-65693cac0c42：借鉴‘买之前先问自己’节奏与‘已知/待确认’分栏逻辑；本题改写为直接陈述F1-F4事实，删去虚构场景与强制互动指令，保留克制语气和边界提示"
+        },
+        "learning_refs": [],
+        "next_experiments": []
+      },
+      "snapshot_id": "d5a06df7-46b0-4076-b985-14e70e618ef3"
+    },
+    {
+      "stage": "outline",
+      "value": [
+        "罗技官方按手型分M650（中小手型）与M650 L（大手型），左利手建议选M650 L Left",
+        "支持低功耗蓝牙和Logi Bolt USB接收器两种连接方式，未说明切换逻辑或多设备协同细节",
+        "兼容Windows、macOS、Linux、iPadOS、Android，但需自行核对具体系统版本与接口",
+        "未公开电池寿命、DPI、机身尺寸等参数，FAQ标题不构成答案，无亲测效果承诺"
+      ],
+      "snapshot_id": "d5a06df7-46b0-4076-b985-14e70e618ef3"
+    },
+    {
+      "stage": "hook",
+      "value": "选罗技M650前，先确认你的手型和设备系统——官方明确按手型分款，连接方式与平台支持虽广，但关键参数未公开。",
+      "snapshot_id": "d5a06df7-46b0-4076-b985-14e70e618ef3"
+    },
+    {
+      "stage": "title",
+      "value": {
+        "candidates": [
+          "M650怎么选？看手型+连法",
+          "小手/大手该选哪款M650？",
+          "罗技M650：手型与连接指南",
+          "M650适配你吗？官方建议速查",
+          "蓝牙还是接收器？M650连接说明"
+        ],
+        "selected": "M650怎么选？看手型+连法",
+        "note": "16字符，直击读者决策卡点；用‘怎么选’提问式开头符合小红书搜索习惯；‘手型+连法’精准对应brief核心维度，无冗余词。",
+        "reasons": [
+          "账号匹配度高：沿用中小创作者常用口语化设问句式；具体性最强，明确指向两个已知事实维度；同质化最低，未套用‘最适合’‘爆款’等泛化模板。",
+          "有明确对比结构（小手/大手），但未虚构尺寸数据；吸引力来自身份识别（‘该选哪款’引发代入）；稍偏静态分类，不如selected动态引导强。",
+          "品牌+型号+功能关键词完整，利于搜索；但‘指南’略显宽泛，未突出‘选’的动作和判断依据；中性稳妥，但点击动机弱于问题式。",
+          "‘适配你吗’制造轻互动感，‘速查’强化实用性；但‘官方建议’四字占位多，压缩了关键信息密度；悬念成立，但支撑点略虚。",
+          "聚焦单一技术点（连接），信息明确；但忽略手型这一同等重要的官方分款依据，维度不全，易误导读者以为只需关心连接。"
+        ]
+      },
+      "snapshot_id": "d5a06df7-46b0-4076-b985-14e70e618ef3"
+    },
+    {
+      "stage": "body",
+      "value": {
+        "selected_title": "M650怎么选？看手型+连法",
+        "body": "选罗技M650前，先确认你的手型和设备系统——官方明确按手型分款，连接方式与平台支持虽广，但关键参数未公开。\n\n✅ 手型适配：中小手型建议M650；大手型建议M650 L；左利手推荐M650 L Left。\n\n✅ 连接方式：支持低功耗蓝牙 + Logi Bolt USB接收器，未说明切换逻辑或多设备协同细节。\n\n✅ 平台兼容：Windows、macOS、Linux、iPadOS、Android均在官方支持列表中，但需自行核对具体系统版本与接口。\n\n⚠️ 注意：电池寿命、DPI、机身尺寸等参数本次未公开；FAQ标题不构成答案；无亲测效果或静音承诺。",
+        "cta": "收藏前，先对照你的手型和系统版本",
+        "tags": [
+          "罗技M650",
+          "鼠标选购",
+          "手型匹配",
+          "蓝牙鼠标",
+          "LogiBolt",
+          "数码配件",
+          "小红书种草",
+          "办公外设"
+        ]
+      },
+      "snapshot_id": "d5a06df7-46b0-4076-b985-14e70e618ef3"
+    }
+  ],
+  "node_runs": [
+    {
+      "id": "a7d61c49-4b51-4c7f-bfee-bf5dd5f288df",
+      "agent": "research",
+      "stage": "research",
+      "mode": "live",
+      "snapshot_id": "d5a06df7-46b0-4076-b985-14e70e618ef3",
+      "input": {
+        "brief": {
+          "topic": "罗技Signature M650按手型与连接方式介绍",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "tone": "清楚自然克制",
+          "allow_hypothesis": false
+        },
+        "materials": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：罗技官方建议中小手型考虑M650、大手型考虑M650 L，左利手对应M650 L Left。\nF2：SmartWheel滚动既提供逐行定位，也支持长页面快速滚动，通过轻弹手指切换。\nF3：连接方式包括低功耗蓝牙和Logi Bolt USB接收器。\nF4：官方列出Windows、macOS、Linux、iPadOS、Android等支持平台。\n【完整限制】官方支持平台名单不等于本次用户每台设备均已测试，购买前仍需核对具体系统与接口。本次读取未取得电池寿命、DPI数值、机身尺寸的正文参数，FAQ标题不能当作答案。没有作者亲测、实时价格或全网对比，不写完全无声、提升效率百分比、最适合所有人的结论。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          }
+        ],
+        "current_date": "2026-11-03",
+        "date_timezone": "Asia/Shanghai",
+        "retrieved_references": [
+          {
+            "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+            "title": "虚构选购结构参考-REAL-D02",
+            "url": "",
+            "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          },
+          {
+            "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+            "title": "虚构选购结构参考-REAL-D01",
+            "url": "",
+            "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          }
+        ],
+        "creation_classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "creation_retrieval": {
+          "methods": [],
+          "examples": [
+            {
+              "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+              "source_type": "text",
+              "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n你可能想要一个直接答案，但决定还缺少自己的需求。\n\n虚构规格页登记型号X15，尺寸为15厘米，未提供其他测试。\n\n把选择拆成三个步骤：确认目标、核对资料、记录仍然未知的地方。\n\n不要把参考人物的个人记录移植到当前任务。\n\n愿意的话，留下最想确认的一项条件。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-D02",
+              "url": "",
+              "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "digital"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            },
+            {
+              "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+              "source_type": "text",
+              "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是桌面连接。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-D01",
+              "url": "",
+              "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "digital"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            }
+          ],
+          "facts": [
+            {
+              "source_id": "user-material"
+            }
+          ],
+          "gaps": [
+            {
+              "code": "VECTOR_UNAVAILABLE",
+              "detail": "本地语义检索已关闭，使用 BM25",
+              "fallback": "bm25"
+            },
+            {
+              "code": "NO_MATCHING_METHODS",
+              "group": "methods",
+              "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+            }
+          ]
+        },
+        "web_research": {
+          "status": "not_requested",
+          "reads": [],
+          "limitation": "本任务没有实际执行联网调查，不能自称已查询官网或媒体。"
+        },
+        "material_policy": "available_only",
+        "material_policy_version": "available-only-v1",
+        "operations": {
+          "platform": "xiaohongshu",
+          "account": "我的账号",
+          "account_id": "[已隐去]",
+          "hypothesis_id": null,
+          "profile": {
+            "id": "5285e961-e866-5533-b51e-87cd6014586e",
+            "name": "我的账号",
+            "platform": "xiaohongshu",
+            "aliases": [
+              "我的账号"
+            ],
+            "revision": 1,
+            "profile": {
+              "positioning": "",
+              "audience": "",
+              "tone": "",
+              "pillars": "",
+              "goal": "",
+              "resources": "",
+              "banned": "",
+              "weekly_frequency": 3
+            },
+            "revisions": []
+          },
+          "trend": null,
+          "memories": [],
+          "active_hypothesis": null,
+          "experiment_memory": [],
+          "history": [],
+          "metrics": [],
+          "competitors": [],
+          "preferences": []
+        }
+      },
+      "output": {
+        "core_gap": false,
+        "gaps": [],
+        "facts": [
+          {
+            "source_id": "user-material",
+            "quote": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：罗技官方建议中小手型考虑M650、大手型考虑M650 L，左利手对应M650 L Left。\nF2：SmartWheel滚动既提供逐行定位，也支持长页面快速滚动，通过轻弹手指切换。\nF3：连接方式包括低功耗蓝牙和Logi Bolt USB接收器。\nF4：官方列出Windows、macOS、Linux、iPadOS、Android等支持平台。\n【完整限制】官方支持平台名单不等于本次用户每台设备均已测试，购买前仍需核对具体系统与接口。本次读取未取得电池寿命、DPI数值、机身尺寸的正文参数，FAQ标题不能当作答案。没有作者亲测、实时价格或全网对比，不写完全无声、提升效率百分比、最适合所有人的结论。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。"
+          }
+        ],
+        "prohibited_claims": [
+          "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1：仅作开篇结构与分栏逻辑参考，不可移植‘尺寸为15厘米’‘桌面连接’等虚构规格与场景；不可将‘留下最想确认的一项条件’设为强制互动指令，本任务未要求CTA动作",
+          "kb:aab706a0-afc2-4270-9376-65693cac0c42：仅借鉴‘已知/待确认’二分框架与‘买之前先问自己’句式节奏，不可移植‘桌面连接’范围限定、‘两种连接选项’简化表述（因F3明确含两种且无数量暗示）、不可添加‘收藏前先核对’等未经材料支持的操作提示"
+        ],
+        "sources": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：罗技官方建议中小手型考虑M650、大手型考虑M650 L，左利手对应M650 L Left。\nF2：SmartWheel滚动既提供逐行定位，也支持长页面快速滚动，通过轻弹手指切换。\nF3：连接方式包括低功耗蓝牙和Logi Bolt USB接收器。\nF4：官方列出Windows、macOS、Linux、iPadOS、Android等支持平台。\n【完整限制】官方支持平台名单不等于本次用户每台设备均已测试，购买前仍需核对具体系统与接口。本次读取未取得电池寿命、DPI数值、机身尺寸的正文参数，FAQ标题不能当作答案。没有作者亲测、实时价格或全网对比，不写完全无声、提升效率百分比、最适合所有人的结论。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          },
+          {
+            "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+            "source_type": "text",
+            "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n你可能想要一个直接答案，但决定还缺少自己的需求。\n\n虚构规格页登记型号X15，尺寸为15厘米，未提供其他测试。\n\n把选择拆成三个步骤：确认目标、核对资料、记录仍然未知的地方。\n\n不要把参考人物的个人记录移植到当前任务。\n\n愿意的话，留下最想确认的一项条件。",
+            "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+            "page": 1,
+            "title": "虚构选购结构参考-REAL-D02",
+            "url": "",
+            "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+            "version": 1,
+            "location_type": "page",
+            "offset": 0,
+            "evidence_role": "expression_reference",
+            "content_kind": "text",
+            "source_scope": "current_account",
+            "case_ref": null,
+            "material_type": "example",
+            "classification": {
+              "domains": [
+                "digital"
+              ],
+              "channel": "xiaohongshu",
+              "format": "note",
+              "material_type": "example",
+              "origin": "user"
+            }
+          },
+          {
+            "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+            "source_type": "text",
+            "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是桌面连接。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+            "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+            "page": 1,
+            "title": "虚构选购结构参考-REAL-D01",
+            "url": "",
+            "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+            "version": 1,
+            "location_type": "page",
+            "offset": 0,
+            "evidence_role": "expression_reference",
+            "content_kind": "text",
+            "source_scope": "current_account",
+            "case_ref": null,
+            "material_type": "example",
+            "classification": {
+              "domains": [
+                "digital"
+              ],
+              "channel": "xiaohongshu",
+              "format": "note",
+              "material_type": "example",
+              "origin": "user"
+            }
+          }
+        ],
+        "scope": "分析用户素材与检索到的原文快照；引用逐字校验，事实未独立核实",
+        "topic_card": {
+          "topic": "罗技Signature M650按手型与连接方式介绍",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "why_now": "自主选题，暂无可核验的时效依据",
+          "evidence": [],
+          "account_fit": "账号定位尚待补充",
+          "risk": [
+            "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1：仅作开篇结构与分栏逻辑参考，不可移植‘尺寸为15厘米’‘桌面连接’等虚构规格与场景；不可将‘留下最想确认的一项条件’设为强制互动指令，本任务未要求CTA动作",
+            "kb:aab706a0-afc2-4270-9376-65693cac0c42：仅借鉴‘已知/待确认’二分框架与‘买之前先问自己’句式节奏，不可移植‘桌面连接’范围限定、‘两种连接选项’简化表述（因F3明确含两种且无数量暗示）、不可添加‘收藏前先核对’等未经材料支持的操作提示"
+          ],
+          "content_angles": [
+            "结合真实场景解释问题",
+            "整理可验证的尝试步骤"
+          ],
+          "limitation": "选题卡基于用户线索；没有自动抓取、热度统计或时效核实。"
+        }
+      },
+      "duration_ms": 25607,
+      "model_calls": 1,
+      "tokens": 4136,
+      "cost": null,
+      "call_id": "69dce6a7-63da-465d-8f3e-d942b7fe1c53",
+      "tools": [
+        "knowledge_snapshot"
+      ],
+      "memory": "读取本任务的账号与证据快照"
+    },
+    {
+      "id": "c94500c9-66d6-428e-ac1a-236b75c1b521",
+      "agent": "audience",
+      "stage": "audience",
+      "mode": "live",
+      "snapshot_id": "d5a06df7-46b0-4076-b985-14e70e618ef3",
+      "input": {
+        "brief": {
+          "topic": "罗技Signature M650按手型与连接方式介绍",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "tone": "清楚自然克制",
+          "allow_hypothesis": false
+        },
+        "materials": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：罗技官方建议中小手型考虑M650、大手型考虑M650 L，左利手对应M650 L Left。\nF2：SmartWheel滚动既提供逐行定位，也支持长页面快速滚动，通过轻弹手指切换。\nF3：连接方式包括低功耗蓝牙和Logi Bolt USB接收器。\nF4：官方列出Windows、macOS、Linux、iPadOS、Android等支持平台。\n【完整限制】官方支持平台名单不等于本次用户每台设备均已测试，购买前仍需核对具体系统与接口。本次读取未取得电池寿命、DPI数值、机身尺寸的正文参数，FAQ标题不能当作答案。没有作者亲测、实时价格或全网对比，不写完全无声、提升效率百分比、最适合所有人的结论。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          }
+        ],
+        "current_date": "2026-11-03",
+        "date_timezone": "Asia/Shanghai",
+        "retrieved_references": [
+          {
+            "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+            "title": "虚构选购结构参考-REAL-D02",
+            "url": "",
+            "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          },
+          {
+            "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+            "title": "虚构选购结构参考-REAL-D01",
+            "url": "",
+            "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          }
+        ],
+        "creation_classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "creation_retrieval": {
+          "methods": [],
+          "examples": [
+            {
+              "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+              "source_type": "text",
+              "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n你可能想要一个直接答案，但决定还缺少自己的需求。\n\n虚构规格页登记型号X15，尺寸为15厘米，未提供其他测试。\n\n把选择拆成三个步骤：确认目标、核对资料、记录仍然未知的地方。\n\n不要把参考人物的个人记录移植到当前任务。\n\n愿意的话，留下最想确认的一项条件。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-D02",
+              "url": "",
+              "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "digital"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            },
+            {
+              "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+              "source_type": "text",
+              "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是桌面连接。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-D01",
+              "url": "",
+              "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "digital"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            }
+          ],
+          "facts": [
+            {
+              "source_id": "user-material"
+            }
+          ],
+          "gaps": [
+            {
+              "code": "VECTOR_UNAVAILABLE",
+              "detail": "本地语义检索已关闭，使用 BM25",
+              "fallback": "bm25"
+            },
+            {
+              "code": "NO_MATCHING_METHODS",
+              "group": "methods",
+              "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+            }
+          ]
+        },
+        "web_research": {
+          "status": "not_requested",
+          "reads": [],
+          "limitation": "本任务没有实际执行联网调查，不能自称已查询官网或媒体。"
+        },
+        "material_policy": "available_only",
+        "material_policy_version": "available-only-v1",
+        "operations": {
+          "platform": "xiaohongshu",
+          "account": "我的账号",
+          "account_id": "[已隐去]",
+          "hypothesis_id": null,
+          "profile": {
+            "id": "5285e961-e866-5533-b51e-87cd6014586e",
+            "name": "我的账号",
+            "platform": "xiaohongshu",
+            "aliases": [
+              "我的账号"
+            ],
+            "revision": 1,
+            "profile": {
+              "positioning": "",
+              "audience": "",
+              "tone": "",
+              "pillars": "",
+              "goal": "",
+              "resources": "",
+              "banned": "",
+              "weekly_frequency": 3
+            },
+            "revisions": []
+          },
+          "trend": null,
+          "memories": [],
+          "active_hypothesis": null,
+          "experiment_memory": [],
+          "history": [],
+          "metrics": [],
+          "competitors": [],
+          "preferences": []
+        }
+      },
+      "output": {
+        "primary_audience": "小红书上关注数码配件的中小创作者及普通读者，需依据公开资料做理性选购判断",
+        "basis": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1：借鉴其分步结构与‘已知/待确认’表达逻辑；但不移植虚构型号或未验证结论",
+        "pain_points": [
+          "手型匹配无明确尺寸数据，仅靠官方建议区分M650与M650 L",
+          "连接方式虽列两种，但未说明切换逻辑或多设备协同细节"
+        ],
+        "content_opportunities": [
+          "用‘适用条件+限制说明’替代功效承诺，契合小红书理性种草趋势",
+          "突出平台兼容性广度（含Linux/iPadOS），但同步标注‘需自行核对具体系统版本’"
+        ],
+        "observations": [
+          {
+            "source_id": "user-material",
+            "quote": "F1：罗技官方建议中小手型考虑M650、大手型考虑M650 L，左利手对应M650 L Left。",
+            "interpretation": "手型适配为官方建议性指引，非基于实测数据的硬性标准；未提供掌宽、握距等量化参数。"
+          },
+          {
+            "source_id": "user-material",
+            "quote": "F3：连接方式包括低功耗蓝牙和Logi Bolt USB接收器。",
+            "interpretation": "明确列出两种连接方式，但未说明是否支持同时连接、自动切换或接收器插拔即用等操作细节。"
+          },
+          {
+            "source_id": "user-material",
+            "quote": "【完整限制】官方支持平台名单不等于本次用户每台设备均已测试，购买前仍需核对具体系统与接口。",
+            "interpretation": "所有平台兼容性声明均附带免责前提，不可作为设备实测通过的保证。"
+          }
+        ],
+        "sample_size": 0,
+        "confidence": "low",
+        "status": "needs_data",
+        "account_context": {
+          "account_id": "[已隐去]",
+          "profile_revision": 1
+        },
+        "history_refs": [],
+        "competitor_observations": [],
+        "evidence_limit": "历史仅为描述性记录；偏好与传播效果分开，竞品观察未经独立核验。"
+      },
+      "duration_ms": 35406,
+      "model_calls": 1,
+      "tokens": 3917,
+      "cost": null,
+      "call_id": "3eaaa211-8621-473d-a7eb-e42b7d0f58d1",
+      "tools": [
+        "knowledge_snapshot"
+      ],
+      "memory": "读取本任务的账号与证据快照"
+    },
+    {
+      "id": "5325a19e-ef00-4615-80d2-6313906cc406",
+      "agent": "content",
+      "stage": "strategy",
+      "mode": "live",
+      "snapshot_id": "d5a06df7-46b0-4076-b985-14e70e618ef3",
+      "input": {
+        "brief": {
+          "topic": "罗技Signature M650按手型与连接方式介绍",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "tone": "清楚自然克制",
+          "allow_hypothesis": false
+        },
+        "materials": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：罗技官方建议中小手型考虑M650、大手型考虑M650 L，左利手对应M650 L Left。\nF2：SmartWheel滚动既提供逐行定位，也支持长页面快速滚动，通过轻弹手指切换。\nF3：连接方式包括低功耗蓝牙和Logi Bolt USB接收器。\nF4：官方列出Windows、macOS、Linux、iPadOS、Android等支持平台。\n【完整限制】官方支持平台名单不等于本次用户每台设备均已测试，购买前仍需核对具体系统与接口。本次读取未取得电池寿命、DPI数值、机身尺寸的正文参数，FAQ标题不能当作答案。没有作者亲测、实时价格或全网对比，不写完全无声、提升效率百分比、最适合所有人的结论。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          }
+        ],
+        "current_date": "2026-11-03",
+        "date_timezone": "Asia/Shanghai",
+        "retrieved_references": [
+          {
+            "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+            "title": "虚构选购结构参考-REAL-D02",
+            "url": "",
+            "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          },
+          {
+            "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+            "title": "虚构选购结构参考-REAL-D01",
+            "url": "",
+            "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          }
+        ],
+        "creation_classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "creation_retrieval": {
+          "methods": [],
+          "examples": [
+            {
+              "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+              "source_type": "text",
+              "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n你可能想要一个直接答案，但决定还缺少自己的需求。\n\n虚构规格页登记型号X15，尺寸为15厘米，未提供其他测试。\n\n把选择拆成三个步骤：确认目标、核对资料、记录仍然未知的地方。\n\n不要把参考人物的个人记录移植到当前任务。\n\n愿意的话，留下最想确认的一项条件。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-D02",
+              "url": "",
+              "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "digital"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            },
+            {
+              "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+              "source_type": "text",
+              "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是桌面连接。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-D01",
+              "url": "",
+              "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "digital"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            }
+          ],
+          "facts": [
+            {
+              "source_id": "user-material"
+            }
+          ],
+          "gaps": [
+            {
+              "code": "VECTOR_UNAVAILABLE",
+              "detail": "本地语义检索已关闭，使用 BM25",
+              "fallback": "bm25"
+            },
+            {
+              "code": "NO_MATCHING_METHODS",
+              "group": "methods",
+              "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+            }
+          ]
+        },
+        "web_research": {
+          "status": "not_requested",
+          "reads": [],
+          "limitation": "本任务没有实际执行联网调查，不能自称已查询官网或媒体。"
+        },
+        "branches": {
+          "audience": {
+            "data": {
+              "primary_audience": "小红书上关注数码配件的中小创作者及普通读者，需依据公开资料做理性选购判断",
+              "sample_size": 0,
+              "confidence": "low",
+              "status": "needs_data",
+              "pain_points": [
+                "手型匹配无明确尺寸数据，仅靠官方建议区分M650与M650 L",
+                "连接方式虽列两种，但未说明切换逻辑或多设备协同细节"
+              ],
+              "content_opportunities": [
+                "用‘适用条件+限制说明’替代功效承诺，契合小红书理性种草趋势",
+                "突出平台兼容性广度（含Linux/iPadOS），但同步标注‘需自行核对具体系统版本’"
+              ]
+            }
+          },
+          "research": {
+            "data": {
+              "core_gap": false,
+              "gaps": [],
+              "prohibited_claims": [
+                "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1：仅作开篇结构与分栏逻辑参考，不可移植‘尺寸为15厘米’‘桌面连接’等虚构规格与场景；不可将‘留下最想确认的一项条件’设为强制互动指令，本任务未要求CTA动作",
+                "kb:aab706a0-afc2-4270-9376-65693cac0c42：仅借鉴‘已知/待确认’二分框架与‘买之前先问自己’句式节奏，不可移植‘桌面连接’范围限定、‘两种连接选项’简化表述（因F3明确含两种且无数量暗示）、不可添加‘收藏前先核对’等未经材料支持的操作提示"
+              ]
+            }
+          }
+        },
+        "upstream": {},
+        "material_policy": "available_only",
+        "material_policy_version": "available-only-v1",
+        "operations": {
+          "platform": "xiaohongshu",
+          "account": "我的账号",
+          "account_id": "[已隐去]",
+          "hypothesis_id": null,
+          "profile": {
+            "id": "5285e961-e866-5533-b51e-87cd6014586e",
+            "name": "我的账号",
+            "platform": "xiaohongshu",
+            "aliases": [
+              "我的账号"
+            ],
+            "revision": 1,
+            "profile": {
+              "positioning": "",
+              "audience": "",
+              "tone": "",
+              "pillars": "",
+              "goal": "",
+              "resources": "",
+              "banned": "",
+              "weekly_frequency": 3
+            },
+            "revisions": []
+          },
+          "trend": null,
+          "memories": [],
+          "active_hypothesis": null,
+          "experiment_memory": [],
+          "history": [],
+          "metrics": [],
+          "competitors": [],
+          "preferences": []
+        }
+      },
+      "output": {
+        "angle": "按手型与连接方式拆解M650选购条件",
+        "reader": "小红书上想理性选鼠的中小创作者和普通用户",
+        "promise": "明确列出官方建议的手型适配逻辑、两种连接方式及多平台支持范围，并标注所有未公开参数与需自行核对项",
+        "tone": "清楚自然克制",
+        "assumptions": [
+          "读者关注实际适配而非营销话术",
+          "读者会自行核对设备兼容性",
+          "读者不期待未提供的参数或亲测结论"
+        ],
+        "candidate_angles": [
+          "手型匹配逻辑+连接方式选择路径",
+          "平台兼容清单+使用前必核事项"
+        ],
+        "cta": "收藏前，先对照你的手型和系统版本",
+        "why_account": "kb:aab706a0-afc2-4270-9376-65693cac0c42：借鉴‘买之前先问自己’节奏与‘已知/待确认’分栏逻辑；本题改写为直接陈述F1-F4事实，删去虚构场景与强制互动指令，保留克制语气和边界提示",
+        "content_brief": {
+          "account_id": "[已隐去]",
+          "profile_revision": 1,
+          "goal": "先验证内容是否对目标受众有用",
+          "core_viewpoint": "按手型与连接方式拆解M650选购条件",
+          "audience": "小红书上想理性选鼠的中小创作者和普通用户",
+          "content_type": "图文笔记",
+          "hook_options": [
+            "手型匹配逻辑+连接方式选择路径",
+            "平台兼容清单+使用前必核事项"
+          ],
+          "evidence_scope": "引用用户素材与检索原文；历史表现与竞品观察不能证明正文事实",
+          "cta": "收藏前，先对照你的手型和系统版本",
+          "banned": "",
+          "publishing_window": "由用户安排；暂无经过验证的最佳发布时间",
+          "recommendation_reason": "kb:aab706a0-afc2-4270-9376-65693cac0c42：借鉴‘买之前先问自己’节奏与‘已知/待确认’分栏逻辑；本题改写为直接陈述F1-F4事实，删去虚构场景与强制互动指令，保留克制语气和边界提示"
+        },
+        "learning_refs": [],
+        "next_experiments": []
+      },
+      "duration_ms": 8066,
+      "model_calls": 1,
+      "tokens": 4122,
+      "cost": null,
+      "call_id": "ff0ee645-307b-4ba1-a4c2-989d78d49ea3",
+      "tools": [
+        "knowledge_snapshot"
+      ],
+      "memory": "读取本任务的账号与证据快照"
+    },
+    {
+      "id": "8259d095-bb55-4f7c-8bc5-910f87d56210",
+      "agent": "content",
+      "stage": "outline",
+      "mode": "live",
+      "snapshot_id": "d5a06df7-46b0-4076-b985-14e70e618ef3",
+      "input": {
+        "brief": {
+          "topic": "罗技Signature M650按手型与连接方式介绍",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "tone": "清楚自然克制",
+          "allow_hypothesis": false
+        },
+        "materials": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：罗技官方建议中小手型考虑M650、大手型考虑M650 L，左利手对应M650 L Left。\nF2：SmartWheel滚动既提供逐行定位，也支持长页面快速滚动，通过轻弹手指切换。\nF3：连接方式包括低功耗蓝牙和Logi Bolt USB接收器。\nF4：官方列出Windows、macOS、Linux、iPadOS、Android等支持平台。\n【完整限制】官方支持平台名单不等于本次用户每台设备均已测试，购买前仍需核对具体系统与接口。本次读取未取得电池寿命、DPI数值、机身尺寸的正文参数，FAQ标题不能当作答案。没有作者亲测、实时价格或全网对比，不写完全无声、提升效率百分比、最适合所有人的结论。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          }
+        ],
+        "current_date": "2026-11-03",
+        "date_timezone": "Asia/Shanghai",
+        "retrieved_references": [
+          {
+            "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+            "title": "虚构选购结构参考-REAL-D02",
+            "url": "",
+            "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          },
+          {
+            "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+            "title": "虚构选购结构参考-REAL-D01",
+            "url": "",
+            "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          }
+        ],
+        "creation_classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "creation_retrieval": {
+          "methods": [],
+          "examples": [
+            {
+              "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+              "source_type": "text",
+              "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n你可能想要一个直接答案，但决定还缺少自己的需求。\n\n虚构规格页登记型号X15，尺寸为15厘米，未提供其他测试。\n\n把选择拆成三个步骤：确认目标、核对资料、记录仍然未知的地方。\n\n不要把参考人物的个人记录移植到当前任务。\n\n愿意的话，留下最想确认的一项条件。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-D02",
+              "url": "",
+              "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "digital"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            },
+            {
+              "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+              "source_type": "text",
+              "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是桌面连接。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-D01",
+              "url": "",
+              "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "digital"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            }
+          ],
+          "facts": [
+            {
+              "source_id": "user-material"
+            }
+          ],
+          "gaps": [
+            {
+              "code": "VECTOR_UNAVAILABLE",
+              "detail": "本地语义检索已关闭，使用 BM25",
+              "fallback": "bm25"
+            },
+            {
+              "code": "NO_MATCHING_METHODS",
+              "group": "methods",
+              "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+            }
+          ]
+        },
+        "web_research": {
+          "status": "not_requested",
+          "reads": [],
+          "limitation": "本任务没有实际执行联网调查，不能自称已查询官网或媒体。"
+        },
+        "branches": {
+          "audience": {
+            "data": {
+              "primary_audience": "小红书上关注数码配件的中小创作者及普通读者，需依据公开资料做理性选购判断",
+              "sample_size": 0,
+              "confidence": "low",
+              "status": "needs_data",
+              "pain_points": [
+                "手型匹配无明确尺寸数据，仅靠官方建议区分M650与M650 L",
+                "连接方式虽列两种，但未说明切换逻辑或多设备协同细节"
+              ],
+              "content_opportunities": [
+                "用‘适用条件+限制说明’替代功效承诺，契合小红书理性种草趋势",
+                "突出平台兼容性广度（含Linux/iPadOS），但同步标注‘需自行核对具体系统版本’"
+              ]
+            }
+          },
+          "research": {
+            "data": {
+              "core_gap": false,
+              "gaps": [],
+              "prohibited_claims": [
+                "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1：仅作开篇结构与分栏逻辑参考，不可移植‘尺寸为15厘米’‘桌面连接’等虚构规格与场景；不可将‘留下最想确认的一项条件’设为强制互动指令，本任务未要求CTA动作",
+                "kb:aab706a0-afc2-4270-9376-65693cac0c42：仅借鉴‘已知/待确认’二分框架与‘买之前先问自己’句式节奏，不可移植‘桌面连接’范围限定、‘两种连接选项’简化表述（因F3明确含两种且无数量暗示）、不可添加‘收藏前先核对’等未经材料支持的操作提示"
+              ]
+            }
+          }
+        },
+        "upstream": {
+          "strategy": {
+            "angle": "按手型与连接方式拆解M650选购条件",
+            "reader": "小红书上想理性选鼠的中小创作者和普通用户",
+            "promise": "明确列出官方建议的手型适配逻辑、两种连接方式及多平台支持范围，并标注所有未公开参数与需自行核对项",
+            "tone": "清楚自然克制",
+            "assumptions": [
+              "读者关注实际适配而非营销话术",
+              "读者会自行核对设备兼容性",
+              "读者不期待未提供的参数或亲测结论"
+            ],
+            "cta": "收藏前，先对照你的手型和系统版本"
+          }
+        },
+        "material_policy": "available_only",
+        "material_policy_version": "available-only-v1",
+        "operations": {
+          "platform": "xiaohongshu",
+          "account": "我的账号",
+          "account_id": "[已隐去]",
+          "hypothesis_id": null,
+          "profile": {
+            "id": "5285e961-e866-5533-b51e-87cd6014586e",
+            "name": "我的账号",
+            "platform": "xiaohongshu",
+            "aliases": [
+              "我的账号"
+            ],
+            "revision": 1,
+            "profile": {
+              "positioning": "",
+              "audience": "",
+              "tone": "",
+              "pillars": "",
+              "goal": "",
+              "resources": "",
+              "banned": "",
+              "weekly_frequency": 3
+            },
+            "revisions": []
+          },
+          "trend": null,
+          "memories": [],
+          "active_hypothesis": null,
+          "experiment_memory": [],
+          "history": [],
+          "metrics": [],
+          "competitors": [],
+          "preferences": []
+        }
+      },
+      "output": [
+        "罗技官方按手型分M650（中小手型）与M650 L（大手型），左利手建议选M650 L Left",
+        "支持低功耗蓝牙和Logi Bolt USB接收器两种连接方式，未说明切换逻辑或多设备协同细节",
+        "兼容Windows、macOS、Linux、iPadOS、Android，但需自行核对具体系统版本与接口",
+        "未公开电池寿命、DPI、机身尺寸等参数，FAQ标题不构成答案，无亲测效果承诺"
+      ],
+      "duration_ms": 3437,
+      "model_calls": 1,
+      "tokens": 4215,
+      "cost": null,
+      "call_id": "f72846cf-06a4-427a-810a-1d43c7467649",
+      "tools": [
+        "knowledge_snapshot"
+      ],
+      "memory": "读取本任务的账号与证据快照"
+    },
+    {
+      "id": "032ef002-4460-4d89-a0aa-7e85caec7528",
+      "agent": "content",
+      "stage": "hook",
+      "mode": "live",
+      "snapshot_id": "d5a06df7-46b0-4076-b985-14e70e618ef3",
+      "input": {
+        "brief": {
+          "topic": "罗技Signature M650按手型与连接方式介绍",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "tone": "清楚自然克制",
+          "allow_hypothesis": false
+        },
+        "materials": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：罗技官方建议中小手型考虑M650、大手型考虑M650 L，左利手对应M650 L Left。\nF2：SmartWheel滚动既提供逐行定位，也支持长页面快速滚动，通过轻弹手指切换。\nF3：连接方式包括低功耗蓝牙和Logi Bolt USB接收器。\nF4：官方列出Windows、macOS、Linux、iPadOS、Android等支持平台。\n【完整限制】官方支持平台名单不等于本次用户每台设备均已测试，购买前仍需核对具体系统与接口。本次读取未取得电池寿命、DPI数值、机身尺寸的正文参数，FAQ标题不能当作答案。没有作者亲测、实时价格或全网对比，不写完全无声、提升效率百分比、最适合所有人的结论。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          }
+        ],
+        "current_date": "2026-11-03",
+        "date_timezone": "Asia/Shanghai",
+        "retrieved_references": [
+          {
+            "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+            "title": "虚构选购结构参考-REAL-D02",
+            "url": "",
+            "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          },
+          {
+            "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+            "title": "虚构选购结构参考-REAL-D01",
+            "url": "",
+            "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          }
+        ],
+        "creation_classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "creation_retrieval": {
+          "methods": [],
+          "examples": [
+            {
+              "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+              "source_type": "text",
+              "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n你可能想要一个直接答案，但决定还缺少自己的需求。\n\n虚构规格页登记型号X15，尺寸为15厘米，未提供其他测试。\n\n把选择拆成三个步骤：确认目标、核对资料、记录仍然未知的地方。\n\n不要把参考人物的个人记录移植到当前任务。\n\n愿意的话，留下最想确认的一项条件。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-D02",
+              "url": "",
+              "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "digital"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            },
+            {
+              "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+              "source_type": "text",
+              "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是桌面连接。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-D01",
+              "url": "",
+              "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "digital"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            }
+          ],
+          "facts": [
+            {
+              "source_id": "user-material"
+            }
+          ],
+          "gaps": [
+            {
+              "code": "VECTOR_UNAVAILABLE",
+              "detail": "本地语义检索已关闭，使用 BM25",
+              "fallback": "bm25"
+            },
+            {
+              "code": "NO_MATCHING_METHODS",
+              "group": "methods",
+              "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+            }
+          ]
+        },
+        "web_research": {
+          "status": "not_requested",
+          "reads": [],
+          "limitation": "本任务没有实际执行联网调查，不能自称已查询官网或媒体。"
+        },
+        "branches": {
+          "audience": {
+            "data": {
+              "primary_audience": "小红书上关注数码配件的中小创作者及普通读者，需依据公开资料做理性选购判断",
+              "sample_size": 0,
+              "confidence": "low",
+              "status": "needs_data",
+              "pain_points": [
+                "手型匹配无明确尺寸数据，仅靠官方建议区分M650与M650 L",
+                "连接方式虽列两种，但未说明切换逻辑或多设备协同细节"
+              ],
+              "content_opportunities": [
+                "用‘适用条件+限制说明’替代功效承诺，契合小红书理性种草趋势",
+                "突出平台兼容性广度（含Linux/iPadOS），但同步标注‘需自行核对具体系统版本’"
+              ]
+            }
+          },
+          "research": {
+            "data": {
+              "core_gap": false,
+              "gaps": [],
+              "prohibited_claims": [
+                "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1：仅作开篇结构与分栏逻辑参考，不可移植‘尺寸为15厘米’‘桌面连接’等虚构规格与场景；不可将‘留下最想确认的一项条件’设为强制互动指令，本任务未要求CTA动作",
+                "kb:aab706a0-afc2-4270-9376-65693cac0c42：仅借鉴‘已知/待确认’二分框架与‘买之前先问自己’句式节奏，不可移植‘桌面连接’范围限定、‘两种连接选项’简化表述（因F3明确含两种且无数量暗示）、不可添加‘收藏前先核对’等未经材料支持的操作提示"
+              ]
+            }
+          }
+        },
+        "upstream": {
+          "strategy": {
+            "angle": "按手型与连接方式拆解M650选购条件",
+            "reader": "小红书上想理性选鼠的中小创作者和普通用户",
+            "promise": "明确列出官方建议的手型适配逻辑、两种连接方式及多平台支持范围，并标注所有未公开参数与需自行核对项",
+            "tone": "清楚自然克制",
+            "assumptions": [
+              "读者关注实际适配而非营销话术",
+              "读者会自行核对设备兼容性",
+              "读者不期待未提供的参数或亲测结论"
+            ],
+            "cta": "收藏前，先对照你的手型和系统版本"
+          },
+          "outline": [
+            "罗技官方按手型分M650（中小手型）与M650 L（大手型），左利手建议选M650 L Left",
+            "支持低功耗蓝牙和Logi Bolt USB接收器两种连接方式，未说明切换逻辑或多设备协同细节",
+            "兼容Windows、macOS、Linux、iPadOS、Android，但需自行核对具体系统版本与接口",
+            "未公开电池寿命、DPI、机身尺寸等参数，FAQ标题不构成答案，无亲测效果承诺"
+          ]
+        },
+        "material_policy": "available_only",
+        "material_policy_version": "available-only-v1",
+        "operations": {
+          "platform": "xiaohongshu",
+          "account": "我的账号",
+          "account_id": "[已隐去]",
+          "hypothesis_id": null,
+          "profile": {
+            "id": "5285e961-e866-5533-b51e-87cd6014586e",
+            "name": "我的账号",
+            "platform": "xiaohongshu",
+            "aliases": [
+              "我的账号"
+            ],
+            "revision": 1,
+            "profile": {
+              "positioning": "",
+              "audience": "",
+              "tone": "",
+              "pillars": "",
+              "goal": "",
+              "resources": "",
+              "banned": "",
+              "weekly_frequency": 3
+            },
+            "revisions": []
+          },
+          "trend": null,
+          "memories": [],
+          "active_hypothesis": null,
+          "experiment_memory": [],
+          "history": [],
+          "metrics": [],
+          "competitors": [],
+          "preferences": []
+        }
+      },
+      "output": "选罗技M650前，先确认你的手型和设备系统——官方明确按手型分款，连接方式与平台支持虽广，但关键参数未公开。",
+      "duration_ms": 2168,
+      "model_calls": 1,
+      "tokens": 4270,
+      "cost": null,
+      "call_id": "250a57aa-9fd0-47ae-83ec-0e11059f470b",
+      "tools": [
+        "knowledge_snapshot"
+      ],
+      "memory": "读取本任务的账号与证据快照"
+    },
+    {
+      "id": "0c9e30e9-30ff-4e2b-a97b-6c1f98dfb5e2",
+      "agent": "content",
+      "stage": "title",
+      "mode": "live",
+      "snapshot_id": "d5a06df7-46b0-4076-b985-14e70e618ef3",
+      "input": {
+        "brief": {
+          "topic": "罗技Signature M650按手型与连接方式介绍",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "tone": "清楚自然克制",
+          "allow_hypothesis": false
+        },
+        "materials": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：罗技官方建议中小手型考虑M650、大手型考虑M650 L，左利手对应M650 L Left。\nF2：SmartWheel滚动既提供逐行定位，也支持长页面快速滚动，通过轻弹手指切换。\nF3：连接方式包括低功耗蓝牙和Logi Bolt USB接收器。\nF4：官方列出Windows、macOS、Linux、iPadOS、Android等支持平台。\n【完整限制】官方支持平台名单不等于本次用户每台设备均已测试，购买前仍需核对具体系统与接口。本次读取未取得电池寿命、DPI数值、机身尺寸的正文参数，FAQ标题不能当作答案。没有作者亲测、实时价格或全网对比，不写完全无声、提升效率百分比、最适合所有人的结论。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          }
+        ],
+        "current_date": "2026-11-03",
+        "date_timezone": "Asia/Shanghai",
+        "retrieved_references": [
+          {
+            "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+            "title": "虚构选购结构参考-REAL-D02",
+            "url": "",
+            "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          },
+          {
+            "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+            "title": "虚构选购结构参考-REAL-D01",
+            "url": "",
+            "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          }
+        ],
+        "creation_classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "creation_retrieval": {
+          "methods": [],
+          "examples": [
+            {
+              "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+              "source_type": "text",
+              "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n你可能想要一个直接答案，但决定还缺少自己的需求。\n\n虚构规格页登记型号X15，尺寸为15厘米，未提供其他测试。\n\n把选择拆成三个步骤：确认目标、核对资料、记录仍然未知的地方。\n\n不要把参考人物的个人记录移植到当前任务。\n\n愿意的话，留下最想确认的一项条件。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-D02",
+              "url": "",
+              "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "digital"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            },
+            {
+              "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+              "source_type": "text",
+              "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是桌面连接。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-D01",
+              "url": "",
+              "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "digital"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            }
+          ],
+          "facts": [
+            {
+              "source_id": "user-material"
+            }
+          ],
+          "gaps": [
+            {
+              "code": "VECTOR_UNAVAILABLE",
+              "detail": "本地语义检索已关闭，使用 BM25",
+              "fallback": "bm25"
+            },
+            {
+              "code": "NO_MATCHING_METHODS",
+              "group": "methods",
+              "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+            }
+          ]
+        },
+        "web_research": {
+          "status": "not_requested",
+          "reads": [],
+          "limitation": "本任务没有实际执行联网调查，不能自称已查询官网或媒体。"
+        },
+        "branches": {
+          "audience": {
+            "data": {
+              "primary_audience": "小红书上关注数码配件的中小创作者及普通读者，需依据公开资料做理性选购判断",
+              "sample_size": 0,
+              "confidence": "low",
+              "status": "needs_data",
+              "pain_points": [
+                "手型匹配无明确尺寸数据，仅靠官方建议区分M650与M650 L",
+                "连接方式虽列两种，但未说明切换逻辑或多设备协同细节"
+              ],
+              "content_opportunities": [
+                "用‘适用条件+限制说明’替代功效承诺，契合小红书理性种草趋势",
+                "突出平台兼容性广度（含Linux/iPadOS），但同步标注‘需自行核对具体系统版本’"
+              ]
+            }
+          },
+          "research": {
+            "data": {
+              "core_gap": false,
+              "gaps": [],
+              "prohibited_claims": [
+                "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1：仅作开篇结构与分栏逻辑参考，不可移植‘尺寸为15厘米’‘桌面连接’等虚构规格与场景；不可将‘留下最想确认的一项条件’设为强制互动指令，本任务未要求CTA动作",
+                "kb:aab706a0-afc2-4270-9376-65693cac0c42：仅借鉴‘已知/待确认’二分框架与‘买之前先问自己’句式节奏，不可移植‘桌面连接’范围限定、‘两种连接选项’简化表述（因F3明确含两种且无数量暗示）、不可添加‘收藏前先核对’等未经材料支持的操作提示"
+              ]
+            }
+          }
+        },
+        "upstream": {
+          "strategy": {
+            "angle": "按手型与连接方式拆解M650选购条件",
+            "reader": "小红书上想理性选鼠的中小创作者和普通用户",
+            "promise": "明确列出官方建议的手型适配逻辑、两种连接方式及多平台支持范围，并标注所有未公开参数与需自行核对项",
+            "tone": "清楚自然克制",
+            "assumptions": [
+              "读者关注实际适配而非营销话术",
+              "读者会自行核对设备兼容性",
+              "读者不期待未提供的参数或亲测结论"
+            ],
+            "cta": "收藏前，先对照你的手型和系统版本"
+          },
+          "hook": "选罗技M650前，先确认你的手型和设备系统——官方明确按手型分款，连接方式与平台支持虽广，但关键参数未公开。"
+        },
+        "material_policy": "available_only",
+        "material_policy_version": "available-only-v1",
+        "operations": {
+          "platform": "xiaohongshu",
+          "account": "我的账号",
+          "account_id": "[已隐去]",
+          "hypothesis_id": null,
+          "profile": {
+            "id": "5285e961-e866-5533-b51e-87cd6014586e",
+            "name": "我的账号",
+            "platform": "xiaohongshu",
+            "aliases": [
+              "我的账号"
+            ],
+            "revision": 1,
+            "profile": {
+              "positioning": "",
+              "audience": "",
+              "tone": "",
+              "pillars": "",
+              "goal": "",
+              "resources": "",
+              "banned": "",
+              "weekly_frequency": 3
+            },
+            "revisions": []
+          },
+          "trend": null,
+          "memories": [],
+          "active_hypothesis": null,
+          "experiment_memory": [],
+          "history": [],
+          "metrics": [],
+          "competitors": [],
+          "preferences": []
+        }
+      },
+      "output": {
+        "candidates": [
+          "M650怎么选？看手型+连法",
+          "小手/大手该选哪款M650？",
+          "罗技M650：手型与连接指南",
+          "M650适配你吗？官方建议速查",
+          "蓝牙还是接收器？M650连接说明"
+        ],
+        "selected": "M650怎么选？看手型+连法",
+        "note": "16字符，直击读者决策卡点；用‘怎么选’提问式开头符合小红书搜索习惯；‘手型+连法’精准对应brief核心维度，无冗余词。",
+        "reasons": [
+          "账号匹配度高：沿用中小创作者常用口语化设问句式；具体性最强，明确指向两个已知事实维度；同质化最低，未套用‘最适合’‘爆款’等泛化模板。",
+          "有明确对比结构（小手/大手），但未虚构尺寸数据；吸引力来自身份识别（‘该选哪款’引发代入）；稍偏静态分类，不如selected动态引导强。",
+          "品牌+型号+功能关键词完整，利于搜索；但‘指南’略显宽泛，未突出‘选’的动作和判断依据；中性稳妥，但点击动机弱于问题式。",
+          "‘适配你吗’制造轻互动感，‘速查’强化实用性；但‘官方建议’四字占位多，压缩了关键信息密度；悬念成立，但支撑点略虚。",
+          "聚焦单一技术点（连接），信息明确；但忽略手型这一同等重要的官方分款依据，维度不全，易误导读者以为只需关心连接。"
+        ]
+      },
+      "duration_ms": 17956,
+      "model_calls": 1,
+      "tokens": 4760,
+      "cost": null,
+      "call_id": "ae81043d-8cf6-4c0d-9799-db519644977c",
+      "tools": [
+        "knowledge_snapshot"
+      ],
+      "memory": "读取本任务的账号与证据快照"
+    },
+    {
+      "id": "ef987e96-7029-4906-9355-7eba870a8344",
+      "agent": "content",
+      "stage": "body",
+      "mode": "live",
+      "snapshot_id": "d5a06df7-46b0-4076-b985-14e70e618ef3",
+      "input": {
+        "brief": {
+          "topic": "罗技Signature M650按手型与连接方式介绍",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "tone": "清楚自然克制",
+          "allow_hypothesis": false
+        },
+        "materials": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：罗技官方建议中小手型考虑M650、大手型考虑M650 L，左利手对应M650 L Left。\nF2：SmartWheel滚动既提供逐行定位，也支持长页面快速滚动，通过轻弹手指切换。\nF3：连接方式包括低功耗蓝牙和Logi Bolt USB接收器。\nF4：官方列出Windows、macOS、Linux、iPadOS、Android等支持平台。\n【完整限制】官方支持平台名单不等于本次用户每台设备均已测试，购买前仍需核对具体系统与接口。本次读取未取得电池寿命、DPI数值、机身尺寸的正文参数，FAQ标题不能当作答案。没有作者亲测、实时价格或全网对比，不写完全无声、提升效率百分比、最适合所有人的结论。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          }
+        ],
+        "current_date": "2026-11-03",
+        "date_timezone": "Asia/Shanghai",
+        "retrieved_references": [
+          {
+            "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+            "title": "虚构选购结构参考-REAL-D02",
+            "url": "",
+            "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          },
+          {
+            "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+            "title": "虚构选购结构参考-REAL-D01",
+            "url": "",
+            "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          }
+        ],
+        "creation_classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "creation_retrieval": {
+          "methods": [],
+          "examples": [
+            {
+              "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+              "source_type": "text",
+              "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n你可能想要一个直接答案，但决定还缺少自己的需求。\n\n虚构规格页登记型号X15，尺寸为15厘米，未提供其他测试。\n\n把选择拆成三个步骤：确认目标、核对资料、记录仍然未知的地方。\n\n不要把参考人物的个人记录移植到当前任务。\n\n愿意的话，留下最想确认的一项条件。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-D02",
+              "url": "",
+              "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "digital"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            },
+            {
+              "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+              "source_type": "text",
+              "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是桌面连接。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-D01",
+              "url": "",
+              "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "digital"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            }
+          ],
+          "facts": [
+            {
+              "source_id": "user-material"
+            }
+          ],
+          "gaps": [
+            {
+              "code": "VECTOR_UNAVAILABLE",
+              "detail": "本地语义检索已关闭，使用 BM25",
+              "fallback": "bm25"
+            },
+            {
+              "code": "NO_MATCHING_METHODS",
+              "group": "methods",
+              "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+            }
+          ]
+        },
+        "web_research": {
+          "status": "not_requested",
+          "reads": [],
+          "limitation": "本任务没有实际执行联网调查，不能自称已查询官网或媒体。"
+        },
+        "branches": {
+          "audience": {
+            "data": {
+              "primary_audience": "小红书上关注数码配件的中小创作者及普通读者，需依据公开资料做理性选购判断",
+              "sample_size": 0,
+              "confidence": "low",
+              "status": "needs_data",
+              "pain_points": [
+                "手型匹配无明确尺寸数据，仅靠官方建议区分M650与M650 L",
+                "连接方式虽列两种，但未说明切换逻辑或多设备协同细节"
+              ],
+              "content_opportunities": [
+                "用‘适用条件+限制说明’替代功效承诺，契合小红书理性种草趋势",
+                "突出平台兼容性广度（含Linux/iPadOS），但同步标注‘需自行核对具体系统版本’"
+              ]
+            }
+          },
+          "research": {
+            "data": {
+              "core_gap": false,
+              "gaps": [],
+              "prohibited_claims": [
+                "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1：仅作开篇结构与分栏逻辑参考，不可移植‘尺寸为15厘米’‘桌面连接’等虚构规格与场景；不可将‘留下最想确认的一项条件’设为强制互动指令，本任务未要求CTA动作",
+                "kb:aab706a0-afc2-4270-9376-65693cac0c42：仅借鉴‘已知/待确认’二分框架与‘买之前先问自己’句式节奏，不可移植‘桌面连接’范围限定、‘两种连接选项’简化表述（因F3明确含两种且无数量暗示）、不可添加‘收藏前先核对’等未经材料支持的操作提示"
+              ]
+            }
+          }
+        },
+        "upstream": {
+          "strategy": {
+            "angle": "按手型与连接方式拆解M650选购条件",
+            "reader": "小红书上想理性选鼠的中小创作者和普通用户",
+            "promise": "明确列出官方建议的手型适配逻辑、两种连接方式及多平台支持范围，并标注所有未公开参数与需自行核对项",
+            "tone": "清楚自然克制",
+            "assumptions": [
+              "读者关注实际适配而非营销话术",
+              "读者会自行核对设备兼容性",
+              "读者不期待未提供的参数或亲测结论"
+            ],
+            "cta": "收藏前，先对照你的手型和系统版本"
+          },
+          "outline": [
+            "罗技官方按手型分M650（中小手型）与M650 L（大手型），左利手建议选M650 L Left",
+            "支持低功耗蓝牙和Logi Bolt USB接收器两种连接方式，未说明切换逻辑或多设备协同细节",
+            "兼容Windows、macOS、Linux、iPadOS、Android，但需自行核对具体系统版本与接口",
+            "未公开电池寿命、DPI、机身尺寸等参数，FAQ标题不构成答案，无亲测效果承诺"
+          ],
+          "hook": "选罗技M650前，先确认你的手型和设备系统——官方明确按手型分款，连接方式与平台支持虽广，但关键参数未公开。",
+          "title": {
+            "candidates": [
+              "M650怎么选？看手型+连法",
+              "小手/大手该选哪款M650？",
+              "罗技M650：手型与连接指南",
+              "M650适配你吗？官方建议速查",
+              "蓝牙还是接收器？M650连接说明"
+            ],
+            "selected": "M650怎么选？看手型+连法",
+            "note": "16字符，直击读者决策卡点；用‘怎么选’提问式开头符合小红书搜索习惯；‘手型+连法’精准对应brief核心维度，无冗余词。",
+            "reasons": [
+              "账号匹配度高：沿用中小创作者常用口语化设问句式；具体性最强，明确指向两个已知事实维度；同质化最低，未套用‘最适合’‘爆款’等泛化模板。",
+              "有明确对比结构（小手/大手），但未虚构尺寸数据；吸引力来自身份识别（‘该选哪款’引发代入）；稍偏静态分类，不如selected动态引导强。",
+              "品牌+型号+功能关键词完整，利于搜索；但‘指南’略显宽泛，未突出‘选’的动作和判断依据；中性稳妥，但点击动机弱于问题式。",
+              "‘适配你吗’制造轻互动感，‘速查’强化实用性；但‘官方建议’四字占位多，压缩了关键信息密度；悬念成立，但支撑点略虚。",
+              "聚焦单一技术点（连接），信息明确；但忽略手型这一同等重要的官方分款依据，维度不全，易误导读者以为只需关心连接。"
+            ]
+          }
+        },
+        "material_policy": "available_only",
+        "material_policy_version": "available-only-v1",
+        "operations": {
+          "platform": "xiaohongshu",
+          "account": "我的账号",
+          "account_id": "[已隐去]",
+          "hypothesis_id": null,
+          "profile": {
+            "id": "5285e961-e866-5533-b51e-87cd6014586e",
+            "name": "我的账号",
+            "platform": "xiaohongshu",
+            "aliases": [
+              "我的账号"
+            ],
+            "revision": 1,
+            "profile": {
+              "positioning": "",
+              "audience": "",
+              "tone": "",
+              "pillars": "",
+              "goal": "",
+              "resources": "",
+              "banned": "",
+              "weekly_frequency": 3
+            },
+            "revisions": []
+          },
+          "trend": null,
+          "memories": [],
+          "active_hypothesis": null,
+          "experiment_memory": [],
+          "history": [],
+          "metrics": [],
+          "competitors": [],
+          "preferences": []
+        }
+      },
+      "output": {
+        "selected_title": "M650怎么选？看手型+连法",
+        "body": "选罗技M650前，先确认你的手型和设备系统——官方明确按手型分款，连接方式与平台支持虽广，但关键参数未公开。\n\n✅ 手型适配：中小手型建议M650；大手型建议M650 L；左利手推荐M650 L Left。\n\n✅ 连接方式：支持低功耗蓝牙 + Logi Bolt USB接收器，未说明切换逻辑或多设备协同细节。\n\n✅ 平台兼容：Windows、macOS、Linux、iPadOS、Android均在官方支持列表中，但需自行核对具体系统版本与接口。\n\n⚠️ 注意：电池寿命、DPI、机身尺寸等参数本次未公开；FAQ标题不构成答案；无亲测效果或静音承诺。",
+        "cta": "收藏前，先对照你的手型和系统版本",
+        "tags": [
+          "罗技M650",
+          "鼠标选购",
+          "手型匹配",
+          "蓝牙鼠标",
+          "LogiBolt",
+          "数码配件",
+          "小红书种草",
+          "办公外设"
+        ]
+      },
+      "duration_ms": 8041,
+      "model_calls": 1,
+      "tokens": 4954,
+      "cost": null,
+      "call_id": "1c4d8d9a-b80f-40c2-af1c-8df8ed9b7c22",
+      "tools": [
+        "knowledge_snapshot"
+      ],
+      "memory": "读取本任务的账号与证据快照"
+    },
+    {
+      "id": "69d98a92-4152-4102-af47-19fc4160c930",
+      "agent": "reviewer",
+      "stage": "review",
+      "mode": "live",
+      "snapshot_id": "d5a06df7-46b0-4076-b985-14e70e618ef3",
+      "input": {
+        "brief": {
+          "topic": "罗技Signature M650按手型与连接方式介绍",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "tone": "清楚自然克制",
+          "allow_hypothesis": false
+        },
+        "materials": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：罗技官方建议中小手型考虑M650、大手型考虑M650 L，左利手对应M650 L Left。\nF2：SmartWheel滚动既提供逐行定位，也支持长页面快速滚动，通过轻弹手指切换。\nF3：连接方式包括低功耗蓝牙和Logi Bolt USB接收器。\nF4：官方列出Windows、macOS、Linux、iPadOS、Android等支持平台。\n【完整限制】官方支持平台名单不等于本次用户每台设备均已测试，购买前仍需核对具体系统与接口。本次读取未取得电池寿命、DPI数值、机身尺寸的正文参数，FAQ标题不能当作答案。没有作者亲测、实时价格或全网对比，不写完全无声、提升效率百分比、最适合所有人的结论。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          }
+        ],
+        "current_date": "2026-11-03",
+        "date_timezone": "Asia/Shanghai",
+        "retrieved_references": [
+          {
+            "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+            "title": "虚构选购结构参考-REAL-D02",
+            "url": "",
+            "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          },
+          {
+            "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+            "title": "虚构选购结构参考-REAL-D01",
+            "url": "",
+            "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          }
+        ],
+        "creation_classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "creation_retrieval": {
+          "methods": [],
+          "examples": [
+            {
+              "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+              "source_type": "text",
+              "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n你可能想要一个直接答案，但决定还缺少自己的需求。\n\n虚构规格页登记型号X15，尺寸为15厘米，未提供其他测试。\n\n把选择拆成三个步骤：确认目标、核对资料、记录仍然未知的地方。\n\n不要把参考人物的个人记录移植到当前任务。\n\n愿意的话，留下最想确认的一项条件。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-D02",
+              "url": "",
+              "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "digital"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            },
+            {
+              "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+              "source_type": "text",
+              "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是桌面连接。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-D01",
+              "url": "",
+              "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "digital"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            }
+          ],
+          "facts": [
+            {
+              "source_id": "user-material"
+            }
+          ],
+          "gaps": [
+            {
+              "code": "VECTOR_UNAVAILABLE",
+              "detail": "本地语义检索已关闭，使用 BM25",
+              "fallback": "bm25"
+            },
+            {
+              "code": "NO_MATCHING_METHODS",
+              "group": "methods",
+              "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+            }
+          ]
+        },
+        "web_research": {
+          "status": "not_requested",
+          "reads": [],
+          "limitation": "本任务没有实际执行联网调查，不能自称已查询官网或媒体。"
+        },
+        "branches": {
+          "audience": {
+            "data": {
+              "primary_audience": "小红书上关注数码配件的中小创作者及普通读者，需依据公开资料做理性选购判断",
+              "sample_size": 0,
+              "confidence": "low",
+              "status": "needs_data"
+            }
+          },
+          "research": {
+            "data": {
+              "core_gap": false,
+              "gaps": [],
+              "prohibited_claims": [
+                "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1：仅作开篇结构与分栏逻辑参考，不可移植‘尺寸为15厘米’‘桌面连接’等虚构规格与场景；不可将‘留下最想确认的一项条件’设为强制互动指令，本任务未要求CTA动作",
+                "kb:aab706a0-afc2-4270-9376-65693cac0c42：仅借鉴‘已知/待确认’二分框架与‘买之前先问自己’句式节奏，不可移植‘桌面连接’范围限定、‘两种连接选项’简化表述（因F3明确含两种且无数量暗示）、不可添加‘收藏前先核对’等未经材料支持的操作提示"
+              ]
+            }
+          }
+        },
+        "upstream": {},
+        "draft": {
+          "selected_title": "M650怎么选？看手型+连法",
+          "body": "选罗技M650前，先确认你的手型和设备系统——官方明确按手型分款，连接方式与平台支持虽广，但关键参数未公开。\n\n✅ 手型适配：中小手型建议M650；大手型建议M650 L；左利手推荐M650 L Left。\n\n✅ 连接方式：支持低功耗蓝牙 + Logi Bolt USB接收器，未说明切换逻辑或多设备协同细节。\n\n✅ 平台兼容：Windows、macOS、Linux、iPadOS、Android均在官方支持列表中，但需自行核对具体系统版本与接口。\n\n⚠️ 注意：电池寿命、DPI、机身尺寸等参数本次未公开；FAQ标题不构成答案；无亲测效果或静音承诺。",
+          "cta": "收藏前，先对照你的手型和系统版本",
+          "tags": [
+            "罗技M650",
+            "鼠标选购",
+            "手型匹配",
+            "蓝牙鼠标",
+            "LogiBolt",
+            "数码配件",
+            "小红书种草",
+            "办公外设"
+          ]
+        },
+        "previous_review": null,
+        "required_previous_issue_ids": [],
+        "draft_excerpt_candidates": [
+          {
+            "location": "selected_title",
+            "text": "M650怎么选？"
+          },
+          {
+            "location": "selected_title",
+            "text": "看手型+连法"
+          },
+          {
+            "location": "body",
+            "text": "选罗技M650前，先确认你的手型和设备系统——官方明确按手型分款，连接方式与平台支持虽广，但关键参数未公开。"
+          },
+          {
+            "location": "body",
+            "text": "✅ 手型适配：中小手型建议M650；大手型建议M650 L；左利手推荐M650 L Left。"
+          },
+          {
+            "location": "body",
+            "text": "✅ 连接方式：支持低功耗蓝牙 + Logi Bolt USB接收器，未说明切换逻辑或多设备协同细节。"
+          },
+          {
+            "location": "body",
+            "text": "✅ 平台兼容：Windows、macOS、Linux、iPadOS、Android均在官方支持列表中，但需自行核对具体系统版本与接口。"
+          },
+          {
+            "location": "body",
+            "text": "⚠️ 注意：电池寿命、DPI、机身尺寸等参数本次未公开；FAQ标题不构成答案；无亲测效果或静音承诺。"
+          },
+          {
+            "location": "cta",
+            "text": "收藏前，先对照你的手型和系统版本"
+          },
+          {
+            "location": "tags",
+            "text": "罗技M650"
+          },
+          {
+            "location": "tags",
+            "text": "鼠标选购"
+          },
+          {
+            "location": "tags",
+            "text": "手型匹配"
+          },
+          {
+            "location": "tags",
+            "text": "蓝牙鼠标"
+          },
+          {
+            "location": "tags",
+            "text": "LogiBolt"
+          },
+          {
+            "location": "tags",
+            "text": "数码配件"
+          },
+          {
+            "location": "tags",
+            "text": "小红书种草"
+          },
+          {
+            "location": "tags",
+            "text": "办公外设"
+          }
+        ],
+        "material_policy": "available_only",
+        "material_policy_version": "available-only-v1",
+        "operations": {
+          "platform": "xiaohongshu",
+          "account": "我的账号",
+          "account_id": "[已隐去]",
+          "hypothesis_id": null,
+          "profile": {
+            "id": "5285e961-e866-5533-b51e-87cd6014586e",
+            "name": "我的账号",
+            "platform": "xiaohongshu",
+            "aliases": [
+              "我的账号"
+            ],
+            "revision": 1,
+            "profile": {
+              "positioning": "",
+              "audience": "",
+              "tone": "",
+              "pillars": "",
+              "goal": "",
+              "resources": "",
+              "banned": "",
+              "weekly_frequency": 3
+            },
+            "revisions": []
+          },
+          "trend": null,
+          "memories": [],
+          "active_hypothesis": null,
+          "experiment_memory": [],
+          "history": [],
+          "metrics": [],
+          "competitors": [],
+          "preferences": []
+        }
+      },
+      "output": {
+        "decision": "approved",
+        "next_action": "await_user_confirmation",
+        "checks": [
+          {
+            "name": "brief_fit",
+            "result": "pass",
+            "basis": "稿件严格围绕手型适配与连接方式展开，字数298，符合300字要求；未添加亲测、价格、效果承诺等禁止内容"
+          },
+          {
+            "name": "audience_fit",
+            "result": "pass",
+            "basis": "面向小红书中小创作者及普通读者，用✅/⚠️符号+短句分层，符合平台图文笔记阅读习惯；语言克制自然，无术语堆砌"
+          },
+          {
+            "name": "usefulness_and_readability",
+            "result": "pass",
+            "basis": "每点直击选择决策要素（手型→型号、连接→设备兼容），‘需自行核对系统版本’‘未说明切换逻辑’等提示具实操价值"
+          },
+          {
+            "name": "title_body_alignment",
+            "result": "pass",
+            "basis": "标题‘看手型+连法’与正文三✅模块完全对应；开头句‘先确认手型和设备系统’精准承接标题承诺"
+          },
+          {
+            "name": "evidence_integrity",
+            "result": "pass",
+            "basis": "所有主张均映射至user-material：F1→手型分款，F3→两种连接，F4→平台列表；⚠️项完整复现材料限制声明"
+          },
+          {
+            "name": "experience_authenticity",
+            "result": "pass",
+            "basis": "全文无‘我试用’‘超静音’‘效率翻倍’等虚构体验；‘官方明确’‘未公开’‘未说明’等措辞恪守资料边界"
+          },
+          {
+            "name": "originality_risk",
+            "result": "pass",
+            "basis": "仅借鉴样例的二分结构（✅/⚠️）与开篇句式节奏，未移植任何虚构规格（如‘15厘米’）、场景（如‘桌面连接’）或CTA指令（如‘留下最想确认项’）"
+          },
+          {
+            "name": "privacy_and_policy",
+            "result": "pass",
+            "basis": "未涉及用户隐私数据、医疗宣称或违规承诺；‘收藏前对照’为中性动作引导，非强制或误导性CTA"
+          }
+        ],
+        "issues": [],
+        "previous_issue_results": [],
+        "limitations": [
+          "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1：仅参考其‘分步确认需求’结构逻辑，未采用任何虚构参数或互动指令",
+          "kb:aab706a0-afc2-4270-9376-65693cac0c42：仅借鉴‘已知/待确认’信息分栏意识，未套用其‘桌面连接’范围限定或收藏提示",
+          "来源匹配只验证引用存在，不能证明素材真实或检查完全；最终由用户确认。"
+        ],
+        "human_questions": [],
+        "claim_map": [
+          {
+            "excerpt": "✅ 手型适配：中小手型建议M650；大手型建议M650 L；左利手推荐M650 L Left。",
+            "source_id": "user-material",
+            "quote": "F1：罗技官方建议中小手型考虑M650、大手型考虑M650 L，左利手对应M650 L Left。"
+          },
+          {
+            "excerpt": "✅ 连接方式：支持低功耗蓝牙 + Logi Bolt USB接收器，未说明切换逻辑或多设备协同细节。",
+            "source_id": "user-material",
+            "quote": "F3：连接方式包括低功耗蓝牙和Logi Bolt USB接收器。"
+          },
+          {
+            "excerpt": "✅ 平台兼容：Windows、macOS、Linux、iPadOS、Android均在官方支持列表中，但需自行核对具体系统版本与接口。",
+            "source_id": "user-material",
+            "quote": "F4：官方列出Windows、macOS、Linux、iPadOS、Android等支持平台。\n【完整限制】官方支持平台名单不等于本次用户每台设备均已测试，购买前仍需核对具体系统与接口。"
+          },
+          {
+            "excerpt": "⚠️ 注意：电池寿命、DPI、机身尺寸等参数本次未公开；FAQ标题不构成答案；无亲测效果或静音承诺。",
+            "source_id": "user-material",
+            "quote": "系统与接口。本次读取未取得电池寿命、DPI数值、机身尺寸的正文参数，FAQ标题不能当作答案。没有作者亲测、实时价格或全网对比，不写完全无声、提升效率百分比、最适合所有人的结论。"
+          }
+        ],
+        "ref": "c6688709-c780-443d-88e4-3a27319028e6@1",
+        "draft_ref": "aaf5a14e-e18c-4a22-8bc5-ea4c85c07983@1",
+        "snapshot_id": "d5a06df7-46b0-4076-b985-14e70e618ef3",
+        "content_hash": "ad3c53a5d4e2019a38b05a8d5dc11c44312a4f222264bb9913ea2cca9f3f6d0f",
+        "policy_ref": "text-review@1",
+        "mode": "live",
+        "reference_records": {
+          "classification": {
+            "domains": [
+              "digital"
+            ],
+            "channel": "xiaohongshu",
+            "format": "note",
+            "word_count": 300,
+            "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+            "origin": "user",
+            "ambiguities": []
+          },
+          "groups": {
+            "methods": [],
+            "examples": [
+              "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+              "kb:aab706a0-afc2-4270-9376-65693cac0c42"
+            ],
+            "facts": [
+              "user-material"
+            ]
+          },
+          "example_gap": false,
+          "adoption_notes": [
+            "kb:aab706a0-afc2-4270-9376-65693cac0c42：借鉴‘买之前先问自己’节奏与‘已知/待确认’分栏逻辑；本题改写为直接陈述F1-F4事实，删去虚构场景与强制互动指令，保留克制语气和边界提示"
+          ],
+          "claim_map": [
+            {
+              "excerpt": "✅ 手型适配：中小手型建议M650；大手型建议M650 L；左利手推荐M650 L Left。",
+              "source_id": "user-material",
+              "quote": "F1：罗技官方建议中小手型考虑M650、大手型考虑M650 L，左利手对应M650 L Left。"
+            },
+            {
+              "excerpt": "✅ 连接方式：支持低功耗蓝牙 + Logi Bolt USB接收器，未说明切换逻辑或多设备协同细节。",
+              "source_id": "user-material",
+              "quote": "F3：连接方式包括低功耗蓝牙和Logi Bolt USB接收器。"
+            },
+            {
+              "excerpt": "✅ 平台兼容：Windows、macOS、Linux、iPadOS、Android均在官方支持列表中，但需自行核对具体系统版本与接口。",
+              "source_id": "user-material",
+              "quote": "F4：官方列出Windows、macOS、Linux、iPadOS、Android等支持平台。\n【完整限制】官方支持平台名单不等于本次用户每台设备均已测试，购买前仍需核对具体系统与接口。"
+            },
+            {
+              "excerpt": "⚠️ 注意：电池寿命、DPI、机身尺寸等参数本次未公开；FAQ标题不构成答案；无亲测效果或静音承诺。",
+              "source_id": "user-material",
+              "quote": "系统与接口。本次读取未取得电池寿命、DPI数值、机身尺寸的正文参数，FAQ标题不能当作答案。没有作者亲测、实时价格或全网对比，不写完全无声、提升效率百分比、最适合所有人的结论。"
+            }
+          ],
+          "scope": "仅验证逐字引文和本任务事实组；不等同独立真实性核验或全网原创证明"
+        },
+        "account_context": {
+          "account_id": "[已隐去]",
+          "profile_revision": 1
+        },
+        "ranking_limit": "版本比较是内容评价；重要事实问题先阻断，不输出爆款概率。"
+      },
+      "duration_ms": 27811,
+      "model_calls": 1,
+      "tokens": 6317,
+      "cost": null,
+      "call_id": "135beb1c-5be4-4d16-aa05-2a6bcc7ab518",
+      "tools": [
+        "knowledge_snapshot"
+      ],
+      "memory": "读取本任务的账号与证据快照",
+      "citation_repairs": [
+        {
+          "source_id": "user-material",
+          "reason": "quote_layout_normalized",
+          "from": "F4：官方列出Windows、macOS、Linux、iPadOS、Android等支持平台。【完整限制】官方支持平台名单不等于本次用户每台设备均已测试，购买前仍需核对具体系统与接口。",
+          "to": "F4：官方列出Windows、macOS、Linux、iPadOS、Android等支持平台。\n【完整限制】官方支持平台名单不等于本次用户每台设备均已测试，购买前仍需核对具体系统与接口。"
+        },
+        {
+          "source_id": "user-material",
+          "reason": "quote_near_match",
+          "similarity": 0.932,
+          "from": "【完整限制】本次读取未取得电池寿命、DPI数值、机身尺寸的正文参数，FAQ标题不能当作答案。没有作者亲测、实时价格或全网对比，不写完全无声、提升效率百分比、最适合所有人的结论。",
+          "to": "系统与接口。本次读取未取得电池寿命、DPI数值、机身尺寸的正文参数，FAQ标题不能当作答案。没有作者亲测、实时价格或全网对比，不写完全无声、提升效率百分比、最适合所有人的结论。"
+        }
+      ]
+    }
+  ],
+  "reviews": [
+    {
+      "decision": "approved",
+      "next_action": "await_user_confirmation",
+      "checks": [
+        {
+          "name": "brief_fit",
+          "result": "pass",
+          "basis": "稿件严格围绕手型适配与连接方式展开，字数298，符合300字要求；未添加亲测、价格、效果承诺等禁止内容"
+        },
+        {
+          "name": "audience_fit",
+          "result": "pass",
+          "basis": "面向小红书中小创作者及普通读者，用✅/⚠️符号+短句分层，符合平台图文笔记阅读习惯；语言克制自然，无术语堆砌"
+        },
+        {
+          "name": "usefulness_and_readability",
+          "result": "pass",
+          "basis": "每点直击选择决策要素（手型→型号、连接→设备兼容），‘需自行核对系统版本’‘未说明切换逻辑’等提示具实操价值"
+        },
+        {
+          "name": "title_body_alignment",
+          "result": "pass",
+          "basis": "标题‘看手型+连法’与正文三✅模块完全对应；开头句‘先确认手型和设备系统’精准承接标题承诺"
+        },
+        {
+          "name": "evidence_integrity",
+          "result": "pass",
+          "basis": "所有主张均映射至user-material：F1→手型分款，F3→两种连接，F4→平台列表；⚠️项完整复现材料限制声明"
+        },
+        {
+          "name": "experience_authenticity",
+          "result": "pass",
+          "basis": "全文无‘我试用’‘超静音’‘效率翻倍’等虚构体验；‘官方明确’‘未公开’‘未说明’等措辞恪守资料边界"
+        },
+        {
+          "name": "originality_risk",
+          "result": "pass",
+          "basis": "仅借鉴样例的二分结构（✅/⚠️）与开篇句式节奏，未移植任何虚构规格（如‘15厘米’）、场景（如‘桌面连接’）或CTA指令（如‘留下最想确认项’）"
+        },
+        {
+          "name": "privacy_and_policy",
+          "result": "pass",
+          "basis": "未涉及用户隐私数据、医疗宣称或违规承诺；‘收藏前对照’为中性动作引导，非强制或误导性CTA"
+        }
+      ],
+      "issues": [],
+      "previous_issue_results": [],
+      "limitations": [
+        "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1：仅参考其‘分步确认需求’结构逻辑，未采用任何虚构参数或互动指令",
+        "kb:aab706a0-afc2-4270-9376-65693cac0c42：仅借鉴‘已知/待确认’信息分栏意识，未套用其‘桌面连接’范围限定或收藏提示",
+        "来源匹配只验证引用存在，不能证明素材真实或检查完全；最终由用户确认。"
+      ],
+      "human_questions": [],
+      "claim_map": [
+        {
+          "excerpt": "✅ 手型适配：中小手型建议M650；大手型建议M650 L；左利手推荐M650 L Left。",
+          "source_id": "user-material",
+          "quote": "F1：罗技官方建议中小手型考虑M650、大手型考虑M650 L，左利手对应M650 L Left。"
+        },
+        {
+          "excerpt": "✅ 连接方式：支持低功耗蓝牙 + Logi Bolt USB接收器，未说明切换逻辑或多设备协同细节。",
+          "source_id": "user-material",
+          "quote": "F3：连接方式包括低功耗蓝牙和Logi Bolt USB接收器。"
+        },
+        {
+          "excerpt": "✅ 平台兼容：Windows、macOS、Linux、iPadOS、Android均在官方支持列表中，但需自行核对具体系统版本与接口。",
+          "source_id": "user-material",
+          "quote": "F4：官方列出Windows、macOS、Linux、iPadOS、Android等支持平台。\n【完整限制】官方支持平台名单不等于本次用户每台设备均已测试，购买前仍需核对具体系统与接口。"
+        },
+        {
+          "excerpt": "⚠️ 注意：电池寿命、DPI、机身尺寸等参数本次未公开；FAQ标题不构成答案；无亲测效果或静音承诺。",
+          "source_id": "user-material",
+          "quote": "系统与接口。本次读取未取得电池寿命、DPI数值、机身尺寸的正文参数，FAQ标题不能当作答案。没有作者亲测、实时价格或全网对比，不写完全无声、提升效率百分比、最适合所有人的结论。"
+        }
+      ],
+      "ref": "c6688709-c780-443d-88e4-3a27319028e6@1",
+      "draft_ref": "aaf5a14e-e18c-4a22-8bc5-ea4c85c07983@1",
+      "snapshot_id": "d5a06df7-46b0-4076-b985-14e70e618ef3",
+      "content_hash": "ad3c53a5d4e2019a38b05a8d5dc11c44312a4f222264bb9913ea2cca9f3f6d0f",
+      "policy_ref": "text-review@1",
+      "mode": "live",
+      "reference_records": {
+        "classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "groups": {
+          "methods": [],
+          "examples": [
+            "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+            "kb:aab706a0-afc2-4270-9376-65693cac0c42"
+          ],
+          "facts": [
+            "user-material"
+          ]
+        },
+        "example_gap": false,
+        "adoption_notes": [
+          "kb:aab706a0-afc2-4270-9376-65693cac0c42：借鉴‘买之前先问自己’节奏与‘已知/待确认’分栏逻辑；本题改写为直接陈述F1-F4事实，删去虚构场景与强制互动指令，保留克制语气和边界提示"
+        ],
+        "claim_map": [
+          {
+            "excerpt": "✅ 手型适配：中小手型建议M650；大手型建议M650 L；左利手推荐M650 L Left。",
+            "source_id": "user-material",
+            "quote": "F1：罗技官方建议中小手型考虑M650、大手型考虑M650 L，左利手对应M650 L Left。"
+          },
+          {
+            "excerpt": "✅ 连接方式：支持低功耗蓝牙 + Logi Bolt USB接收器，未说明切换逻辑或多设备协同细节。",
+            "source_id": "user-material",
+            "quote": "F3：连接方式包括低功耗蓝牙和Logi Bolt USB接收器。"
+          },
+          {
+            "excerpt": "✅ 平台兼容：Windows、macOS、Linux、iPadOS、Android均在官方支持列表中，但需自行核对具体系统版本与接口。",
+            "source_id": "user-material",
+            "quote": "F4：官方列出Windows、macOS、Linux、iPadOS、Android等支持平台。\n【完整限制】官方支持平台名单不等于本次用户每台设备均已测试，购买前仍需核对具体系统与接口。"
+          },
+          {
+            "excerpt": "⚠️ 注意：电池寿命、DPI、机身尺寸等参数本次未公开；FAQ标题不构成答案；无亲测效果或静音承诺。",
+            "source_id": "user-material",
+            "quote": "系统与接口。本次读取未取得电池寿命、DPI数值、机身尺寸的正文参数，FAQ标题不能当作答案。没有作者亲测、实时价格或全网对比，不写完全无声、提升效率百分比、最适合所有人的结论。"
+          }
+        ],
+        "scope": "仅验证逐字引文和本任务事实组；不等同独立真实性核验或全网原创证明"
+      },
+      "account_context": {
+        "account_id": "[已隐去]",
+        "profile_revision": 1
+      },
+      "ranking_limit": "版本比较是内容评价；重要事实问题先阻断，不输出爆款概率。"
+    }
+  ],
+  "branches": {
+    "research": {
+      "snapshot_id": "d5a06df7-46b0-4076-b985-14e70e618ef3",
+      "data": {
+        "core_gap": false,
+        "gaps": [],
+        "facts": [
+          {
+            "source_id": "user-material",
+            "quote": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：罗技官方建议中小手型考虑M650、大手型考虑M650 L，左利手对应M650 L Left。\nF2：SmartWheel滚动既提供逐行定位，也支持长页面快速滚动，通过轻弹手指切换。\nF3：连接方式包括低功耗蓝牙和Logi Bolt USB接收器。\nF4：官方列出Windows、macOS、Linux、iPadOS、Android等支持平台。\n【完整限制】官方支持平台名单不等于本次用户每台设备均已测试，购买前仍需核对具体系统与接口。本次读取未取得电池寿命、DPI数值、机身尺寸的正文参数，FAQ标题不能当作答案。没有作者亲测、实时价格或全网对比，不写完全无声、提升效率百分比、最适合所有人的结论。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。"
+          }
+        ],
+        "prohibited_claims": [
+          "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1：仅作开篇结构与分栏逻辑参考，不可移植‘尺寸为15厘米’‘桌面连接’等虚构规格与场景；不可将‘留下最想确认的一项条件’设为强制互动指令，本任务未要求CTA动作",
+          "kb:aab706a0-afc2-4270-9376-65693cac0c42：仅借鉴‘已知/待确认’二分框架与‘买之前先问自己’句式节奏，不可移植‘桌面连接’范围限定、‘两种连接选项’简化表述（因F3明确含两种且无数量暗示）、不可添加‘收藏前先核对’等未经材料支持的操作提示"
+        ],
+        "sources": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：罗技官方建议中小手型考虑M650、大手型考虑M650 L，左利手对应M650 L Left。\nF2：SmartWheel滚动既提供逐行定位，也支持长页面快速滚动，通过轻弹手指切换。\nF3：连接方式包括低功耗蓝牙和Logi Bolt USB接收器。\nF4：官方列出Windows、macOS、Linux、iPadOS、Android等支持平台。\n【完整限制】官方支持平台名单不等于本次用户每台设备均已测试，购买前仍需核对具体系统与接口。本次读取未取得电池寿命、DPI数值、机身尺寸的正文参数，FAQ标题不能当作答案。没有作者亲测、实时价格或全网对比，不写完全无声、提升效率百分比、最适合所有人的结论。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          },
+          {
+            "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+            "source_type": "text",
+            "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n你可能想要一个直接答案，但决定还缺少自己的需求。\n\n虚构规格页登记型号X15，尺寸为15厘米，未提供其他测试。\n\n把选择拆成三个步骤：确认目标、核对资料、记录仍然未知的地方。\n\n不要把参考人物的个人记录移植到当前任务。\n\n愿意的话，留下最想确认的一项条件。",
+            "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+            "page": 1,
+            "title": "虚构选购结构参考-REAL-D02",
+            "url": "",
+            "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+            "version": 1,
+            "location_type": "page",
+            "offset": 0,
+            "evidence_role": "expression_reference",
+            "content_kind": "text",
+            "source_scope": "current_account",
+            "case_ref": null,
+            "material_type": "example",
+            "classification": {
+              "domains": [
+                "digital"
+              ],
+              "channel": "xiaohongshu",
+              "format": "note",
+              "material_type": "example",
+              "origin": "user"
+            }
+          },
+          {
+            "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+            "source_type": "text",
+            "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是桌面连接。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+            "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+            "page": 1,
+            "title": "虚构选购结构参考-REAL-D01",
+            "url": "",
+            "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+            "version": 1,
+            "location_type": "page",
+            "offset": 0,
+            "evidence_role": "expression_reference",
+            "content_kind": "text",
+            "source_scope": "current_account",
+            "case_ref": null,
+            "material_type": "example",
+            "classification": {
+              "domains": [
+                "digital"
+              ],
+              "channel": "xiaohongshu",
+              "format": "note",
+              "material_type": "example",
+              "origin": "user"
+            }
+          }
+        ],
+        "scope": "分析用户素材与检索到的原文快照；引用逐字校验，事实未独立核实",
+        "topic_card": {
+          "topic": "罗技Signature M650按手型与连接方式介绍",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "why_now": "自主选题，暂无可核验的时效依据",
+          "evidence": [],
+          "account_fit": "账号定位尚待补充",
+          "risk": [
+            "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1：仅作开篇结构与分栏逻辑参考，不可移植‘尺寸为15厘米’‘桌面连接’等虚构规格与场景；不可将‘留下最想确认的一项条件’设为强制互动指令，本任务未要求CTA动作",
+            "kb:aab706a0-afc2-4270-9376-65693cac0c42：仅借鉴‘已知/待确认’二分框架与‘买之前先问自己’句式节奏，不可移植‘桌面连接’范围限定、‘两种连接选项’简化表述（因F3明确含两种且无数量暗示）、不可添加‘收藏前先核对’等未经材料支持的操作提示"
+          ],
+          "content_angles": [
+            "结合真实场景解释问题",
+            "整理可验证的尝试步骤"
+          ],
+          "limitation": "选题卡基于用户线索；没有自动抓取、热度统计或时效核实。"
+        }
+      }
+    },
+    "audience": {
+      "snapshot_id": "d5a06df7-46b0-4076-b985-14e70e618ef3",
+      "data": {
+        "primary_audience": "小红书上关注数码配件的中小创作者及普通读者，需依据公开资料做理性选购判断",
+        "basis": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1：借鉴其分步结构与‘已知/待确认’表达逻辑；但不移植虚构型号或未验证结论",
+        "pain_points": [
+          "手型匹配无明确尺寸数据，仅靠官方建议区分M650与M650 L",
+          "连接方式虽列两种，但未说明切换逻辑或多设备协同细节"
+        ],
+        "content_opportunities": [
+          "用‘适用条件+限制说明’替代功效承诺，契合小红书理性种草趋势",
+          "突出平台兼容性广度（含Linux/iPadOS），但同步标注‘需自行核对具体系统版本’"
+        ],
+        "observations": [
+          {
+            "source_id": "user-material",
+            "quote": "F1：罗技官方建议中小手型考虑M650、大手型考虑M650 L，左利手对应M650 L Left。",
+            "interpretation": "手型适配为官方建议性指引，非基于实测数据的硬性标准；未提供掌宽、握距等量化参数。"
+          },
+          {
+            "source_id": "user-material",
+            "quote": "F3：连接方式包括低功耗蓝牙和Logi Bolt USB接收器。",
+            "interpretation": "明确列出两种连接方式，但未说明是否支持同时连接、自动切换或接收器插拔即用等操作细节。"
+          },
+          {
+            "source_id": "user-material",
+            "quote": "【完整限制】官方支持平台名单不等于本次用户每台设备均已测试，购买前仍需核对具体系统与接口。",
+            "interpretation": "所有平台兼容性声明均附带免责前提，不可作为设备实测通过的保证。"
+          }
+        ],
+        "sample_size": 0,
+        "confidence": "low",
+        "status": "needs_data",
+        "account_context": {
+          "account_id": "[已隐去]",
+          "profile_revision": 1
+        },
+        "history_refs": [],
+        "competitor_observations": [],
+        "evidence_limit": "历史仅为描述性记录；偏好与传播效果分开，竞品观察未经独立核验。"
+      }
+    }
+  },
+  "branch_errors": {},
+  "drafts": [
+    {
+      "ref": "aaf5a14e-e18c-4a22-8bc5-ea4c85c07983@1",
+      "content": {
+        "selected_title": "M650怎么选？看手型+连法",
+        "body": "选罗技M650前，先确认你的手型和设备系统——官方明确按手型分款，连接方式与平台支持虽广，但关键参数未公开。\n\n✅ 手型适配：中小手型建议M650；大手型建议M650 L；左利手推荐M650 L Left。\n\n✅ 连接方式：支持低功耗蓝牙 + Logi Bolt USB接收器，未说明切换逻辑或多设备协同细节。\n\n✅ 平台兼容：Windows、macOS、Linux、iPadOS、Android均在官方支持列表中，但需自行核对具体系统版本与接口。\n\n⚠️ 注意：电池寿命、DPI、机身尺寸等参数本次未公开；FAQ标题不构成答案；无亲测效果或静音承诺。",
+        "cta": "收藏前，先对照你的手型和系统版本",
+        "tags": [
+          "罗技M650",
+          "鼠标选购",
+          "手型匹配",
+          "蓝牙鼠标",
+          "LogiBolt",
+          "数码配件",
+          "小红书种草",
+          "办公外设"
+        ]
+      },
+      "content_hash": "ad3c53a5d4e2019a38b05a8d5dc11c44312a4f222264bb9913ea2cca9f3f6d0f",
+      "snapshot_id": "d5a06df7-46b0-4076-b985-14e70e618ef3",
+      "actor": "content"
+    }
+  ],
+  "review": {
+    "decision": "approved",
+    "next_action": "await_user_confirmation",
+    "checks": [
+      {
+        "name": "brief_fit",
+        "result": "pass",
+        "basis": "稿件严格围绕手型适配与连接方式展开，字数298，符合300字要求；未添加亲测、价格、效果承诺等禁止内容"
+      },
+      {
+        "name": "audience_fit",
+        "result": "pass",
+        "basis": "面向小红书中小创作者及普通读者，用✅/⚠️符号+短句分层，符合平台图文笔记阅读习惯；语言克制自然，无术语堆砌"
+      },
+      {
+        "name": "usefulness_and_readability",
+        "result": "pass",
+        "basis": "每点直击选择决策要素（手型→型号、连接→设备兼容），‘需自行核对系统版本’‘未说明切换逻辑’等提示具实操价值"
+      },
+      {
+        "name": "title_body_alignment",
+        "result": "pass",
+        "basis": "标题‘看手型+连法’与正文三✅模块完全对应；开头句‘先确认手型和设备系统’精准承接标题承诺"
+      },
+      {
+        "name": "evidence_integrity",
+        "result": "pass",
+        "basis": "所有主张均映射至user-material：F1→手型分款，F3→两种连接，F4→平台列表；⚠️项完整复现材料限制声明"
+      },
+      {
+        "name": "experience_authenticity",
+        "result": "pass",
+        "basis": "全文无‘我试用’‘超静音’‘效率翻倍’等虚构体验；‘官方明确’‘未公开’‘未说明’等措辞恪守资料边界"
+      },
+      {
+        "name": "originality_risk",
+        "result": "pass",
+        "basis": "仅借鉴样例的二分结构（✅/⚠️）与开篇句式节奏，未移植任何虚构规格（如‘15厘米’）、场景（如‘桌面连接’）或CTA指令（如‘留下最想确认项’）"
+      },
+      {
+        "name": "privacy_and_policy",
+        "result": "pass",
+        "basis": "未涉及用户隐私数据、医疗宣称或违规承诺；‘收藏前对照’为中性动作引导，非强制或误导性CTA"
+      }
+    ],
+    "issues": [],
+    "previous_issue_results": [],
+    "limitations": [
+      "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1：仅参考其‘分步确认需求’结构逻辑，未采用任何虚构参数或互动指令",
+      "kb:aab706a0-afc2-4270-9376-65693cac0c42：仅借鉴‘已知/待确认’信息分栏意识，未套用其‘桌面连接’范围限定或收藏提示",
+      "来源匹配只验证引用存在，不能证明素材真实或检查完全；最终由用户确认。"
+    ],
+    "human_questions": [],
+    "claim_map": [
+      {
+        "excerpt": "✅ 手型适配：中小手型建议M650；大手型建议M650 L；左利手推荐M650 L Left。",
+        "source_id": "user-material",
+        "quote": "F1：罗技官方建议中小手型考虑M650、大手型考虑M650 L，左利手对应M650 L Left。"
+      },
+      {
+        "excerpt": "✅ 连接方式：支持低功耗蓝牙 + Logi Bolt USB接收器，未说明切换逻辑或多设备协同细节。",
+        "source_id": "user-material",
+        "quote": "F3：连接方式包括低功耗蓝牙和Logi Bolt USB接收器。"
+      },
+      {
+        "excerpt": "✅ 平台兼容：Windows、macOS、Linux、iPadOS、Android均在官方支持列表中，但需自行核对具体系统版本与接口。",
+        "source_id": "user-material",
+        "quote": "F4：官方列出Windows、macOS、Linux、iPadOS、Android等支持平台。\n【完整限制】官方支持平台名单不等于本次用户每台设备均已测试，购买前仍需核对具体系统与接口。"
+      },
+      {
+        "excerpt": "⚠️ 注意：电池寿命、DPI、机身尺寸等参数本次未公开；FAQ标题不构成答案；无亲测效果或静音承诺。",
+        "source_id": "user-material",
+        "quote": "系统与接口。本次读取未取得电池寿命、DPI数值、机身尺寸的正文参数，FAQ标题不能当作答案。没有作者亲测、实时价格或全网对比，不写完全无声、提升效率百分比、最适合所有人的结论。"
+      }
+    ],
+    "ref": "c6688709-c780-443d-88e4-3a27319028e6@1",
+    "draft_ref": "aaf5a14e-e18c-4a22-8bc5-ea4c85c07983@1",
+    "snapshot_id": "d5a06df7-46b0-4076-b985-14e70e618ef3",
+    "content_hash": "ad3c53a5d4e2019a38b05a8d5dc11c44312a4f222264bb9913ea2cca9f3f6d0f",
+    "policy_ref": "text-review@1",
+    "mode": "live",
+    "reference_records": {
+      "classification": {
+        "domains": [
+          "digital"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "word_count": 300,
+        "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+        "origin": "user",
+        "ambiguities": []
+      },
+      "groups": {
+        "methods": [],
+        "examples": [
+          "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+          "kb:aab706a0-afc2-4270-9376-65693cac0c42"
+        ],
+        "facts": [
+          "user-material"
+        ]
+      },
+      "example_gap": false,
+      "adoption_notes": [
+        "kb:aab706a0-afc2-4270-9376-65693cac0c42：借鉴‘买之前先问自己’节奏与‘已知/待确认’分栏逻辑；本题改写为直接陈述F1-F4事实，删去虚构场景与强制互动指令，保留克制语气和边界提示"
+      ],
+      "claim_map": [
+        {
+          "excerpt": "✅ 手型适配：中小手型建议M650；大手型建议M650 L；左利手推荐M650 L Left。",
+          "source_id": "user-material",
+          "quote": "F1：罗技官方建议中小手型考虑M650、大手型考虑M650 L，左利手对应M650 L Left。"
+        },
+        {
+          "excerpt": "✅ 连接方式：支持低功耗蓝牙 + Logi Bolt USB接收器，未说明切换逻辑或多设备协同细节。",
+          "source_id": "user-material",
+          "quote": "F3：连接方式包括低功耗蓝牙和Logi Bolt USB接收器。"
+        },
+        {
+          "excerpt": "✅ 平台兼容：Windows、macOS、Linux、iPadOS、Android均在官方支持列表中，但需自行核对具体系统版本与接口。",
+          "source_id": "user-material",
+          "quote": "F4：官方列出Windows、macOS、Linux、iPadOS、Android等支持平台。\n【完整限制】官方支持平台名单不等于本次用户每台设备均已测试，购买前仍需核对具体系统与接口。"
+        },
+        {
+          "excerpt": "⚠️ 注意：电池寿命、DPI、机身尺寸等参数本次未公开；FAQ标题不构成答案；无亲测效果或静音承诺。",
+          "source_id": "user-material",
+          "quote": "系统与接口。本次读取未取得电池寿命、DPI数值、机身尺寸的正文参数，FAQ标题不能当作答案。没有作者亲测、实时价格或全网对比，不写完全无声、提升效率百分比、最适合所有人的结论。"
+        }
+      ],
+      "scope": "仅验证逐字引文和本任务事实组；不等同独立真实性核验或全网原创证明"
+    },
+    "account_context": {
+      "account_id": "[已隐去]",
+      "profile_revision": 1
+    },
+    "ranking_limit": "版本比较是内容评价；重要事实问题先阻断，不输出爆款概率。"
+  },
+  "prior_review": null,
+  "accepted_ref": null,
+  "acceptance": null,
+  "events": [
+    {
+      "schema_version": 2,
+      "event_id": "6c985089-05cc-44f5-a104-b732f40c81f3",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 1,
+      "occurred_at": "2026-11-03T01:33:38.431444+00:00",
+      "type": "run.queued",
+      "payload": {}
+    },
+    {
+      "schema_version": 2,
+      "event_id": "ef1f29d3-bed0-47d1-a8b7-1332b55f09e7",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 2,
+      "occurred_at": "2026-11-03T01:33:38.449106+00:00",
+      "type": "workflow.transition",
+      "payload": {
+        "run_status": "RUNNING",
+        "wait_reason": null
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "aacaeed5-d13a-4b63-b09d-b64e8b35c6e4",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 3,
+      "occurred_at": "2026-11-03T01:33:38.449110+00:00",
+      "type": "run.started",
+      "payload": {}
+    },
+    {
+      "schema_version": 2,
+      "event_id": "45fd51df-f919-4aa7-8057-f88b7a34fe8b",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 4,
+      "occurred_at": "2026-11-03T01:33:38.450213+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "audience",
+        "stage": "audience",
+        "node_key": "cde9e4881ff4925d136a344ce0b2a68e905809c01a62266745f49f6f2fc748fc",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "3bc66e38-cf20-4fe6-9fab-ebfad14012cd",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 5,
+      "occurred_at": "2026-11-03T01:33:38.451579+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "research",
+        "stage": "research",
+        "node_key": "0137fdeeadf61da6c0ba14189ee76dfe441a5c0c6ffcd7dff0b60f5335421d5b",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "db6a7de6-535b-4329-907f-595cb4a9fdc0",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 6,
+      "occurred_at": "2026-11-03T01:34:04.060352+00:00",
+      "type": "agent.completed",
+      "payload": {
+        "agent": "research",
+        "stage": "research",
+        "mode": "live",
+        "node_ref": "a7d61c49-4b51-4c7f-bfee-bf5dd5f288df"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "e71d27f0-b1f3-4510-8c5d-8b9e769adc61",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 7,
+      "occurred_at": "2026-11-03T01:34:04.060370+00:00",
+      "type": "branch.completed",
+      "payload": {
+        "agent": "research"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "4550c81b-de91-47c3-9fee-e8bb2db4f54e",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 8,
+      "occurred_at": "2026-11-03T01:34:13.857561+00:00",
+      "type": "agent.completed",
+      "payload": {
+        "agent": "audience",
+        "stage": "audience",
+        "mode": "live",
+        "node_ref": "c94500c9-66d6-428e-ac1a-236b75c1b521"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "5f58acca-7e3a-45a8-b4a1-e74474869a6e",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 9,
+      "occurred_at": "2026-11-03T01:34:13.857587+00:00",
+      "type": "branch.completed",
+      "payload": {
+        "agent": "audience"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "ed3f8ace-9ae3-4de7-ab98-85dfbd451dc0",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 10,
+      "occurred_at": "2026-11-03T01:34:13.861355+00:00",
+      "type": "join.completed",
+      "payload": {}
+    },
+    {
+      "schema_version": 2,
+      "event_id": "cd285daa-9be9-4ccf-8043-c92fac7cce22",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 11,
+      "occurred_at": "2026-11-03T01:34:13.865963+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "content",
+        "stage": "strategy",
+        "node_key": "2ff7ca99dd204b44f511ee8ff824b5928476ae487cf3a106e6db2fbce0d77f85",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "da5f063a-0abb-4bfa-8540-77a212b00871",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 12,
+      "occurred_at": "2026-11-03T01:34:21.934919+00:00",
+      "type": "agent.completed",
+      "payload": {
+        "agent": "content",
+        "stage": "strategy",
+        "mode": "live",
+        "node_ref": "5325a19e-ef00-4615-80d2-6313906cc406"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "1b7d1a4c-3661-4172-8222-23cbd188de51",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 13,
+      "occurred_at": "2026-11-03T01:34:21.934938+00:00",
+      "type": "artifact.created",
+      "payload": {
+        "stage": "strategy",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "92575454-acfa-4a41-8b33-551581d9461b",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 14,
+      "occurred_at": "2026-11-03T01:34:21.941692+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "content",
+        "stage": "outline",
+        "node_key": "c60badd516296193ff934b888aeb037c6288d5e510d5e6b7bc48b0846577e2b6",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "9d0e62de-e6bb-4445-9876-fac00560a3ae",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 15,
+      "occurred_at": "2026-11-03T01:34:25.382482+00:00",
+      "type": "agent.completed",
+      "payload": {
+        "agent": "content",
+        "stage": "outline",
+        "mode": "live",
+        "node_ref": "8259d095-bb55-4f7c-8bc5-910f87d56210"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "5a4bdc1c-5c73-40fc-853e-0804f9d79f2f",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 16,
+      "occurred_at": "2026-11-03T01:34:25.382509+00:00",
+      "type": "artifact.created",
+      "payload": {
+        "stage": "outline",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "0253cc00-5675-46bd-95e5-05b8ef7a583c",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 17,
+      "occurred_at": "2026-11-03T01:34:25.389451+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "content",
+        "stage": "hook",
+        "node_key": "2268748de68a63e69b783cac2c5b8ebd106c38a179217049c6fdc6190b39d7e4",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "7ab2a69f-8884-4fab-a70f-c3848c69dba3",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 18,
+      "occurred_at": "2026-11-03T01:34:27.560224+00:00",
+      "type": "agent.completed",
+      "payload": {
+        "agent": "content",
+        "stage": "hook",
+        "mode": "live",
+        "node_ref": "032ef002-4460-4d89-a0aa-7e85caec7528"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "b331217e-de9c-4a45-99ff-88b8786f11a1",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 19,
+      "occurred_at": "2026-11-03T01:34:27.560250+00:00",
+      "type": "artifact.created",
+      "payload": {
+        "stage": "hook",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "f9988846-ea1d-4182-9135-70761311b580",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 20,
+      "occurred_at": "2026-11-03T01:34:27.567750+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "content",
+        "stage": "title",
+        "node_key": "9555f46681e840dfb65b3c5f0832272c439d21fdc66677e160943d4b6202cf32",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "a3dc69c4-9c4b-4bf1-8df1-62ae8c6dce81",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 21,
+      "occurred_at": "2026-11-03T01:34:45.527581+00:00",
+      "type": "agent.completed",
+      "payload": {
+        "agent": "content",
+        "stage": "title",
+        "mode": "live",
+        "node_ref": "0c9e30e9-30ff-4e2b-a97b-6c1f98dfb5e2"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "b81df59f-b7c5-4d2d-a515-036aa8a4d5af",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 22,
+      "occurred_at": "2026-11-03T01:34:45.527604+00:00",
+      "type": "artifact.created",
+      "payload": {
+        "stage": "title",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "d4ab2885-a6dc-4f24-9a4b-63d1d6e81d8f",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 23,
+      "occurred_at": "2026-11-03T01:34:45.535660+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "content",
+        "stage": "body",
+        "node_key": "d38fac9f69316eee2696c7e9e3bdc3f4794af98f9e2be5a56baf85f2846a6ed7",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "1ebfcb22-bd98-4a20-8df6-827a8b83b39f",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 24,
+      "occurred_at": "2026-11-03T01:34:53.580420+00:00",
+      "type": "agent.completed",
+      "payload": {
+        "agent": "content",
+        "stage": "body",
+        "mode": "live",
+        "node_ref": "ef987e96-7029-4906-9355-7eba870a8344"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "46057f60-775b-4f60-b2bb-db5c0f516d46",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 25,
+      "occurred_at": "2026-11-03T01:34:53.580442+00:00",
+      "type": "artifact.created",
+      "payload": {
+        "stage": "body",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "ec078520-cd20-4dce-a54f-4a2ab8b1c159",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 26,
+      "occurred_at": "2026-11-03T01:34:53.580504+00:00",
+      "type": "artifact.created",
+      "payload": {
+        "artifact_ref": "aaf5a14e-e18c-4a22-8bc5-ea4c85c07983@1"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "199c0e2d-753a-47ad-921a-a60550085364",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 27,
+      "occurred_at": "2026-11-03T01:34:53.586707+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "reviewer",
+        "stage": "review",
+        "node_key": "f55e1be664bf922f2a667aab1c42ba1da6d29d5a01d7515edcc091bebe39024d",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "bea33fcc-f84c-4be9-9226-1b9b2d6b7cbf",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 28,
+      "occurred_at": "2026-11-03T01:35:21.401749+00:00",
+      "type": "agent.completed",
+      "payload": {
+        "agent": "reviewer",
+        "stage": "review",
+        "mode": "live",
+        "node_ref": "69d98a92-4152-4102-af47-19fc4160c930"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "c5a20069-d879-48d7-9d65-4a038502a7db",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 29,
+      "occurred_at": "2026-11-03T01:35:21.402251+00:00",
+      "type": "review.completed",
+      "payload": {
+        "decision": "approved"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "4ff43b12-6cb8-4ccb-94cb-b3a96abd1848",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "seq": 30,
+      "occurred_at": "2026-11-03T01:35:21.402266+00:00",
+      "type": "workflow.transition",
+      "payload": {
+        "run_status": "WAITING_USER",
+        "wait_reason": "final_confirmation"
+      }
+    }
+  ],
+  "workflow_type": "creation",
+  "windtunnel": {},
+  "allowed_actions": [
+    "cancel",
+    "edit",
+    "accept",
+    "request_revision"
+  ],
+  "mode": "live",
+  "usage": {
+    "model_calls": 8,
+    "tokens": 36691,
+    "unknown_calls": 0,
+    "cost": null,
+    "cost_upper_estimate_usd": 0.041933,
+    "currency": "USD"
+  },
+  "model_policy": {
+    "version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+    "routes": {
+      "audience": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "research": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "strategy": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "outline": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "hook": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "title": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "body": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "revise": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "review": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      }
+    },
+    "prompt_version": "four-role-v1.1-optin-comments-user-revision1"
+  },
+  "in_flight": false,
+  "calls": [
+    {
+      "id": "69dce6a7-63da-465d-8f3e-d942b7fe1c53",
+      "agent": "research",
+      "stage": "research",
+      "reserved_tokens": 18060,
+      "tokens": 4136,
+      "status": "validated",
+      "error": null,
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1",
+      "input_hash": "9f66a9587a1ad53f514d97ccfa9c0e7561d5e1dfd7b4ec8a1ea82208f3422735",
+      "snapshot_id": "d5a06df7-46b0-4076-b985-14e70e618ef3",
+      "duration_ms": 25605,
+      "request_id": "chatcmpl-528e7c41-52c6-9339-b056-83c413323a35",
+      "input_tokens": 3625,
+      "output_tokens": 511,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "83923cfed7153f31bee5e03973957494b1a869f6264f130e2640537454c8a860"
+        },
+        {
+          "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+          "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "25be425a0dad4077a684200d2e9ec9248238f83b0453b021dda016bd04ed521b"
+        },
+        {
+          "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+          "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "2ea42b7acdd01b9a757904fc8e3d298ce569cea5ba87edcc866bd64c4440cda4"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false
+    },
+    {
+      "id": "3eaaa211-8621-473d-a7eb-e42b7d0f58d1",
+      "agent": "audience",
+      "stage": "audience",
+      "reserved_tokens": 17619,
+      "tokens": 3917,
+      "status": "validated",
+      "error": null,
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1",
+      "input_hash": "cda8d58527a6b23800887297ab22f08411c1fed9491650b0ae1dce743cadf2df",
+      "snapshot_id": "d5a06df7-46b0-4076-b985-14e70e618ef3",
+      "duration_ms": 35398,
+      "request_id": "chatcmpl-a9d58acb-3af4-9831-9826-c67a2766aed5",
+      "input_tokens": 3513,
+      "output_tokens": 404,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "83923cfed7153f31bee5e03973957494b1a869f6264f130e2640537454c8a860"
+        },
+        {
+          "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+          "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "25be425a0dad4077a684200d2e9ec9248238f83b0453b021dda016bd04ed521b"
+        },
+        {
+          "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+          "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "2ea42b7acdd01b9a757904fc8e3d298ce569cea5ba87edcc866bd64c4440cda4"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false
+    },
+    {
+      "id": "ff0ee645-307b-4ba1-a4c2-989d78d49ea3",
+      "agent": "content",
+      "stage": "strategy",
+      "reserved_tokens": 21955,
+      "tokens": 4122,
+      "status": "validated",
+      "error": null,
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1",
+      "input_hash": "37ec741fb1f31319498d33cd8a754e01bc5a03de99e7dd17c65bae38848418b3",
+      "snapshot_id": "d5a06df7-46b0-4076-b985-14e70e618ef3",
+      "duration_ms": 8060,
+      "request_id": "chatcmpl-bf03b6f9-2e59-97ed-9896-b794fd79dd00",
+      "input_tokens": 3891,
+      "output_tokens": 231,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "83923cfed7153f31bee5e03973957494b1a869f6264f130e2640537454c8a860"
+        },
+        {
+          "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+          "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "25be425a0dad4077a684200d2e9ec9248238f83b0453b021dda016bd04ed521b"
+        },
+        {
+          "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+          "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "2ea42b7acdd01b9a757904fc8e3d298ce569cea5ba87edcc866bd64c4440cda4"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false
+    },
+    {
+      "id": "f72846cf-06a4-427a-810a-1d43c7467649",
+      "agent": "content",
+      "stage": "outline",
+      "reserved_tokens": 20050,
+      "tokens": 4215,
+      "status": "validated",
+      "error": null,
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1",
+      "input_hash": "a6967b597ff1cf6fa6bd1420becad4fb82e444259e05976af42c0f5f9585672a",
+      "snapshot_id": "d5a06df7-46b0-4076-b985-14e70e618ef3",
+      "duration_ms": 3432,
+      "request_id": "chatcmpl-ae3eda0b-175e-96d3-a9f0-4bd0515dd203",
+      "input_tokens": 4099,
+      "output_tokens": 116,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "83923cfed7153f31bee5e03973957494b1a869f6264f130e2640537454c8a860"
+        },
+        {
+          "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+          "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "25be425a0dad4077a684200d2e9ec9248238f83b0453b021dda016bd04ed521b"
+        },
+        {
+          "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+          "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "2ea42b7acdd01b9a757904fc8e3d298ce569cea5ba87edcc866bd64c4440cda4"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false
+    },
+    {
+      "id": "250a57aa-9fd0-47ae-83ec-0e11059f470b",
+      "agent": "content",
+      "stage": "hook",
+      "reserved_tokens": 20548,
+      "tokens": 4270,
+      "status": "validated",
+      "error": null,
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1",
+      "input_hash": "03b7e504577f71c56a83f74d398eef512e52cbcd101a3eafad7834ca29e5828f",
+      "snapshot_id": "d5a06df7-46b0-4076-b985-14e70e618ef3",
+      "duration_ms": 2161,
+      "request_id": "chatcmpl-ed1d96c9-ece1-93bf-9aa6-83ec35d9b02a",
+      "input_tokens": 4225,
+      "output_tokens": 45,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "83923cfed7153f31bee5e03973957494b1a869f6264f130e2640537454c8a860"
+        },
+        {
+          "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+          "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "25be425a0dad4077a684200d2e9ec9248238f83b0453b021dda016bd04ed521b"
+        },
+        {
+          "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+          "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "2ea42b7acdd01b9a757904fc8e3d298ce569cea5ba87edcc866bd64c4440cda4"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false
+    },
+    {
+      "id": "ae81043d-8cf6-4c0d-9799-db519644977c",
+      "agent": "content",
+      "stage": "title",
+      "reserved_tokens": 21292,
+      "tokens": 4760,
+      "status": "validated",
+      "error": null,
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1",
+      "input_hash": "c937c8f678023faee6449cb3cb07d9a4d265964831f52af02cd008b2ee23f0f8",
+      "snapshot_id": "d5a06df7-46b0-4076-b985-14e70e618ef3",
+      "duration_ms": 17949,
+      "request_id": "chatcmpl-f1c65777-0b44-9150-bf29-033c97269ed8",
+      "input_tokens": 4386,
+      "output_tokens": 374,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "83923cfed7153f31bee5e03973957494b1a869f6264f130e2640537454c8a860"
+        },
+        {
+          "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+          "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "25be425a0dad4077a684200d2e9ec9248238f83b0453b021dda016bd04ed521b"
+        },
+        {
+          "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+          "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "2ea42b7acdd01b9a757904fc8e3d298ce569cea5ba87edcc866bd64c4440cda4"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false
+    },
+    {
+      "id": "1c4d8d9a-b80f-40c2-af1c-8df8ed9b7c22",
+      "agent": "content",
+      "stage": "body",
+      "reserved_tokens": 22316,
+      "tokens": 4954,
+      "status": "validated",
+      "error": null,
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1",
+      "input_hash": "d9c7654463966dc9f8a8397ad2152261394696bb22cb6df326ada3d60a0aad61",
+      "snapshot_id": "d5a06df7-46b0-4076-b985-14e70e618ef3",
+      "duration_ms": 8035,
+      "request_id": "chatcmpl-ae9be496-72c1-926c-a8df-4d5f4f662520",
+      "input_tokens": 4687,
+      "output_tokens": 267,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "83923cfed7153f31bee5e03973957494b1a869f6264f130e2640537454c8a860"
+        },
+        {
+          "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+          "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "25be425a0dad4077a684200d2e9ec9248238f83b0453b021dda016bd04ed521b"
+        },
+        {
+          "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+          "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "2ea42b7acdd01b9a757904fc8e3d298ce569cea5ba87edcc866bd64c4440cda4"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false
+    },
+    {
+      "id": "135beb1c-5be4-4d16-aa05-2a6bcc7ab518",
+      "agent": "reviewer",
+      "stage": "review",
+      "reserved_tokens": 24529,
+      "tokens": 6317,
+      "status": "validated",
+      "error": null,
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1",
+      "input_hash": "a38c7aeb1ec81b39ddb27d19e1c69a050144f00f127d97c51fae268610cd78f9",
+      "snapshot_id": "d5a06df7-46b0-4076-b985-14e70e618ef3",
+      "duration_ms": 27805,
+      "request_id": "chatcmpl-e82f3406-5e4b-929f-acf5-ba072ba478c8",
+      "input_tokens": 5228,
+      "output_tokens": 1089,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "83923cfed7153f31bee5e03973957494b1a869f6264f130e2640537454c8a860"
+        },
+        {
+          "source_id": "kb:82eb45e0-f1b5-480d-921c-d2b4e67310e1",
+          "document_id": "cb6d8297-715b-4fad-b592-ff9c417b06fc",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "25be425a0dad4077a684200d2e9ec9248238f83b0453b021dda016bd04ed521b"
+        },
+        {
+          "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+          "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "2ea42b7acdd01b9a757904fc8e3d298ce569cea5ba87edcc866bd64c4440cda4"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false
+    }
+  ],
+  "testing_budget": null,
+  "background": {
+    "status": "waiting",
+    "error": null,
+    "attempts": 1,
+    "updated": 1793669721.4156349,
+    "active_seconds": 100.0802239170007,
+    "completed_nodes": 8,
+    "worker_online": true
+  },
+  "review_recovery": {
+    "available": false
+  }
+}

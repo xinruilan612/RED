@@ -1,0 +1,9 @@
+test_all_five_xiaohongshu_candidates_and_selected_fit_for_long_and_unicode_topics (test_demo_title_limits.SimulationTitleTests.test_all_five_xiaohongshu_candidates_and_selected_fit_for_long_and_unicode_topics) ... ok
+test_free_simulation_flow_keeps_bounded_title_through_review_and_revision (test_demo_title_limits.SimulationTitleTests.test_free_simulation_flow_keeps_bounded_title_through_review_and_revision) ... ok
+test_historical_title_artifact_and_draft_are_not_rewritten_by_new_generation (test_demo_title_limits.SimulationTitleTests.test_historical_title_artifact_and_draft_are_not_rewritten_by_new_generation) ... ok
+test_short_topics_preserve_existing_templates_and_other_platforms_unchanged (test_demo_title_limits.SimulationTitleTests.test_short_topics_preserve_existing_templates_and_other_platforms_unchanged) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.002s
+
+OK

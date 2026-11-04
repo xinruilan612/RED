@@ -1,0 +1,326 @@
+{
+  "schema": "youji-controlled-answers/1",
+  "warning": "实验执行者持有；初始模型输入不得包含answer或本文件；仅在实际请求补料时按预注册政策提供对应答案。",
+  "items": [
+    {
+      "task_id": "D01",
+      "question_id": "D01-q1",
+      "field": "use_context",
+      "question": "你的电脑是否具备蓝牙，还是打算使用接收器？",
+      "fixed_answer": "受控用户标准答案：电脑没有蓝牙，有空闲USB接口，打算使用2.4GHz接收器。",
+      "answer_sha256": "5b5d472967d9141702d35f388062e2cf4cde093d2efd8dfacb48722362d5f9d3",
+      "status": "controlled_standard_answer_not_human_response",
+      "expected_effect": "明确创作范围与使用条件；不补造原材料中未知规格",
+      "source_ref": {
+        "path": "fixed_answers.json",
+        "pointer": "/items/0/fixed_answer"
+      },
+      "cost_seconds": null,
+      "self_reported_burden": null
+    },
+    {
+      "task_id": "H01",
+      "question_id": "H01-q1",
+      "field": "use_context",
+      "question": "计划放置的位置有多宽、多高？",
+      "fixed_answer": "受控用户标准答案：放在沙发旁，预留宽度50厘米，高度不超过55厘米；未做亲测。",
+      "answer_sha256": "f0f1f7eef406a27c79d0ea3884e0cc84bf9233921af94035b6008e40699a1c3b",
+      "status": "controlled_standard_answer_not_human_response",
+      "expected_effect": "明确创作范围与使用条件；不补造原材料中未知规格",
+      "source_ref": {
+        "path": "fixed_answers.json",
+        "pointer": "/items/1/fixed_answer"
+      },
+      "cost_seconds": null,
+      "self_reported_burden": null
+    },
+    {
+      "task_id": "D02",
+      "question_id": "D02-q1",
+      "field": "use_context",
+      "question": "你希望装入的器材包内长是多少？",
+      "fixed_answer": "受控用户标准答案：器材包可用内长42厘米；尚未实装，不声称一定能装下。",
+      "answer_sha256": "2dd76f0c21032d553a82f53a1531dce152b273f6d58d629a4a601bb49e2860b9",
+      "status": "controlled_standard_answer_not_human_response",
+      "expected_effect": "明确创作范围与使用条件；不补造原材料中未知规格",
+      "source_ref": {
+        "path": "fixed_answers.json",
+        "pointer": "/items/2/fixed_answer"
+      },
+      "cost_seconds": null,
+      "self_reported_burden": null
+    },
+    {
+      "task_id": "D03",
+      "question_id": "D03-q1",
+      "field": "use_context",
+      "question": "你要介绍包装与体积，还是推荐给某款手机快充？",
+      "fixed_answer": "受控用户标准答案：只做包装与便携信息介绍；没有手机兼容性和快充数据，不推荐具体快充用途。",
+      "answer_sha256": "c5ce3fe23019605a1d4e9b9a9d24e215ee14c4cb60abcae0c5956ac645f2a91f",
+      "status": "controlled_standard_answer_not_human_response",
+      "expected_effect": "明确创作范围与使用条件；不补造原材料中未知规格",
+      "source_ref": {
+        "path": "fixed_answers.json",
+        "pointer": "/items/3/fixed_answer"
+      },
+      "cost_seconds": null,
+      "self_reported_burden": null
+    },
+    {
+      "task_id": "D04",
+      "question_id": "D04-q1",
+      "field": "use_context",
+      "question": "你的桌板厚度和显示器背面孔距是多少？",
+      "fixed_answer": "受控用户标准答案：桌板厚30毫米，显示器孔距100×100毫米；显示器重量和桌板材质未确认，不能直接判定安全兼容。",
+      "answer_sha256": "a22b1eb9299e7ac7f0e72025deb54bd65fa03b503156b73eb42044a41e2e1228",
+      "status": "controlled_standard_answer_not_human_response",
+      "expected_effect": "明确创作范围与使用条件；不补造原材料中未知规格",
+      "source_ref": {
+        "path": "fixed_answers.json",
+        "pointer": "/items/4/fixed_answer"
+      },
+      "cost_seconds": null,
+      "self_reported_burden": null
+    },
+    {
+      "task_id": "D05",
+      "question_id": "D05-q1",
+      "field": "use_context",
+      "question": "你需要无线连接还是只考虑有线连接？",
+      "fixed_answer": "受控用户标准答案：只需要有线，主要写文字；对声音没有实测要求，也没有可提供的静音体验。",
+      "answer_sha256": "51289083f0ed25d022b5a34f58dbbea5b8ce19a53059a6c5a7f66edb3efe7721",
+      "status": "controlled_standard_answer_not_human_response",
+      "expected_effect": "明确创作范围与使用条件；不补造原材料中未知规格",
+      "source_ref": {
+        "path": "fixed_answers.json",
+        "pointer": "/items/5/fixed_answer"
+      },
+      "cost_seconds": null,
+      "self_reported_burden": null
+    },
+    {
+      "task_id": "D06",
+      "question_id": "D06-q1",
+      "field": "use_context",
+      "question": "你希望连接什么设备，主机端口功能是否确认？",
+      "fixed_answer": "受控用户标准答案：计划连接鼠标与一台显示器；主机USB-C是否支持视频输出未知，不能承诺能接显示器。",
+      "answer_sha256": "2909af94b2ae698dbed6f4115d205f297dbe7be89bb5dadc9a62f9d0a78ddbcd",
+      "status": "controlled_standard_answer_not_human_response",
+      "expected_effect": "明确创作范围与使用条件；不补造原材料中未知规格",
+      "source_ref": {
+        "path": "fixed_answers.json",
+        "pointer": "/items/6/fixed_answer"
+      },
+      "cost_seconds": null,
+      "self_reported_burden": null
+    },
+    {
+      "task_id": "D07",
+      "question_id": "D07-q1",
+      "field": "use_context",
+      "question": "你需要固定桌面照明还是离线携带使用？",
+      "fixed_answer": "受控用户标准答案：固定桌面，有USB供电口；不要求离线使用，不把它介绍成带电池的灯。",
+      "answer_sha256": "efe490de0ebef7439e9fe7f4a42ae99da6919b4f99893cf8f71f13fd322d8f6a",
+      "status": "controlled_standard_answer_not_human_response",
+      "expected_effect": "明确创作范围与使用条件；不补造原材料中未知规格",
+      "source_ref": {
+        "path": "fixed_answers.json",
+        "pointer": "/items/7/fixed_answer"
+      },
+      "cost_seconds": null,
+      "self_reported_burden": null
+    },
+    {
+      "task_id": "H02",
+      "question_id": "H02-q1",
+      "field": "use_context",
+      "question": "放置空间的净宽和净深是多少？",
+      "fixed_answer": "受控用户标准答案：净宽65厘米、净深35厘米；墙体类型未确认，固定方式仍需按说明核对。",
+      "answer_sha256": "5dfb6ee955cb491833cd35e33720c888afb1e58570da7ef9e2116273390b4480",
+      "status": "controlled_standard_answer_not_human_response",
+      "expected_effect": "明确创作范围与使用条件；不补造原材料中未知规格",
+      "source_ref": {
+        "path": "fixed_answers.json",
+        "pointer": "/items/8/fixed_answer"
+      },
+      "cost_seconds": null,
+      "self_reported_burden": null
+    },
+    {
+      "task_id": "H03",
+      "question_id": "H03-q1",
+      "field": "use_context",
+      "question": "你使用杆式还是轨道式挂法？",
+      "fixed_answer": "受控用户标准答案：现有为轨道挂钩，尚未确认转接方法；不能直接说这款可安装，先讲挂法核对。",
+      "answer_sha256": "6fce9d6a927b9db6ba485c6d17da46d4505ec0e9f52032a1c51869966f15146a",
+      "status": "controlled_standard_answer_not_human_response",
+      "expected_effect": "明确创作范围与使用条件；不补造原材料中未知规格",
+      "source_ref": {
+        "path": "fixed_answers.json",
+        "pointer": "/items/9/fixed_answer"
+      },
+      "cost_seconds": null,
+      "self_reported_burden": null
+    },
+    {
+      "task_id": "H04",
+      "question_id": "H04-q1",
+      "field": "use_context",
+      "question": "你想写工具外形介绍还是某种表面的清洁教程？",
+      "fixed_answer": "受控用户标准答案：只介绍形状、尺寸与收纳；无具体表面测试，不提供除霉或强力去污效果承诺。",
+      "answer_sha256": "2b62cc69bb6a2c42861e388605dc25e29a18dd9d95f27d1f0109bf8b21f58017",
+      "status": "controlled_standard_answer_not_human_response",
+      "expected_effect": "明确创作范围与使用条件；不补造原材料中未知规格",
+      "source_ref": {
+        "path": "fixed_answers.json",
+        "pointer": "/items/10/fixed_answer"
+      },
+      "cost_seconds": null,
+      "self_reported_burden": null
+    },
+    {
+      "task_id": "H05",
+      "question_id": "H05-q1",
+      "field": "use_context",
+      "question": "你准备收纳薄上衣还是厚重外套？",
+      "fixed_answer": "受控用户标准答案：用于整理薄上衣；没有厚外套承重资料，不把它推荐为重衣架。",
+      "answer_sha256": "1a58587b0e54ffec672165bdb1864248f0a7cd93bd11357f47d700c83adc50b8",
+      "status": "controlled_standard_answer_not_human_response",
+      "expected_effect": "明确创作范围与使用条件；不补造原材料中未知规格",
+      "source_ref": {
+        "path": "fixed_answers.json",
+        "pointer": "/items/11/fixed_answer"
+      },
+      "cost_seconds": null,
+      "self_reported_burden": null
+    },
+    {
+      "task_id": "H06",
+      "question_id": "H06-q1",
+      "field": "use_context",
+      "question": "你需要装饰靠垫还是健康支撑建议？",
+      "fixed_answer": "受控用户标准答案：只做沙发搭配和外形介绍；不提供护腰、矫姿或医疗功效结论。",
+      "answer_sha256": "8e755696b2111246da37a80ff0327a7f508e6749251270e6171e115fb8474889",
+      "status": "controlled_standard_answer_not_human_response",
+      "expected_effect": "明确创作范围与使用条件；不补造原材料中未知规格",
+      "source_ref": {
+        "path": "fixed_answers.json",
+        "pointer": "/items/12/fixed_answer"
+      },
+      "cost_seconds": null,
+      "self_reported_burden": null
+    },
+    {
+      "task_id": "H07",
+      "question_id": "H07-q1",
+      "field": "use_context",
+      "question": "你的抽屉内部尺寸是多少？",
+      "fixed_answer": "受控用户标准答案：内宽32厘米、内深22厘米、可用高度9厘米；尺寸仅作初步核对，抽屉轨道与凸起仍需检查。",
+      "answer_sha256": "4bb05bda7240d990d1a4ba8f3b9650681332eddbc0e3ed467f0d2907538f0079",
+      "status": "controlled_standard_answer_not_human_response",
+      "expected_effect": "明确创作范围与使用条件；不补造原材料中未知规格",
+      "source_ref": {
+        "path": "fixed_answers.json",
+        "pointer": "/items/13/fixed_answer"
+      },
+      "cost_seconds": null,
+      "self_reported_burden": null
+    },
+    {
+      "task_id": "S01",
+      "question_id": "S01-q1",
+      "field": "use_context",
+      "question": "你是自己记录任务还是多人分配任务？",
+      "fixed_answer": "受控用户标准答案：只供个人使用；不需要多人同步，避免承诺协作或自动提醒。",
+      "answer_sha256": "fb57e6af7ed160d8c0ba1ab88def2729cf880fd423594114631cbc1f7d1ed59f",
+      "status": "controlled_standard_answer_not_human_response",
+      "expected_effect": "明确创作范围与使用条件；不补造原材料中未知规格",
+      "source_ref": {
+        "path": "fixed_answers.json",
+        "pointer": "/items/14/fixed_answer"
+      },
+      "cost_seconds": null,
+      "self_reported_burden": null
+    },
+    {
+      "task_id": "S02",
+      "question_id": "S02-q1",
+      "field": "use_context",
+      "question": "你希望按周规划，还是记录逐小时课程？",
+      "fixed_answer": "受控用户标准答案：按周记录三项重点任务；没有逐小时栏位，不虚构课程表功能。",
+      "answer_sha256": "95f3fc7094f2731637a1216f3b091620c7c1c20bd8514e76943bee015cf639c5",
+      "status": "controlled_standard_answer_not_human_response",
+      "expected_effect": "明确创作范围与使用条件；不补造原材料中未知规格",
+      "source_ref": {
+        "path": "fixed_answers.json",
+        "pointer": "/items/15/fixed_answer"
+      },
+      "cost_seconds": null,
+      "self_reported_burden": null
+    },
+    {
+      "task_id": "S03",
+      "question_id": "S03-q1",
+      "field": "use_context",
+      "question": "你需要手动整理卡片还是自动安排复习？",
+      "fixed_answer": "受控用户标准答案：需要手动整理课程术语；接受自行安排复习，不要求自动记忆调度。",
+      "answer_sha256": "629f06dd89cf2d4a8b14c943a94274c74c213d679a07a67b95803b0fff8398ed",
+      "status": "controlled_standard_answer_not_human_response",
+      "expected_effect": "明确创作范围与使用条件；不补造原材料中未知规格",
+      "source_ref": {
+        "path": "fixed_answers.json",
+        "pointer": "/items/16/fixed_answer"
+      },
+      "cost_seconds": null,
+      "self_reported_burden": null
+    },
+    {
+      "task_id": "S04",
+      "question_id": "S04-q1",
+      "field": "use_context",
+      "question": "你希望找文件名还是直接搜索文件正文？",
+      "fixed_answer": "受控用户标准答案：主要找文件名；明确不提供正文检索，不能把它推荐成全文搜索软件。",
+      "answer_sha256": "b260403f7f335b4e7a2ae1b4086b06de0f8088a872ee3a93d5b1ae3696121b4f",
+      "status": "controlled_standard_answer_not_human_response",
+      "expected_effect": "明确创作范围与使用条件；不补造原材料中未知规格",
+      "source_ref": {
+        "path": "fixed_answers.json",
+        "pointer": "/items/17/fixed_answer"
+      },
+      "cost_seconds": null,
+      "self_reported_burden": null
+    },
+    {
+      "task_id": "S05",
+      "question_id": "S05-q1",
+      "field": "use_context",
+      "question": "你是否已有可引用的课程资料和来源链接？",
+      "fixed_answer": "受控用户标准答案：有自己编写的课程提纲，但暂时没有可公开的外部链接；来源栏可标记待补，不伪造网址。",
+      "answer_sha256": "88b0b8f3e9977c17b4ade45c2d8b0ec8da964d44af51ef0d19cc8a72a003caa9",
+      "status": "controlled_standard_answer_not_human_response",
+      "expected_effect": "明确创作范围与使用条件；不补造原材料中未知规格",
+      "source_ref": {
+        "path": "fixed_answers.json",
+        "pointer": "/items/18/fixed_answer"
+      },
+      "cost_seconds": null,
+      "self_reported_burden": null
+    },
+    {
+      "task_id": "S06",
+      "question_id": "S06-q1",
+      "field": "use_context",
+      "question": "你需要前台计时还是关闭页面后继续提醒？",
+      "fixed_answer": "受控用户标准答案：只在页面保持打开时计时；不要求关闭后提醒，不把它介绍成后台番茄钟。",
+      "answer_sha256": "32cd902f7d0793fc0f91dac817a1b216040956f766dee570473ecf7f1f1ccc74",
+      "status": "controlled_standard_answer_not_human_response",
+      "expected_effect": "明确创作范围与使用条件；不补造原材料中未知规格",
+      "source_ref": {
+        "path": "fixed_answers.json",
+        "pointer": "/items/19/fixed_answer"
+      },
+      "cost_seconds": null,
+      "self_reported_burden": null
+    }
+  ]
+}

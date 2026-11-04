@@ -1,0 +1,117 @@
+{
+  "schema": "youji-evaluation-results/1",
+  "gold_set_hash": "d3e0afc7d669cb2203200dc6751fe09ae9d1f22e0edee26a0f46d1942d90ec9a",
+  "origin": "http://127.0.0.1:8890",
+  "budget_authorized_usd": 0.1,
+  "account_id": "d6130df6-e7db-4e06-9d42-a68aa29f0ada",
+  "records": [
+    {
+      "arm": "A",
+      "item_id": "G01",
+      "status": "done",
+      "retrieval_mode": "none",
+      "attempts": 1,
+      "draft": {
+        "selected_title": "陶土玫瑰色+透明方管，这支唇釉的视觉语言很清晰",
+        "body": "选唇釉时，你更先被颜色吸引，还是被包装设计打动？\n\n雾桃B01唇釉的色号名为「陶土玫瑰」——名字里既有泥土的沉稳，又有玫瑰的柔感，属于低饱和暖调红棕系，不偏橘、不偏紫，适合想尝试有质感但不张扬的唇色的人。\n\n净含量3克，分量适中，日常补妆或随身携带都无负担。\n\n包装是透明方管，能直接看到膏体颜色，拿取时一目了然；斜面刷头贴合唇形，上色更易控制边缘。\n\n没有复杂参数，只有可观察的形态：颜色命名、管身结构、刷头角度、容量数字——全部摆在明处。",
+        "cta": "你习惯靠色号名判断风格，还是更依赖实物图/试色图？",
+        "tags": [
+          "唇釉推荐",
+          "彩妆外观设计",
+          "雾桃B01",
+          "陶土玫瑰",
+          "透明包装彩妆"
+        ]
+      },
+      "calls": 1,
+      "references": [
+        "雾桃B01唇釉是虚构验收产品。色号为陶土玫瑰，净含量3克，包装为透明方管，配斜面刷头。没有持妆时长、保湿效果或个人试用数据。"
+      ],
+      "arm_a_tokens": 612,
+      "cost_usd": 0.000699,
+      "arm_a_request_id": "chatcmpl-1cf90300-b985-9504-aa67-1c6eabfd69ab",
+      "score": {
+        "chars": 221,
+        "fact_support": {
+          "total": 3,
+          "supported": 2,
+          "rate": 0.666667,
+          "evidence": [
+            {
+              "sentence": "雾桃B01唇釉的色号名为「陶土玫瑰」——名字里既有泥土的沉稳，又有玫瑰的柔感，属于低饱和暖调红棕系，不偏橘、不偏紫，适合想尝试有质感但不张扬的唇色的人",
+              "best_overlap": 0.132075,
+              "reference_index": 0,
+              "literal_token": "B01",
+              "supported": true
+            },
+            {
+              "sentence": "净含量3克，分量适中，日常补妆或随身携带都无负担",
+              "best_overlap": 0.210526,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "雾桃B01",
+              "best_overlap": 1.0,
+              "reference_index": 0,
+              "literal_token": "B01",
+              "supported": true
+            }
+          ]
+        },
+        "forbidden": {
+          "hits": [],
+          "disclaimed": [],
+          "any_hit": false,
+          "patterns": 5
+        },
+        "coverage": {
+          "total": 4,
+          "covered": 4,
+          "rate": 1.0,
+          "evidence": [
+            {
+              "point": "色号陶土玫瑰",
+              "best_overlap": 0.8,
+              "sentence": "雾桃B01唇釉的色号名为「陶土玫瑰」——名字里既有泥土的沉稳，又有玫瑰的柔感，属于低饱和暖调红棕系，不偏橘、不偏紫，适合想尝试有质感但不张扬的唇色的人",
+              "covered": true
+            },
+            {
+              "point": "净含量3克",
+              "best_overlap": 1.0,
+              "sentence": "净含量3克，分量适中，日常补妆或随身携带都无负担",
+              "covered": true
+            },
+            {
+              "point": "包装透明方管",
+              "best_overlap": 0.8,
+              "sentence": "包装是透明方管，能直接看到膏体颜色，拿取时一目了然；斜面刷头贴合唇形，上色更易控制边缘",
+              "covered": true
+            },
+            {
+              "point": "斜面刷头",
+              "best_overlap": 1.0,
+              "sentence": "包装是透明方管，能直接看到膏体颜色，拿取时一目了然；斜面刷头贴合唇形，上色更易控制边缘",
+              "covered": true
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "notes": [
+    "真实模型调用；A 组为单次直写，直接在默认模型连接上执行、不经运行账本，其费用按 token 估算并记入 arm_a_spent_usd"
+  ],
+  "arm_a_spent_usd": 0.000699,
+  "cost_estimate_usd": 0.000699,
+  "summary": {
+    "A": {
+      "n": 1,
+      "fact_support_rate": 0.666667,
+      "expected_point_coverage": 1.0,
+      "forbidden_hit_rate": 0.0,
+      "mean_body_chars": 221.0
+    }
+  }
+}

@@ -1,11 +1,4 @@
 """Bounded public-web retrieval with DNS pinning and explicit source provenance."""
-import copy
-import os
-import queue
-import threading
-from contextlib import contextmanager
-from contextvars import ContextVar, copy_context
-
 import http.client
 import ipaddress
 import json
@@ -21,56 +14,6 @@ from urllib.parse import quote, unquote, urlencode, urljoin, urlsplit, urlunspli
 from backend.contracts import require, DomainError
 
 
-_DEADLINE = ContextVar('public_source_deadline', default=None)
-_CACHE = {}
-_CACHE_LOCK = threading.Lock()
-_NETWORK_SLOTS = threading.BoundedSemaphore(16)
-
-@contextmanager
-def time_budget(seconds):
-    existing = _DEADLINE.get()
-    token = _DEADLINE.set(min(existing, time.monotonic()+seconds) if existing else time.monotonic()+seconds)
-    try:
-        yield
-    finally:
-        _DEADLINE.reset(token)
-
-
-def remaining(cap=8):
-    deadline = _DEADLINE.get()
-    value = cap if deadline is None else min(cap, deadline-time.monotonic())
-    require(value > 0, 'SOURCE_UNAVAILABLE', '等待来源已超时；已取得的内容会保留，可重试或手工补充资料')
-    return value
-
-
-def bounded_dns(host, port):
-    # A stuck system resolver must not hold the user request indefinitely.
-    result = queue.Queue(maxsize=1)
-    def resolve():
-        try: result.put((True, socket.getaddrinfo(host, port, type=socket.SOCK_STREAM)))
-        except OSError: result.put((False, None))
-    threading.Thread(target=resolve, daemon=True).start()
-    try: ok, addresses = result.get(timeout=remaining())
-    except queue.Empty: raise DomainError('SOURCE_UNAVAILABLE', '来源地址解析超时，请重试或粘贴原文') from None
-    require(ok, 'SOURCE_UNAVAILABLE', '无法解析来源地址，请重试或粘贴原文')
-    return addresses
-
-
-def cached(key, ttl, create):
-    with _CACHE_LOCK:
-        entry = _CACHE.get(key)
-        if entry and time.monotonic()-entry[0] < ttl:
-            value = copy.deepcopy(entry[1]); value['cache_hit'] = True
-            return value
-    remaining()
-    value = create()
-    with _CACHE_LOCK:
-        # Cache only public source content, never account information or credentials.
-        if len(_CACHE) >= 128: _CACHE.pop(next(iter(_CACHE)))
-        _CACHE[key] = (time.monotonic(), copy.deepcopy(value))
-    return value
-
-
 def public_url(value):
     require(isinstance(value,str) and 0<len(value)<=2048 and not any(c.isspace() for c in value),'INVALID_INPUT','请输入有效的公开网页链接')
     try:
@@ -81,28 +24,35 @@ def public_url(value):
     except (ValueError,UnicodeError) as e:
         if isinstance(e,DomainError): raise
         raise DomainError('INVALID_INPUT','链接格式无效') from None
-    return urlunsplit((p.scheme,p.netloc,p.path or '/',p.query,''))
+    netloc=('['+host+']' if ':' in host else host)+((':'+str(p.port)) if p.port else '')
+    return urlunsplit((p.scheme,netloc,quote(p.path or '/',safe='/%:@!$&\'()*+,;=-._~'),quote(p.query,safe='=&%/:?@!$\'()*+,;~-._'),''))
 
 
 def resolve_public(host,port):
-    addresses=bounded_dns(host,port)
-    require(addresses,'SOURCE_UNAVAILABLE','无法解析来源地址')
-    for result in addresses:
-        ip=ipaddress.ip_address(result[4][0])
-        require(ip.is_global and not ip.is_multicast and not getattr(ip,'ipv4_mapped',None) and not getattr(ip,'sixtofour',None),'FORBIDDEN','不能读取本机、内网或保留网络地址')
-    return addresses[0][4][0]
+    from backend.public_dns import resolve_addresses
+    return resolve_addresses(host,port)[0][4][0]
 
 
 def fetch_public(url, maximum=1_500_000):
     """Resolve once per hop, connect to that IP, validate TLS against original host."""
     for _ in range(4):
         url=public_url(url);p=urlsplit(url)
+        from backend.research_access import require_readable_source
+        require_readable_source(url)
         port=p.port or (443 if p.scheme=='https' else 80)
         connection=None
         try:
             ip=resolve_public(p.hostname,port)
-            connection=http.client.HTTPConnection(p.hostname,port,timeout=remaining())
-            sock=socket.create_connection((ip,port),timeout=remaining())
+            from backend.public_dns import configured_proxy, allowed_address
+            require(allowed_address(ip),'FORBIDDEN','不能读取本机、内网或保留网络地址')
+            proxy=configured_proxy(p.hostname,p.scheme)
+            connection=http.client.HTTPConnection(*(proxy or (p.hostname,port)),timeout=8)
+            if proxy:
+                connection.set_tunnel(ip,port)
+                connection.connect()
+                sock=connection.sock
+            else:
+                sock=socket.create_connection((ip,port),timeout=8)
             connection.sock=sock
             if p.scheme=='https':
                 context=ssl.create_default_context()
@@ -110,19 +60,18 @@ def fetch_public(url, maximum=1_500_000):
                 sock=context.wrap_socket(sock,server_hostname=p.hostname)
             connection.sock=sock
             connection.request('GET',urlunsplit(('','',p.path or '/',p.query,'')),headers={'Host':p.netloc,'User-Agent':'YoujiResearch/0.6 (+public-source-preview)','Accept':'text/html,application/rss+xml,application/xml,text/xml,text/plain','Accept-Encoding':'identity','Connection':'close'})
-            sock.settimeout(remaining())
             response=connection.getresponse()
             if response.status in (301,302,303,307,308):
                 location=response.getheader('Location');require(location,'SOURCE_UNAVAILABLE','来源跳转无效')
                 url=urljoin(url,location);continue
-            require(response.status==200,'SOURCE_UNAVAILABLE','来源未返回可读取内容，请更换链接或手动粘贴')
+            status_code=f'SOURCE_HTTP_{response.status}' if response.status in (403,404,429) else 'SOURCE_HTTP_ERROR'
+            require(response.status==200,status_code,f'来源站点返回 HTTP {response.status}，未读取正文；请更换链接或手动粘贴')
             require(response.getheader('Content-Encoding','identity') in ('identity',''),'SOURCE_UNAVAILABLE','来源使用了不支持的压缩格式')
             mime=response.getheader('Content-Type','').lower()
             require(any(t in mime for t in ('text/html','text/plain','xml','rss')),'SOURCE_UNAVAILABLE','首版只读取网页与文本，请使用资料上传导入 PDF')
             body=[];size=0;started=time.monotonic()
             while True:
-                sock.settimeout(remaining())
-                block=response.read1(8192)
+                block=response.read(8192)
                 if not block: break
                 body.append(block);size+=len(block)
                 require(size<=maximum and time.monotonic()-started<20,'SOURCE_UNAVAILABLE','来源正文过大或读取超时')
@@ -176,14 +125,9 @@ class Article(HTMLParser):
 
 
 def read_article(url, fetch=None):
-    if fetch is None:
-        with time_budget(15):
-            return cached(('article', public_url(url)), 1800, lambda: _read_article(url))
-    return _read_article(url, fetch)
-
-
-def _read_article(url, fetch=None):
     url=public_url(url);parsed=urlsplit(url)
+    from backend.research_access import require_readable_source
+    require_readable_source(url)
     if fetch is None and parsed.scheme=='https' and parsed.netloc=='zh.wikipedia.org' and parsed.path.startswith('/wiki/'):
         response=fetch_search('https://zh.wikipedia.org/w/api.php?'+urlencode(dict(action='query',prop='extracts',explaintext='1',titles=unquote(parsed.path[6:]),format='json',redirects='1')))
         try:
@@ -202,25 +146,7 @@ def _read_article(url, fetch=None):
     return {**result,'url':response['url'],'fetched_at':response['fetched_at'],'verification':'已读取公开正文，未独立核实事实；时间来自页面声明'}
 
 
-def fetch_search(url, headers=None):
-    # urllib's timeout does not bound system DNS or every TLS/proxy phase.
-    # Bound the calling request even if the OS resolver stalls. Fixed-provider
-    # work can finish in a daemon; it never commits evidence after the timeout.
-    wait=remaining(10)
-    require(_NETWORK_SLOTS.acquire(blocking=False),'SOURCE_UNAVAILABLE','搜索服务正忙，请稍后重试或手工补充资料')
-    result=queue.Queue(maxsize=1); context=copy_context()
-    def request():
-        try: result.put((True,context.run(_fetch_search,url,headers)))
-        except Exception as error: result.put((False,error))
-        finally: _NETWORK_SLOTS.release()
-    threading.Thread(target=request,daemon=True).start()
-    try: ok,value=result.get(timeout=wait)
-    except queue.Empty: raise DomainError('SOURCE_UNAVAILABLE','搜索等待超时，请重试或使用已保存资料') from None
-    if not ok: raise value
-    return value
-
-
-def _fetch_search(url, headers=None):
+def fetch_search(url):
     """Fixed search provider; no caller-controlled hosts or redirects.
 
     The standard HTTPS handler negotiates the provider connection. Arbitrary
@@ -229,22 +155,13 @@ def _fetch_search(url, headers=None):
     from urllib.request import Request, build_opener, HTTPRedirectHandler
     from urllib.error import URLError
     parsed=urlsplit(url)
-    require(parsed.scheme=='https' and (parsed.netloc,parsed.path) in (('www.bing.com','/search'),('cn.bing.com','/search'),('zh.wikipedia.org','/w/api.php'),('api.search.brave.com','/res/v1/web/search')),'FORBIDDEN','搜索服务地址无效')
+    require(parsed.scheme=='https' and (parsed.netloc,parsed.path) in (('www.bing.com','/search'),('cn.bing.com','/search'),('zh.wikipedia.org','/w/api.php')),'FORBIDDEN','搜索服务地址无效')
     class NoRedirect(HTTPRedirectHandler):
         def redirect_request(self,*args,**kwargs):
             raise DomainError('SOURCE_UNAVAILABLE','搜索服务要求跳转，已停止')
     try:
-        with build_opener(NoRedirect()).open(Request(url,headers={'Accept':'application/json,application/rss+xml,text/xml','User-Agent':'YoujiResearch/0.6 (public-source-preview)','Connection':'close', **(headers or {})}),timeout=remaining(10)) as response:
-            chunks=[]; size=0
-            while size <= 500_000:
-                remaining(10)
-                # read1 returns available bytes; a trickling source cannot reset the total deadline.
-                transport=getattr(getattr(getattr(response,'fp',None),'raw',None),'_sock',None)
-                if transport is not None: transport.settimeout(remaining(10))
-                block=response.read1(min(8192,500_001-size))
-                if not block: break
-                chunks.append(block); size += len(block)
-            data=b''.join(chunks)
+        with build_opener(NoRedirect()).open(Request(url,headers={'Accept':'application/json,application/rss+xml,text/xml','User-Agent':'YoujiResearch/0.6 (public-source-preview)','Connection':'close'}),timeout=12) as response:
+            data=response.read(500_001)
             require(len(data)<=500_000,'SOURCE_UNAVAILABLE','搜索结果超过大小限制')
             return {'text':data.decode('utf-8'),'fetched_at':datetime.now(timezone.utc).isoformat()}
     except DomainError:raise
@@ -263,38 +180,85 @@ def compact_query(query):
     return value if len(value)>=2 else query.strip()
 
 
+
+_MODEL_SUFFIX = r'(?:Pro|Plus|Ultra|Max|Mini|Air|SE|Slim|Lite|Mark[ -]*[IVX0-9]+)'
+_MODEL = re.compile(r'(?<![A-Za-z0-9])([A-Za-z][A-Za-z_-]*[ -]*\d+[A-Za-z0-9]*(?:[ -]+' + _MODEL_SUFFIX + r'){0,3})(?![A-Za-z0-9])', re.I)
+# A letter-only product family needs a distinct head plus a known variant.
+# Bare words such as Air or Lite cannot establish a product's identity.
+_NAMED_MODEL = re.compile(r'(?<![A-Za-z0-9])((?!' + _MODEL_SUFFIX + r'(?:[ -]|$))[A-Za-z]+(?:[ -]+' + _MODEL_SUFFIX + r'){1,3})(?![A-Za-z0-9])', re.I)
+
+
+def model_terms(text):
+    """Spacing/hyphens are formatting; different model suffixes are not aliases."""
+    matches = sorted(list(_MODEL.finditer(text)) + list(_NAMED_MODEL.finditer(text)), key=lambda match: match.start())
+    return list(dict.fromkeys(match.group(1) for match in matches))
+
+
+def topic_match(query, text):
+    from backend.knowledge import tokens
+    normalize = lambda value: re.sub(r'[^a-z0-9]', '', value.lower())
+    models = {normalize(item) for item in model_terms(query)}
+    if models and not models.issubset({normalize(item) for item in model_terms(text)}):
+        return False
+    wanted = set(tokens(query))
+    matched = wanted & set(tokens(text))
+    return bool(models or (matched and (len(wanted) <= 5 or len(matched) >= 2)))
+
+
+
+def related_model_match(query, text):
+    """Same model stem and generation is a lead, never proof of variant equivalence."""
+    def family(value):
+        match=re.match(r'([a-z]+)(\d+)',re.sub(r'[^a-z0-9]','',value.lower()))
+        return match.groups() if match else None
+    requested={family(value) for value in model_terms(query)}-{None}
+    observed={family(value) for value in model_terms(text)}-{None}
+    return bool(requested and requested & observed)
+
+def official_priority(row):
+    """Ranking hint only, never a certification that a publisher is official."""
+    host = (urlsplit(row.get('url', '')).hostname or '').lower()
+    title = row.get('title', '').lower()
+    root = host.split('.')[-2] if '.' in host else host
+    public_institution = host.endswith(('.gov', '.gov.cn', '.edu', '.edu.cn'))
+    branded = len(root) > 2 and bool(re.search(r'(?<![a-z0-9])' + re.escape(root) + r'(?![a-z0-9])', title))
+    return 2 if public_institution else 1 if branded and ('官方' in title or '官网' in title or 'official' in title or ' - ' in title or '技术参数' in title or '商城' in title or 'store' in title) else 0
+
+
+def _bing_results(response, query):
+    try:
+        root = ET.fromstring(response['text'])
+    except ET.ParseError:
+        raise DomainError('SOURCE_UNAVAILABLE', '搜索源返回格式变化，请稍后再试') from None
+    require(root.tag=='rss' and root.find('./channel') is not None, 'SOURCE_UNAVAILABLE', '搜索服务未返回有效RSS结果，不能视为没有相关资料')
+    results, related, seen, excluded = [], [], set(), 0
+    for node in root.findall('./channel/item'):
+        try:
+            url = public_url(node.findtext('link') or '')
+        except DomainError:
+            continue
+        if url in seen:
+            continue
+        seen.add(url)
+        clean = lambda value: unescape(re.sub('<[^>]+>', '', value or '')).strip()
+        title = clean(node.findtext('title'))[:200]
+        snippet = clean(node.findtext('description'))[:600]
+        row = {'title': title, 'url': url, 'snippet': snippet,
+               'fetched_at': response['fetched_at'], 'published_at': None,
+               'body_read': False, 'source_type': 'search_result'}
+        row['authority_hint'] = 'official_candidate' if official_priority(row) else 'unverified_publisher'
+        if not topic_match(query, title + ' ' + snippet):
+            if related_model_match(query,title+' '+snippet):
+                related.append({**row,'model_match':'related_unconfirmed'})
+            else:excluded += 1
+            continue
+        results.append(row)
+    return (sorted(results, key=official_priority, reverse=True)[:8], excluded,
+            sorted(related,key=official_priority,reverse=True)[:4])
+
 def search_web(query, fetch=None, provider='bing'):
     require(isinstance(query,str) and 2<=len(query.strip())<=120,'INVALID_INPUT','搜索词需为 2 至 120 个字符')
-    require(provider in ('bing','wikipedia','brave'),'INVALID_INPUT','搜索来源无效')
-    if fetch is None:
-        with time_budget(20):
-            return cached(('search', provider, query), 300, lambda: _search_web(query, provider=provider))
-    return _search_web(query, fetch=fetch, provider=provider)
-
-
-def _search_web(query, fetch=None, provider='bing'):
-    require(isinstance(query,str) and 2<=len(query.strip())<=120,'INVALID_INPUT','搜索词需为 2 至 120 个字符')
-    require(provider in ('bing','wikipedia','brave'),'INVALID_INPUT','搜索来源无效')
-    if provider=='brave':
-        key=os.environ.get('BRAVE_SEARCH_API_KEY','').strip()
-        require(key or fetch, 'SOURCE_UNAVAILABLE', 'Brave 搜索尚未配置密钥；请选择免费公开搜索，或粘贴链接 / 原文。DeepSeek 密钥不能用于网页搜索。')
-        url='https://api.search.brave.com/res/v1/web/search?'+urlencode(dict(q=compact_query(query),search_lang='zh-hans',count=8))
-        response=fetch(url) if fetch else fetch_search(url, headers={'X-Subscription-Token':key})
-        try:
-            rows=json.loads(response['text']).get('web',{}).get('results',[])
-            results=[]; seen=set()
-            for row in rows[:8]:
-                try: url=public_url(row['url'])
-                except DomainError: continue
-                if url in seen: continue
-                seen.add(url)
-                results.append({'title':unescape(re.sub('<[^>]+>','',row['title']))[:200], 'url':url,
-                    'snippet':unescape(re.sub('<[^>]+>','',row.get('description','')))[:600],
-                    'fetched_at':response['fetched_at'],'published_at':None,'body_read':False,'source_type':'search_result'})
-        except (ValueError,KeyError,TypeError):
-            raise DomainError('SOURCE_UNAVAILABLE','Brave 返回格式无效，请切换免费公开搜索或手工补充资料') from None
-        return {'query':query,'provider':'Brave Search API','searched_at':response['fetched_at'],'results':results,
-            'note':'Brave Search API 提供公开网页线索；不是平台热榜。该服务需单独密钥并可能产生搜索费用，不自动重试。读取正文后才进入资料库。'}
+    require(provider in ('bing','wikipedia'),'INVALID_INPUT','搜索来源无效')
     if provider=='wikipedia':
         response=(fetch or fetch_search)('https://zh.wikipedia.org/w/api.php?'+urlencode(dict(action='query',list='search',srsearch=query.strip(),format='json',srlimit=8)))
         try:
@@ -307,33 +271,31 @@ def _search_web(query, fetch=None, provider='bing'):
         return {'query':query,'provider':'维基百科公开 API · 背景知识','searched_at':response['fetched_at'],'results':results,
                 'note':'用于查找背景知识，不代表最新新闻或平台热度。摘要需读取正文后才能进入资料证据；百科内容仍需核实。'}
     effective_query=compact_query(query)
-    attempts=[]
-    try:
-        response=(fetch or fetch_search)('https://cn.bing.com/search?format=rss&q='+quote(effective_query))
-    except DomainError as error:
-        if fetch is not None: raise
-        attempts.append({'provider':'Bing 中文 RSS','error':str(error)})
-        remaining()
-        response=fetch_search('https://www.bing.com/search?format=rss&q='+quote(effective_query))
-    try: root=ET.fromstring(response['text'])
-    except ET.ParseError: raise DomainError('SOURCE_UNAVAILABLE','搜索源返回格式变化，请稍后再试') from None
-    from backend.knowledge import tokens
-    wanted=set(tokens(effective_query))
-    results=[];seen=set();excluded=0
-    for node in root.findall('./channel/item'):
-        url=node.findtext('link') or ''
-        try: url=public_url(url)
-        except DomainError:continue
-        if url in seen:continue
-        seen.add(url)
-        clean=lambda value:unescape(re.sub('<[^>]+>','',value or '')).strip()
-        title=clean(node.findtext('title'))[:200];snippet=clean(node.findtext('description'))[:600]
-        matched=wanted & set(tokens(title+' '+snippet))
-        if not matched or (len(wanted)>5 and len(matched)<2):
-            excluded+=1;continue
-        results.append({'title':title,'url':url,'snippet':snippet,
-                        'fetched_at':response['fetched_at'],'published_at':None,'body_read':False,'source_type':'search_result'})
-        if len(results)==8:break
-    return {'query':query,'provider':'Bing 中文公开 RSS 搜索（实验接入）','effective_query':effective_query,'searched_at':response['fetched_at'],'results':results,
-            'excluded_unrelated':excluded,'attempts':attempts,
-            'note':f'只返回搜索摘要，不代表实时热榜；已隐藏 {excluded} 条无关键词匹配的结果。需读取正文后才能进入资料证据。公开渠道可能限流或无相关结果。'}
+    transport=fetch or fetch_search
+    response=transport('https://cn.bing.com/search?'+urlencode({'q':effective_query,'format':'rss'}))
+    results,excluded,related=_bing_results(response,effective_query)
+    attempts=[{'query':effective_query,'status':'ok','matched_results':len(results),'excluded_unrelated':excluded}]
+    # RSS sometimes ignores the rest of a mixed-language query. One bounded,
+    # phrase-preserving fallback helps without asserting anything about release status.
+    models=model_terms(effective_query)
+    if not results and models:
+        first=_MODEL.search(effective_query)
+        prefix=effective_query[:first.start()].strip(' \"') if first else ''
+        prefix=re.sub(r'请问|帮我|搜索|查找|介绍|参数|官方|官网', '', prefix).strip()
+        phrases=[re.sub(r'(\d)([A-Za-z])',r'\1 \2',re.sub(r'([A-Za-z])(\d)',r'\1 \2',model.replace('-',' '))) for model in models]
+        precise=' '.join('"'+part+'"' for part in ([prefix] if prefix else [])+phrases)
+        if precise!=effective_query:
+            try:
+                fallback=transport('https://cn.bing.com/search?'+urlencode({'q':precise,'format':'rss'}))
+                results,removed,extra_related=_bing_results(fallback,effective_query)
+                known_related={row['url'] for row in related}
+                related.extend(row for row in extra_related if row['url'] not in known_related)
+                excluded+=removed;response=fallback
+                attempts.append({'query':precise,'status':'ok','matched_results':len(results),'excluded_unrelated':removed})
+            except DomainError as error:
+                attempts.append({'query':precise,'status':'failed','error':str(error)})
+    return {'query':query,'provider':'Bing 中文公开 RSS 搜索（实验接入）','effective_query':effective_query,
+            'searched_at':response['fetched_at'],'results':results,'related_results':related[:4],'attempts':attempts,
+            'search_status':'complete' if all(a['status']=='ok' for a in attempts) else 'partial_failure',
+            'excluded_unrelated':excluded,
+            'note':f'搜索摘要尚未读取正文；已排除 {excluded} 条主题或型号不匹配结果。无结果只表示本次未查到，不能推断产品未发布或事实不存在。官方标识仅作排序线索，仍须核对正文和发布主体。'}

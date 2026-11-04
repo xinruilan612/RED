@@ -1,0 +1,54 @@
+--- a/tests/test_research_confirmation.py
++++ b/tests/test_research_confirmation.py
+@@ -79,6 +79,51 @@
+
+     def approve(self, job, candidate=None, key='approve-one'):
+         return self.jobs.confirm(self.owner, job['id'], {'candidate_ids': [candidate or job['candidates'][0]['id']], 'key': key})
++
++    def test_canonical_queries_and_complete_scope_control_reuse(self):
++        first=self.jobs.create(self.owner,{**self.packet('spaces'), 'queries':['  山地   徒步  ']})
++        same=self.jobs.create(self.owner,{**self.packet('second'), 'queries':['山地 徒步']})
++        self.assertEqual(first['queries'],['山地 徒步'])
++        self.assertEqual(first['raw_queries'],['  山地   徒步  '])
++        self.assertEqual(first['id'],same['id'])
++        self.assertEqual(same['reuse']['kind'],'active_task')
++        self.assertFalse(same['reuse']['cache_hit'])
++        no_filter={**self.packet('no-filter'),'queries':['山地 徒步']};no_filter.pop('style_filters')
++        different=self.jobs.create(self.owner,no_filter)
++        self.assertNotEqual(first['id'],different['id'])
++
++    def test_progress_survives_failure_and_records_actual_query(self):
++        created=self.jobs.create(self.owner,self.packet('progress'))
++        def fail(claim):
++            self.jobs._progress(claim,{'phase':'search','query':'实际查询','attempt':1,'status':'failed',
++                'error':'XHS_SEARCH_HTTP_500','error_origin':'mcp_http','mcp_http_status':500,'counts':{}})
++            raise DomainError('XHS_SEARCH_HTTP_500','private response')
++        with patch.object(self.jobs,'_execute',side_effect=fail):self.jobs.once()
++        result=self.jobs.get(self.owner,created['id'])
++        self.assertEqual(result['status'],'failed')
++        self.assertEqual(result['trace'][0]['query'],'实际查询')
++        self.assertEqual(result['error_origin'],'mcp_http')
++        self.assertEqual(result['mcp_http_status'],500)
++        self.assertEqual(result['outcome'],'search_failed')
++        self.assertNotIn('private response',json.dumps(result))
++
++    def test_absolute_task_deadline_cannot_be_extended_by_lease(self):
++        import time
++        created=self.jobs.create(self.owner,self.packet('deadline'));claim=self.jobs._claim()
++        with self.store.connect() as db:
++            p=json.loads(db.execute('SELECT payload FROM research_jobs WHERE id=?',(created['id'],)).fetchone()[0])
++            p['deadline_at']=time.time()-1
++            db.execute('UPDATE research_jobs SET payload=?,lease_until=? WHERE id=?',(json.dumps(p),time.time()+999,created['id']))
++        result=self.jobs.get(self.owner,created['id'])
++        self.assertEqual(result['status'],'failed');self.assertEqual(result['error'],'RESEARCH_TIMEOUT')
++        with self.assertRaises(DomainError):self.jobs._change(claim)
++
++    def test_outcomes_do_not_disguise_invalid_or_failed_records_as_empty(self):
++        base={'attempts':[{'query':'x','status':'done','results':3}],'items':[],'candidates':[],'document_ids':[]}
++        for counts,expected in [({'raw_count':0,'parsed_count':0},('done','empty_results')),
++                ({'raw_count':3,'parsed_count':0},('failed','invalid_results')),
++                ({'raw_count':3,'parsed_count':3,'detail_failed_count':3},('failed','detail_failed'))]:
++            self.assertEqual(self.jobs._result({**base,'counts':counts}),expected)
+
+     def test_research_collects_candidates_without_knowledge_or_model_context(self):
+         job = self.research()

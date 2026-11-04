@@ -201,10 +201,34 @@ class WorkflowTests(unittest.TestCase):
 
     def test_model_attempt_limit_counts_settled_calls(self):
         self.command('start')
-        for call in range(16):
+        for call in range(PARAMETERS['run_attempts_max']):
             self.store.reserve(self.run.run_id,'alice',str(call),10)
             self.store.settle(self.run.run_id,'alice',str(call),0)
-        self.assert_code('BUDGET_EXCEEDED',lambda:self.store.reserve(self.run.run_id,'alice','17',10))
+        self.assert_code('BUDGET_EXCEEDED',lambda:self.store.reserve(self.run.run_id,'alice','over-limit',10))
+
+    def test_manual_correction_after_research_creates_new_snapshot_draft_without_adopting_old(self):
+        from backend.workflow import Run
+        run=Run(owner_id='alice',snapshot_id='old',run_status='RUNNING',current_stage='content')
+        content={'selected_title':'旧稿','body':'旧材料对应正文','cta':'讨论','tags':['摄影']}
+        run.draft(content);old=copy.deepcopy(run.drafts[-1])
+        run.snapshot_id='new';run.current_stage='brief';run.context['web_research']={'status':'complete'}
+        self.assertFalse(run.can_manual_adopt())
+        run.edit({**content,'selected_title':'校正稿','body':'根据新材料重新校正正文'})
+        self.assertEqual(run.drafts[0],old)
+        self.assertEqual(run.drafts[-1]['snapshot_id'],'new')
+        self.assertEqual(run.drafts[-1]['actor'],'user')
+        self.assertIsNone(run.review)
+
+    def test_manual_correction_does_not_skip_failed_research_or_started_analysis(self):
+        from backend.workflow import Run
+        run=Run(owner_id='alice',snapshot_id='old',run_status='RUNNING',current_stage='content')
+        content={'selected_title':'旧稿','body':'旧材料对应正文','cta':'讨论','tags':['摄影']}
+        run.draft(content);run.snapshot_id='new';run.current_stage='brief'
+        run.context['web_research']={'status':'insufficient'}
+        self.assertFalse(run.can_manual_edit())
+        with self.assertRaises(DomainError):run.edit(content)
+        run.context['web_research']['status']='complete';run.branches={'audience':{}}
+        self.assertFalse(run.can_manual_edit())
 
     def test_permissions_and_legacy_import(self):
         tool_allowed('audience','compute_content_metrics',['compute_content_metrics'],'alice','alice')

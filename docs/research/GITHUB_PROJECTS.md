@@ -96,3 +96,41 @@ README 声明 MIT，但本次仓库根目录展示未见独立 LICENSE 全文；
 本轮未登录开发者控制台、申请能力或连接用户账号。无法确认的小红书能力保持 unknown；抖音公开接口保持 documented_not_verified。人工发布和手工指标导入属于产品过渡设计，不冒充官方自动接入。
 
 技术建议与阶段取舍由 [v0.4 技术方案](../design/ARCHITECTURE.md#运营闭环-v04-技术提案) 维护。接入前再次核对对应官方文档、实际账号类型与授权范围，不硬编码本轮未验证的配额。
+
+## 2026-10-11：小红书 RAG 与多模型的最小借鉴
+
+本节补充最新用户需求的技术来源，当前产品范围以 [正式需求](../design/CONNECTED_CREATOR_REQUIREMENTS.md) 为准，实际完成状态以 [代码与验收记录](../CONNECTED_CREATOR_STATUS.md) 为准；前文图文、抖音及旧 MVP 取舍保留为历史，不扩大本轮范围。已阅读上游公开 README、下列源码及官方接口文档；本次调研没有安装或升级第三方依赖，没有读取真实平台账号，没有执行模型调用、采集或发布。链接指向查询时的上游文件，不代表本仓库已经采用相同版本，未来复制实现仍须固定 commit 并登记许可。
+
+### 小红书：有来源的有限研究，而非全量实时接口
+
+- [xiaohongshu-mcp 搜索实现](https://github.com/xpzouying/xiaohongshu-mcp/blob/main/xiaohongshu/search.go)提供关键词、最多点赞/收藏/评论、类型与时间筛选，使用浏览器读取页面状态。筛选等待超时可能返回旧结果，不能据此承诺全站最高互动或完整召回；本项目应记录实际查询、筛选、范围与采集时间。
+- [详情请求类型](https://github.com/xpzouying/xiaohongshu-mcp/blob/main/types.go)要求 `feed_id` 与 `xsec_token`；评论可限制加载数量。[返回结构](https://github.com/xpzouying/xiaohongshu-mcp/blob/main/xiaohongshu/types.go)含赞、收藏、评论、分享，以及评论分页状态，不含净涨粉、新增关注、取消关注或主页访客。未知值保持 null，缩写保留原展示；没有读取到不能写 0。
+- [路由](https://github.com/xpzouying/xiaohongshu-mcp/blob/main/routes.go)区分搜索、详情、账号、通知和发布，未见评论/流量实时推送订阅。研究按用户选定的公开笔记范围进行；私密内容及“已同步笔记与评论”块不展示，不能为此删掉后台表或历史。身份隔离所需的后台核对与展示私人账号内容是两回事。
+- 定时更新必须显示间隔、最近成功及过期状态，并绑定具体笔记 ID/链接，不能把公开互动称为后台流量或秒级实时数据。`xsec_token` 等来源访问参数按必要范围处理，不写日志、公共报告或提交包；用户主动打开原文需要的可访问链接与对外脱敏资料分别处理。
+- [README](https://github.com/xpzouying/xiaohongshu-mcp)描述图文/视频发布能力，不证明本项目已接通或获准发布。本轮不自动发布，不做图像或视频生成、下载、转写扩展；优先提供复制正文和文字稿导出。不得为了使用上游发布器擅自增加配图或发送帖子。
+
+代码许可为 [Apache-2.0](https://github.com/xpzouying/xiaohongshu-mcp/blob/main/LICENSE)，不等于平台数据访问许可；平台登录、验证码和访问限制不得绕过。既有渠道核对见 [连接可行性](XHS_CONNECTION_FEASIBILITY.md)，既有安装历史见 [工具选择记录](TOOL_SELECTION_20261010.md)，本节不把历史安装重新记为新增工作。
+
+### RAG 与四角色：复用现有链路
+
+沿用 `audience / research / content / reviewer` 四个 ID 与现有审核、预算、人工确认，不以新增“编辑 Agent”替换 reviewer。audience 从目标受众和获准使用的评论问题形成选题；research 检索核对事实与案例来源；content 基于检索快照原创写作并在对话中改稿；reviewer 核查主张、参考边界和稿件问题。Markdown 角色卡与 `backend/live.py::messages_for` 的运行提示词须分别对齐，不声称改文档就已改变模型行为。
+
+产品事实、表达案例和受众问题分开；只学习样例结构、信息组织和表达方法，不复制整篇、不伪造亲历或产品功效。候选须用户确认后入正式库；正文/摘要/视频说明分别标注，任务保存来源版本和定位。用户关闭自动参考或评论时不得隐式注入；空评论样本不代表全平台没有评论。继续复用现有 RAG、队列和四角色，而非增加 Dify、n8n 或另一套工作流系统。
+
+### 模型选择：预设、连接测试与明确恢复
+
+| 来源 | 可借鉴的最小部分 | 不直接引入的内容与许可边界 |
+| --- | --- | --- |
+| [CC Switch](https://github.com/farion1231/cc-switch)、[预设类型源码](https://github.com/farion1231/cc-switch/blob/main/src/config/geminiProviderPresets.ts) | 厂商名称、官方申请入口、Base URL、模型和协议预设；选择、检测、保存、切换 | 不搬桌面配置改写、订阅接管或赞助中转商目录；[MIT](https://github.com/farion1231/cc-switch/blob/main/LICENSE) |
+| [LiteLLM 兼容接口](https://docs.litellm.ai/docs/providers/openai_compatible) | 统一内部调用、按协议适配、参数兼容 | 不额外部署复杂网关后台；[普通代码 MIT，enterprise 另有许可](https://github.com/BerriAI/litellm/blob/main/LICENSE) |
+| [one-api](https://github.com/songquanpeng/one-api)、[适配器入口](https://github.com/songquanpeng/one-api/blob/main/relay/adaptor.go) | 厂商渠道和模型映射分离 | 不增加充值、分销或渠道管理平台；[MIT](https://github.com/songquanpeng/one-api/blob/main/LICENSE)，实际复用还需核对项目归属说明 |
+| [LobeHub（原 lobe-chat）](https://github.com/lobehub/lobehub) | 网页模型配置与会话界面的交互参考 | 不复制整站；[Community License](https://github.com/lobehub/lobehub/blob/main/LICENSE)含商业衍生附加条件，不能写成无附加条件的 Apache-2.0 |
+
+当前最小配置是厂商、协议、模型 ID、Base URL、用户 Key，加“测试连接 / 保存 / 启用”。平台默认 DeepSeek 仅使用后端密钥；其他模型使用用户自己的配置，按 owner 隔离与加密，Key 不回显、不进日志或仓库。BYOK 失败不能静默换平台 Key 或改变资料接收厂商；用户可明确选择回退默认模式。自定义地址仍需现有 URL/主机、内网访问及重定向校验。
+
+- [阿里云 Base URL 总览](https://help.aliyun.com/zh/model-studio/base-url)区分地域、计费方案及业务空间；Key 与地址必须匹配，不能把所有端点硬改成同一 `/v1`。旧公共域名和新业务空间域名的可用性按该文档核对。
+- [火山方舟接入文档](https://docs.volcengine.com/docs/ark/integrate-third-party-tools?lang=zh)区分普通 OpenAI 兼容 `/api/v3`、Coding Plan `/api/plan/v3` 与 Anthropic `/api/compatible`；协议名相近不代表请求体和地址相同。
+- [DeepSeek 模型列表](https://api-docs.deepseek.com/api/list-models/)提供当前模型与能力元数据。优先按实际端点查询并允许手填；单独 `/models` 失败不等于生成接口不可用，陈旧预设也不能保证模型仍可调用。
+- [LiteLLM 错误分类](https://docs.litellm.ai/docs/exception_mapping)与[重试说明](https://docs.litellm.ai/docs/completion/reliable_completions)可借鉴：鉴权、余额/权限、模型名、参数、超时、限流分别给出修正入口；仅瞬时错误有限重试。保留输入和草稿，提供修改配置、重新测试、返回、重试或跳过可选搜索；不承诺任何上游永不失败，内容限制不能通过切换模型规避。
+
+本期验收应证明：有有效配置时能完成文本调用；配置和外部失败时用户能在产品内部恢复；模型身份、费用、来源及失败状态可追溯。上述能力调查不是生产验证，本节不新增依赖、不安装清单中的全部 Skills、不自动发布、不开展图像视频功能。

@@ -1,0 +1,583 @@
+{
+  "sample_id": "S08",
+  "method": "windtunnel",
+  "participant_type": "codex_proxy",
+  "revision": "v4",
+  "draft_kind": "public_official_tutorial_excerpt",
+  "adaptation": "layout and attribution only; original English text",
+  "deletion_design": null,
+  "source_url": "https://docs.python.org/3.12/tutorial/errors.html#handling-exceptions",
+  "original_sha256": "617f423787fbd1d5e3a0bb2454b7d0b89c69a7162df99a76c3027c0d5b64f6f4",
+  "material_sha256": "617f423787fbd1d5e3a0bb2454b7d0b89c69a7162df99a76c3027c0d5b64f6f4",
+  "outcome": "completed",
+  "error": null,
+  "automatic_adoption": true,
+  "human_author": false,
+  "initial_report": {
+    "id": "24e0da1f-5e0b-4123-ae76-78fe00e78fcd",
+    "batch_id": "2520038e-36cf-496e-8b41-6c02d05e1ed9",
+    "draft_id": "5e5aec63-ee74-465b-b84a-e3a0f753df7d",
+    "draft_hash": "246bd0e419e688f36e363fa85cb33c022dc7d7d704560a9d55dfba3658564f30",
+    "condition_set_id": "10ae90a0-986f-4b02-b4c6-5b08d438015f",
+    "condition_hash": "1ba82cf304e2133790ae573b335ff09b9d12b07ad103e9f0c5ae415291ebcf29",
+    "material_hash": "724c5000a580e7c3d92c5d3c4296fd4c82bfac5a6e758bd8492c2df892640854",
+    "results": [
+      {
+        "condition_id": "aadd0d05-da03-43cd-ba52-f6c781c5df4d",
+        "status": "pass",
+        "reason": "稿件提供整数重试循环示例，明确处理 ValueError；并说明用户中断由 KeyboardInterrupt 表示，而非子类 Exception 的异常通常不被处理、用于指示程序终止，因此不会被 except ValueError 捕获。",
+        "citations": [
+          {
+            "source_id": "08709889-4f58-426b-97e0-0c2e88f8344e",
+            "quote": "It is possible to write programs that handle selected exceptions. Look at the\nfollowing example, which asks the user for input until a valid integer has been\nentered, but allows the user to interrupt the program (using Control-C or\nwhatever the operating system supports); note that a user-generated interruption\nis signalled by raising the KeyboardInterrupt exception."
+          },
+          {
+            "source_id": "08709889-4f58-426b-97e0-0c2e88f8344e",
+            "quote": ">>> while True:\n...     try:\n...         x = int(input(\"Please enter a number: \"))\n...         break\n...     except ValueError:\n...         print(\"Oops!  That was no valid number.  Try again...\")\n..."
+          },
+          {
+            "source_id": "08709889-4f58-426b-97e0-0c2e88f8344e",
+            "quote": "BaseException is the common base class of all exceptions. One of its\nsubclasses, Exception, is the base class of all the non-fatal exceptions.\nExceptions which are not subclasses of Exception are not typically\nhandled, because they are used to indicate that the program should terminate.\nThey include SystemExit which is raised by sys.exit() and\nKeyboardInterrupt which is raised when a user wishes to interrupt\nthe program."
+          }
+        ],
+        "reading": {
+          "condition_id": "aadd0d05-da03-43cd-ba52-f6c781c5df4d",
+          "status": "pass",
+          "answer": "整数重试循环应处理 ValueError，因为输入的字符串不是有效整数时 int() 会抛出 ValueError；Ctrl-C 不会被该处理器吃掉，因为用户中断会引发 KeyboardInterrupt，而 KeyboardInterrupt 是 BaseException 的子类但不是 Exception 的子类，所以 `except ValueError` 不匹配它，稿件说明这类异常通常不被处理，用于指示程序应终止。",
+          "excerpt": "note that a user-generated interruption\nis signalled by raising the KeyboardInterrupt exception.",
+          "reason": "稿件明确给出示例处理 ValueError、KeyboardInterrupt 由用户中断引发，并说明非 Exception 子类通常不被处理且用于指示程序终止。"
+        }
+      },
+      {
+        "condition_id": "148a94f9-bd47-43d4-a97c-57acfad0ca4d",
+        "status": "pass",
+        "reason": "稿件直接说明 try 子句执行中发生异常时剩余部分被跳过，匹配后执行 except 子句并继续执行 try/except 块之后。",
+        "citations": [
+          {
+            "source_id": "08709889-4f58-426b-97e0-0c2e88f8344e",
+            "quote": "If an exception occurs during execution of the try clause, the rest of the\nclause is skipped.  Then, if its type matches the exception named after the\nexcept keyword, the except clause is executed, and then execution\ncontinues after the try/except block."
+          }
+        ],
+        "reading": {
+          "condition_id": "148a94f9-bd47-43d4-a97c-57acfad0ca4d",
+          "status": "pass",
+          "answer": "如果 try 子句执行期间发生异常，该子句剩余部分被跳过；若异常类型与 except 后指定的异常匹配，则执行 except 子句，然后继续执行 try/except 块之后的代码。",
+          "excerpt": "If an exception occurs during execution of the try clause, the rest of the\nclause is skipped.  Then, if its type matches the exception named after the\nexcept keyword, the except clause is executed, and then execution\ncontinues after the try/except block.",
+          "reason": "稿件直接说明异常发生时剩余 try 子句被跳过，匹配后执行 except 子句并继续 try/except 块之后。"
+        }
+      },
+      {
+        "condition_id": "e71270d1-fb9b-4a7d-b8f6-e4fbe07663ea",
+        "status": "pass",
+        "reason": "稿件说明 except 中类匹配自身或派生类实例而非反向，并给出 B/C/D 示例输出 B、C、D；反转后第一个匹配子句触发，输出 B、B、B。",
+        "citations": [
+          {
+            "source_id": "08709889-4f58-426b-97e0-0c2e88f8344e",
+            "quote": "A class in an except clause matches exceptions which are instances of the\nclass itself or one of its derived classes (but not the other way around — an\nexcept clause listing a derived class does not match instances of its base classes).\nFor example, the following code will print B, C, D in that order:"
+          },
+          {
+            "source_id": "08709889-4f58-426b-97e0-0c2e88f8344e",
+            "quote": "Note that if the except clauses were reversed (with except B first), it\nwould have printed B, B, B — the first matching except clause is triggered."
+          }
+        ],
+        "reading": {
+          "condition_id": "e71270d1-fb9b-4a7d-b8f6-e4fbe07663ea",
+          "status": "pass",
+          "answer": "except 子句中的类匹配该类自身或其派生类的实例，但反过来不成立：列出派生类不会匹配基类实例。稿件中 B、C、D 示例按 except D、except C、except B 顺序时：raise B() 不匹配 D/C，匹配 B，打印 B；raise C() 不匹配 D，匹配 C，打印 C；raise D() 匹配 D，打印 D，因此输出 B、C、D。若顺序反转（except B 在前），则 raise B()、C()、D() 都会先匹配 B，输出 B、B、B，因为第一个匹配的 except 子句会被触发。",
+          "excerpt": "Note that if the except clauses were reversed (with except B first), it\nwould have printed B, B, B — the first matching except clause is triggered.",
+          "reason": "稿件明确说明类匹配规则、示例输出顺序及反转后第一个匹配子句触发的效果。"
+        }
+      },
+      {
+        "condition_id": "5eeb3da2-a747-4c63-a2be-c702af676b4e",
+        "status": "pass",
+        "reason": "稿件说明 else 在 try 子句未引发异常时执行，并说明其优于把附加代码放入 try，因为可避免意外捕获并非受保护代码引发的异常。",
+        "citations": [
+          {
+            "source_id": "ab43265e-2d56-4c67-a1e9-45b2e1a9405e",
+            "quote": "The try … except statement has an optional else\nclause, which, when present, must follow all except clauses.  It is useful\nfor code that must be executed if the try clause does not raise an exception.\nFor example:"
+          },
+          {
+            "source_id": "ab43265e-2d56-4c67-a1e9-45b2e1a9405e",
+            "quote": "The use of the else clause is better than adding additional code to\nthe try clause because it avoids accidentally catching an exception\nthat wasn’t raised by the code being protected by the try …\nexcept statement."
+          }
+        ],
+        "reading": {
+          "condition_id": "5eeb3da2-a747-4c63-a2be-c702af676b4e",
+          "status": "pass",
+          "answer": "else 子句在 try 子句没有引发异常时执行；它用于必须仅在 try 子句未抛出异常时运行的代码。它比把附加代码塞进 try 子句更合适，因为这样可以避免意外捕获并非由 try…except 所保护代码引发的异常。",
+          "excerpt": "The use of the else clause is better than adding additional code to\nthe try clause because it avoids accidentally catching an exception\nthat wasn’t raised by the code being protected by the try …\nexcept statement.",
+          "reason": "稿件直接说明 else 的执行条件及其相对于把代码放入 try 的优势。"
+        }
+      },
+      {
+        "condition_id": "9abfcd1d-9172-401f-8f06-0208dd4c6a12",
+        "status": "pass",
+        "reason": "稿件说明处理 Exception 的常见模式是打印或记录后重新引发，并明确异常处理器也处理 try 子句中调用（甚至间接调用）的函数内部发生的异常。",
+        "citations": [
+          {
+            "source_id": "ab43265e-2d56-4c67-a1e9-45b2e1a9405e",
+            "quote": "The most common pattern for handling Exception is to print or log\nthe exception and then re-raise it (allowing a caller to handle the\nexception as well):"
+          },
+          {
+            "source_id": "ab43265e-2d56-4c67-a1e9-45b2e1a9405e",
+            "quote": "Exception handlers do not handle only exceptions that occur immediately in the\ntry clause, but also those that occur inside functions that are called (even\nindirectly) in the try clause. For example:"
+          }
+        ],
+        "reading": {
+          "condition_id": "9abfcd1d-9172-401f-8f06-0208dd4c6a12",
+          "status": "pass",
+          "answer": "意外 Exception 被记录后，常见建议是打印或记录该异常，然后重新引发它（re-raise），以便调用者也能处理。try 调用的函数内部发生的异常也能被捕获：异常处理器不仅处理立即出现在 try 子句中的异常，也处理在 try 子句中调用（甚至间接调用）的函数内部发生的异常。",
+          "excerpt": "The most common pattern for handling Exception is to print or log\nthe exception and then re-raise it (allowing a caller to handle the\nexception as well):",
+          "reason": "稿件给出处理 Exception 的常见模式为记录后重新引发，并明确说明 try 子句中调用的函数内部异常也能被处理器捕获。"
+        }
+      }
+    ],
+    "new_issues": [],
+    "mode": "live",
+    "created_at": 1791356127.231612,
+    "model_policy": {
+      "version": "56cb27ab6fbf778239c193adfb5bcc084ca534730fef852bc02b83a150695d18",
+      "routes": {
+        "wt_conditions": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_read": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_verify": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_patch": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        }
+      },
+      "prompt_version": "windtunnel.v1"
+    },
+    "sources": [
+      {
+        "id": "5e5aec63-ee74-465b-b84a-e3a0f753df7d",
+        "source_id": "5e5aec63-ee74-465b-b84a-e3a0f753df7d",
+        "kind": "draft",
+        "text": "8.3. Handling Exceptions\n\nIt is possible to write programs that handle selected exceptions. Look at the\nfollowing example, which asks the user for input until a valid integer has been\nentered, but allows the user to interrupt the program (using Control-C or\nwhatever the operating system supports); note that a user-generated interruption\nis signalled by raising the KeyboardInterrupt exception.\n\n>>> while True:\n...     try:\n...         x = int(input(\"Please enter a number: \"))\n...         break\n...     except ValueError:\n...         print(\"Oops!  That was no valid number.  Try again...\")\n...\n\nThe try statement works as follows.\n\nFirst, the try clause (the statement(s) between the try and\nexcept keywords) is executed.\n\nIf no exception occurs, the except clause is skipped and execution of the\ntry statement is finished.\n\nIf an exception occurs during execution of the try clause, the rest of the\nclause is skipped.  Then, if its type matches the exception named after the\nexcept keyword, the except clause is executed, and then execution\ncontinues after the try/except block.\n\nIf an exception occurs which does not match the exception named in the except\nclause, it is passed on to outer try statements; if no handler is\nfound, it is an unhandled exception and execution stops with an error message.\n\nA try statement may have more than one except clause, to specify\nhandlers for different exceptions.  At most one handler will be executed.\nHandlers only handle exceptions that occur in the corresponding try clause,\nnot in other handlers of the same try statement.  An except clause\nmay name multiple exceptions as a parenthesized tuple, for example:\n\n... except (RuntimeError, TypeError, NameError):\n...     pass\n\nA class in an except clause matches exceptions which are instances of the\nclass itself or one of its derived classes (but not the other way around — an\nexcept clause listing a derived class does not match instances of its base classes).\nFor example, the following code will print B, C, D in that order:\n\nclass B(Exception):\n    pass\n\nclass C(B):\n    pass\n\nclass D(C):\n    pass\n\nfor cls in [B, C, D]:\n    try:\n        raise cls()\n    except D:\n        print(\"D\")\n    except C:\n        print(\"C\")\n    except B:\n        print(\"B\")\n\nNote that if the except clauses were reversed (with except B first), it\nwould have printed B, B, B — the first matching except clause is triggered.\n\nWhen an exception occurs, it may have associated values, also known as the\nexception’s arguments. The presence and types of the arguments depend on the\nexception type.\n\nThe except clause may specify a variable after the exception name.  The\nvariable is bound to the exception instance which typically has an args\nattribute that stores the arguments. For convenience, builtin exception\ntypes define __str__() to print all the arguments without explicitly\naccessing .args.\n\n>>> try:\n...     raise Exception('spam', 'eggs')\n... except Exception as inst:\n...     print(type(inst))    # the exception type\n...     print(inst.args)     # arguments stored in .args\n...     print(inst)          # __str__ allows args to be printed directly,\n...                          # but may be overridden in exception subclasses\n...     x, y = inst.args     # unpack args\n...     print('x =', x)\n...     print('y =', y)\n...\n<class 'Exception'>\n('spam', 'eggs')\n('spam', 'eggs')\nx = spam\ny = eggs\n\nThe exception’s __str__() output is printed as the last part (‘detail’)\nof the message for unhandled exceptions.\n\nBaseException is the common base class of all exceptions. One of its\nsubclasses, Exception, is the base class of all the non-fatal exceptions.\nExceptions which are not subclasses of Exception are not typically\nhandled, because they are used to indicate that the program should terminate.\nThey include SystemExit which is raised by sys.exit() and\nKeyboardInterrupt which is raised when a user wishes to interrupt\nthe program.\n\nException can be used as a wildcard that catches (almost) everything.\nHowever, it is good practice to be as specific as possible with the types\nof exceptions that we intend to handle, and to allow any unexpected\nexceptions to propagate on.\n\nThe most common pattern for handling Exception is to print or log\nthe exception and then re-raise it (allowing a caller to handle the\nexception as well):\n\nimport sys\n\ntry:\n    f = open('myfile.txt')\n    s = f.readline()\n    i = int(s.strip())\nexcept OSError as err:\n    print(\"OS error:\", err)\nexcept ValueError:\n    print(\"Could not convert data to an integer.\")\nexcept Exception as err:\n    print(f\"Unexpected {err=}, {type(err)=}\")\n    raise\n\nThe try … except statement has an optional else\nclause, which, when present, must follow all except clauses.  It is useful\nfor code that must be executed if the try clause does not raise an exception.\nFor example:\n\nfor arg in sys.argv[1:]:\n    try:\n        f = open(arg, 'r')\n    except OSError:\n        print('cannot open', arg)\n    else:\n        print(arg, 'has', len(f.readlines()), 'lines')\n        f.close()\n\nThe use of the else clause is better than adding additional code to\nthe try clause because it avoids accidentally catching an exception\nthat wasn’t raised by the code being protected by the try …\nexcept statement.\n\nException handlers do not handle only exceptions that occur immediately in the\ntry clause, but also those that occur inside functions that are called (even\nindirectly) in the try clause. For example:\n\n>>> def this_fails():\n...     x = 1/0\n...\n>>> try:\n...     this_fails()\n... except ZeroDivisionError as err:\n...     print('Handling run-time error:', err)\n...\nHandling run-time error: division by zero",
+        "hash": "246bd0e419e688f36e363fa85cb33c022dc7d7d704560a9d55dfba3658564f30"
+      },
+      {
+        "id": "08709889-4f58-426b-97e0-0c2e88f8344e",
+        "kind": "material",
+        "text": "8.3. Handling Exceptions\n\nIt is possible to write programs that handle selected exceptions. Look at the\nfollowing example, which asks the user for input until a valid integer has been\nentered, but allows the user to interrupt the program (using Control-C or\nwhatever the operating system supports); note that a user-generated interruption\nis signalled by raising the KeyboardInterrupt exception.\n\n>>> while True:\n...     try:\n...         x = int(input(\"Please enter a number: \"))\n...         break\n...     except ValueError:\n...         print(\"Oops!  That was no valid number.  Try again...\")\n...\n\nThe try statement works as follows.\n\nFirst, the try clause (the statement(s) between the try and\nexcept keywords) is executed.\n\nIf no exception occurs, the except clause is skipped and execution of the\ntry statement is finished.\n\nIf an exception occurs during execution of the try clause, the rest of the\nclause is skipped.  Then, if its type matches the exception named after the\nexcept keyword, the except clause is executed, and then execution\ncontinues after the try/except block.\n\nIf an exception occurs which does not match the exception named in the except\nclause, it is passed on to outer try statements; if no handler is\nfound, it is an unhandled exception and execution stops with an error message.\n\nA try statement may have more than one except clause, to specify\nhandlers for different exceptions.  At most one handler will be executed.\nHandlers only handle exceptions that occur in the corresponding try clause,\nnot in other handlers of the same try statement.  An except clause\nmay name multiple exceptions as a parenthesized tuple, for example:\n\n... except (RuntimeError, TypeError, NameError):\n...     pass\n\nA class in an except clause matches exceptions which are instances of the\nclass itself or one of its derived classes (but not the other way around — an\nexcept clause listing a derived class does not match instances of its base classes).\nFor example, the following code will print B, C, D in that order:\n\nclass B(Exception):\n    pass\n\nclass C(B):\n    pass\n\nclass D(C):\n    pass\n\nfor cls in [B, C, D]:\n    try:\n        raise cls()\n    except D:\n        print(\"D\")\n    except C:\n        print(\"C\")\n    except B:\n        print(\"B\")\n\nNote that if the except clauses were reversed (with except B first), it\nwould have printed B, B, B — the first matching except clause is triggered.\n\nWhen an exception occurs, it may have associated values, also known as the\nexception’s arguments. The presence and types of the arguments depend on the\nexception type.\n\nThe except clause may specify a variable after the exception name.  The\nvariable is bound to the exception instance which typically has an args\nattribute that stores the arguments. For convenience, builtin exception\ntypes define __str__() to print all the arguments without explicitly\naccessing .args.\n\n>>> try:\n...     raise Exception('spam', 'eggs')\n... except Exception as inst:\n...     print(type(inst))    # the exception type\n...     print(inst.args)     # arguments stored in .args\n...     print(inst)          # __str__ allows args to be printed directly,\n...                          # but may be overridden in exception subclasses\n...     x, y = inst.args     # unpack args\n...     print('x =', x)\n...     print('y =', y)\n...\n<class 'Exception'>\n('spam', 'eggs')\n('spam', 'eggs')\nx = spam\ny = eggs\n\nThe exception’s __str__() output is printed as the last part (‘detail’)\nof the message for unhandled exceptions.\n\nBaseException is the common base class of all exceptions. One of its\nsubclasses, Exception, is the base class of all the non-fatal exceptions.\nExceptions which are not subclasses of Exception are not typically\nhandled, because they are used to indicate that the program should terminate.\nThey include SystemExit which is raised by sys.exit() and\nKeyboardInterrupt which is raised when a user wishes to interrupt\nthe program.\n\nException can be used as a wildcard that catches (almost) everything.\nHowever, it",
+        "title": "处理异常",
+        "origin": "https://docs.python.org/3.12/tutorial/errors.html#handling-exceptions",
+        "provenance": "author_material",
+        "permission": false,
+        "version": 1,
+        "hash": "426232efbaefd7a3cc814da0e9a5c582de103e9913b30f13e6b15ff61f18b201",
+        "collected_at": 1791356115.7277498
+      },
+      {
+        "id": "ab43265e-2d56-4c67-a1e9-45b2e1a9405e",
+        "kind": "material",
+        "text": "is good practice to be as specific as possible with the types\nof exceptions that we intend to handle, and to allow any unexpected\nexceptions to propagate on.\n\nThe most common pattern for handling Exception is to print or log\nthe exception and then re-raise it (allowing a caller to handle the\nexception as well):\n\nimport sys\n\ntry:\n    f = open('myfile.txt')\n    s = f.readline()\n    i = int(s.strip())\nexcept OSError as err:\n    print(\"OS error:\", err)\nexcept ValueError:\n    print(\"Could not convert data to an integer.\")\nexcept Exception as err:\n    print(f\"Unexpected {err=}, {type(err)=}\")\n    raise\n\nThe try … except statement has an optional else\nclause, which, when present, must follow all except clauses.  It is useful\nfor code that must be executed if the try clause does not raise an exception.\nFor example:\n\nfor arg in sys.argv[1:]:\n    try:\n        f = open(arg, 'r')\n    except OSError:\n        print('cannot open', arg)\n    else:\n        print(arg, 'has', len(f.readlines()), 'lines')\n        f.close()\n\nThe use of the else clause is better than adding additional code to\nthe try clause because it avoids accidentally catching an exception\nthat wasn’t raised by the code being protected by the try …\nexcept statement.\n\nException handlers do not handle only exceptions that occur immediately in the\ntry clause, but also those that occur inside functions that are called (even\nindirectly) in the try clause. For example:\n\n>>> def this_fails():\n...     x = 1/0\n...\n>>> try:\n...     this_fails()\n... except ZeroDivisionError as err:\n...     print('Handling run-time error:', err)\n...\nHandling run-time error: division by zero",
+        "title": "处理异常",
+        "origin": "https://docs.python.org/3.12/tutorial/errors.html#handling-exceptions",
+        "provenance": "author_material",
+        "permission": false,
+        "version": 1,
+        "hash": "634a18547d7e872684d9d028cf1c2d290f123284fc96a7eddfaff3765b5f715a",
+        "collected_at": 1791356115.7277708
+      }
+    ]
+  },
+  "final_report": {
+    "id": "24e0da1f-5e0b-4123-ae76-78fe00e78fcd",
+    "batch_id": "2520038e-36cf-496e-8b41-6c02d05e1ed9",
+    "draft_id": "5e5aec63-ee74-465b-b84a-e3a0f753df7d",
+    "draft_hash": "246bd0e419e688f36e363fa85cb33c022dc7d7d704560a9d55dfba3658564f30",
+    "condition_set_id": "10ae90a0-986f-4b02-b4c6-5b08d438015f",
+    "condition_hash": "1ba82cf304e2133790ae573b335ff09b9d12b07ad103e9f0c5ae415291ebcf29",
+    "material_hash": "724c5000a580e7c3d92c5d3c4296fd4c82bfac5a6e758bd8492c2df892640854",
+    "results": [
+      {
+        "condition_id": "aadd0d05-da03-43cd-ba52-f6c781c5df4d",
+        "status": "pass",
+        "reason": "稿件提供整数重试循环示例，明确处理 ValueError；并说明用户中断由 KeyboardInterrupt 表示，而非子类 Exception 的异常通常不被处理、用于指示程序终止，因此不会被 except ValueError 捕获。",
+        "citations": [
+          {
+            "source_id": "08709889-4f58-426b-97e0-0c2e88f8344e",
+            "quote": "It is possible to write programs that handle selected exceptions. Look at the\nfollowing example, which asks the user for input until a valid integer has been\nentered, but allows the user to interrupt the program (using Control-C or\nwhatever the operating system supports); note that a user-generated interruption\nis signalled by raising the KeyboardInterrupt exception."
+          },
+          {
+            "source_id": "08709889-4f58-426b-97e0-0c2e88f8344e",
+            "quote": ">>> while True:\n...     try:\n...         x = int(input(\"Please enter a number: \"))\n...         break\n...     except ValueError:\n...         print(\"Oops!  That was no valid number.  Try again...\")\n..."
+          },
+          {
+            "source_id": "08709889-4f58-426b-97e0-0c2e88f8344e",
+            "quote": "BaseException is the common base class of all exceptions. One of its\nsubclasses, Exception, is the base class of all the non-fatal exceptions.\nExceptions which are not subclasses of Exception are not typically\nhandled, because they are used to indicate that the program should terminate.\nThey include SystemExit which is raised by sys.exit() and\nKeyboardInterrupt which is raised when a user wishes to interrupt\nthe program."
+          }
+        ],
+        "reading": {
+          "condition_id": "aadd0d05-da03-43cd-ba52-f6c781c5df4d",
+          "status": "pass",
+          "answer": "整数重试循环应处理 ValueError，因为输入的字符串不是有效整数时 int() 会抛出 ValueError；Ctrl-C 不会被该处理器吃掉，因为用户中断会引发 KeyboardInterrupt，而 KeyboardInterrupt 是 BaseException 的子类但不是 Exception 的子类，所以 `except ValueError` 不匹配它，稿件说明这类异常通常不被处理，用于指示程序应终止。",
+          "excerpt": "note that a user-generated interruption\nis signalled by raising the KeyboardInterrupt exception.",
+          "reason": "稿件明确给出示例处理 ValueError、KeyboardInterrupt 由用户中断引发，并说明非 Exception 子类通常不被处理且用于指示程序终止。"
+        }
+      },
+      {
+        "condition_id": "148a94f9-bd47-43d4-a97c-57acfad0ca4d",
+        "status": "pass",
+        "reason": "稿件直接说明 try 子句执行中发生异常时剩余部分被跳过，匹配后执行 except 子句并继续执行 try/except 块之后。",
+        "citations": [
+          {
+            "source_id": "08709889-4f58-426b-97e0-0c2e88f8344e",
+            "quote": "If an exception occurs during execution of the try clause, the rest of the\nclause is skipped.  Then, if its type matches the exception named after the\nexcept keyword, the except clause is executed, and then execution\ncontinues after the try/except block."
+          }
+        ],
+        "reading": {
+          "condition_id": "148a94f9-bd47-43d4-a97c-57acfad0ca4d",
+          "status": "pass",
+          "answer": "如果 try 子句执行期间发生异常，该子句剩余部分被跳过；若异常类型与 except 后指定的异常匹配，则执行 except 子句，然后继续执行 try/except 块之后的代码。",
+          "excerpt": "If an exception occurs during execution of the try clause, the rest of the\nclause is skipped.  Then, if its type matches the exception named after the\nexcept keyword, the except clause is executed, and then execution\ncontinues after the try/except block.",
+          "reason": "稿件直接说明异常发生时剩余 try 子句被跳过，匹配后执行 except 子句并继续 try/except 块之后。"
+        }
+      },
+      {
+        "condition_id": "e71270d1-fb9b-4a7d-b8f6-e4fbe07663ea",
+        "status": "pass",
+        "reason": "稿件说明 except 中类匹配自身或派生类实例而非反向，并给出 B/C/D 示例输出 B、C、D；反转后第一个匹配子句触发，输出 B、B、B。",
+        "citations": [
+          {
+            "source_id": "08709889-4f58-426b-97e0-0c2e88f8344e",
+            "quote": "A class in an except clause matches exceptions which are instances of the\nclass itself or one of its derived classes (but not the other way around — an\nexcept clause listing a derived class does not match instances of its base classes).\nFor example, the following code will print B, C, D in that order:"
+          },
+          {
+            "source_id": "08709889-4f58-426b-97e0-0c2e88f8344e",
+            "quote": "Note that if the except clauses were reversed (with except B first), it\nwould have printed B, B, B — the first matching except clause is triggered."
+          }
+        ],
+        "reading": {
+          "condition_id": "e71270d1-fb9b-4a7d-b8f6-e4fbe07663ea",
+          "status": "pass",
+          "answer": "except 子句中的类匹配该类自身或其派生类的实例，但反过来不成立：列出派生类不会匹配基类实例。稿件中 B、C、D 示例按 except D、except C、except B 顺序时：raise B() 不匹配 D/C，匹配 B，打印 B；raise C() 不匹配 D，匹配 C，打印 C；raise D() 匹配 D，打印 D，因此输出 B、C、D。若顺序反转（except B 在前），则 raise B()、C()、D() 都会先匹配 B，输出 B、B、B，因为第一个匹配的 except 子句会被触发。",
+          "excerpt": "Note that if the except clauses were reversed (with except B first), it\nwould have printed B, B, B — the first matching except clause is triggered.",
+          "reason": "稿件明确说明类匹配规则、示例输出顺序及反转后第一个匹配子句触发的效果。"
+        }
+      },
+      {
+        "condition_id": "5eeb3da2-a747-4c63-a2be-c702af676b4e",
+        "status": "pass",
+        "reason": "稿件说明 else 在 try 子句未引发异常时执行，并说明其优于把附加代码放入 try，因为可避免意外捕获并非受保护代码引发的异常。",
+        "citations": [
+          {
+            "source_id": "ab43265e-2d56-4c67-a1e9-45b2e1a9405e",
+            "quote": "The try … except statement has an optional else\nclause, which, when present, must follow all except clauses.  It is useful\nfor code that must be executed if the try clause does not raise an exception.\nFor example:"
+          },
+          {
+            "source_id": "ab43265e-2d56-4c67-a1e9-45b2e1a9405e",
+            "quote": "The use of the else clause is better than adding additional code to\nthe try clause because it avoids accidentally catching an exception\nthat wasn’t raised by the code being protected by the try …\nexcept statement."
+          }
+        ],
+        "reading": {
+          "condition_id": "5eeb3da2-a747-4c63-a2be-c702af676b4e",
+          "status": "pass",
+          "answer": "else 子句在 try 子句没有引发异常时执行；它用于必须仅在 try 子句未抛出异常时运行的代码。它比把附加代码塞进 try 子句更合适，因为这样可以避免意外捕获并非由 try…except 所保护代码引发的异常。",
+          "excerpt": "The use of the else clause is better than adding additional code to\nthe try clause because it avoids accidentally catching an exception\nthat wasn’t raised by the code being protected by the try …\nexcept statement.",
+          "reason": "稿件直接说明 else 的执行条件及其相对于把代码放入 try 的优势。"
+        }
+      },
+      {
+        "condition_id": "9abfcd1d-9172-401f-8f06-0208dd4c6a12",
+        "status": "pass",
+        "reason": "稿件说明处理 Exception 的常见模式是打印或记录后重新引发，并明确异常处理器也处理 try 子句中调用（甚至间接调用）的函数内部发生的异常。",
+        "citations": [
+          {
+            "source_id": "ab43265e-2d56-4c67-a1e9-45b2e1a9405e",
+            "quote": "The most common pattern for handling Exception is to print or log\nthe exception and then re-raise it (allowing a caller to handle the\nexception as well):"
+          },
+          {
+            "source_id": "ab43265e-2d56-4c67-a1e9-45b2e1a9405e",
+            "quote": "Exception handlers do not handle only exceptions that occur immediately in the\ntry clause, but also those that occur inside functions that are called (even\nindirectly) in the try clause. For example:"
+          }
+        ],
+        "reading": {
+          "condition_id": "9abfcd1d-9172-401f-8f06-0208dd4c6a12",
+          "status": "pass",
+          "answer": "意外 Exception 被记录后，常见建议是打印或记录该异常，然后重新引发它（re-raise），以便调用者也能处理。try 调用的函数内部发生的异常也能被捕获：异常处理器不仅处理立即出现在 try 子句中的异常，也处理在 try 子句中调用（甚至间接调用）的函数内部发生的异常。",
+          "excerpt": "The most common pattern for handling Exception is to print or log\nthe exception and then re-raise it (allowing a caller to handle the\nexception as well):",
+          "reason": "稿件给出处理 Exception 的常见模式为记录后重新引发，并明确说明 try 子句中调用的函数内部异常也能被处理器捕获。"
+        }
+      }
+    ],
+    "new_issues": [],
+    "mode": "live",
+    "created_at": 1791356127.231612,
+    "model_policy": {
+      "version": "56cb27ab6fbf778239c193adfb5bcc084ca534730fef852bc02b83a150695d18",
+      "routes": {
+        "wt_conditions": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_read": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_verify": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_patch": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        }
+      },
+      "prompt_version": "windtunnel.v1"
+    },
+    "sources": [
+      {
+        "id": "5e5aec63-ee74-465b-b84a-e3a0f753df7d",
+        "source_id": "5e5aec63-ee74-465b-b84a-e3a0f753df7d",
+        "kind": "draft",
+        "text": "8.3. Handling Exceptions\n\nIt is possible to write programs that handle selected exceptions. Look at the\nfollowing example, which asks the user for input until a valid integer has been\nentered, but allows the user to interrupt the program (using Control-C or\nwhatever the operating system supports); note that a user-generated interruption\nis signalled by raising the KeyboardInterrupt exception.\n\n>>> while True:\n...     try:\n...         x = int(input(\"Please enter a number: \"))\n...         break\n...     except ValueError:\n...         print(\"Oops!  That was no valid number.  Try again...\")\n...\n\nThe try statement works as follows.\n\nFirst, the try clause (the statement(s) between the try and\nexcept keywords) is executed.\n\nIf no exception occurs, the except clause is skipped and execution of the\ntry statement is finished.\n\nIf an exception occurs during execution of the try clause, the rest of the\nclause is skipped.  Then, if its type matches the exception named after the\nexcept keyword, the except clause is executed, and then execution\ncontinues after the try/except block.\n\nIf an exception occurs which does not match the exception named in the except\nclause, it is passed on to outer try statements; if no handler is\nfound, it is an unhandled exception and execution stops with an error message.\n\nA try statement may have more than one except clause, to specify\nhandlers for different exceptions.  At most one handler will be executed.\nHandlers only handle exceptions that occur in the corresponding try clause,\nnot in other handlers of the same try statement.  An except clause\nmay name multiple exceptions as a parenthesized tuple, for example:\n\n... except (RuntimeError, TypeError, NameError):\n...     pass\n\nA class in an except clause matches exceptions which are instances of the\nclass itself or one of its derived classes (but not the other way around — an\nexcept clause listing a derived class does not match instances of its base classes).\nFor example, the following code will print B, C, D in that order:\n\nclass B(Exception):\n    pass\n\nclass C(B):\n    pass\n\nclass D(C):\n    pass\n\nfor cls in [B, C, D]:\n    try:\n        raise cls()\n    except D:\n        print(\"D\")\n    except C:\n        print(\"C\")\n    except B:\n        print(\"B\")\n\nNote that if the except clauses were reversed (with except B first), it\nwould have printed B, B, B — the first matching except clause is triggered.\n\nWhen an exception occurs, it may have associated values, also known as the\nexception’s arguments. The presence and types of the arguments depend on the\nexception type.\n\nThe except clause may specify a variable after the exception name.  The\nvariable is bound to the exception instance which typically has an args\nattribute that stores the arguments. For convenience, builtin exception\ntypes define __str__() to print all the arguments without explicitly\naccessing .args.\n\n>>> try:\n...     raise Exception('spam', 'eggs')\n... except Exception as inst:\n...     print(type(inst))    # the exception type\n...     print(inst.args)     # arguments stored in .args\n...     print(inst)          # __str__ allows args to be printed directly,\n...                          # but may be overridden in exception subclasses\n...     x, y = inst.args     # unpack args\n...     print('x =', x)\n...     print('y =', y)\n...\n<class 'Exception'>\n('spam', 'eggs')\n('spam', 'eggs')\nx = spam\ny = eggs\n\nThe exception’s __str__() output is printed as the last part (‘detail’)\nof the message for unhandled exceptions.\n\nBaseException is the common base class of all exceptions. One of its\nsubclasses, Exception, is the base class of all the non-fatal exceptions.\nExceptions which are not subclasses of Exception are not typically\nhandled, because they are used to indicate that the program should terminate.\nThey include SystemExit which is raised by sys.exit() and\nKeyboardInterrupt which is raised when a user wishes to interrupt\nthe program.\n\nException can be used as a wildcard that catches (almost) everything.\nHowever, it is good practice to be as specific as possible with the types\nof exceptions that we intend to handle, and to allow any unexpected\nexceptions to propagate on.\n\nThe most common pattern for handling Exception is to print or log\nthe exception and then re-raise it (allowing a caller to handle the\nexception as well):\n\nimport sys\n\ntry:\n    f = open('myfile.txt')\n    s = f.readline()\n    i = int(s.strip())\nexcept OSError as err:\n    print(\"OS error:\", err)\nexcept ValueError:\n    print(\"Could not convert data to an integer.\")\nexcept Exception as err:\n    print(f\"Unexpected {err=}, {type(err)=}\")\n    raise\n\nThe try … except statement has an optional else\nclause, which, when present, must follow all except clauses.  It is useful\nfor code that must be executed if the try clause does not raise an exception.\nFor example:\n\nfor arg in sys.argv[1:]:\n    try:\n        f = open(arg, 'r')\n    except OSError:\n        print('cannot open', arg)\n    else:\n        print(arg, 'has', len(f.readlines()), 'lines')\n        f.close()\n\nThe use of the else clause is better than adding additional code to\nthe try clause because it avoids accidentally catching an exception\nthat wasn’t raised by the code being protected by the try …\nexcept statement.\n\nException handlers do not handle only exceptions that occur immediately in the\ntry clause, but also those that occur inside functions that are called (even\nindirectly) in the try clause. For example:\n\n>>> def this_fails():\n...     x = 1/0\n...\n>>> try:\n...     this_fails()\n... except ZeroDivisionError as err:\n...     print('Handling run-time error:', err)\n...\nHandling run-time error: division by zero",
+        "hash": "246bd0e419e688f36e363fa85cb33c022dc7d7d704560a9d55dfba3658564f30"
+      },
+      {
+        "id": "08709889-4f58-426b-97e0-0c2e88f8344e",
+        "kind": "material",
+        "text": "8.3. Handling Exceptions\n\nIt is possible to write programs that handle selected exceptions. Look at the\nfollowing example, which asks the user for input until a valid integer has been\nentered, but allows the user to interrupt the program (using Control-C or\nwhatever the operating system supports); note that a user-generated interruption\nis signalled by raising the KeyboardInterrupt exception.\n\n>>> while True:\n...     try:\n...         x = int(input(\"Please enter a number: \"))\n...         break\n...     except ValueError:\n...         print(\"Oops!  That was no valid number.  Try again...\")\n...\n\nThe try statement works as follows.\n\nFirst, the try clause (the statement(s) between the try and\nexcept keywords) is executed.\n\nIf no exception occurs, the except clause is skipped and execution of the\ntry statement is finished.\n\nIf an exception occurs during execution of the try clause, the rest of the\nclause is skipped.  Then, if its type matches the exception named after the\nexcept keyword, the except clause is executed, and then execution\ncontinues after the try/except block.\n\nIf an exception occurs which does not match the exception named in the except\nclause, it is passed on to outer try statements; if no handler is\nfound, it is an unhandled exception and execution stops with an error message.\n\nA try statement may have more than one except clause, to specify\nhandlers for different exceptions.  At most one handler will be executed.\nHandlers only handle exceptions that occur in the corresponding try clause,\nnot in other handlers of the same try statement.  An except clause\nmay name multiple exceptions as a parenthesized tuple, for example:\n\n... except (RuntimeError, TypeError, NameError):\n...     pass\n\nA class in an except clause matches exceptions which are instances of the\nclass itself or one of its derived classes (but not the other way around — an\nexcept clause listing a derived class does not match instances of its base classes).\nFor example, the following code will print B, C, D in that order:\n\nclass B(Exception):\n    pass\n\nclass C(B):\n    pass\n\nclass D(C):\n    pass\n\nfor cls in [B, C, D]:\n    try:\n        raise cls()\n    except D:\n        print(\"D\")\n    except C:\n        print(\"C\")\n    except B:\n        print(\"B\")\n\nNote that if the except clauses were reversed (with except B first), it\nwould have printed B, B, B — the first matching except clause is triggered.\n\nWhen an exception occurs, it may have associated values, also known as the\nexception’s arguments. The presence and types of the arguments depend on the\nexception type.\n\nThe except clause may specify a variable after the exception name.  The\nvariable is bound to the exception instance which typically has an args\nattribute that stores the arguments. For convenience, builtin exception\ntypes define __str__() to print all the arguments without explicitly\naccessing .args.\n\n>>> try:\n...     raise Exception('spam', 'eggs')\n... except Exception as inst:\n...     print(type(inst))    # the exception type\n...     print(inst.args)     # arguments stored in .args\n...     print(inst)          # __str__ allows args to be printed directly,\n...                          # but may be overridden in exception subclasses\n...     x, y = inst.args     # unpack args\n...     print('x =', x)\n...     print('y =', y)\n...\n<class 'Exception'>\n('spam', 'eggs')\n('spam', 'eggs')\nx = spam\ny = eggs\n\nThe exception’s __str__() output is printed as the last part (‘detail’)\nof the message for unhandled exceptions.\n\nBaseException is the common base class of all exceptions. One of its\nsubclasses, Exception, is the base class of all the non-fatal exceptions.\nExceptions which are not subclasses of Exception are not typically\nhandled, because they are used to indicate that the program should terminate.\nThey include SystemExit which is raised by sys.exit() and\nKeyboardInterrupt which is raised when a user wishes to interrupt\nthe program.\n\nException can be used as a wildcard that catches (almost) everything.\nHowever, it",
+        "title": "处理异常",
+        "origin": "https://docs.python.org/3.12/tutorial/errors.html#handling-exceptions",
+        "provenance": "author_material",
+        "permission": false,
+        "version": 1,
+        "hash": "426232efbaefd7a3cc814da0e9a5c582de103e9913b30f13e6b15ff61f18b201",
+        "collected_at": 1791356115.7277498
+      },
+      {
+        "id": "ab43265e-2d56-4c67-a1e9-45b2e1a9405e",
+        "kind": "material",
+        "text": "is good practice to be as specific as possible with the types\nof exceptions that we intend to handle, and to allow any unexpected\nexceptions to propagate on.\n\nThe most common pattern for handling Exception is to print or log\nthe exception and then re-raise it (allowing a caller to handle the\nexception as well):\n\nimport sys\n\ntry:\n    f = open('myfile.txt')\n    s = f.readline()\n    i = int(s.strip())\nexcept OSError as err:\n    print(\"OS error:\", err)\nexcept ValueError:\n    print(\"Could not convert data to an integer.\")\nexcept Exception as err:\n    print(f\"Unexpected {err=}, {type(err)=}\")\n    raise\n\nThe try … except statement has an optional else\nclause, which, when present, must follow all except clauses.  It is useful\nfor code that must be executed if the try clause does not raise an exception.\nFor example:\n\nfor arg in sys.argv[1:]:\n    try:\n        f = open(arg, 'r')\n    except OSError:\n        print('cannot open', arg)\n    else:\n        print(arg, 'has', len(f.readlines()), 'lines')\n        f.close()\n\nThe use of the else clause is better than adding additional code to\nthe try clause because it avoids accidentally catching an exception\nthat wasn’t raised by the code being protected by the try …\nexcept statement.\n\nException handlers do not handle only exceptions that occur immediately in the\ntry clause, but also those that occur inside functions that are called (even\nindirectly) in the try clause. For example:\n\n>>> def this_fails():\n...     x = 1/0\n...\n>>> try:\n...     this_fails()\n... except ZeroDivisionError as err:\n...     print('Handling run-time error:', err)\n...\nHandling run-time error: division by zero",
+        "title": "处理异常",
+        "origin": "https://docs.python.org/3.12/tutorial/errors.html#handling-exceptions",
+        "provenance": "author_material",
+        "permission": false,
+        "version": 1,
+        "hash": "634a18547d7e872684d9d028cf1c2d290f123284fc96a7eddfaff3765b5f715a",
+        "collected_at": 1791356115.7277708
+      }
+    ]
+  },
+  "unresolved_conditions": [],
+  "effective_repair_confirmed": false,
+  "run_id": "7345d2a0-4979-4fb9-8c97-aacf9b8ec5ec",
+  "wall_seconds": 11.528,
+  "final_sha256": "617f423787fbd1d5e3a0bb2454b7d0b89c69a7162df99a76c3027c0d5b64f6f4",
+  "changed": false,
+  "calls": [
+    {
+      "stage": "wt_conditions",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 266,
+      "output_tokens": 397,
+      "total_tokens": 663,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "conditions": [
+          {
+            "question": "在整数输入的重试循环里，作者希望读者优先考虑捕获哪一类（或哪些）异常，而不是直接写裸的 except？",
+            "scene": "输入整数的重试循环",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "对于 Ctrl-C（KeyboardInterrupt），作者期望读者理解它为什么不会被针对输入转换错误的处理器“吃掉”？",
+            "scene": "输入整数的重试循环与 Ctrl-C 行为",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "当 try 块中某条语句抛出与处理器匹配的异常后，作者希望读者如何描述该 try 块内剩余语句的执行情况，以及随后处理器的执行顺序？",
+            "scene": "try 匹配异常后的控制流",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "在稿件内 B/C/D 这几个示例中，父类与子类异常处理器的排列顺序会怎样改变哪个处理器被命中？作者希望读者能据此得出什么排序规则？",
+            "scene": "B/C/D 示例的处理器顺序",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "作者希望读者认为 else 子句应该在什么时机执行，并且为什么把原本放在 else 里的代码塞进 try 块会是不合适的？",
+            "scene": "try/except/else 的使用时机",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "当意外抛出并被记录的 Exception 被捕获后，作者建议读者接下来对该异常做什么处理（例如记录、重新抛出或其他处理），理由是什么？",
+            "scene": "捕获并记录意外 Exception 之后",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "如果异常是在 try 块所调用的函数内部抛出的，作者希望读者判断它是否仍能被该 try 的处理器捕获，并依据什么机制来判断？",
+            "scene": "try 调用函数内部抛出异常",
+            "source_ids": [],
+            "origin": "author"
+          }
+        ]
+      }
+    },
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 2215,
+      "output_tokens": 1028,
+      "total_tokens": 3243,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "results": [
+          {
+            "condition_id": "aadd0d05-da03-43cd-ba52-f6c781c5df4d",
+            "status": "pass",
+            "answer": "整数重试循环应处理 ValueError，因为输入的字符串不是有效整数时 int() 会抛出 ValueError；Ctrl-C 不会被该处理器吃掉，因为用户中断会引发 KeyboardInterrupt，而 KeyboardInterrupt 是 BaseException 的子类但不是 Exception 的子类，所以 `except ValueError` 不匹配它，稿件说明这类异常通常不被处理，用于指示程序应终止。",
+            "excerpt": "note that a user-generated interruption\nis signalled by raising the KeyboardInterrupt exception.",
+            "reason": "稿件明确给出示例处理 ValueError、KeyboardInterrupt 由用户中断引发，并说明非 Exception 子类通常不被处理且用于指示程序终止。"
+          },
+          {
+            "condition_id": "148a94f9-bd47-43d4-a97c-57acfad0ca4d",
+            "status": "pass",
+            "answer": "如果 try 子句执行期间发生异常，该子句剩余部分被跳过；若异常类型与 except 后指定的异常匹配，则执行 except 子句，然后继续执行 try/except 块之后的代码。",
+            "excerpt": "If an exception occurs during execution of the try clause, the rest of the\nclause is skipped.  Then, if its type matches the exception named after the\nexcept keyword, the except clause is executed, and then execution\ncontinues after the try/except block.",
+            "reason": "稿件直接说明异常发生时剩余 try 子句被跳过，匹配后执行 except 子句并继续 try/except 块之后。"
+          },
+          {
+            "condition_id": "e71270d1-fb9b-4a7d-b8f6-e4fbe07663ea",
+            "status": "pass",
+            "answer": "except 子句中的类匹配该类自身或其派生类的实例，但反过来不成立：列出派生类不会匹配基类实例。稿件中 B、C、D 示例按 except D、except C、except B 顺序时：raise B() 不匹配 D/C，匹配 B，打印 B；raise C() 不匹配 D，匹配 C，打印 C；raise D() 匹配 D，打印 D，因此输出 B、C、D。若顺序反转（except B 在前），则 raise B()、C()、D() 都会先匹配 B，输出 B、B、B，因为第一个匹配的 except 子句会被触发。",
+            "excerpt": "Note that if the except clauses were reversed (with except B first), it\nwould have printed B, B, B — the first matching except clause is triggered.",
+            "reason": "稿件明确说明类匹配规则、示例输出顺序及反转后第一个匹配子句触发的效果。"
+          },
+          {
+            "condition_id": "5eeb3da2-a747-4c63-a2be-c702af676b4e",
+            "status": "pass",
+            "answer": "else 子句在 try 子句没有引发异常时执行；它用于必须仅在 try 子句未抛出异常时运行的代码。它比把附加代码塞进 try 子句更合适，因为这样可以避免意外捕获并非由 try…except 所保护代码引发的异常。",
+            "excerpt": "The use of the else clause is better than adding additional code to\nthe try clause because it avoids accidentally catching an exception\nthat wasn’t raised by the code being protected by the try …\nexcept statement.",
+            "reason": "稿件直接说明 else 的执行条件及其相对于把代码放入 try 的优势。"
+          },
+          {
+            "condition_id": "9abfcd1d-9172-401f-8f06-0208dd4c6a12",
+            "status": "pass",
+            "answer": "意外 Exception 被记录后，常见建议是打印或记录该异常，然后重新引发它（re-raise），以便调用者也能处理。try 调用的函数内部发生的异常也能被捕获：异常处理器不仅处理立即出现在 try 子句中的异常，也处理在 try 子句中调用（甚至间接调用）的函数内部发生的异常。",
+            "excerpt": "The most common pattern for handling Exception is to print or log\nthe exception and then re-raise it (allowing a caller to handle the\nexception as well):",
+            "reason": "稿件给出处理 Exception 的常见模式为记录后重新引发，并明确说明 try 子句中调用的函数内部异常也能被处理器捕获。"
+          }
+        ]
+      }
+    },
+    {
+      "stage": "wt_verify",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 9746,
+      "output_tokens": 1158,
+      "total_tokens": 10904,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "results": [
+          {
+            "condition_id": "aadd0d05-da03-43cd-ba52-f6c781c5df4d",
+            "status": "pass",
+            "reason": "稿件提供整数重试循环示例，明确处理 ValueError；并说明用户中断由 KeyboardInterrupt 表示，而非子类 Exception 的异常通常不被处理、用于指示程序终止，因此不会被 except ValueError 捕获。",
+            "citations": [
+              {
+                "evidence_id": "08709889-4f58-426b-97e0-0c2e88f8344e:426232efbaefd7a3cc814da0e9a5c582de103e9913b30f13e6b15ff61f18b201:P2"
+              },
+              {
+                "evidence_id": "08709889-4f58-426b-97e0-0c2e88f8344e:426232efbaefd7a3cc814da0e9a5c582de103e9913b30f13e6b15ff61f18b201:P3"
+              },
+              {
+                "evidence_id": "08709889-4f58-426b-97e0-0c2e88f8344e:426232efbaefd7a3cc814da0e9a5c582de103e9913b30f13e6b15ff61f18b201:P21"
+              }
+            ]
+          },
+          {
+            "condition_id": "148a94f9-bd47-43d4-a97c-57acfad0ca4d",
+            "status": "pass",
+            "reason": "稿件直接说明 try 子句执行中发生异常时剩余部分被跳过，匹配后执行 except 子句并继续执行 try/except 块之后。",
+            "citations": [
+              {
+                "evidence_id": "08709889-4f58-426b-97e0-0c2e88f8344e:426232efbaefd7a3cc814da0e9a5c582de103e9913b30f13e6b15ff61f18b201:P7"
+              }
+            ]
+          },
+          {
+            "condition_id": "e71270d1-fb9b-4a7d-b8f6-e4fbe07663ea",
+            "status": "pass",
+            "reason": "稿件说明 except 中类匹配自身或派生类实例而非反向，并给出 B/C/D 示例输出 B、C、D；反转后第一个匹配子句触发，输出 B、B、B。",
+            "citations": [
+              {
+                "evidence_id": "08709889-4f58-426b-97e0-0c2e88f8344e:426232efbaefd7a3cc814da0e9a5c582de103e9913b30f13e6b15ff61f18b201:P11"
+              },
+              {
+                "evidence_id": "08709889-4f58-426b-97e0-0c2e88f8344e:426232efbaefd7a3cc814da0e9a5c582de103e9913b30f13e6b15ff61f18b201:P16"
+              }
+            ]
+          },
+          {
+            "condition_id": "5eeb3da2-a747-4c63-a2be-c702af676b4e",
+            "status": "pass",
+            "reason": "稿件说明 else 在 try 子句未引发异常时执行，并说明其优于把附加代码放入 try，因为可避免意外捕获并非受保护代码引发的异常。",
+            "citations": [
+              {
+                "evidence_id": "ab43265e-2d56-4c67-a1e9-45b2e1a9405e:634a18547d7e872684d9d028cf1c2d290f123284fc96a7eddfaff3765b5f715a:P5"
+              },
+              {
+                "evidence_id": "ab43265e-2d56-4c67-a1e9-45b2e1a9405e:634a18547d7e872684d9d028cf1c2d290f123284fc96a7eddfaff3765b5f715a:P7"
+              }
+            ]
+          },
+          {
+            "condition_id": "9abfcd1d-9172-401f-8f06-0208dd4c6a12",
+            "status": "pass",
+            "reason": "稿件说明处理 Exception 的常见模式是打印或记录后重新引发，并明确异常处理器也处理 try 子句中调用（甚至间接调用）的函数内部发生的异常。",
+            "citations": [
+              {
+                "evidence_id": "ab43265e-2d56-4c67-a1e9-45b2e1a9405e:634a18547d7e872684d9d028cf1c2d290f123284fc96a7eddfaff3765b5f715a:P2"
+              },
+              {
+                "evidence_id": "ab43265e-2d56-4c67-a1e9-45b2e1a9405e:634a18547d7e872684d9d028cf1c2d290f123284fc96a7eddfaff3765b5f715a:P8"
+              }
+            ]
+          }
+        ],
+        "new_issues": []
+      }
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 1.211322,
+    "reserved_unknown_cny": 0.04281,
+    "committed_upper_cny": 1.254132,
+    "calls": 103,
+    "unknown_calls": 1
+  }
+}

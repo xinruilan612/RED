@@ -140,7 +140,7 @@ class Operations:
         integer(command['version'], 'version')
         key = validate_text(command['key'], '操作标识', 100)
         require(isinstance(command['payload'],dict), 'INVALID_INPUT', '参数无效')
-        require(internal or command['action'] not in ('create_agent_plan','topic_image','topic_result','public_topics_update'),'INVALID_INPUT','该计划只能由运营 Agent 生成')
+        require(internal or command['action']!='create_agent_plan','INVALID_INPUT','该计划只能由运营 Agent 生成')
         fingerprint = digest(command)
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
@@ -161,14 +161,6 @@ class Operations:
             return state
 
     def apply(self, db, owner, state, action, data):
-        if action == 'public_topics_update':
-            from backend.public_topics import apply_public_topic_action
-            apply_public_topic_action(state,action,data)
-            return
-        if action in ('topic_config','topic_image','topic_result'):
-            from backend.topics import apply_topic_action
-            apply_topic_action(state,action,data)
-            return
         if action == 'load_sample':
             require(not data, 'INVALID_INPUT', '演示数据无需参数')
             require(not any(a.get('demo_sample') for a in state['accounts']), 'DUPLICATE', '已载入演示账号，请从顶部切换')
@@ -196,12 +188,9 @@ class Operations:
             pub = item(state['publications'], data['id'])
             require(data['format'] in ('image_text','video') and data['traffic'] in ('organic','paid','unknown'), 'INVALID_INPUT', '内容形式或流量类型无效')
             pillar = validate_text(data['pillar'], '栏目', 80)
-            changed = dict(format=data['format'], pillar=pillar, traffic=data['traffic'])
-            if all(pub.get(key) == value for key, value in changed.items()):
-                return
-            pub.update(changed)
             for window in ('24h','72h','7d'):
                 invalidate(state, pub['id'], window)
+            pub.update(format=data['format'], pillar=pillar, traffic=data['traffic'])
             return
         if action == 'create_plan':
             make_plan(state, data, now()); return
@@ -329,6 +318,13 @@ class Operations:
             for memory in state['memories']:
                 if memory['publication_id'] == pub['id'] and memory['window'] == data['window']:
                     memory['status'] = 'superseded'
+            obsolete = {m['id'] for m in prior}
+            for hypothesis in state.get('hypotheses', []):
+                live = hypothesis.get('validations', {}).get('live_attribution', {})
+                if any(entry.get('metric_id') in obsolete for entry in live.get('items', [])):
+                    hypothesis['status'] = 'superseded'
+                    if hypothesis.get('ledger_status') in ('proposed', 'accepted'):
+                        hypothesis['ledger_status'] = 'superseded'
         elif action == 'learn':
             metric = item(state['metrics'], data['id'])
             latest = [m for m in state['metrics'] if m['publication_id'] == metric['publication_id'] and m['window'] == metric['window']][-1]

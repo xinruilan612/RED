@@ -8,6 +8,20 @@ from backend.contracts import CONTRACT, require
 from backend.creator_context import enrich, history_sample
 
 SCENARIOS = ('standard', 'revision', 'missing')
+# Xiaohongshu's note title box accepts 20 characters; count code points so
+# Chinese, Latin, digits and punctuation each count once. Douyin stays at 200.
+TITLE_LIMITS = {'xiaohongshu': 20, 'douyin': 200}
+
+
+def title_limit(platform):
+    return TITLE_LIMITS.get(platform, 200)
+
+
+def require_title_length(title, platform, code='INVALID_INPUT'):
+    if platform != 'xiaohongshu':
+        return
+    require(len(title) <= TITLE_LIMITS['xiaohongshu'], code,
+            f'小红书标题最多20个字符（含标点，按字符数计），当前{len(title)}个；请删减后再保存')
 
 
 def validate_text(value, label, maximum, allow_empty=False):
@@ -29,10 +43,11 @@ def validate_brief(data):
     return result
 
 
-def validate_edit(data):
+def validate_edit(data, platform=None):
     require(isinstance(data,dict) and set(data)=={'selected_title','body','cta','tags'}, 'INVALID_INPUT','编辑字段无效')
     result = {k:validate_text(data[k],label,limit,empty) for k,label,limit,empty in (
         ('selected_title','标题',200,False),('body','正文',6000,False),('cta','互动引导',500,True))}
+    require_title_length(result['selected_title'], platform)
     require(isinstance(data['tags'],list) and len(data['tags'])<=10, 'INVALID_INPUT','最多十个标签')
     result['tags']=[validate_text(t,'标签',40) for t in data['tags']]
     return result
@@ -106,6 +121,16 @@ def _make_content(run, stage):
     if stage=='title':
         titles=[f'{topic}：从一个小步骤开始', f'关于{topic}，先试这三个步骤',
                 f'给初学者的{topic}尝试清单',f'{topic}，怎么开始更清楚？',f'把{topic}拆成一次小练习']
+        if operation.get('platform')=='xiaohongshu':
+            # Keep a complete natural title; do not cut the user's topic midway.
+            compact=[f'{topic}：入门清单',f'{topic}：三个步骤',f'{topic}：新手清单',
+                     f'{topic}：如何开始',f'{topic}：一次练习']
+            fallback=['从一个小步骤开始','先试这三个步骤','给初学者的尝试清单','怎样开始更清楚？','把想法拆成一次练习']
+            for index,title in enumerate(titles):
+                # The revision fixture deliberately adds a phrase for review.
+                limit=20-(3 if index==0 and c['scenario']=='revision' else 0)
+                if len(title)>limit:
+                    titles[index]=compact[index] if len(compact[index])<=limit else fallback[index]
         selected='必爆！'+titles[0] if c['scenario']=='revision' else titles[0]
         if selected not in titles: titles[0]=selected
         return {'candidates':titles,'selected':selected,
@@ -201,11 +226,21 @@ def actions(run):
     if run.run_status in ('QUEUED','RUNNING'): result+=['next']
     if run.run_status not in CONTRACT['terminal_states']: result+=['cancel']
     if run.run_status=='WAITING_USER':
-        if run.wait_reason=='final_confirmation': result+=['edit','accept']
+        if run.wait_reason=='final_confirmation':
+            result+=['edit']
+            if run.review and run.review.get('decision')=='approved':result.append('accept')
         if run.wait_reason in ('missing_material','hypothesis_permission') and run.supplements < 1: result+=['supplement']
+        if run.wait_reason == 'missing_material' and run.context.get('algorithm_questions_status') == 'pending': result+=['skip_questions']
     if run.run_status=='RUNNING' and run.review and run.review['decision']=='revision_required': result+=['edit']
     if run.can_manual_adopt():
         if 'edit' not in result:result.append('edit')
         if not (run.review and run.review.get('decision')=='approved'):result.append('adopt_manual')
-    if run.run_status=='SUCCEEDED': result+=['export']
+    elif run.can_manual_edit() and 'edit' not in result:result.append('edit')
+    if run.can_request_revision():result.append('request_revision')
+    if run.can_review_current():result.append('review_current')
+    if run.run_status=='SUCCEEDED':
+        result+=['export']
+        title=(run.drafts[-1].get('content') or {}).get('selected_title','') if run.drafts else ''
+        platform=(run.context.get('operations') or {}).get('platform')
+        if platform=='xiaohongshu' and len(title)>TITLE_LIMITS['xiaohongshu']:result.append('retitle')
     return result

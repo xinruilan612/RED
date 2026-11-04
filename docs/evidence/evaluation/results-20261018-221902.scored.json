@@ -1,0 +1,2202 @@
+{
+  "schema": "youji-evaluation-results/1",
+  "gold_set_hash": "d3e0afc7d669cb2203200dc6751fe09ae9d1f22e0edee26a0f46d1942d90ec9a",
+  "origin": "http://127.0.0.1:8890",
+  "budget_authorized_usd": 3.0,
+  "account_id": "d6130df6-e7db-4e06-9d42-a68aa29f0ada",
+  "records": [
+    {
+      "arm": "A",
+      "item_id": "G01",
+      "status": "done",
+      "retrieval_mode": "none",
+      "attempts": 1,
+      "draft": {
+        "selected_title": "陶土玫瑰色+透明方管｜雾桃B01唇釉长这样",
+        "body": "选唇釉时，你更在意颜色第一眼的氛围感，还是包装拿在手里的质感？\n\n雾桃B01唇釉的色号名为「陶土玫瑰」——名字里既有泥土的温润底色，也有玫瑰的柔暖调性。\n\n净含量3克，装在一支透明方管里，能直接看到膏体颜色，也方便观察余量。\n\n刷头是斜面设计，边缘贴合唇线，蘸取时能控制用量。\n\n没有复杂参数，就是一支以命名传递情绪、以结构回应实用的唇釉。",
+        "cta": "你日常更倾向收藏‘名字就有画面感’的颜色，还是偏好明确标注冷暖调的色号？",
+        "tags": [
+          "唇釉推荐",
+          "雾桃B01",
+          "陶土玫瑰",
+          "彩妆包装",
+          "唇部彩妆"
+        ]
+      },
+      "calls": 1,
+      "references": [
+        "雾桃B01唇釉是虚构验收产品。色号为陶土玫瑰，净含量3克，包装为透明方管，配斜面刷头。没有持妆时长、保湿效果或个人试用数据。"
+      ],
+      "arm_a_tokens": 574,
+      "cost_usd": 0.000656,
+      "arm_a_request_id": "chatcmpl-e23e6a34-ab2d-9af2-9db2-1f8db2ba81ff",
+      "score": {
+        "chars": 170,
+        "fact_support": {
+          "total": 4,
+          "supported": 3,
+          "rate": 0.75,
+          "evidence": [
+            {
+              "sentence": "陶土玫瑰色+透明方管｜雾桃B01唇釉长这样",
+              "best_overlap": 0.692308,
+              "reference_index": 0,
+              "literal_token": "B01",
+              "supported": true
+            },
+            {
+              "sentence": "雾桃B01唇釉的色号名为「陶土玫瑰」——名字里既有泥土的温润底色，也有玫瑰的柔暖调性",
+              "best_overlap": 0.241379,
+              "reference_index": 0,
+              "literal_token": "B01",
+              "supported": true
+            },
+            {
+              "sentence": "净含量3克，装在一支透明方管里，能直接看到膏体颜色，也方便观察余量",
+              "best_overlap": 0.269231,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "雾桃B01",
+              "best_overlap": 1.0,
+              "reference_index": 0,
+              "literal_token": "B01",
+              "supported": true
+            }
+          ]
+        },
+        "forbidden": {
+          "hits": [],
+          "disclaimed": [],
+          "any_hit": false,
+          "patterns": 5
+        },
+        "coverage": {
+          "total": 4,
+          "covered": 4,
+          "rate": 1.0,
+          "evidence": [
+            {
+              "point": "色号陶土玫瑰",
+              "best_overlap": 0.8,
+              "sentence": "雾桃B01唇釉的色号名为「陶土玫瑰」——名字里既有泥土的温润底色，也有玫瑰的柔暖调性",
+              "covered": true
+            },
+            {
+              "point": "净含量3克",
+              "best_overlap": 1.0,
+              "sentence": "净含量3克，装在一支透明方管里，能直接看到膏体颜色，也方便观察余量",
+              "covered": true
+            },
+            {
+              "point": "包装透明方管",
+              "best_overlap": 0.6,
+              "sentence": "陶土玫瑰色+透明方管｜雾桃B01唇釉长这样",
+              "covered": true
+            },
+            {
+              "point": "斜面刷头",
+              "best_overlap": 0.666667,
+              "sentence": "刷头是斜面设计，边缘贴合唇线，蘸取时能控制用量",
+              "covered": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "A",
+      "item_id": "G02",
+      "status": "done",
+      "retrieval_mode": "none",
+      "attempts": 1,
+      "draft": {
+        "selected_title": "轻行P02三脚架：装得进包、拿得动的便携选择？",
+        "body": "出门前，你是不是也常纠结：这三脚架能塞进背包吗？单手拎着走一整天会不会累？\n\n✅ 重量：1.2千克 —— 接近一瓶矿泉水的分量，日常携带负担较轻。\n\n✅ 收纳长度：40厘米 —— 多数双肩包侧袋或主仓可平放收纳，不额外占空间。\n\n✅ 展开高度：最大150厘米 —— 满足多数站立拍摄视角需求，无需踮脚或垫高。\n\n✅ 配件：含一个便携袋 —— 方便收纳与保护，取用和收纳一步到位。\n\n注意：以上均为产品标称规格，不含稳定性、抗风性等实测数据。",
+        "cta": "出发前，不妨对照这四点快速核对：包里有空位吗？手臂能轻松拎起吗？高度够用吗？袋子带上了吗？",
+        "tags": [
+          "摄影器材",
+          "三脚架推荐",
+          "便携装备",
+          "轻行P02"
+        ]
+      },
+      "calls": 1,
+      "references": [
+        "轻行P02三脚架是虚构验收产品。重量1.2千克，收纳长度40厘米，最大展开高度150厘米，含一个便携袋。没有负重稳定性、抗风或实拍测试数据。"
+      ],
+      "arm_a_tokens": 611,
+      "cost_usd": 0.000698,
+      "arm_a_request_id": "chatcmpl-141df2a8-298c-9a20-8cd7-3e8efa9656f2",
+      "score": {
+        "chars": 220,
+        "fact_support": {
+          "total": 5,
+          "supported": 2,
+          "rate": 0.4,
+          "evidence": [
+            {
+              "sentence": "轻行P02三脚架：装得进包、拿得动的便携选择",
+              "best_overlap": 0.357143,
+              "reference_index": 0,
+              "literal_token": "P02",
+              "supported": true
+            },
+            {
+              "sentence": "✅ 重量：1.2千克 —— 接近一瓶矿泉水的分量，日常携带负担较轻",
+              "best_overlap": 0.2,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "✅ 收纳长度：40厘米 —— 多数双肩包侧袋或主仓可平放收纳，不额外占空间",
+              "best_overlap": 0.217391,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "✅ 展开高度：最大150厘米 —— 满足多数站立拍摄视角需求，无需踮脚或垫高",
+              "best_overlap": 0.26087,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "轻行P02",
+              "best_overlap": 1.0,
+              "reference_index": 0,
+              "literal_token": "P02",
+              "supported": true
+            }
+          ]
+        },
+        "forbidden": {
+          "hits": [],
+          "disclaimed": [
+            {
+              "pattern": "抗风",
+              "match": "抗风",
+              "sentence": "注意：以上均为产品标称规格，不含稳定性、抗风性等实测数据。"
+            }
+          ],
+          "any_hit": false,
+          "patterns": 4
+        },
+        "coverage": {
+          "total": 4,
+          "covered": 4,
+          "rate": 1.0,
+          "evidence": [
+            {
+              "point": "重量1.2千克",
+              "best_overlap": 1.0,
+              "sentence": "✅ 重量：1.2千克 —— 接近一瓶矿泉水的分量，日常携带负担较轻",
+              "covered": true
+            },
+            {
+              "point": "收纳长度40厘米",
+              "best_overlap": 1.0,
+              "sentence": "✅ 收纳长度：40厘米 —— 多数双肩包侧袋或主仓可平放收纳，不额外占空间",
+              "covered": true
+            },
+            {
+              "point": "最大展开高度150厘米",
+              "best_overlap": 0.857143,
+              "sentence": "✅ 展开高度：最大150厘米 —— 满足多数站立拍摄视角需求，无需踮脚或垫高",
+              "covered": true
+            },
+            {
+              "point": "含便携袋",
+              "best_overlap": 0.666667,
+              "sentence": "✅ 配件：含一个便携袋 —— 方便收纳与保护，取用和收纳一步到位",
+              "covered": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "A",
+      "item_id": "G03",
+      "status": "done",
+      "retrieval_mode": "none",
+      "attempts": 1,
+      "draft": {
+        "selected_title": "静点D03鼠标怎么连？尺寸和供电一次看清",
+        "body": "还在为桌面线缆杂乱纠结？选对连接方式，第一步就轻松一半。\n\n✅ 双模连接：支持蓝牙（兼容主流系统）和2.4GHz无线接收器，即插即用，无需配对烦恼。\n\n📏 尺寸友好：108×60×35毫米，掌心大小刚好，兼顾便携与握持感。\n\n⚖️ 轻量设计：整机仅68克，长时间使用不压手。\n\n🔋 供电说明：使用1节AA电池（包装内不含电池），更换方便，通用性强。",
+        "cta": "你更倾向用蓝牙还是2.4G？评论区聊聊你的日常连接习惯～",
+        "tags": [
+          "数码好物",
+          "办公鼠标",
+          "无线鼠标",
+          "双模鼠标"
+        ]
+      },
+      "calls": 1,
+      "references": [
+        "静点D03鼠标是虚构验收产品。支持蓝牙和2.4GHz接收器两种连接，外形尺寸108×60×35毫米，重量68克，使用一节AA电池，包装不含电池。没有续航、延迟或静音测试数据。"
+      ],
+      "arm_a_tokens": 553,
+      "cost_usd": 0.000632,
+      "arm_a_request_id": "chatcmpl-d995209c-af74-9e0f-a659-0e2500a4425c",
+      "score": {
+        "chars": 174,
+        "fact_support": {
+          "total": 6,
+          "supported": 1,
+          "rate": 0.166667,
+          "evidence": [
+            {
+              "sentence": "静点D03鼠标怎么连",
+              "best_overlap": 0.5,
+              "reference_index": 0,
+              "literal_token": "D03",
+              "supported": true
+            },
+            {
+              "sentence": "✅ 双模连接：支持蓝牙（兼容主流系统）和2.4GHz无线接收器，即插即用，无需配对烦恼",
+              "best_overlap": 0.307692,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "📏 尺寸友好：108×60×35毫米，掌心大小刚好，兼顾便携与握持感",
+              "best_overlap": 0.263158,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "⚖️ 轻量设计：整机仅68克，长时间使用不压手",
+              "best_overlap": 0.214286,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "🔋 供电说明：使用1节AA电池（包装内不含电池），更换方便，通用性强",
+              "best_overlap": 0.315789,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "你更倾向用蓝牙还是2.4G",
+              "best_overlap": 0.2,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            }
+          ]
+        },
+        "forbidden": {
+          "hits": [],
+          "disclaimed": [],
+          "any_hit": false,
+          "patterns": 4
+        },
+        "coverage": {
+          "total": 6,
+          "covered": 6,
+          "rate": 1.0,
+          "evidence": [
+            {
+              "point": "支持蓝牙",
+              "best_overlap": 1.0,
+              "sentence": "✅ 双模连接：支持蓝牙（兼容主流系统）和2.4GHz无线接收器，即插即用，无需配对烦恼",
+              "covered": true
+            },
+            {
+              "point": "2.4GHz接收器",
+              "best_overlap": 1.0,
+              "sentence": "✅ 双模连接：支持蓝牙（兼容主流系统）和2.4GHz无线接收器，即插即用，无需配对烦恼",
+              "covered": true
+            },
+            {
+              "point": "尺寸108×60×35毫米",
+              "best_overlap": 1.0,
+              "sentence": "📏 尺寸友好：108×60×35毫米，掌心大小刚好，兼顾便携与握持感",
+              "covered": true
+            },
+            {
+              "point": "重量68克",
+              "best_overlap": 0.666667,
+              "sentence": "⚖️ 轻量设计：整机仅68克，长时间使用不压手",
+              "covered": true
+            },
+            {
+              "point": "使用一节AA电池",
+              "best_overlap": 0.6,
+              "sentence": "🔋 供电说明：使用1节AA电池（包装内不含电池），更换方便，通用性强",
+              "covered": true
+            },
+            {
+              "point": "包装不含电池",
+              "best_overlap": 0.8,
+              "sentence": "🔋 供电说明：使用1节AA电池（包装内不含电池），更换方便，通用性强",
+              "covered": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "A",
+      "item_id": "G04",
+      "status": "done",
+      "retrieval_mode": "none",
+      "attempts": 1,
+      "draft": {
+        "selected_title": "45cm圆桌+52cm高｜木序F04边桌结构一目了然",
+        "body": "想好这张边桌放在哪了吗？先核对空间：桌面是标准圆形，直径45厘米，适合沙发旁、床侧或角落——拿卷尺量一量，留出30cm活动余量就刚好。\n\n高度52厘米，和多数单人沙发、矮床齐平，坐下时手能自然搭在桌面，不耸肩也不够不着。\n\n材质用的是橡胶木，纹理清晰，质地较均匀；结构上为两层设计：上层是主桌面，下层设有一块固定置物板，可放书、遥控器或小绿植，但未标注承重与耐水性能。\n\n没有额外抽屉或调节脚，整体为简约固定式边桌。",
+        "cta": "你家预留的边桌位置，宽度和高度符合这组数据吗？",
+        "tags": [
+          "边桌推荐",
+          "小户型家具",
+          "橡胶木家具",
+          "客厅收纳"
+        ]
+      },
+      "calls": 1,
+      "references": [
+        "木序F04边桌是虚构验收产品。桌面为圆形，直径45厘米，高度52厘米，材质为橡胶木，底部设一层置物板。没有承重、耐水或环保等级检测结论。"
+      ],
+      "arm_a_tokens": 576,
+      "cost_usd": 0.000658,
+      "arm_a_request_id": "chatcmpl-ec6bd922-3e33-9cb9-b093-c5d236af1b65",
+      "score": {
+        "chars": 208,
+        "fact_support": {
+          "total": 3,
+          "supported": 1,
+          "rate": 0.333333,
+          "evidence": [
+            {
+              "sentence": "45cm圆桌+52cm高｜木序F04边桌结构一目了然",
+              "best_overlap": 0.230769,
+              "reference_index": 0,
+              "literal_token": "F04",
+              "supported": true
+            },
+            {
+              "sentence": "先核对空间：桌面是标准圆形，直径45厘米，适合沙发旁、床侧或角落——拿卷尺量一量，留出30cm活动余量就刚好",
+              "best_overlap": 0.147059,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "高度52厘米，和多数单人沙发、矮床齐平，坐下时手能自然搭在桌面，不耸肩也不够不着",
+              "best_overlap": 0.137931,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            }
+          ]
+        },
+        "forbidden": {
+          "hits": [],
+          "disclaimed": [
+            {
+              "pattern": "耐水",
+              "match": "耐水",
+              "sentence": "材质用的是橡胶木，纹理清晰，质地较均匀；结构上为两层设计：上层是主桌面，下层设有一块固定置物板，可放书、遥控器或小绿植，但未标注承重与耐水性能。"
+            }
+          ],
+          "any_hit": false,
+          "patterns": 5
+        },
+        "coverage": {
+          "total": 5,
+          "covered": 5,
+          "rate": 1.0,
+          "evidence": [
+            {
+              "point": "桌面圆形",
+              "best_overlap": 0.666667,
+              "sentence": "先核对空间：桌面是标准圆形，直径45厘米，适合沙发旁、床侧或角落——拿卷尺量一量，留出30cm活动余量就刚好",
+              "covered": true
+            },
+            {
+              "point": "直径45厘米",
+              "best_overlap": 1.0,
+              "sentence": "先核对空间：桌面是标准圆形，直径45厘米，适合沙发旁、床侧或角落——拿卷尺量一量，留出30cm活动余量就刚好",
+              "covered": true
+            },
+            {
+              "point": "高度52厘米",
+              "best_overlap": 1.0,
+              "sentence": "高度52厘米，和多数单人沙发、矮床齐平，坐下时手能自然搭在桌面，不耸肩也不够不着",
+              "covered": true
+            },
+            {
+              "point": "材质橡胶木",
+              "best_overlap": 0.75,
+              "sentence": "材质用的是橡胶木，纹理清晰，质地较均匀；结构上为两层设计：上层是主桌面，下层设有一块固定置物板，可放书、遥控器或小绿植，但未标注承重与耐水性能",
+              "covered": true
+            },
+            {
+              "point": "底部置物板",
+              "best_overlap": 0.5,
+              "sentence": "材质用的是橡胶木，纹理清晰，质地较均匀；结构上为两层设计：上层是主桌面，下层设有一块固定置物板，可放书、遥控器或小绿植，但未标注承重与耐水性能",
+              "covered": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "A",
+      "item_id": "G05",
+      "status": "done",
+      "retrieval_mode": "none",
+      "attempts": 1,
+      "draft": {
+        "selected_title": "雾桃B01唇釉怎么选？3个色号+包装细节一次说清",
+        "body": "第一眼看到雾桃B01，你会先被哪个色号吸引？\n\n它目前共3个色号：\n• B01-1 暖杏粉｜低饱和柔雾调，适合日常通勤\n• B01-2 蜜桃棕｜带橘调的浅棕，显白不挑皮\n• B01-3 焦糖红｜偏暖的复古红，妆感更明确\n\n全系采用磨砂雾面管身，配金属质感旋盖，按压式滴管设计，取量可控。\n\n色号命名统一以‘B01’为前缀，后缀数字区分；外盒为哑光纸材质，印有简洁色块示意。",
+        "cta": "你更倾向先试哪个色号？评论区告诉我～",
+        "tags": [
+          "唇釉推荐",
+          "雾桃B01",
+          "彩妆科普",
+          "色号解析"
+        ]
+      },
+      "calls": 1,
+      "references": [],
+      "arm_a_tokens": 528,
+      "cost_usd": 0.000603,
+      "arm_a_request_id": "chatcmpl-a8916e57-7d70-9d4d-be32-38936a084ca8",
+      "score": {
+        "chars": 186,
+        "fact_support": {
+          "total": 9,
+          "supported": 0,
+          "rate": 0.0,
+          "evidence": [
+            {
+              "sentence": "雾桃B01唇釉怎么选",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "3个色号+包装细节一次说清",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "第一眼看到雾桃B01，你会先被哪个色号吸引",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "它目前共3个色号：",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "• B01-1 暖杏粉｜低饱和柔雾调，适合日常通勤",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "• B01-2 蜜桃棕｜带橘调的浅棕，显白不挑皮",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "• B01-3 焦糖红｜偏暖的复古红，妆感更明确",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "色号命名统一以‘B01’为前缀，后缀数字区分；外盒为哑光纸材质，印有简洁色块示意",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "雾桃B01",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            }
+          ]
+        },
+        "forbidden": {
+          "hits": [],
+          "disclaimed": [],
+          "any_hit": false,
+          "patterns": 2
+        },
+        "coverage": {
+          "total": 5,
+          "covered": 0,
+          "rate": 0.0,
+          "evidence": [
+            {
+              "point": "开场提出选色问题",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "镜头展示管身",
+              "best_overlap": 0.2,
+              "sentence": "全系采用磨砂雾面管身，配金属质感旋盖，按压式滴管设计，取量可控",
+              "covered": false
+            },
+            {
+              "point": "介绍色号",
+              "best_overlap": 0.333333,
+              "sentence": "3个色号+包装细节一次说清",
+              "covered": false
+            },
+            {
+              "point": "介绍刷头",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "结尾询问观众偏好",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "A",
+      "item_id": "G06",
+      "status": "done",
+      "retrieval_mode": "none",
+      "attempts": 1,
+      "draft": {
+        "selected_title": "青芽G05花盆尺寸和配件，一眼看懂怎么选",
+        "body": "选花盆时，常纠结：口径够不够种小苗？高度会不会头重脚轻？托盘配不配套？\n\n青芽G05花盆的规格很清晰：\n• 口径18厘米——适合单株绿萝、虎尾兰、小棵薄荷等常见中小型植物；\n• 高度16厘米——比例协调，稳而不矮，摆放不突兀；\n• 底部带排水孔——保障基础透气性，避免积水；\n• 随盆附赠一个托盘——匹配盆底尺寸，接水防潮，无需另配。\n\n材质是陶土，表面有自然肌理感，非上釉处理。\n\n所有信息基于产品实物结构，不含生长效果、保水性能等未提供数据。",
+        "cta": "你正打算种哪类植物？这个尺寸的盆，你觉得还缺什么配件？",
+        "tags": [
+          "花盆推荐",
+          "园艺工具",
+          "陶土花盆",
+          "青芽G05"
+        ]
+      },
+      "calls": 1,
+      "references": [
+        "青芽G05花盆是虚构验收产品。口径18厘米，高16厘米，底部有排水孔，附一个托盘，材质为陶土。没有植物生长速度、保水率或使用效果数据。"
+      ],
+      "arm_a_tokens": 526,
+      "cost_usd": 0.000601,
+      "arm_a_request_id": "chatcmpl-0bba2772-fdce-9477-a760-409b07032d55",
+      "score": {
+        "chars": 223,
+        "fact_support": {
+          "total": 5,
+          "supported": 3,
+          "rate": 0.6,
+          "evidence": [
+            {
+              "sentence": "青芽G05花盆尺寸和配件，一眼看懂怎么选",
+              "best_overlap": 0.214286,
+              "reference_index": 0,
+              "literal_token": "G05",
+              "supported": true
+            },
+            {
+              "sentence": "青芽G05花盆的规格很清晰：",
+              "best_overlap": 0.333333,
+              "reference_index": 0,
+              "literal_token": "G05",
+              "supported": true
+            },
+            {
+              "sentence": "• 口径18厘米——适合单株绿萝、虎尾兰、小棵薄荷等常见中小型植物；",
+              "best_overlap": 0.190476,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "• 高度16厘米——比例协调，稳而不矮，摆放不突兀；",
+              "best_overlap": 0.153846,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "青芽G05",
+              "best_overlap": 1.0,
+              "reference_index": 0,
+              "literal_token": "G05",
+              "supported": true
+            }
+          ]
+        },
+        "forbidden": {
+          "hits": [],
+          "disclaimed": [],
+          "any_hit": false,
+          "patterns": 3
+        },
+        "coverage": {
+          "total": 5,
+          "covered": 5,
+          "rate": 1.0,
+          "evidence": [
+            {
+              "point": "口径18厘米",
+              "best_overlap": 1.0,
+              "sentence": "• 口径18厘米——适合单株绿萝、虎尾兰、小棵薄荷等常见中小型植物；",
+              "covered": true
+            },
+            {
+              "point": "高16厘米",
+              "best_overlap": 0.666667,
+              "sentence": "• 高度16厘米——比例协调，稳而不矮，摆放不突兀；",
+              "covered": true
+            },
+            {
+              "point": "底部排水孔",
+              "best_overlap": 0.75,
+              "sentence": "• 底部带排水孔——保障基础透气性，避免积水；",
+              "covered": true
+            },
+            {
+              "point": "附托盘",
+              "best_overlap": 0.5,
+              "sentence": "托盘配不配套",
+              "covered": true
+            },
+            {
+              "point": "材质陶土",
+              "best_overlap": 0.666667,
+              "sentence": "材质是陶土，表面有自然肌理感，非上釉处理",
+              "covered": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "B",
+      "item_id": "G01",
+      "status": "done",
+      "attempts": 1,
+      "run_id": "3a461c8c-2268-42d6-a59f-92dc3e8d11ef",
+      "run_status": "WAITING_USER",
+      "draft": {
+        "selected_title": "雾桃B01唇釉基础规格速查：陶土玫瑰色+透明方管+斜面刷头",
+        "body": "你正对着雾桃B01唇釉犹豫？先确认这4个基础信息：色号名是‘陶土玫瑰’，非别名；管身是透明方管；刷头为斜面设计；净含量3克——四项并列，方便逐项核对。\n\n目前资料明确：仅此1个色号，无扩展命名；包装结构清晰，无磨砂/金属等变体说明；容量单位统一为克，无毫升换算需求。\n\n你手上的B01，管身和刷头长这样吗？欢迎对照留言。",
+        "cta": "你手上的B01，管身和刷头长这样吗？欢迎对照留言。",
+        "tags": [
+          "雾桃B01",
+          "唇釉规格",
+          "陶土玫瑰",
+          "透明方管",
+          "斜面刷头",
+          "3克唇釉"
+        ]
+      },
+      "retrieval_mode": "disabled",
+      "calls": 8,
+      "references": [
+        "雾桃B01唇釉是虚构验收产品。色号为陶土玫瑰，净含量3克，包装为透明方管，配斜面刷头。没有持妆时长、保湿效果或个人试用数据。"
+      ],
+      "slot_released": true,
+      "score": {
+        "chars": 160,
+        "fact_support": {
+          "total": 8,
+          "supported": 6,
+          "rate": 0.75,
+          "evidence": [
+            {
+              "sentence": "雾桃B01唇釉基础规格速查：陶土玫瑰色+透明方管+斜面刷头",
+              "best_overlap": 0.631579,
+              "reference_index": 0,
+              "literal_token": "B01",
+              "supported": true
+            },
+            {
+              "sentence": "你正对着雾桃B01唇釉犹豫",
+              "best_overlap": 0.333333,
+              "reference_index": 0,
+              "literal_token": "B01",
+              "supported": true
+            },
+            {
+              "sentence": "先确认这4个基础信息：色号名是‘陶土玫瑰’，非别名；管身是透明方管；刷头为斜面设计；净含量3克——四项并列，方便逐项核对",
+              "best_overlap": 0.325,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "目前资料明确：仅此1个色号，无扩展命名；包装结构清晰，无磨砂/金属等变体说明；容量单位统一为克，无毫升换算需求",
+              "best_overlap": 0.051282,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "你手上的B01，管身和刷头长这样吗",
+              "best_overlap": 0.166667,
+              "reference_index": 0,
+              "literal_token": "B01",
+              "supported": true
+            },
+            {
+              "sentence": "你手上的B01，管身和刷头长这样吗",
+              "best_overlap": 0.166667,
+              "reference_index": 0,
+              "literal_token": "B01",
+              "supported": true
+            },
+            {
+              "sentence": "雾桃B01",
+              "best_overlap": 1.0,
+              "reference_index": 0,
+              "literal_token": "B01",
+              "supported": true
+            },
+            {
+              "sentence": "3克唇釉",
+              "best_overlap": 0.666667,
+              "reference_index": 0,
+              "literal_token": null,
+              "supported": true
+            }
+          ]
+        },
+        "forbidden": {
+          "hits": [],
+          "disclaimed": [],
+          "any_hit": false,
+          "patterns": 5
+        },
+        "coverage": {
+          "total": 4,
+          "covered": 4,
+          "rate": 1.0,
+          "evidence": [
+            {
+              "point": "色号陶土玫瑰",
+              "best_overlap": 0.8,
+              "sentence": "先确认这4个基础信息：色号名是‘陶土玫瑰’，非别名；管身是透明方管；刷头为斜面设计；净含量3克——四项并列，方便逐项核对",
+              "covered": true
+            },
+            {
+              "point": "净含量3克",
+              "best_overlap": 1.0,
+              "sentence": "先确认这4个基础信息：色号名是‘陶土玫瑰’，非别名；管身是透明方管；刷头为斜面设计；净含量3克——四项并列，方便逐项核对",
+              "covered": true
+            },
+            {
+              "point": "包装透明方管",
+              "best_overlap": 0.6,
+              "sentence": "雾桃B01唇釉基础规格速查：陶土玫瑰色+透明方管+斜面刷头",
+              "covered": true
+            },
+            {
+              "point": "斜面刷头",
+              "best_overlap": 1.0,
+              "sentence": "雾桃B01唇釉基础规格速查：陶土玫瑰色+透明方管+斜面刷头",
+              "covered": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "B",
+      "item_id": "G02",
+      "status": "done",
+      "attempts": 1,
+      "run_id": "7ce9bb1c-4a90-4b51-bfa6-9ee9dd5b2e8b",
+      "run_status": "WAITING_USER",
+      "draft": {
+        "selected_title": "轻行P02三脚架收纳40cm＋1.2kg：登机箱侧边高，两瓶水重量",
+        "body": "出门前最常核对的两个数：收纳后多长？拎起来多重？\n\n轻行P02收拢后长40厘米——约等于常见登机箱侧边高度，竖着塞进背包侧袋或行李舱都无压力。\n\n净重1.2千克——接近两瓶500ml矿泉水，单手拎起不费力。\n\n含配套便携袋，收好即走，整机规整、不散件，通勤或短途出行更省心。",
+        "cta": "你的包里能塞下吗？评论区晒尺寸～",
+        "tags": [
+          "轻行P02",
+          "三脚架",
+          "便携三脚架",
+          "摄影装备",
+          "收纳尺寸",
+          "旅行摄影",
+          "小红书摄影",
+          "轻量化装备"
+        ]
+      },
+      "retrieval_mode": "disabled",
+      "calls": 8,
+      "references": [
+        "轻行P02三脚架是虚构验收产品。重量1.2千克，收纳长度40厘米，最大展开高度150厘米，含一个便携袋。没有负重稳定性、抗风或实拍测试数据。"
+      ],
+      "slot_released": true,
+      "score": {
+        "chars": 137,
+        "fact_support": {
+          "total": 4,
+          "supported": 3,
+          "rate": 0.75,
+          "evidence": [
+            {
+              "sentence": "轻行P02三脚架收纳40cm＋1.2kg：登机箱侧边高，两瓶水重量",
+              "best_overlap": 0.388889,
+              "reference_index": 0,
+              "literal_token": "P02",
+              "supported": true
+            },
+            {
+              "sentence": "轻行P02收拢后长40厘米——约等于常见登机箱侧边高度，竖着塞进背包侧袋或行李舱都无压力",
+              "best_overlap": 0.151515,
+              "reference_index": 0,
+              "literal_token": "P02",
+              "supported": true
+            },
+            {
+              "sentence": "净重1.2千克——接近两瓶500ml矿泉水，单手拎起不费力",
+              "best_overlap": 0.1875,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "轻行P02",
+              "best_overlap": 1.0,
+              "reference_index": 0,
+              "literal_token": "P02",
+              "supported": true
+            }
+          ]
+        },
+        "forbidden": {
+          "hits": [],
+          "disclaimed": [],
+          "any_hit": false,
+          "patterns": 4
+        },
+        "coverage": {
+          "total": 4,
+          "covered": 2,
+          "rate": 0.5,
+          "evidence": [
+            {
+              "point": "重量1.2千克",
+              "best_overlap": 0.75,
+              "sentence": "净重1.2千克——接近两瓶500ml矿泉水，单手拎起不费力",
+              "covered": true
+            },
+            {
+              "point": "收纳长度40厘米",
+              "best_overlap": 0.4,
+              "sentence": "轻行P02收拢后长40厘米——约等于常见登机箱侧边高度，竖着塞进背包侧袋或行李舱都无压力",
+              "covered": false
+            },
+            {
+              "point": "最大展开高度150厘米",
+              "best_overlap": 0.285714,
+              "sentence": "轻行P02收拢后长40厘米——约等于常见登机箱侧边高度，竖着塞进背包侧袋或行李舱都无压力",
+              "covered": false
+            },
+            {
+              "point": "含便携袋",
+              "best_overlap": 0.666667,
+              "sentence": "含配套便携袋，收好即走，整机规整、不散件，通勤或短途出行更省心",
+              "covered": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "B",
+      "item_id": "G03",
+      "status": "done",
+      "attempts": 1,
+      "run_id": "da62a692-9fb3-432a-a8cf-a48d653b6f42",
+      "run_status": "WAITING_USER",
+      "draft": {
+        "selected_title": "静点D03参数直给：双模连接｜108×60×35mm｜68g｜不含电池",
+        "body": "买前最常问：连得上我的电脑吗？握着舒服吗？带不带电池？\n\n静点D03支持蓝牙 + 2.4GHz双模连接，适配多数Windows/macOS/国产系统设备。\n\n外形尺寸108×60×35毫米，手掌中等偏小的用户可参考：约一支口红长度，略窄于常见无线鼠标。\n\n净重68克，轻量设计，日常携带或通勤无负担。\n\n注意：包装内不含AA电池，需自备。",
+        "cta": "你最关心D03的哪项参数？评论区告诉我",
+        "tags": [
+          "静点D03",
+          "双模鼠标",
+          "鼠标尺寸",
+          "无线鼠标",
+          "办公外设",
+          "参数对比",
+          "小红书数码",
+          "鼠标选购",
+          "AA电池鼠标",
+          "轻量鼠标"
+        ]
+      },
+      "retrieval_mode": "disabled",
+      "calls": 8,
+      "references": [
+        "静点D03鼠标是虚构验收产品。支持蓝牙和2.4GHz接收器两种连接，外形尺寸108×60×35毫米，重量68克，使用一节AA电池，包装不含电池。没有续航、延迟或静音测试数据。"
+      ],
+      "slot_released": true,
+      "score": {
+        "chars": 169,
+        "fact_support": {
+          "total": 6,
+          "supported": 4,
+          "rate": 0.666667,
+          "evidence": [
+            {
+              "sentence": "静点D03参数直给：双模连接｜108×60×35mm｜68g｜不含电池",
+              "best_overlap": 0.533333,
+              "reference_index": 0,
+              "literal_token": "D03",
+              "supported": true
+            },
+            {
+              "sentence": "静点D03支持蓝牙 + 2.4GHz双模连接，适配多数Windows/macOS/国产系统设备",
+              "best_overlap": 0.4,
+              "reference_index": 0,
+              "literal_token": "D03",
+              "supported": true
+            },
+            {
+              "sentence": "外形尺寸108×60×35毫米，手掌中等偏小的用户可参考：约一支口红长度，略窄于常见无线鼠标",
+              "best_overlap": 0.25,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "净重68克，轻量设计，日常携带或通勤无负担",
+              "best_overlap": 0.133333,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "你最关心D03的哪项参数",
+              "best_overlap": 0.125,
+              "reference_index": 0,
+              "literal_token": "D03",
+              "supported": true
+            },
+            {
+              "sentence": "静点D03",
+              "best_overlap": 1.0,
+              "reference_index": 0,
+              "literal_token": "D03",
+              "supported": true
+            }
+          ]
+        },
+        "forbidden": {
+          "hits": [],
+          "disclaimed": [],
+          "any_hit": false,
+          "patterns": 4
+        },
+        "coverage": {
+          "total": 6,
+          "covered": 5,
+          "rate": 0.833333,
+          "evidence": [
+            {
+              "point": "支持蓝牙",
+              "best_overlap": 1.0,
+              "sentence": "静点D03支持蓝牙 + 2.4GHz双模连接，适配多数Windows/macOS/国产系统设备",
+              "covered": true
+            },
+            {
+              "point": "2.4GHz接收器",
+              "best_overlap": 0.5,
+              "sentence": "静点D03支持蓝牙 + 2.4GHz双模连接，适配多数Windows/macOS/国产系统设备",
+              "covered": true
+            },
+            {
+              "point": "尺寸108×60×35毫米",
+              "best_overlap": 1.0,
+              "sentence": "外形尺寸108×60×35毫米，手掌中等偏小的用户可参考：约一支口红长度，略窄于常见无线鼠标",
+              "covered": true
+            },
+            {
+              "point": "重量68克",
+              "best_overlap": 0.666667,
+              "sentence": "净重68克，轻量设计，日常携带或通勤无负担",
+              "covered": true
+            },
+            {
+              "point": "使用一节AA电池",
+              "best_overlap": 0.4,
+              "sentence": "注意：包装内不含AA电池，需自备",
+              "covered": false
+            },
+            {
+              "point": "包装不含电池",
+              "best_overlap": 0.6,
+              "sentence": "静点D03参数直给：双模连接｜108×60×35mm｜68g｜不含电池",
+              "covered": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "B",
+      "item_id": "G04",
+      "status": "done",
+      "attempts": 2,
+      "run_id": "263dc5b7-63d7-4fd8-a924-4384042431c8",
+      "run_status": "WAITING_USER",
+      "draft": {
+        "selected_title": "A4纸宽×1.8＝45cm｜木序F04边桌尺寸拆解：你家窄缝、沙发高、脚部空隙够不够？",
+        "body": "买前最怕量错：直径45cm够塞进沙发旁窄缝吗？52cm高会顶腿吗？底部置物板留出多少踩脚空间？\n\n桌面是正圆形，直径45cm——约等于一张A4纸宽度（21cm）的1.8倍，轻松放进多数沙发侧边空隙。\n\n整体高度52cm，接近常见沙发座高（48–55cm），与床沿或矮凳搭配也较协调。\n\n底部设一层固定置物板，位于桌腿中段，不贴地，留出足够腿部活动空间，但具体离地高度未标注。\n\n量完你家空位，评论区告诉我卡在哪一关？",
+        "cta": "量完你家空位，评论区告诉我卡在哪一关？",
+        "tags": [
+          "木序F04",
+          "边桌尺寸",
+          "小户型家具",
+          "空间适配",
+          "橡胶木边桌"
+        ]
+      },
+      "retrieval_mode": "disabled",
+      "calls": 8,
+      "references": [
+        "木序F04边桌是虚构验收产品。桌面为圆形，直径45厘米，高度52厘米，材质为橡胶木，底部设一层置物板。没有承重、耐水或环保等级检测结论。"
+      ],
+      "slot_released": true,
+      "last_retry_status": "no_draft",
+      "score": {
+        "chars": 208,
+        "fact_support": {
+          "total": 6,
+          "supported": 2,
+          "rate": 0.333333,
+          "evidence": [
+            {
+              "sentence": "A4纸宽×1.8＝45cm｜木序F04边桌尺寸拆解：你家窄缝、沙发高、脚部空隙够不够",
+              "best_overlap": 0.130435,
+              "reference_index": 0,
+              "literal_token": "F04",
+              "supported": true
+            },
+            {
+              "sentence": "买前最怕量错：直径45cm够塞进沙发旁窄缝吗",
+              "best_overlap": 0.066667,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "52cm高会顶腿吗",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "桌面是正圆形，直径45cm——约等于一张A4纸宽度（21cm）的1.8倍，轻松放进多数沙发侧边空隙",
+              "best_overlap": 0.1,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "整体高度52cm，接近常见沙发座高（48–55cm），与床沿或矮凳搭配也较协调",
+              "best_overlap": 0.041667,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "木序F04",
+              "best_overlap": 1.0,
+              "reference_index": 0,
+              "literal_token": "F04",
+              "supported": true
+            }
+          ]
+        },
+        "forbidden": {
+          "hits": [],
+          "disclaimed": [],
+          "any_hit": false,
+          "patterns": 5
+        },
+        "coverage": {
+          "total": 5,
+          "covered": 3,
+          "rate": 0.6,
+          "evidence": [
+            {
+              "point": "桌面圆形",
+              "best_overlap": 0.666667,
+              "sentence": "桌面是正圆形，直径45cm——约等于一张A4纸宽度（21cm）的1.8倍，轻松放进多数沙发侧边空隙",
+              "covered": true
+            },
+            {
+              "point": "直径45厘米",
+              "best_overlap": 0.333333,
+              "sentence": "买前最怕量错：直径45cm够塞进沙发旁窄缝吗",
+              "covered": false
+            },
+            {
+              "point": "高度52厘米",
+              "best_overlap": 0.333333,
+              "sentence": "整体高度52cm，接近常见沙发座高（48–55cm），与床沿或矮凳搭配也较协调",
+              "covered": false
+            },
+            {
+              "point": "材质橡胶木",
+              "best_overlap": 0.5,
+              "sentence": "橡胶木边桌",
+              "covered": true
+            },
+            {
+              "point": "底部置物板",
+              "best_overlap": 1.0,
+              "sentence": "底部置物板留出多少踩脚空间",
+              "covered": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "B",
+      "item_id": "G05",
+      "status": "done",
+      "attempts": 3,
+      "run_id": "620d99c5-b92e-4039-aa0b-2ad31101edf7",
+      "run_status": "WAITING_USER",
+      "draft": {
+        "selected_title": "雾桃B01唇釉：色号名怎么念？包装三处细节你核对了吗？",
+        "body": "你手上的雾桃B01唇釉，色号名和包装细节对得上吗？先别急着归类或分享——B01是型号标识，不是色号本身。口播时建议分三层核对：一念色号全称（如是否含‘蜜桃’‘焦糖’等前缀），二看管身印刷位置与字体粗细，三试开合结构（旋盖/磁吸/推管）。信息不全时，以实物为准。",
+        "cta": "你手上的B01是哪个色号？欢迎留言核对！",
+        "tags": [
+          "雾桃唇釉",
+          "B01型号",
+          "唇釉色号",
+          "包装细节",
+          "口播脚本",
+          "小红书美妆",
+          "规格核对",
+          "美妆避坑"
+        ]
+      },
+      "retrieval_mode": "disabled",
+      "calls": 8,
+      "references": [],
+      "slot_released": true,
+      "last_retry_status": "no_draft",
+      "score": {
+        "chars": 130,
+        "fact_support": {
+          "total": 5,
+          "supported": 0,
+          "rate": 0.0,
+          "evidence": [
+            {
+              "sentence": "雾桃B01唇釉：色号名怎么念",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "你手上的雾桃B01唇釉，色号名和包装细节对得上吗",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "先别急着归类或分享——B01是型号标识，不是色号本身",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "你手上的B01是哪个色号",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "B01型号",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            }
+          ]
+        },
+        "forbidden": {
+          "hits": [],
+          "disclaimed": [],
+          "any_hit": false,
+          "patterns": 2
+        },
+        "coverage": {
+          "total": 5,
+          "covered": 0,
+          "rate": 0.0,
+          "evidence": [
+            {
+              "point": "开场提出选色问题",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "镜头展示管身",
+              "best_overlap": 0.2,
+              "sentence": "口播时建议分三层核对：一念色号全称（如是否含‘蜜桃’‘焦糖’等前缀），二看管身印刷位置与字体粗细，三试开合结构（旋盖/磁吸/推管）",
+              "covered": false
+            },
+            {
+              "point": "介绍色号",
+              "best_overlap": 0.333333,
+              "sentence": "雾桃B01唇釉：色号名怎么念",
+              "covered": false
+            },
+            {
+              "point": "介绍刷头",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "结尾询问观众偏好",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "B",
+      "item_id": "G06",
+      "status": "done",
+      "attempts": 1,
+      "run_id": "ece14ea5-a729-47fa-8934-dd204aa48019",
+      "run_status": "WAITING_USER",
+      "draft": {
+        "selected_title": "青芽G05花盆尺寸实录：口径18cm、高16cm，带孔+托盘",
+        "body": "买前怕尺寸不合适？青芽G05花盆实测口径18cm、高16cm，底部带排水孔，标配一个托盘，材质为陶土——仅此四点，清晰可核。\n\n▫️口径：18厘米（上沿直径）\n▫️高度：16厘米（含盆底厚度）\n▫️结构：底部设排水孔，适配常规疏水需求\n▫️配件：附赠1个托盘，与花盆同为陶土材质\n\n所有信息均来自产品基础资料，无推断、无效果承诺。你手边有尺子吗？量一量再下单更安心。",
+        "cta": "你手边有尺子吗？量一量再下单更安心。",
+        "tags": [
+          "青芽G05",
+          "花盆尺寸",
+          "陶土花盆",
+          "带排水孔",
+          "花盆托盘",
+          "选购指南"
+        ]
+      },
+      "retrieval_mode": "disabled",
+      "calls": 8,
+      "references": [
+        "青芽G05花盆是虚构验收产品。口径18厘米，高16厘米，底部有排水孔，附一个托盘，材质为陶土。没有植物生长速度、保水率或使用效果数据。"
+      ],
+      "slot_released": true,
+      "score": {
+        "chars": 183,
+        "fact_support": {
+          "total": 6,
+          "supported": 4,
+          "rate": 0.666667,
+          "evidence": [
+            {
+              "sentence": "青芽G05花盆尺寸实录：口径18cm、高16cm，带孔+托盘",
+              "best_overlap": 0.461538,
+              "reference_index": 0,
+              "literal_token": "G05",
+              "supported": true
+            },
+            {
+              "sentence": "青芽G05花盆实测口径18cm、高16cm，底部带排水孔，标配一个托盘，材质为陶土——仅此四点，清晰可核",
+              "best_overlap": 0.5,
+              "reference_index": 0,
+              "literal_token": "G05",
+              "supported": true
+            },
+            {
+              "sentence": "▫️口径：18厘米（上沿直径）",
+              "best_overlap": 0.5,
+              "reference_index": 0,
+              "literal_token": null,
+              "supported": true
+            },
+            {
+              "sentence": "▫️高度：16厘米（含盆底厚度）",
+              "best_overlap": 0.285714,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "▫️配件：附赠1个托盘，与花盆同为陶土材质",
+              "best_overlap": 0.461538,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "青芽G05",
+              "best_overlap": 1.0,
+              "reference_index": 0,
+              "literal_token": "G05",
+              "supported": true
+            }
+          ]
+        },
+        "forbidden": {
+          "hits": [],
+          "disclaimed": [],
+          "any_hit": false,
+          "patterns": 3
+        },
+        "coverage": {
+          "total": 5,
+          "covered": 5,
+          "rate": 1.0,
+          "evidence": [
+            {
+              "point": "口径18厘米",
+              "best_overlap": 1.0,
+              "sentence": "▫️口径：18厘米（上沿直径）",
+              "covered": true
+            },
+            {
+              "point": "高16厘米",
+              "best_overlap": 0.666667,
+              "sentence": "▫️高度：16厘米（含盆底厚度）",
+              "covered": true
+            },
+            {
+              "point": "底部排水孔",
+              "best_overlap": 0.75,
+              "sentence": "青芽G05花盆实测口径18cm、高16cm，底部带排水孔，标配一个托盘，材质为陶土——仅此四点，清晰可核",
+              "covered": true
+            },
+            {
+              "point": "附托盘",
+              "best_overlap": 0.5,
+              "sentence": "青芽G05花盆尺寸实录：口径18cm、高16cm，带孔+托盘",
+              "covered": true
+            },
+            {
+              "point": "材质陶土",
+              "best_overlap": 0.666667,
+              "sentence": "青芽G05花盆实测口径18cm、高16cm，底部带排水孔，标配一个托盘，材质为陶土——仅此四点，清晰可核",
+              "covered": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "C",
+      "item_id": "G01",
+      "status": "done",
+      "attempts": 2,
+      "run_id": "2b96a81b-4a9a-4ad4-8954-e44e9bd2cfb9",
+      "run_status": "WAITING_USER",
+      "draft": {
+        "selected_title": "不是市售款！雾桃B01唇釉的4项已公开规格说明",
+        "body": "雾桃B01唇釉是虚构验收产品，非当前市面上可购商品。以下4项参数有明确原文依据：色号为‘陶土玫瑰’；净含量3克；包装为透明方管；刷头为斜面设计。无持妆时长、保湿效果等未提供数据，亦无上市销售信息。请对照你的实物或页面，核对这4项是否一致？",
+        "cta": "请对照你的实物或页面，核对这4项是否一致？",
+        "tags": [
+          "雾桃B01",
+          "唇釉参数",
+          "虚构产品",
+          "色号核对",
+          "包装说明"
+        ]
+      },
+      "retrieval_mode": "filtered-bm25-zh-bigram-v1",
+      "calls": 8,
+      "references": [
+        "通用原创产品介绍方法：围绕读者实际选择问题开篇，把已知规格分成易读段落；根据图文、口播或详情形式调整段长与节奏，结尾按任务目标选择提问或核对提示。只用本次产品资料，不把参考作者的经历和测试数字写成自己的事实，不承诺必爆。",
+        "雾桃B01唇釉是虚构验收产品。色号为陶土玫瑰，净含量3克，包装为透明方管，配斜面刷头。没有持妆时长、保湿效果或个人试用数据。"
+      ],
+      "slot_released": true,
+      "last_retry_status": "no_draft",
+      "score": {
+        "chars": 119,
+        "fact_support": {
+          "total": 6,
+          "supported": 4,
+          "rate": 0.666667,
+          "evidence": [
+            {
+              "sentence": "雾桃B01唇釉的4项已公开规格说明",
+              "best_overlap": 0.25,
+              "reference_index": 1,
+              "literal_token": "B01",
+              "supported": true
+            },
+            {
+              "sentence": "雾桃B01唇釉是虚构验收产品，非当前市面上可购商品",
+              "best_overlap": 0.526316,
+              "reference_index": 1,
+              "literal_token": "B01",
+              "supported": true
+            },
+            {
+              "sentence": "以下4项参数有明确原文依据：色号为‘陶土玫瑰’；净含量3克；包装为透明方管；刷头为斜面设计",
+              "best_overlap": 0.53125,
+              "reference_index": 1,
+              "literal_token": null,
+              "supported": true
+            },
+            {
+              "sentence": "请对照你的实物或页面，核对这4项是否一致",
+              "best_overlap": 0.0625,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "请对照你的实物或页面，核对这4项是否一致",
+              "best_overlap": 0.0625,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "雾桃B01",
+              "best_overlap": 1.0,
+              "reference_index": 1,
+              "literal_token": "B01",
+              "supported": true
+            }
+          ]
+        },
+        "forbidden": {
+          "hits": [],
+          "disclaimed": [
+            {
+              "pattern": "保湿效果",
+              "match": "保湿效果",
+              "sentence": "无持妆时长、保湿效果等未提供数据，亦无上市销售信息。"
+            }
+          ],
+          "any_hit": false,
+          "patterns": 5
+        },
+        "coverage": {
+          "total": 4,
+          "covered": 4,
+          "rate": 1.0,
+          "evidence": [
+            {
+              "point": "色号陶土玫瑰",
+              "best_overlap": 0.8,
+              "sentence": "以下4项参数有明确原文依据：色号为‘陶土玫瑰’；净含量3克；包装为透明方管；刷头为斜面设计",
+              "covered": true
+            },
+            {
+              "point": "净含量3克",
+              "best_overlap": 1.0,
+              "sentence": "以下4项参数有明确原文依据：色号为‘陶土玫瑰’；净含量3克；包装为透明方管；刷头为斜面设计",
+              "covered": true
+            },
+            {
+              "point": "包装透明方管",
+              "best_overlap": 0.8,
+              "sentence": "以下4项参数有明确原文依据：色号为‘陶土玫瑰’；净含量3克；包装为透明方管；刷头为斜面设计",
+              "covered": true
+            },
+            {
+              "point": "斜面刷头",
+              "best_overlap": 0.666667,
+              "sentence": "以下4项参数有明确原文依据：色号为‘陶土玫瑰’；净含量3克；包装为透明方管；刷头为斜面设计",
+              "covered": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "C",
+      "item_id": "G02",
+      "status": "done",
+      "attempts": 1,
+      "run_id": "e2b697c4-91eb-4848-8338-07942a277855",
+      "run_status": "WAITING_USER",
+      "draft": {
+        "selected_title": "轻行P02三脚架：收纳40cm，重1.2kg（含袋）",
+        "body": "backpack侧袋深度够不够？日常通勤背1.2kg累不累？轻行P02三脚架已确认的两个关键参数：收纳长度40厘米，净重1.2千克，且含配套便携袋。\n\n该数据来自当前可查资料，未引申稳定性、抗风性或实拍表现。无负重测试、无适配机型列表、无上市状态说明。\n\n如你正比对背包空间或负重耐受度，这两个数字可直接用于尺规/体重预判。",
+        "cta": "你手边的背包侧袋深度多少？欢迎留言核对",
+        "tags": [
+          "轻行P02",
+          "三脚架参数",
+          "收纳尺寸",
+          "便携三脚架",
+          "摄影装备",
+          "出行装备",
+          "参数快查"
+        ]
+      },
+      "retrieval_mode": "filtered-bm25-zh-bigram-v1",
+      "calls": 8,
+      "references": [
+        "通用原创产品介绍方法：围绕读者实际选择问题开篇，把已知规格分成易读段落；根据图文、口播或详情形式调整段长与节奏，结尾按任务目标选择提问或核对提示。只用本次产品资料，不把参考作者的经历和测试数字写成自己的事实，不承诺必爆。",
+        "轻行P02三脚架是虚构验收产品。重量1.2千克，收纳长度40厘米，最大展开高度150厘米，含一个便携袋。没有负重稳定性、抗风或实拍测试数据。"
+      ],
+      "slot_released": true,
+      "score": {
+        "chars": 162,
+        "fact_support": {
+          "total": 4,
+          "supported": 3,
+          "rate": 0.75,
+          "evidence": [
+            {
+              "sentence": "轻行P02三脚架：收纳40cm，重1.2kg（含袋）",
+              "best_overlap": 0.6,
+              "reference_index": 1,
+              "literal_token": "P02",
+              "supported": true
+            },
+            {
+              "sentence": "日常通勤背1.2kg累不累",
+              "best_overlap": 0.125,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "轻行P02三脚架已确认的两个关键参数：收纳长度40厘米，净重1.2千克，且含配套便携袋",
+              "best_overlap": 0.482759,
+              "reference_index": 1,
+              "literal_token": "P02",
+              "supported": true
+            },
+            {
+              "sentence": "轻行P02",
+              "best_overlap": 1.0,
+              "reference_index": 1,
+              "literal_token": "P02",
+              "supported": true
+            }
+          ]
+        },
+        "forbidden": {
+          "hits": [],
+          "disclaimed": [
+            {
+              "pattern": "抗风",
+              "match": "抗风",
+              "sentence": "该数据来自当前可查资料，未引申稳定性、抗风性或实拍表现。"
+            }
+          ],
+          "any_hit": false,
+          "patterns": 4
+        },
+        "coverage": {
+          "total": 4,
+          "covered": 3,
+          "rate": 0.75,
+          "evidence": [
+            {
+              "point": "重量1.2千克",
+              "best_overlap": 0.75,
+              "sentence": "轻行P02三脚架已确认的两个关键参数：收纳长度40厘米，净重1.2千克，且含配套便携袋",
+              "covered": true
+            },
+            {
+              "point": "收纳长度40厘米",
+              "best_overlap": 1.0,
+              "sentence": "轻行P02三脚架已确认的两个关键参数：收纳长度40厘米，净重1.2千克，且含配套便携袋",
+              "covered": true
+            },
+            {
+              "point": "最大展开高度150厘米",
+              "best_overlap": 0.142857,
+              "sentence": "轻行P02三脚架已确认的两个关键参数：收纳长度40厘米，净重1.2千克，且含配套便携袋",
+              "covered": false
+            },
+            {
+              "point": "含便携袋",
+              "best_overlap": 0.666667,
+              "sentence": "轻行P02三脚架已确认的两个关键参数：收纳长度40厘米，净重1.2千克，且含配套便携袋",
+              "covered": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "C",
+      "item_id": "G03",
+      "status": "done",
+      "attempts": 1,
+      "run_id": "78f5940d-10bc-403e-a102-6e43e2b92e1f",
+      "run_status": "WAITING_USER",
+      "draft": {
+        "selected_title": "静点D03鼠标怎么连？尺寸多大？一文核对双模连接+精确毫米数",
+        "body": "正在比选静点D03鼠标？它支持蓝牙+2.4GHz双模连接，尺寸108×60×35mm，重68g，包装不含电池——仅依据公开资料整理，供你快速核对。\n\n✅ 连接方式：蓝牙与2.4GHz接收器两种，无需额外说明兼容设备，也无实测稳定性数据。\n\n✅ 物理规格：长108mm（约一支口红长度）、宽60mm、高35mm，握感参考可结合自手掌大小判断；整机仅68克。\n\n✅ 供电说明：使用一节AA电池，但包装内不包含电池，需自行准备。",
+        "cta": "下单前建议再对照这三条关键参数：连接模式、108×60×35mm尺寸、电池需自备。",
+        "tags": [
+          "静点D03",
+          "鼠标参数",
+          "双模连接",
+          "鼠标尺寸",
+          "AA电池",
+          "办公外设",
+          "规格核对"
+        ]
+      },
+      "retrieval_mode": "filtered-bm25-zh-bigram-v1",
+      "calls": 8,
+      "references": [
+        "通用原创产品介绍方法：围绕读者实际选择问题开篇，把已知规格分成易读段落；根据图文、口播或详情形式调整段长与节奏，结尾按任务目标选择提问或核对提示。只用本次产品资料，不把参考作者的经历和测试数字写成自己的事实，不承诺必爆。",
+        "静点D03鼠标是虚构验收产品。支持蓝牙和2.4GHz接收器两种连接，外形尺寸108×60×35毫米，重量68克，使用一节AA电池，包装不含电池。没有续航、延迟或静音测试数据。"
+      ],
+      "slot_released": true,
+      "score": {
+        "chars": 211,
+        "fact_support": {
+          "total": 7,
+          "supported": 3,
+          "rate": 0.428571,
+          "evidence": [
+            {
+              "sentence": "静点D03鼠标怎么连",
+              "best_overlap": 0.5,
+              "reference_index": 1,
+              "literal_token": "D03",
+              "supported": true
+            },
+            {
+              "sentence": "正在比选静点D03鼠标",
+              "best_overlap": 0.428571,
+              "reference_index": 1,
+              "literal_token": "D03",
+              "supported": true
+            },
+            {
+              "sentence": "它支持蓝牙+2.4GHz双模连接，尺寸108×60×35mm，重68g，包装不含电池——仅依据公开资料整理，供你快速核对",
+              "best_overlap": 0.424242,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "✅ 连接方式：蓝牙与2.4GHz接收器两种，无需额外说明兼容设备，也无实测稳定性数据",
+              "best_overlap": 0.321429,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "✅ 物理规格：长108mm（约一支口红长度）、宽60mm、高35mm，握感参考可结合自手掌大小判断；整机仅68克",
+              "best_overlap": 0.0625,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "下单前建议再对照这三条关键参数：连接模式、108×60×35mm尺寸、电池需自备",
+              "best_overlap": 0.2,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "静点D03",
+              "best_overlap": 1.0,
+              "reference_index": 1,
+              "literal_token": "D03",
+              "supported": true
+            }
+          ]
+        },
+        "forbidden": {
+          "hits": [],
+          "disclaimed": [],
+          "any_hit": false,
+          "patterns": 4
+        },
+        "coverage": {
+          "total": 6,
+          "covered": 6,
+          "rate": 1.0,
+          "evidence": [
+            {
+              "point": "支持蓝牙",
+              "best_overlap": 1.0,
+              "sentence": "它支持蓝牙+2.4GHz双模连接，尺寸108×60×35mm，重68g，包装不含电池——仅依据公开资料整理，供你快速核对",
+              "covered": true
+            },
+            {
+              "point": "2.4GHz接收器",
+              "best_overlap": 1.0,
+              "sentence": "✅ 连接方式：蓝牙与2.4GHz接收器两种，无需额外说明兼容设备，也无实测稳定性数据",
+              "covered": true
+            },
+            {
+              "point": "尺寸108×60×35毫米",
+              "best_overlap": 0.6,
+              "sentence": "它支持蓝牙+2.4GHz双模连接，尺寸108×60×35mm，重68g，包装不含电池——仅依据公开资料整理，供你快速核对",
+              "covered": true
+            },
+            {
+              "point": "重量68克",
+              "best_overlap": 0.666667,
+              "sentence": "✅ 物理规格：长108mm（约一支口红长度）、宽60mm、高35mm，握感参考可结合自手掌大小判断；整机仅68克",
+              "covered": true
+            },
+            {
+              "point": "使用一节AA电池",
+              "best_overlap": 1.0,
+              "sentence": "✅ 供电说明：使用一节AA电池，但包装内不包含电池，需自行准备",
+              "covered": true
+            },
+            {
+              "point": "包装不含电池",
+              "best_overlap": 1.0,
+              "sentence": "它支持蓝牙+2.4GHz双模连接，尺寸108×60×35mm，重68g，包装不含电池——仅依据公开资料整理，供你快速核对",
+              "covered": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "C",
+      "item_id": "G04",
+      "status": "done",
+      "attempts": 3,
+      "run_id": "69b94762-8ae5-433a-b751-d8b07d4f5726",
+      "run_status": "WAITING_USER",
+      "draft": {
+        "selected_title": "木序F04边桌尺寸实录：直径45cm，高52cm，带底板",
+        "body": "买前想确认木序F04边桌能不能塞进沙发旁？它桌面直径45cm，整体高度52cm，圆形设计，橡胶木材质，底部设一层固定置物板。\n\n注意：以上为当前可查结构参数，来源明确；但无承重测试、耐水性或环保等级等检测结论，不构成使用承诺。\n\n建议你量一量沙发侧边预留宽度与高度空间，再对照这组数字做判断。",
+        "cta": "你家沙发旁留了多宽？欢迎留言比对",
+        "tags": [
+          "木序F04",
+          "边桌尺寸",
+          "橡胶木家具",
+          "家居核对",
+          "小圆桌"
+        ]
+      },
+      "retrieval_mode": "filtered-bm25-zh-bigram-v1",
+      "calls": 8,
+      "references": [
+        "通用原创产品介绍方法：围绕读者实际选择问题开篇，把已知规格分成易读段落；根据图文、口播或详情形式调整段长与节奏，结尾按任务目标选择提问或核对提示。只用本次产品资料，不把参考作者的经历和测试数字写成自己的事实，不承诺必爆。",
+        "木序F04边桌是虚构验收产品。桌面为圆形，直径45厘米，高度52厘米，材质为橡胶木，底部设一层置物板。没有承重、耐水或环保等级检测结论。"
+      ],
+      "slot_released": true,
+      "last_retry_status": "no_draft",
+      "score": {
+        "chars": 146,
+        "fact_support": {
+          "total": 4,
+          "supported": 4,
+          "rate": 1.0,
+          "evidence": [
+            {
+              "sentence": "木序F04边桌尺寸实录：直径45cm，高52cm，带底板",
+              "best_overlap": 0.307692,
+              "reference_index": 1,
+              "literal_token": "F04",
+              "supported": true
+            },
+            {
+              "sentence": "买前想确认木序F04边桌能不能塞进沙发旁",
+              "best_overlap": 0.1875,
+              "reference_index": 1,
+              "literal_token": "F04",
+              "supported": true
+            },
+            {
+              "sentence": "它桌面直径45cm，整体高度52cm，圆形设计，橡胶木材质，底部设一层固定置物板",
+              "best_overlap": 0.52,
+              "reference_index": 1,
+              "literal_token": null,
+              "supported": true
+            },
+            {
+              "sentence": "木序F04",
+              "best_overlap": 1.0,
+              "reference_index": 1,
+              "literal_token": "F04",
+              "supported": true
+            }
+          ]
+        },
+        "forbidden": {
+          "hits": [],
+          "disclaimed": [
+            {
+              "pattern": "耐水",
+              "match": "耐水",
+              "sentence": "注意：以上为当前可查结构参数，来源明确；但无承重测试、耐水性或环保等级等检测结论，不构成使用承诺。"
+            },
+            {
+              "pattern": "环保等级",
+              "match": "环保等级",
+              "sentence": "注意：以上为当前可查结构参数，来源明确；但无承重测试、耐水性或环保等级等检测结论，不构成使用承诺。"
+            }
+          ],
+          "any_hit": false,
+          "patterns": 5
+        },
+        "coverage": {
+          "total": 5,
+          "covered": 3,
+          "rate": 0.6,
+          "evidence": [
+            {
+              "point": "桌面圆形",
+              "best_overlap": 0.666667,
+              "sentence": "它桌面直径45cm，整体高度52cm，圆形设计，橡胶木材质，底部设一层固定置物板",
+              "covered": true
+            },
+            {
+              "point": "直径45厘米",
+              "best_overlap": 0.333333,
+              "sentence": "木序F04边桌尺寸实录：直径45cm，高52cm，带底板",
+              "covered": false
+            },
+            {
+              "point": "高度52厘米",
+              "best_overlap": 0.333333,
+              "sentence": "它桌面直径45cm，整体高度52cm，圆形设计，橡胶木材质，底部设一层固定置物板",
+              "covered": false
+            },
+            {
+              "point": "材质橡胶木",
+              "best_overlap": 0.75,
+              "sentence": "它桌面直径45cm，整体高度52cm，圆形设计，橡胶木材质，底部设一层固定置物板",
+              "covered": true
+            },
+            {
+              "point": "底部置物板",
+              "best_overlap": 0.75,
+              "sentence": "它桌面直径45cm，整体高度52cm，圆形设计，橡胶木材质，底部设一层固定置物板",
+              "covered": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "C",
+      "item_id": "G05",
+      "status": "done",
+      "attempts": 1,
+      "run_id": "5bfa03c8-18ea-4851-86cd-925c3900f6cf",
+      "run_status": "WAITING_USER",
+      "draft": {
+        "selected_title": "你手里的雾桃B01，色号和包装细节写在哪？",
+        "body": "你手里的雾桃B01唇釉，瓶身印的色号是什么？包装上有没有‘磁吸’‘浮雕’或‘镜面’字样？这期口播不猜、不说没印在瓶身上的信息，只帮你一项项对照。\n\n目前公开渠道未查到雾桃B01唇釉的官方色号列表、包装说明或参数资料。所有信息请以你手中实物瓶身为唯一依据。\n\n建议核对三个位置：1）管身正面主标区；2）瓶底小字批次旁；3）外盒侧面条码附近。看到什么，就信什么。\n\n你现在手里的B01唇釉，瓶身印的是哪个色号？评论区告诉我。",
+        "cta": "你现在手里的B01唇釉，瓶身印的是哪个色号？评论区告诉我。",
+        "tags": [
+          "雾桃唇釉",
+          "B01",
+          "色号核对",
+          "唇釉包装",
+          "口播脚本",
+          "小红书美妆",
+          "实物对照",
+          "美妆信息自查"
+        ]
+      },
+      "retrieval_mode": "filtered-bm25-zh-bigram-v1",
+      "calls": 8,
+      "references": [
+        "通用原创产品介绍方法：围绕读者实际选择问题开篇，把已知规格分成易读段落；根据图文、口播或详情形式调整段长与节奏，结尾按任务目标选择提问或核对提示。只用本次产品资料，不把参考作者的经历和测试数字写成自己的事实，不承诺必爆。"
+      ],
+      "slot_released": true,
+      "score": {
+        "chars": 210,
+        "fact_support": {
+          "total": 7,
+          "supported": 0,
+          "rate": 0.0,
+          "evidence": [
+            {
+              "sentence": "你手里的雾桃B01，色号和包装细节写在哪",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "你手里的雾桃B01唇釉，瓶身印的色号是什么",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "目前公开渠道未查到雾桃B01唇釉的官方色号列表、包装说明或参数资料",
+              "best_overlap": 0.037037,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "建议核对三个位置：1）管身正面主标区；2）瓶底小字批次旁；3）外盒侧面条码附近",
+              "best_overlap": 0.034483,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "你现在手里的B01唇釉，瓶身印的是哪个色号",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "你现在手里的B01唇釉，瓶身印的是哪个色号",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "B01",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            }
+          ]
+        },
+        "forbidden": {
+          "hits": [],
+          "disclaimed": [],
+          "any_hit": false,
+          "patterns": 2
+        },
+        "coverage": {
+          "total": 5,
+          "covered": 0,
+          "rate": 0.0,
+          "evidence": [
+            {
+              "point": "开场提出选色问题",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "镜头展示管身",
+              "best_overlap": 0.2,
+              "sentence": "建议核对三个位置：1）管身正面主标区；2）瓶底小字批次旁；3）外盒侧面条码附近",
+              "covered": false
+            },
+            {
+              "point": "介绍色号",
+              "best_overlap": 0.333333,
+              "sentence": "你手里的雾桃B01，色号和包装细节写在哪",
+              "covered": false
+            },
+            {
+              "point": "介绍刷头",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "结尾询问观众偏好",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "C",
+      "item_id": "G06",
+      "status": "done",
+      "attempts": 2,
+      "run_id": "3d02140f-bc88-44b1-9e4a-9f032dc2ef38",
+      "run_status": "WAITING_USER",
+      "draft": {
+        "selected_title": "青芽G05花盆尺寸实录：口径18cm、高16cm，带排水孔+托盘",
+        "body": "买前最怕尺寸不对、配件不全？青芽G05花盆口径18cm、高16cm，尺寸明确可直接核对。\n底部带标准排水孔，标配一个托盘，开箱即可使用。\n材质为陶土，无植物生长速度、保水率等效果数据，所有信息均来自当前可验证资料。",
+        "cta": "你手边有G05吗？欢迎留言核对实测尺寸",
+        "tags": [
+          "青芽G05",
+          "花盆尺寸",
+          "种植工具",
+          "陶土花盆",
+          "家居园艺",
+          "买前确认"
+        ]
+      },
+      "retrieval_mode": "filtered-bm25-zh-bigram-v1",
+      "calls": 8,
+      "references": [
+        "通用原创产品介绍方法：围绕读者实际选择问题开篇，把已知规格分成易读段落；根据图文、口播或详情形式调整段长与节奏，结尾按任务目标选择提问或核对提示。只用本次产品资料，不把参考作者的经历和测试数字写成自己的事实，不承诺必爆。",
+        "青芽G05花盆是虚构验收产品。口径18厘米，高16厘米，底部有排水孔，附一个托盘，材质为陶土。没有植物生长速度、保水率或使用效果数据。"
+      ],
+      "slot_released": true,
+      "last_retry_status": "no_draft",
+      "score": {
+        "chars": 107,
+        "fact_support": {
+          "total": 4,
+          "supported": 4,
+          "rate": 1.0,
+          "evidence": [
+            {
+              "sentence": "青芽G05花盆尺寸实录：口径18cm、高16cm，带排水孔+托盘",
+              "best_overlap": 0.533333,
+              "reference_index": 1,
+              "literal_token": "G05",
+              "supported": true
+            },
+            {
+              "sentence": "青芽G05花盆口径18cm、高16cm，尺寸明确可直接核对",
+              "best_overlap": 0.3125,
+              "reference_index": 1,
+              "literal_token": "G05",
+              "supported": true
+            },
+            {
+              "sentence": "你手边有G05吗",
+              "best_overlap": 0.2,
+              "reference_index": 1,
+              "literal_token": "G05",
+              "supported": true
+            },
+            {
+              "sentence": "青芽G05",
+              "best_overlap": 1.0,
+              "reference_index": 1,
+              "literal_token": "G05",
+              "supported": true
+            }
+          ]
+        },
+        "forbidden": {
+          "hits": [],
+          "disclaimed": [
+            {
+              "pattern": "生长速度",
+              "match": "生长速度",
+              "sentence": "材质为陶土，无植物生长速度、保水率等效果数据，所有信息均来自当前可验证资料。"
+            },
+            {
+              "pattern": "保水率",
+              "match": "保水率",
+              "sentence": "材质为陶土，无植物生长速度、保水率等效果数据，所有信息均来自当前可验证资料。"
+            }
+          ],
+          "any_hit": false,
+          "patterns": 3
+        },
+        "coverage": {
+          "total": 5,
+          "covered": 3,
+          "rate": 0.6,
+          "evidence": [
+            {
+              "point": "口径18厘米",
+              "best_overlap": 0.333333,
+              "sentence": "青芽G05花盆尺寸实录：口径18cm、高16cm，带排水孔+托盘",
+              "covered": false
+            },
+            {
+              "point": "高16厘米",
+              "best_overlap": 0.333333,
+              "sentence": "青芽G05花盆尺寸实录：口径18cm、高16cm，带排水孔+托盘",
+              "covered": false
+            },
+            {
+              "point": "底部排水孔",
+              "best_overlap": 0.75,
+              "sentence": "底部带标准排水孔，标配一个托盘，开箱即可使用",
+              "covered": true
+            },
+            {
+              "point": "附托盘",
+              "best_overlap": 0.5,
+              "sentence": "青芽G05花盆尺寸实录：口径18cm、高16cm，带排水孔+托盘",
+              "covered": true
+            },
+            {
+              "point": "材质陶土",
+              "best_overlap": 0.666667,
+              "sentence": "材质为陶土，无植物生长速度、保水率等效果数据，所有信息均来自当前可验证资料",
+              "covered": true
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "notes": [
+    "真实模型调用；A 组为单次直写，直接在默认模型连接上执行、不经运行账本，其费用按 token 估算并记入 arm_a_spent_usd"
+  ],
+  "arm_a_spent_usd": 0.003849,
+  "cost_estimate_usd": 0.383805,
+  "summary": {
+    "A": {
+      "n": 6,
+      "fact_support_rate": 0.375,
+      "expected_point_coverage": 0.833333,
+      "forbidden_hit_rate": 0.0,
+      "mean_body_chars": 196.833333
+    },
+    "B": {
+      "n": 6,
+      "fact_support_rate": 0.527778,
+      "expected_point_coverage": 0.655556,
+      "forbidden_hit_rate": 0.0,
+      "mean_body_chars": 164.5
+    },
+    "C": {
+      "n": 6,
+      "fact_support_rate": 0.640873,
+      "expected_point_coverage": 0.658333,
+      "forbidden_hit_rate": 0.0,
+      "mean_body_chars": 159.166667
+    }
+  }
+}

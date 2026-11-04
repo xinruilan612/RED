@@ -76,30 +76,37 @@ class Runtime:
         return {}
 
     def web_research(self, state):
-        from backend.web_research import collect
+        from backend.web_research import collect, reference_urls
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             run=self.jobs.guard(db,self.job)
             web=run.context.get('web_research',{})
             if web.get('status')=='complete':return {}
             require(web.get('enabled') and run.context.get('mode')=='live','INVALID_INPUT','没有授权本次联网调查')
-            require(web.get('status')=='pending','SOURCE_UNAVAILABLE','联网调查未完成或已中断。未重复搜索、未调用模型；请查看调查记录，调整搜索词后新建任务。')
+            require(web.get('status')=='pending','SOURCE_UNAVAILABLE','联网调查未完成或已中断。未重复搜索、未调用模型；请查看调查记录并重新调查。')
             web['status']='searching'
             run.event('tool.started',tool='public_web_research',queries=web['queries'])
             self.write(db,run)
         def guard():
             with self.store.connect() as db:self.jobs.guard(db,self.job)
-        report=collect(web['queries'],before_request=guard)
+        searcher=None
+        if web.get('provider','bing')!='bing' or web.get('targets',['web'])!=['web']:
+            from backend.search_providers import SearchSettings
+            searcher=lambda query:SearchSettings(self.store).search(run.owner_id,query,web.get('provider','bing'),web.get('targets',['web']))
+        report=collect(web['queries'],before_request=guard,searcher=searcher,
+                       source_urls=reference_urls(run.context.get('material','')),
+                       references_only=web.get('references_only',False))
         self.fault('after_web_response','web_research')
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             current=self.jobs.guard(db,self.job,committing=True)
             require(current.snapshot_id==run.snapshot_id,'VERSION_CONFLICT','调查输入已变化')
+            from backend.web_research import attach_facts
+            attach_facts(current.context,report)
             current.context['web_research']={**web,**report}
-            current.context['evidence']=current.context.get('evidence',[])+report['sources']
             current.event('tool.completed' if report['status']=='complete' else 'tool.failed',tool='public_web_research',status=report['status'],source_count=len(report['sources']))
             self.write(db,current)
-        require(report['status']=='complete','SOURCE_UNAVAILABLE','没有读到相关网页正文，已停止在模型调用前。请查看联网记录，调整搜索词后新建任务。')
+        require(report['status']=='complete','SOURCE_UNAVAILABLE','没有读到相关网页正文，已停止在模型调用前。请查看联网记录并重新调查；这不代表产品不存在。')
         return {}
 
     def join(self, state):
@@ -111,6 +118,7 @@ class Runtime:
         return {}
 
     def node(self, stage, state):
+        review_error=None
         agent=stage if stage in ('audience','research') else 'reviewer' if stage=='review' else 'content'
         # The key derives from the scheduling checkpoint, not the already-mutated Run.
         key=digest({'snapshot':state['snapshot'],'iteration':state['iteration'],'stage':stage,
@@ -137,21 +145,28 @@ class Runtime:
                     current=self.jobs.guard(db,self.job,committing=True)
                     require(current.snapshot_id==run.snapshot_id and current.drafts[-1]['ref']==state['draft'],
                             'VERSION_CONFLICT','稿件已变化，不能结束旧阶段')
-                    current._transition('WAITING_USER','revision_limit')
+                    current._transition('WAITING_USER','final_confirmation' if current.context.get('material_policy')=='available_only' else 'revision_limit')
                     self.write(db,current)
                 return {}
             self.fault('after_response',stage)
             try:output=enrich(stage,live.normalize(run,stage,value),run.context)
             except DomainError as error:
-                self.service.executor.calls.validated(call_id,str(error));raise
-            self.service.executor.calls.validated(call_id,None)
+                if stage!='review' or error.code not in ('MODEL_OUTPUT_INVALID','REVIEW_GATE_FAILED'):
+                    self.service.executor.calls.validated(call_id,str(error));raise
+                # Recovery is applied only after the commit-time draft fences.
+                review_error=error
+                output=None
+            if stage!='review':self.service.executor.calls.validated(call_id,None)
             log={'id':str(uuid4()),'agent':agent,'stage':stage,'mode':'live','snapshot_id':run.snapshot_id,
                  'input':inputs,'output':output,'duration_ms':round((time.monotonic()-started)*1000),
                  'model_calls':1,'tokens':tokens,'cost':None,'call_id':call_id,'tools':['knowledge_snapshot'] if run.context.get('evidence') else [],
                  'memory':'读取本任务的账号与证据快照'}
             from backend.citation_ids import repair
-            _,repairs=repair(stage,value,live.material_records(run.context))
+            _,repairs=repair(stage,value,live.material_records(run.context)) if review_error is None else (value,[])
             if repairs:log['citation_repairs']=repairs
+            if stage=='title':
+                _,adjustment=live.bounded_title_candidates(run,value)
+                if adjustment:log['output_normalizations']=[adjustment]
         else:
             # Template execution shares graph persistence without pretending to call a model.
             if stage in ('audience','research'):
@@ -170,16 +185,45 @@ class Runtime:
             require(current.run_status=='RUNNING' and current.current_stage==expected,'VERSION_CONFLICT','节点已过期')
             if stage in ('review','revise'):
                 require(current.drafts[-1]['ref']==state['draft'],'VERSION_CONFLICT','稿件已变化，拒绝旧结果')
+                require(current.drafts[-1]['snapshot_id']==run.drafts[-1]['snapshot_id']
+                        and current.drafts[-1]['content_hash']==run.drafts[-1]['content_hash']
+                        and digest(current.drafts[-1]['content'])==run.drafts[-1]['content_hash'],
+                        'VERSION_CONFLICT','稿件内容或快照已变化，拒绝旧结果')
             current.node_runs.append(log)
             current.event('agent.completed',agent=agent,stage=stage,mode=log['mode'],node_ref=log['id'])
             if stage in ('audience','research'):current.branch(stage,current.snapshot_id,'succeeded',output)
             elif stage=='review':
-                gates=live.review_gates(current,output) if log['mode']=='live' else {k:True for k in CONTRACT['review_policy']['required_gates']}
-                current.reviewed(output,gates)
+                if log['mode']=='live':
+                    if review_error is None:
+                        try:current.reviewed(output,live.review_gates(current,output),fail_on_limit=True)
+                        except DomainError as error:
+                            if error.code not in ('MODEL_OUTPUT_INVALID','REVIEW_GATE_FAILED'):raise
+                            review_error=error
+                    if review_error is not None:
+                        settled=db.execute('SELECT c.response_json,c.actual,c.state,a.snapshot_id FROM live_calls c JOIN model_audit a ON a.call_id=c.id AND a.run_id=c.run_id WHERE c.id=? AND c.run_id=? AND c.stage=?',
+                                           (call_id,current.run_id,'review')).fetchone()
+                        require(settled and settled[0] is not None and type(settled[1]) is int
+                                and settled[2] in ('received','invalid','validated'),
+                                'USAGE_UNKNOWN','审核响应或用量未结算，不能生成保守交接')
+                        require(settled[3]==current.snapshot_id and json.loads(settled[0])==value,
+                                'VERSION_CONFLICT','审核原始响应或输入快照已变化')
+                        from backend.review_recovery import conservative_review
+                        output=conservative_review(current,value,review_error)
+                        current.reviewed(output,live.review_gates(current,output),fail_on_limit=True)
+                        log['output']=output
+                    # A received review is valid only after both schema and the
+                    # domain transition pass; conservative reports retain the
+                    # invalid original response and its settled usage.
+                    self.service.executor.calls.validated(call_id,str(review_error) if review_error else None,db=db)
+                else:
+                    current.reviewed(output,{k:True for k in CONTRACT['review_policy']['required_gates']})
             else:
                 if stage!='revise':
                     current.artifacts.append({'stage':stage,'value':output,'snapshot_id':current.snapshot_id})
                     current.event('artifact.created',stage=stage,mode=log['mode'])
+                    if stage == 'strategy':
+                        from backend.creation_algorithms import refresh
+                        refresh(current)
                 if stage in ('body','revise'):current.draft(output)
             db.execute('INSERT INTO runtime_nodes VALUES(?,?,?,?,?,?)',(run.run_id,key,stage,digest(log['input']),json.dumps(log,ensure_ascii=False),time.time()))
             self.write(db,current)

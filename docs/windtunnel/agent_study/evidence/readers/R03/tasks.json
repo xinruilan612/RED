@@ -1,0 +1,55 @@
+{
+  "reader_id": "R03",
+  "participant_type": "codex_proxy",
+  "tasks": [
+    {
+      "blind_id": "P4028",
+      "reading_order": 1,
+      "task_prompt": "依据稿件为同事制定日志文件读写方案：选择可保留原内容并在末尾追加的模式及UTF-8写法，说明与w模式的差异；说明为何使用with；区分readline返回空串和仅换行的含义；写出逐行读取的大文件方案并说明与read()无size的差别；说明复制JPEG时模式、读写对象类型及encoding参数限制。每项附稿内证据，不执行代码。",
+      "manuscript_path": "/Users/lanxinrui/Desktop/多agent协作社媒博主创建爆款推文/runtime/windtunnel-agent-study-20261007/readers/R03/P4028.txt",
+      "manuscript_sha256": "e875cb0dface6cf1ed20c0c5c4815d684aff35321bb80bb955a771c3424226c7"
+    },
+    {
+      "blind_id": "P1259",
+      "reading_order": 2,
+      "task_prompt": "请依据稿件给通讯录维护步骤及结果：从tel={'jack':4098,'sape':4139}开始，新增guido:4127、将jack改为5000、删除sape、再新增irv:4127。写出最终字典；给出list(tel)和sorted(tel)；检查guido是否存在并写表达式和结果；说明再读取sape会怎样；说明用列表作键或用含列表的元组作键是否可行及原因。每项附稿内证据，不执行代码。",
+      "manuscript_path": "/Users/lanxinrui/Desktop/多agent协作社媒博主创建爆款推文/runtime/windtunnel-agent-study-20261007/readers/R03/P1259.txt",
+      "manuscript_sha256": "5ae9dd634db54503543ac690d00aaba9b7ca8c69e2091cb09f491a1a934abbbc"
+    },
+    {
+      "blind_id": "P3107",
+      "reading_order": 3,
+      "task_prompt": "依据稿件为命令行工具设计verbose开关：解释最初--verbosity缺省时的值及输出；解释仅写--verbosity为什么报错；改成无需值的--verbose时给出add_argument及启用/缺省值；说明--verbose 1为何报错；增加-v别名并给出add_argument，说明-v的输出及help反映什么。每项附稿内证据，不执行代码。",
+      "manuscript_path": "/Users/lanxinrui/Desktop/多agent协作社媒博主创建爆款推文/runtime/windtunnel-agent-study-20261007/readers/R03/P3107.txt",
+      "manuscript_sha256": "097a75cb3cc6e2bbe535cba19ca4f53a63d7283298cae24749c47145dac0915f"
+    },
+    {
+      "blind_id": "P9115",
+      "reading_order": 4,
+      "task_prompt": "依据稿件给异常处理代码审查建议：输入整数的重试循环应处理哪类异常，Ctrl-C为何不会被该处理器吃掉；try出现匹配异常后剩余语句和处理器怎样执行；父类与子类异常处理器顺序如何影响稿内B/C/D示例；else应何时执行及为何比塞进try更合适；意外Exception被记录后建议如何处理，以及try调用的函数内部异常是否能被捕获。每项附稿内证据，不执行代码。",
+      "manuscript_path": "/Users/lanxinrui/Desktop/多agent协作社媒博主创建爆款推文/runtime/windtunnel-agent-study-20261007/readers/R03/P9115.txt",
+      "manuscript_sha256": "617f423787fbd1d5e3a0bb2454b7d0b89c69a7162df99a76c3027c0d5b64f6f4"
+    },
+    {
+      "blind_id": "P1759",
+      "reading_order": 5,
+      "task_prompt": "请依据稿件写一份列表推导式小抄：将vec=[-4,-2,0,2,4]筛去负数后将剩余值翻倍并给出结果；将[[1,2],[3,4]]按原顺序展平成列表并给出表达式和结果；说明生成(number,square)对时元组表达式的括号要求；说明两个for加一个if如何与普通嵌套循环对应；说明普通for循环变量与稿内推导式例子的变量副作用区别。每项附稿内证据，不执行代码。",
+      "manuscript_path": "/Users/lanxinrui/Desktop/多agent协作社媒博主创建爆款推文/runtime/windtunnel-agent-study-20261007/readers/R03/P1759.txt",
+      "manuscript_sha256": "e05b216736dcbffa783c1dbf9e5f99b93723f0b3acc5c666a6462ddee34fb85d"
+    },
+    {
+      "blind_id": "P5040",
+      "reading_order": 6,
+      "task_prompt": "仅依据稿件，给出pathlib项目浏览小抄：导入Path并代表当前目录；列出当前目录的子目录；递归收集目录树中.py文件；按示例拼接/etc/init.d/reboot，并区分拼接路径与resolve示例结果；解释示例q.exists()、q.is_dir()的结果，并写出用q读取首行的方式。不要把示例机器路径结果保证为所有电脑都相同。每项附稿内证据，不执行代码。",
+      "manuscript_path": "/Users/lanxinrui/Desktop/多agent协作社媒博主创建爆款推文/runtime/windtunnel-agent-study-20261007/readers/R03/P5040.txt",
+      "manuscript_sha256": "b4dfe1cd9baa87502b359f768740521404d3336d95a4c3f9bc7fbb407875ae6c"
+    },
+    {
+      "blind_id": "P2887",
+      "reading_order": 7,
+      "task_prompt": "依据稿件设计保存x=[1,'simple','list']再恢复的JSON方案：说明字符串转换及反向重建的名称；给出产生JSON字符串的函数及结果；说明已打开文本文件对象f时写入与读取分别用什么函数；说明文本JSON文件的encoding要求；说明为何不能随便将不可信pickle替代JSON，以及JSON对任意类实例的限制。每项附稿内证据，不执行代码。",
+      "manuscript_path": "/Users/lanxinrui/Desktop/多agent协作社媒博主创建爆款推文/runtime/windtunnel-agent-study-20261007/readers/R03/P2887.txt",
+      "manuscript_sha256": "31d7a8468f532da0abe60437c3b621135a6f9396bfd88fb4e62977a382e9fa29"
+    }
+  ]
+}

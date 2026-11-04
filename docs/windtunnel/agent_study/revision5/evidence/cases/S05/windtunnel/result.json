@@ -1,0 +1,542 @@
+{
+  "sample_id": "S05",
+  "method": "windtunnel",
+  "participant_type": "codex_proxy",
+  "revision": "v5",
+  "draft_kind": "public_official_tutorial_excerpt",
+  "adaptation": "layout and attribution only; original English text",
+  "deletion_design": null,
+  "source_url": "https://docs.python.org/3.12/tutorial/datastructures.html#dictionaries",
+  "original_sha256": "5ae9dd634db54503543ac690d00aaba9b7ca8c69e2091cb09f491a1a934abbbc",
+  "material_sha256": "5ae9dd634db54503543ac690d00aaba9b7ca8c69e2091cb09f491a1a934abbbc",
+  "outcome": "completed",
+  "error": null,
+  "automatic_adoption": true,
+  "human_author": false,
+  "initial_report": {
+    "id": "7ab2b4a8-75d9-491a-a05e-1da0ef97f0f2",
+    "batch_id": "1360d764-4cec-4d03-946d-d000e5a9548d",
+    "draft_id": "e0370d9e-df52-474c-aa30-1683f79200cf",
+    "draft_hash": "bcd68c8647c89c56d476364ba90d55c93b62f425f50cd0836a6230a85946528b",
+    "condition_set_id": "cf54cd86-b7cc-4276-9620-69c5662ff186",
+    "condition_hash": "59c65d16548f9580419da293af15231ac39fec0fa43c350ec908b171217432d8",
+    "material_hash": "626b19d15aa924ce085eb18791545cda5878d2fc4905ef5bb42bc33da00393e8",
+    "results": [
+      {
+        "condition_id": "cab0cda7-2697-484c-9224-e2771cf35310",
+        "status": "pass",
+        "reason": "reading.status为pass；稿件示例给出从 tel={'jack':4098,'sape':4139} 添加 guido、删除 sape、添加 irv 及最终字典；按同一赋值规则把 jack 改为 5000，最终字典为 {'jack': 5000, 'guido': 4127, 'irv': 4127}，与材料示例和赋值/删除规则一致。",
+        "citations": [
+          {
+            "source_id": "fa6b940a-f904-4928-bd57-4a26b997f344",
+            "quote": ">>> tel = {'jack': 4098, 'sape': 4139}\n>>> tel['guido'] = 4127\n>>> tel\n{'jack': 4098, 'sape': 4139, 'guido': 4127}\n>>> tel['jack']\n4098\n>>> del tel['sape']\n>>> tel['irv'] = 4127\n>>> tel\n{'jack': 4098, 'guido': 4127, 'irv': 4127}\n>>> list(tel)\n['jack', 'guido', 'irv']\n>>> sorted(tel)\n['guido', 'irv', 'jack']\n>>> 'guido' in tel\nTrue\n>>> 'jack' not in tel\nFalse"
+          },
+          {
+            "source_id": "fa6b940a-f904-4928-bd57-4a26b997f344",
+            "quote": "The main operations on a dictionary are storing a value with some key and\nextracting the value given the key.  It is also possible to delete a key:value\npair with del. If you store using a key that is already in use, the old\nvalue associated with that key is forgotten.  It is an error to extract a value\nusing a non-existent key."
+          }
+        ],
+        "reading": {
+          "condition_id": "cab0cda7-2697-484c-9224-e2771cf35310",
+          "status": "pass",
+          "answer": "步骤与结果：从 tel = {'jack': 4098, 'sape': 4139} 开始；新增 guido:4127 用 tel['guido'] = 4127；将 jack 改为 5000 用 tel['jack'] = 5000；删除 sape 用 del tel['sape']；再新增 irv:4127 用 tel['irv'] = 4127。按插入顺序最终字典为 {'jack': 5000, 'guido': 4127, 'irv': 4127}。",
+          "reason": "稿件示例直接给出从 tel={'jack':4098,'sape':4139} 添加 guido、删除 sape、添加 irv 的操作与最终键值；用同样规则把 jack 改为 5000 即可推导。",
+          "excerpt": ">>> tel = {'jack': 4098, 'sape': 4139}\n>>> tel['guido'] = 4127\n>>> tel\n{'jack': 4098, 'sape': 4139, 'guido': 4127}\n>>> tel['jack']\n4098\n>>> del tel['sape']\n>>> tel['irv'] = 4127\n>>> tel\n{'jack': 4098, 'guido': 4127, 'irv': 4127}\n>>> list(tel)\n['jack', 'guido', 'irv']\n>>> sorted(tel)\n['guido', 'irv', 'jack']\n>>> 'guido' in tel\nTrue\n>>> 'jack' not in tel\nFalse"
+        }
+      },
+      {
+        "condition_id": "1746d92d-e0d8-42e1-99d1-9fce246021e3",
+        "status": "pass",
+        "reason": "reading.status为pass；稿件说明 list(d) 按插入顺序返回键列表，sorted(d) 返回排序后的键列表；示例直接显示 list(tel) 为 ['jack', 'guido', 'irv']、sorted(tel) 为 ['guido', 'irv', 'jack']。修改 jack 的值并删除 sape 后，键及插入顺序仍为 jack、guido、irv，因此结果与材料一致。",
+        "citations": [
+          {
+            "source_id": "fa6b940a-f904-4928-bd57-4a26b997f344",
+            "quote": ">>> tel = {'jack': 4098, 'sape': 4139}\n>>> tel['guido'] = 4127\n>>> tel\n{'jack': 4098, 'sape': 4139, 'guido': 4127}\n>>> tel['jack']\n4098\n>>> del tel['sape']\n>>> tel['irv'] = 4127\n>>> tel\n{'jack': 4098, 'guido': 4127, 'irv': 4127}\n>>> list(tel)\n['jack', 'guido', 'irv']\n>>> sorted(tel)\n['guido', 'irv', 'jack']\n>>> 'guido' in tel\nTrue\n>>> 'jack' not in tel\nFalse"
+          },
+          {
+            "source_id": "fa6b940a-f904-4928-bd57-4a26b997f344",
+            "quote": "Performing list(d) on a dictionary returns a list of all the keys\nused in the dictionary, in insertion order (if you want it sorted, just use\nsorted(d) instead). To check whether a single key is in the\ndictionary, use the in keyword."
+          }
+        ],
+        "reading": {
+          "condition_id": "1746d92d-e0d8-42e1-99d1-9fce246021e3",
+          "status": "pass",
+          "answer": "在按题述维护后的 tel = {'jack': 5000, 'guido': 4127, 'irv': 4127} 中，list(tel) 返回 ['jack', 'guido', 'irv']，sorted(tel) 返回 ['guido', 'irv', 'jack']。",
+          "reason": "稿件示例显示 list(tel) 返回插入顺序的键列表，sorted(tel) 返回排序后的键列表；jack 仍为键，guido 在 sape 删除后插入，irv 最后插入。",
+          "excerpt": ">>> tel = {'jack': 4098, 'sape': 4139}\n>>> tel['guido'] = 4127\n>>> tel\n{'jack': 4098, 'sape': 4139, 'guido': 4127}\n>>> tel['jack']\n4098\n>>> del tel['sape']\n>>> tel['irv'] = 4127\n>>> tel\n{'jack': 4098, 'guido': 4127, 'irv': 4127}\n>>> list(tel)\n['jack', 'guido', 'irv']\n>>> sorted(tel)\n['guido', 'irv', 'jack']\n>>> 'guido' in tel\nTrue\n>>> 'jack' not in tel\nFalse"
+        }
+      },
+      {
+        "condition_id": "2e1bf544-5ee6-4ea4-9d7f-99f5bfb6bd0e",
+        "status": "pass",
+        "reason": "reading.status为pass；稿件示例直接给出表达式 'guido' in tel 输出 True，且示例中 guido 被添加后仍在字典中，与材料一致。",
+        "citations": [
+          {
+            "source_id": "fa6b940a-f904-4928-bd57-4a26b997f344",
+            "quote": ">>> tel = {'jack': 4098, 'sape': 4139}\n>>> tel['guido'] = 4127\n>>> tel\n{'jack': 4098, 'sape': 4139, 'guido': 4127}\n>>> tel['jack']\n4098\n>>> del tel['sape']\n>>> tel['irv'] = 4127\n>>> tel\n{'jack': 4098, 'guido': 4127, 'irv': 4127}\n>>> list(tel)\n['jack', 'guido', 'irv']\n>>> sorted(tel)\n['guido', 'irv', 'jack']\n>>> 'guido' in tel\nTrue\n>>> 'jack' not in tel\nFalse"
+          },
+          {
+            "source_id": "fa6b940a-f904-4928-bd57-4a26b997f344",
+            "quote": "Performing list(d) on a dictionary returns a list of all the keys\nused in the dictionary, in insertion order (if you want it sorted, just use\nsorted(d) instead). To check whether a single key is in the\ndictionary, use the in keyword."
+          }
+        ],
+        "reading": {
+          "condition_id": "2e1bf544-5ee6-4ea4-9d7f-99f5bfb6bd0e",
+          "status": "pass",
+          "answer": "表达式为 'guido' in tel，结果为 True。",
+          "reason": "稿件示例中直接给出 >>> 'guido' in tel 的输出为 True。",
+          "excerpt": ">>> tel = {'jack': 4098, 'sape': 4139}\n>>> tel['guido'] = 4127\n>>> tel\n{'jack': 4098, 'sape': 4139, 'guido': 4127}\n>>> tel['jack']\n4098\n>>> del tel['sape']\n>>> tel['irv'] = 4127\n>>> tel\n{'jack': 4098, 'guido': 4127, 'irv': 4127}\n>>> list(tel)\n['jack', 'guido', 'irv']\n>>> sorted(tel)\n['guido', 'irv', 'jack']\n>>> 'guido' in tel\nTrue\n>>> 'jack' not in tel\nFalse"
+        }
+      },
+      {
+        "condition_id": "e3ddcd2b-a294-41f6-8d5e-7c1281f53d90",
+        "status": "pass",
+        "reason": "reading.status为pass；稿件说明用 del 删除键值对，且用不存在的键提取值是一个错误；示例已删除 sape，因此再读取 sape 会出错，与材料一致。",
+        "citations": [
+          {
+            "source_id": "fa6b940a-f904-4928-bd57-4a26b997f344",
+            "quote": "The main operations on a dictionary are storing a value with some key and\nextracting the value given the key.  It is also possible to delete a key:value\npair with del. If you store using a key that is already in use, the old\nvalue associated with that key is forgotten.  It is an error to extract a value\nusing a non-existent key."
+          },
+          {
+            "source_id": "fa6b940a-f904-4928-bd57-4a26b997f344",
+            "quote": ">>> tel = {'jack': 4098, 'sape': 4139}\n>>> tel['guido'] = 4127\n>>> tel\n{'jack': 4098, 'sape': 4139, 'guido': 4127}\n>>> tel['jack']\n4098\n>>> del tel['sape']\n>>> tel['irv'] = 4127\n>>> tel\n{'jack': 4098, 'guido': 4127, 'irv': 4127}\n>>> list(tel)\n['jack', 'guido', 'irv']\n>>> sorted(tel)\n['guido', 'irv', 'jack']\n>>> 'guido' in tel\nTrue\n>>> 'jack' not in tel\nFalse"
+          }
+        ],
+        "reading": {
+          "condition_id": "e3ddcd2b-a294-41f6-8d5e-7c1281f53d90",
+          "status": "pass",
+          "answer": "再读取 sape 会出错，因为 sape 已被删除，稿件说用不存在的键提取值是一个错误。例如 tel['sape'] 会报错。",
+          "reason": "稿件明确说 It is an error to extract a value using a non-existent key；且示例已 del tel['sape']。",
+          "excerpt": "The main operations on a dictionary are storing a value with some key and\nextracting the value given the key.  It is also possible to delete a key:value\npair with del. If you store using a key that is already in use, the old\nvalue associated with that key is forgotten.  It is an error to extract a value\nusing a non-existent key."
+        }
+      },
+      {
+        "condition_id": "1ad96a9f-f509-4bf0-8609-1ca5a122c390",
+        "status": "pass",
+        "reason": "reading.status为pass；稿件明确说列表不能作键，因为列表可原地修改；元组只有在仅包含字符串、数字或元组时可作键，直接或间接包含可变对象就不能作键，因此含列表的元组不可作键。",
+        "citations": [
+          {
+            "source_id": "fa6b940a-f904-4928-bd57-4a26b997f344",
+            "quote": "Another useful data type built into Python is the dictionary (see\nMapping Types — dict). Dictionaries are sometimes found in other languages as\n“associative memories” or “associative arrays”.  Unlike sequences, which are\nindexed by a range of numbers, dictionaries are indexed by keys, which can be\nany immutable type; strings and numbers can always be keys.  Tuples can be used\nas keys if they contain only strings, numbers, or tuples; if a tuple contains\nany mutable object either directly or indirectly, it cannot be used as a key.\nYou can’t use lists as keys, since lists can be modified in place using index\nassignments, slice assignments, or methods like append() and\nextend()."
+          }
+        ],
+        "reading": {
+          "condition_id": "1ad96a9f-f509-4bf0-8609-1ca5a122c390",
+          "status": "pass",
+          "answer": "用列表作键不可行，因为列表可以用索引赋值、切片赋值或 append()、extend() 等方法原地修改；含列表的元组也不可用作键，因为元组只有在只包含字符串、数字或元组时才可作为键，直接或间接包含可变对象就不能作为键。",
+          "reason": "稿件说明字典键必须是不可变类型，列表不能作键；元组只在仅含字符串、数字或元组时可作键，直接或间接含可变对象则不可。",
+          "excerpt": "Another useful data type built into Python is the dictionary (see\nMapping Types — dict). Dictionaries are sometimes found in other languages as\n“associative memories” or “associative arrays”.  Unlike sequences, which are\nindexed by a range of numbers, dictionaries are indexed by keys, which can be\nany immutable type; strings and numbers can always be keys.  Tuples can be used\nas keys if they contain only strings, numbers, or tuples; if a tuple contains\nany mutable object either directly or indirectly, it cannot be used as a key.\nYou can’t use lists as keys, since lists can be modified in place using index\nassignments, slice assignments, or methods like append() and\nextend()."
+        }
+      }
+    ],
+    "new_issues": [],
+    "mode": "live",
+    "created_at": 1791356609.2716732,
+    "model_policy": {
+      "version": "56cb27ab6fbf778239c193adfb5bcc084ca534730fef852bc02b83a150695d18",
+      "routes": {
+        "wt_conditions": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_read": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_verify": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_patch": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        }
+      },
+      "prompt_version": "windtunnel.v1"
+    },
+    "sources": [
+      {
+        "id": "e0370d9e-df52-474c-aa30-1683f79200cf",
+        "source_id": "e0370d9e-df52-474c-aa30-1683f79200cf",
+        "kind": "draft",
+        "text": "5.5. Dictionaries\n\nAnother useful data type built into Python is the dictionary (see\nMapping Types — dict). Dictionaries are sometimes found in other languages as\n“associative memories” or “associative arrays”.  Unlike sequences, which are\nindexed by a range of numbers, dictionaries are indexed by keys, which can be\nany immutable type; strings and numbers can always be keys.  Tuples can be used\nas keys if they contain only strings, numbers, or tuples; if a tuple contains\nany mutable object either directly or indirectly, it cannot be used as a key.\nYou can’t use lists as keys, since lists can be modified in place using index\nassignments, slice assignments, or methods like append() and\nextend().\n\nIt is best to think of a dictionary as a set of key: value pairs,\nwith the requirement that the keys are unique (within one dictionary). A pair of\nbraces creates an empty dictionary: {}. Placing a comma-separated list of\nkey:value pairs within the braces adds initial key:value pairs to the\ndictionary; this is also the way dictionaries are written on output.\n\nThe main operations on a dictionary are storing a value with some key and\nextracting the value given the key.  It is also possible to delete a key:value\npair with del. If you store using a key that is already in use, the old\nvalue associated with that key is forgotten.  It is an error to extract a value\nusing a non-existent key.\n\nPerforming list(d) on a dictionary returns a list of all the keys\nused in the dictionary, in insertion order (if you want it sorted, just use\nsorted(d) instead). To check whether a single key is in the\ndictionary, use the in keyword.\n\nHere is a small example using a dictionary:\n\n>>> tel = {'jack': 4098, 'sape': 4139}\n>>> tel['guido'] = 4127\n>>> tel\n{'jack': 4098, 'sape': 4139, 'guido': 4127}\n>>> tel['jack']\n4098\n>>> del tel['sape']\n>>> tel['irv'] = 4127\n>>> tel\n{'jack': 4098, 'guido': 4127, 'irv': 4127}\n>>> list(tel)\n['jack', 'guido', 'irv']\n>>> sorted(tel)\n['guido', 'irv', 'jack']\n>>> 'guido' in tel\nTrue\n>>> 'jack' not in tel\nFalse\n\nThe dict() constructor builds dictionaries directly from sequences of\nkey-value pairs:\n\n>>> dict([('sape', 4139), ('guido', 4127), ('jack', 4098)])\n{'sape': 4139, 'guido': 4127, 'jack': 4098}\n\nIn addition, dict comprehensions can be used to create dictionaries from\narbitrary key and value expressions:\n\n>>> {x: x**2 for x in (2, 4, 6)}\n{2: 4, 4: 16, 6: 36}\n\nWhen the keys are simple strings, it is sometimes easier to specify pairs using\nkeyword arguments:\n\n>>> dict(sape=4139, guido=4127, jack=4098)\n{'sape': 4139, 'guido': 4127, 'jack': 4098}",
+        "hash": "bcd68c8647c89c56d476364ba90d55c93b62f425f50cd0836a6230a85946528b"
+      },
+      {
+        "id": "fa6b940a-f904-4928-bd57-4a26b997f344",
+        "kind": "material",
+        "text": "5.5. Dictionaries\n\nAnother useful data type built into Python is the dictionary (see\nMapping Types — dict). Dictionaries are sometimes found in other languages as\n“associative memories” or “associative arrays”.  Unlike sequences, which are\nindexed by a range of numbers, dictionaries are indexed by keys, which can be\nany immutable type; strings and numbers can always be keys.  Tuples can be used\nas keys if they contain only strings, numbers, or tuples; if a tuple contains\nany mutable object either directly or indirectly, it cannot be used as a key.\nYou can’t use lists as keys, since lists can be modified in place using index\nassignments, slice assignments, or methods like append() and\nextend().\n\nIt is best to think of a dictionary as a set of key: value pairs,\nwith the requirement that the keys are unique (within one dictionary). A pair of\nbraces creates an empty dictionary: {}. Placing a comma-separated list of\nkey:value pairs within the braces adds initial key:value pairs to the\ndictionary; this is also the way dictionaries are written on output.\n\nThe main operations on a dictionary are storing a value with some key and\nextracting the value given the key.  It is also possible to delete a key:value\npair with del. If you store using a key that is already in use, the old\nvalue associated with that key is forgotten.  It is an error to extract a value\nusing a non-existent key.\n\nPerforming list(d) on a dictionary returns a list of all the keys\nused in the dictionary, in insertion order (if you want it sorted, just use\nsorted(d) instead). To check whether a single key is in the\ndictionary, use the in keyword.\n\nHere is a small example using a dictionary:\n\n>>> tel = {'jack': 4098, 'sape': 4139}\n>>> tel['guido'] = 4127\n>>> tel\n{'jack': 4098, 'sape': 4139, 'guido': 4127}\n>>> tel['jack']\n4098\n>>> del tel['sape']\n>>> tel['irv'] = 4127\n>>> tel\n{'jack': 4098, 'guido': 4127, 'irv': 4127}\n>>> list(tel)\n['jack', 'guido', 'irv']\n>>> sorted(tel)\n['guido', 'irv', 'jack']\n>>> 'guido' in tel\nTrue\n>>> 'jack' not in tel\nFalse\n\nThe dict() constructor builds dictionaries directly from sequences of\nkey-value pairs:\n\n>>> dict([('sape', 4139), ('guido', 4127), ('jack', 4098)])\n{'sape': 4139, 'guido': 4127, 'jack': 4098}\n\nIn addition, dict comprehensions can be used to create dictionaries from\narbitrary key and value expressions:\n\n>>> {x: x**2 for x in (2, 4, 6)}\n{2: 4, 4: 16, 6: 36}\n\nWhen the keys are simple strings, it is sometimes easier to specify pairs using\nkeyword arguments:\n\n>>> dict(sape=4139, guido=4127, jack=4098)\n{'sape': 4139, 'guido': 4127, 'jack': 4098}",
+        "title": "字典",
+        "origin": "https://docs.python.org/3.12/tutorial/datastructures.html#dictionaries",
+        "provenance": "author_material",
+        "permission": false,
+        "version": 1,
+        "hash": "f945855024f1f68b9308a460c81bd165d11e15d390ce69c43ca0d710a77f41b8",
+        "collected_at": 1791356597.611882
+      }
+    ]
+  },
+  "final_report": {
+    "id": "7ab2b4a8-75d9-491a-a05e-1da0ef97f0f2",
+    "batch_id": "1360d764-4cec-4d03-946d-d000e5a9548d",
+    "draft_id": "e0370d9e-df52-474c-aa30-1683f79200cf",
+    "draft_hash": "bcd68c8647c89c56d476364ba90d55c93b62f425f50cd0836a6230a85946528b",
+    "condition_set_id": "cf54cd86-b7cc-4276-9620-69c5662ff186",
+    "condition_hash": "59c65d16548f9580419da293af15231ac39fec0fa43c350ec908b171217432d8",
+    "material_hash": "626b19d15aa924ce085eb18791545cda5878d2fc4905ef5bb42bc33da00393e8",
+    "results": [
+      {
+        "condition_id": "cab0cda7-2697-484c-9224-e2771cf35310",
+        "status": "pass",
+        "reason": "reading.status为pass；稿件示例给出从 tel={'jack':4098,'sape':4139} 添加 guido、删除 sape、添加 irv 及最终字典；按同一赋值规则把 jack 改为 5000，最终字典为 {'jack': 5000, 'guido': 4127, 'irv': 4127}，与材料示例和赋值/删除规则一致。",
+        "citations": [
+          {
+            "source_id": "fa6b940a-f904-4928-bd57-4a26b997f344",
+            "quote": ">>> tel = {'jack': 4098, 'sape': 4139}\n>>> tel['guido'] = 4127\n>>> tel\n{'jack': 4098, 'sape': 4139, 'guido': 4127}\n>>> tel['jack']\n4098\n>>> del tel['sape']\n>>> tel['irv'] = 4127\n>>> tel\n{'jack': 4098, 'guido': 4127, 'irv': 4127}\n>>> list(tel)\n['jack', 'guido', 'irv']\n>>> sorted(tel)\n['guido', 'irv', 'jack']\n>>> 'guido' in tel\nTrue\n>>> 'jack' not in tel\nFalse"
+          },
+          {
+            "source_id": "fa6b940a-f904-4928-bd57-4a26b997f344",
+            "quote": "The main operations on a dictionary are storing a value with some key and\nextracting the value given the key.  It is also possible to delete a key:value\npair with del. If you store using a key that is already in use, the old\nvalue associated with that key is forgotten.  It is an error to extract a value\nusing a non-existent key."
+          }
+        ],
+        "reading": {
+          "condition_id": "cab0cda7-2697-484c-9224-e2771cf35310",
+          "status": "pass",
+          "answer": "步骤与结果：从 tel = {'jack': 4098, 'sape': 4139} 开始；新增 guido:4127 用 tel['guido'] = 4127；将 jack 改为 5000 用 tel['jack'] = 5000；删除 sape 用 del tel['sape']；再新增 irv:4127 用 tel['irv'] = 4127。按插入顺序最终字典为 {'jack': 5000, 'guido': 4127, 'irv': 4127}。",
+          "reason": "稿件示例直接给出从 tel={'jack':4098,'sape':4139} 添加 guido、删除 sape、添加 irv 的操作与最终键值；用同样规则把 jack 改为 5000 即可推导。",
+          "excerpt": ">>> tel = {'jack': 4098, 'sape': 4139}\n>>> tel['guido'] = 4127\n>>> tel\n{'jack': 4098, 'sape': 4139, 'guido': 4127}\n>>> tel['jack']\n4098\n>>> del tel['sape']\n>>> tel['irv'] = 4127\n>>> tel\n{'jack': 4098, 'guido': 4127, 'irv': 4127}\n>>> list(tel)\n['jack', 'guido', 'irv']\n>>> sorted(tel)\n['guido', 'irv', 'jack']\n>>> 'guido' in tel\nTrue\n>>> 'jack' not in tel\nFalse"
+        }
+      },
+      {
+        "condition_id": "1746d92d-e0d8-42e1-99d1-9fce246021e3",
+        "status": "pass",
+        "reason": "reading.status为pass；稿件说明 list(d) 按插入顺序返回键列表，sorted(d) 返回排序后的键列表；示例直接显示 list(tel) 为 ['jack', 'guido', 'irv']、sorted(tel) 为 ['guido', 'irv', 'jack']。修改 jack 的值并删除 sape 后，键及插入顺序仍为 jack、guido、irv，因此结果与材料一致。",
+        "citations": [
+          {
+            "source_id": "fa6b940a-f904-4928-bd57-4a26b997f344",
+            "quote": ">>> tel = {'jack': 4098, 'sape': 4139}\n>>> tel['guido'] = 4127\n>>> tel\n{'jack': 4098, 'sape': 4139, 'guido': 4127}\n>>> tel['jack']\n4098\n>>> del tel['sape']\n>>> tel['irv'] = 4127\n>>> tel\n{'jack': 4098, 'guido': 4127, 'irv': 4127}\n>>> list(tel)\n['jack', 'guido', 'irv']\n>>> sorted(tel)\n['guido', 'irv', 'jack']\n>>> 'guido' in tel\nTrue\n>>> 'jack' not in tel\nFalse"
+          },
+          {
+            "source_id": "fa6b940a-f904-4928-bd57-4a26b997f344",
+            "quote": "Performing list(d) on a dictionary returns a list of all the keys\nused in the dictionary, in insertion order (if you want it sorted, just use\nsorted(d) instead). To check whether a single key is in the\ndictionary, use the in keyword."
+          }
+        ],
+        "reading": {
+          "condition_id": "1746d92d-e0d8-42e1-99d1-9fce246021e3",
+          "status": "pass",
+          "answer": "在按题述维护后的 tel = {'jack': 5000, 'guido': 4127, 'irv': 4127} 中，list(tel) 返回 ['jack', 'guido', 'irv']，sorted(tel) 返回 ['guido', 'irv', 'jack']。",
+          "reason": "稿件示例显示 list(tel) 返回插入顺序的键列表，sorted(tel) 返回排序后的键列表；jack 仍为键，guido 在 sape 删除后插入，irv 最后插入。",
+          "excerpt": ">>> tel = {'jack': 4098, 'sape': 4139}\n>>> tel['guido'] = 4127\n>>> tel\n{'jack': 4098, 'sape': 4139, 'guido': 4127}\n>>> tel['jack']\n4098\n>>> del tel['sape']\n>>> tel['irv'] = 4127\n>>> tel\n{'jack': 4098, 'guido': 4127, 'irv': 4127}\n>>> list(tel)\n['jack', 'guido', 'irv']\n>>> sorted(tel)\n['guido', 'irv', 'jack']\n>>> 'guido' in tel\nTrue\n>>> 'jack' not in tel\nFalse"
+        }
+      },
+      {
+        "condition_id": "2e1bf544-5ee6-4ea4-9d7f-99f5bfb6bd0e",
+        "status": "pass",
+        "reason": "reading.status为pass；稿件示例直接给出表达式 'guido' in tel 输出 True，且示例中 guido 被添加后仍在字典中，与材料一致。",
+        "citations": [
+          {
+            "source_id": "fa6b940a-f904-4928-bd57-4a26b997f344",
+            "quote": ">>> tel = {'jack': 4098, 'sape': 4139}\n>>> tel['guido'] = 4127\n>>> tel\n{'jack': 4098, 'sape': 4139, 'guido': 4127}\n>>> tel['jack']\n4098\n>>> del tel['sape']\n>>> tel['irv'] = 4127\n>>> tel\n{'jack': 4098, 'guido': 4127, 'irv': 4127}\n>>> list(tel)\n['jack', 'guido', 'irv']\n>>> sorted(tel)\n['guido', 'irv', 'jack']\n>>> 'guido' in tel\nTrue\n>>> 'jack' not in tel\nFalse"
+          },
+          {
+            "source_id": "fa6b940a-f904-4928-bd57-4a26b997f344",
+            "quote": "Performing list(d) on a dictionary returns a list of all the keys\nused in the dictionary, in insertion order (if you want it sorted, just use\nsorted(d) instead). To check whether a single key is in the\ndictionary, use the in keyword."
+          }
+        ],
+        "reading": {
+          "condition_id": "2e1bf544-5ee6-4ea4-9d7f-99f5bfb6bd0e",
+          "status": "pass",
+          "answer": "表达式为 'guido' in tel，结果为 True。",
+          "reason": "稿件示例中直接给出 >>> 'guido' in tel 的输出为 True。",
+          "excerpt": ">>> tel = {'jack': 4098, 'sape': 4139}\n>>> tel['guido'] = 4127\n>>> tel\n{'jack': 4098, 'sape': 4139, 'guido': 4127}\n>>> tel['jack']\n4098\n>>> del tel['sape']\n>>> tel['irv'] = 4127\n>>> tel\n{'jack': 4098, 'guido': 4127, 'irv': 4127}\n>>> list(tel)\n['jack', 'guido', 'irv']\n>>> sorted(tel)\n['guido', 'irv', 'jack']\n>>> 'guido' in tel\nTrue\n>>> 'jack' not in tel\nFalse"
+        }
+      },
+      {
+        "condition_id": "e3ddcd2b-a294-41f6-8d5e-7c1281f53d90",
+        "status": "pass",
+        "reason": "reading.status为pass；稿件说明用 del 删除键值对，且用不存在的键提取值是一个错误；示例已删除 sape，因此再读取 sape 会出错，与材料一致。",
+        "citations": [
+          {
+            "source_id": "fa6b940a-f904-4928-bd57-4a26b997f344",
+            "quote": "The main operations on a dictionary are storing a value with some key and\nextracting the value given the key.  It is also possible to delete a key:value\npair with del. If you store using a key that is already in use, the old\nvalue associated with that key is forgotten.  It is an error to extract a value\nusing a non-existent key."
+          },
+          {
+            "source_id": "fa6b940a-f904-4928-bd57-4a26b997f344",
+            "quote": ">>> tel = {'jack': 4098, 'sape': 4139}\n>>> tel['guido'] = 4127\n>>> tel\n{'jack': 4098, 'sape': 4139, 'guido': 4127}\n>>> tel['jack']\n4098\n>>> del tel['sape']\n>>> tel['irv'] = 4127\n>>> tel\n{'jack': 4098, 'guido': 4127, 'irv': 4127}\n>>> list(tel)\n['jack', 'guido', 'irv']\n>>> sorted(tel)\n['guido', 'irv', 'jack']\n>>> 'guido' in tel\nTrue\n>>> 'jack' not in tel\nFalse"
+          }
+        ],
+        "reading": {
+          "condition_id": "e3ddcd2b-a294-41f6-8d5e-7c1281f53d90",
+          "status": "pass",
+          "answer": "再读取 sape 会出错，因为 sape 已被删除，稿件说用不存在的键提取值是一个错误。例如 tel['sape'] 会报错。",
+          "reason": "稿件明确说 It is an error to extract a value using a non-existent key；且示例已 del tel['sape']。",
+          "excerpt": "The main operations on a dictionary are storing a value with some key and\nextracting the value given the key.  It is also possible to delete a key:value\npair with del. If you store using a key that is already in use, the old\nvalue associated with that key is forgotten.  It is an error to extract a value\nusing a non-existent key."
+        }
+      },
+      {
+        "condition_id": "1ad96a9f-f509-4bf0-8609-1ca5a122c390",
+        "status": "pass",
+        "reason": "reading.status为pass；稿件明确说列表不能作键，因为列表可原地修改；元组只有在仅包含字符串、数字或元组时可作键，直接或间接包含可变对象就不能作键，因此含列表的元组不可作键。",
+        "citations": [
+          {
+            "source_id": "fa6b940a-f904-4928-bd57-4a26b997f344",
+            "quote": "Another useful data type built into Python is the dictionary (see\nMapping Types — dict). Dictionaries are sometimes found in other languages as\n“associative memories” or “associative arrays”.  Unlike sequences, which are\nindexed by a range of numbers, dictionaries are indexed by keys, which can be\nany immutable type; strings and numbers can always be keys.  Tuples can be used\nas keys if they contain only strings, numbers, or tuples; if a tuple contains\nany mutable object either directly or indirectly, it cannot be used as a key.\nYou can’t use lists as keys, since lists can be modified in place using index\nassignments, slice assignments, or methods like append() and\nextend()."
+          }
+        ],
+        "reading": {
+          "condition_id": "1ad96a9f-f509-4bf0-8609-1ca5a122c390",
+          "status": "pass",
+          "answer": "用列表作键不可行，因为列表可以用索引赋值、切片赋值或 append()、extend() 等方法原地修改；含列表的元组也不可用作键，因为元组只有在只包含字符串、数字或元组时才可作为键，直接或间接包含可变对象就不能作为键。",
+          "reason": "稿件说明字典键必须是不可变类型，列表不能作键；元组只在仅含字符串、数字或元组时可作键，直接或间接含可变对象则不可。",
+          "excerpt": "Another useful data type built into Python is the dictionary (see\nMapping Types — dict). Dictionaries are sometimes found in other languages as\n“associative memories” or “associative arrays”.  Unlike sequences, which are\nindexed by a range of numbers, dictionaries are indexed by keys, which can be\nany immutable type; strings and numbers can always be keys.  Tuples can be used\nas keys if they contain only strings, numbers, or tuples; if a tuple contains\nany mutable object either directly or indirectly, it cannot be used as a key.\nYou can’t use lists as keys, since lists can be modified in place using index\nassignments, slice assignments, or methods like append() and\nextend()."
+        }
+      }
+    ],
+    "new_issues": [],
+    "mode": "live",
+    "created_at": 1791356609.2716732,
+    "model_policy": {
+      "version": "56cb27ab6fbf778239c193adfb5bcc084ca534730fef852bc02b83a150695d18",
+      "routes": {
+        "wt_conditions": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_read": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_verify": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_patch": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        }
+      },
+      "prompt_version": "windtunnel.v1"
+    },
+    "sources": [
+      {
+        "id": "e0370d9e-df52-474c-aa30-1683f79200cf",
+        "source_id": "e0370d9e-df52-474c-aa30-1683f79200cf",
+        "kind": "draft",
+        "text": "5.5. Dictionaries\n\nAnother useful data type built into Python is the dictionary (see\nMapping Types — dict). Dictionaries are sometimes found in other languages as\n“associative memories” or “associative arrays”.  Unlike sequences, which are\nindexed by a range of numbers, dictionaries are indexed by keys, which can be\nany immutable type; strings and numbers can always be keys.  Tuples can be used\nas keys if they contain only strings, numbers, or tuples; if a tuple contains\nany mutable object either directly or indirectly, it cannot be used as a key.\nYou can’t use lists as keys, since lists can be modified in place using index\nassignments, slice assignments, or methods like append() and\nextend().\n\nIt is best to think of a dictionary as a set of key: value pairs,\nwith the requirement that the keys are unique (within one dictionary). A pair of\nbraces creates an empty dictionary: {}. Placing a comma-separated list of\nkey:value pairs within the braces adds initial key:value pairs to the\ndictionary; this is also the way dictionaries are written on output.\n\nThe main operations on a dictionary are storing a value with some key and\nextracting the value given the key.  It is also possible to delete a key:value\npair with del. If you store using a key that is already in use, the old\nvalue associated with that key is forgotten.  It is an error to extract a value\nusing a non-existent key.\n\nPerforming list(d) on a dictionary returns a list of all the keys\nused in the dictionary, in insertion order (if you want it sorted, just use\nsorted(d) instead). To check whether a single key is in the\ndictionary, use the in keyword.\n\nHere is a small example using a dictionary:\n\n>>> tel = {'jack': 4098, 'sape': 4139}\n>>> tel['guido'] = 4127\n>>> tel\n{'jack': 4098, 'sape': 4139, 'guido': 4127}\n>>> tel['jack']\n4098\n>>> del tel['sape']\n>>> tel['irv'] = 4127\n>>> tel\n{'jack': 4098, 'guido': 4127, 'irv': 4127}\n>>> list(tel)\n['jack', 'guido', 'irv']\n>>> sorted(tel)\n['guido', 'irv', 'jack']\n>>> 'guido' in tel\nTrue\n>>> 'jack' not in tel\nFalse\n\nThe dict() constructor builds dictionaries directly from sequences of\nkey-value pairs:\n\n>>> dict([('sape', 4139), ('guido', 4127), ('jack', 4098)])\n{'sape': 4139, 'guido': 4127, 'jack': 4098}\n\nIn addition, dict comprehensions can be used to create dictionaries from\narbitrary key and value expressions:\n\n>>> {x: x**2 for x in (2, 4, 6)}\n{2: 4, 4: 16, 6: 36}\n\nWhen the keys are simple strings, it is sometimes easier to specify pairs using\nkeyword arguments:\n\n>>> dict(sape=4139, guido=4127, jack=4098)\n{'sape': 4139, 'guido': 4127, 'jack': 4098}",
+        "hash": "bcd68c8647c89c56d476364ba90d55c93b62f425f50cd0836a6230a85946528b"
+      },
+      {
+        "id": "fa6b940a-f904-4928-bd57-4a26b997f344",
+        "kind": "material",
+        "text": "5.5. Dictionaries\n\nAnother useful data type built into Python is the dictionary (see\nMapping Types — dict). Dictionaries are sometimes found in other languages as\n“associative memories” or “associative arrays”.  Unlike sequences, which are\nindexed by a range of numbers, dictionaries are indexed by keys, which can be\nany immutable type; strings and numbers can always be keys.  Tuples can be used\nas keys if they contain only strings, numbers, or tuples; if a tuple contains\nany mutable object either directly or indirectly, it cannot be used as a key.\nYou can’t use lists as keys, since lists can be modified in place using index\nassignments, slice assignments, or methods like append() and\nextend().\n\nIt is best to think of a dictionary as a set of key: value pairs,\nwith the requirement that the keys are unique (within one dictionary). A pair of\nbraces creates an empty dictionary: {}. Placing a comma-separated list of\nkey:value pairs within the braces adds initial key:value pairs to the\ndictionary; this is also the way dictionaries are written on output.\n\nThe main operations on a dictionary are storing a value with some key and\nextracting the value given the key.  It is also possible to delete a key:value\npair with del. If you store using a key that is already in use, the old\nvalue associated with that key is forgotten.  It is an error to extract a value\nusing a non-existent key.\n\nPerforming list(d) on a dictionary returns a list of all the keys\nused in the dictionary, in insertion order (if you want it sorted, just use\nsorted(d) instead). To check whether a single key is in the\ndictionary, use the in keyword.\n\nHere is a small example using a dictionary:\n\n>>> tel = {'jack': 4098, 'sape': 4139}\n>>> tel['guido'] = 4127\n>>> tel\n{'jack': 4098, 'sape': 4139, 'guido': 4127}\n>>> tel['jack']\n4098\n>>> del tel['sape']\n>>> tel['irv'] = 4127\n>>> tel\n{'jack': 4098, 'guido': 4127, 'irv': 4127}\n>>> list(tel)\n['jack', 'guido', 'irv']\n>>> sorted(tel)\n['guido', 'irv', 'jack']\n>>> 'guido' in tel\nTrue\n>>> 'jack' not in tel\nFalse\n\nThe dict() constructor builds dictionaries directly from sequences of\nkey-value pairs:\n\n>>> dict([('sape', 4139), ('guido', 4127), ('jack', 4098)])\n{'sape': 4139, 'guido': 4127, 'jack': 4098}\n\nIn addition, dict comprehensions can be used to create dictionaries from\narbitrary key and value expressions:\n\n>>> {x: x**2 for x in (2, 4, 6)}\n{2: 4, 4: 16, 6: 36}\n\nWhen the keys are simple strings, it is sometimes easier to specify pairs using\nkeyword arguments:\n\n>>> dict(sape=4139, guido=4127, jack=4098)\n{'sape': 4139, 'guido': 4127, 'jack': 4098}",
+        "title": "字典",
+        "origin": "https://docs.python.org/3.12/tutorial/datastructures.html#dictionaries",
+        "provenance": "author_material",
+        "permission": false,
+        "version": 1,
+        "hash": "f945855024f1f68b9308a460c81bd165d11e15d390ce69c43ca0d710a77f41b8",
+        "collected_at": 1791356597.611882
+      }
+    ]
+  },
+  "unresolved_conditions": [],
+  "effective_repair_confirmed": false,
+  "run_id": "ac7fd2ff-8a49-4107-856c-f1bcd3a9c27c",
+  "wall_seconds": 11.672,
+  "final_sha256": "5ae9dd634db54503543ac690d00aaba9b7ca8c69e2091cb09f491a1a934abbbc",
+  "changed": false,
+  "calls": [
+    {
+      "stage": "wt_conditions",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 278,
+      "output_tokens": 449,
+      "total_tokens": 727,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "conditions": [
+          {
+            "question": "作者是否先给出维护后 tel 的最终状态，让读者能据此核对每一步（添加 guido:4127、jack 改为 5000、删除 sape、再加 irv:4127）的结果？",
+            "scene": "Python 3.12 初学者教程；从 tel={'jack':4098,'sape':4139} 开始进行新增、修改、删除、再新增操作。",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "作者是否说明 list(tel) 与 sorted(tel) 在本例中的区别，并给出二者在操作完成后的具体结果？",
+            "scene": "Python 3.12 初学者教程；最终字典确定后，展示键的列表视图与排序键列表。",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "作者是否写出检查 guido 是否存在的完整表达式，并说明其在本例中的布尔结果？",
+            "scene": "Python 3.12 初学者教程；检查键是否存在于字典。",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "作者是否说明在删除 sape 之后再读取 tel['sape'] 会发生什么（异常类型/行为），以及如何避免或处理？",
+            "scene": "Python 3.12 初学者教程；删除键后再次访问该键。",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "作者是否解释为何列表不能作为字典键，并说明用“含列表的元组”作键是否可行及原因？",
+            "scene": "Python 3.12 初学者教程；讨论字典键的可哈希性要求。",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "作者是否为上述每一项（最终字典、list(tel)、sorted(tel)、存在性检查、读 sape、非法键）都提供了稿内证据位置，便于读者定位？",
+            "scene": "Python 3.12 初学者教程；为每个结论附稿内证据。",
+            "source_ids": [],
+            "origin": "author"
+          }
+        ]
+      }
+    },
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 3183,
+      "output_tokens": 1002,
+      "total_tokens": 4185,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "results": [
+          {
+            "condition_id": "cab0cda7-2697-484c-9224-e2771cf35310",
+            "status": "pass",
+            "answer": "步骤与结果：从 tel = {'jack': 4098, 'sape': 4139} 开始；新增 guido:4127 用 tel['guido'] = 4127；将 jack 改为 5000 用 tel['jack'] = 5000；删除 sape 用 del tel['sape']；再新增 irv:4127 用 tel['irv'] = 4127。按插入顺序最终字典为 {'jack': 5000, 'guido': 4127, 'irv': 4127}。",
+            "excerpt_id": "reading:bcd68c8647c89c56d476364ba90d55c93b62f425f50cd0836a6230a85946528b:P7",
+            "reason": "稿件示例直接给出从 tel={'jack':4098,'sape':4139} 添加 guido、删除 sape、添加 irv 的操作与最终键值；用同样规则把 jack 改为 5000 即可推导。"
+          },
+          {
+            "condition_id": "1746d92d-e0d8-42e1-99d1-9fce246021e3",
+            "status": "pass",
+            "answer": "在按题述维护后的 tel = {'jack': 5000, 'guido': 4127, 'irv': 4127} 中，list(tel) 返回 ['jack', 'guido', 'irv']，sorted(tel) 返回 ['guido', 'irv', 'jack']。",
+            "excerpt_id": "reading:bcd68c8647c89c56d476364ba90d55c93b62f425f50cd0836a6230a85946528b:P7",
+            "reason": "稿件示例显示 list(tel) 返回插入顺序的键列表，sorted(tel) 返回排序后的键列表；jack 仍为键，guido 在 sape 删除后插入，irv 最后插入。"
+          },
+          {
+            "condition_id": "2e1bf544-5ee6-4ea4-9d7f-99f5bfb6bd0e",
+            "status": "pass",
+            "answer": "表达式为 'guido' in tel，结果为 True。",
+            "excerpt_id": "reading:bcd68c8647c89c56d476364ba90d55c93b62f425f50cd0836a6230a85946528b:P7",
+            "reason": "稿件示例中直接给出 >>> 'guido' in tel 的输出为 True。"
+          },
+          {
+            "condition_id": "e3ddcd2b-a294-41f6-8d5e-7c1281f53d90",
+            "status": "pass",
+            "answer": "再读取 sape 会出错，因为 sape 已被删除，稿件说用不存在的键提取值是一个错误。例如 tel['sape'] 会报错。",
+            "excerpt_id": "reading:bcd68c8647c89c56d476364ba90d55c93b62f425f50cd0836a6230a85946528b:P4",
+            "reason": "稿件明确说 It is an error to extract a value using a non-existent key；且示例已 del tel['sape']。"
+          },
+          {
+            "condition_id": "1ad96a9f-f509-4bf0-8609-1ca5a122c390",
+            "status": "pass",
+            "answer": "用列表作键不可行，因为列表可以用索引赋值、切片赋值或 append()、extend() 等方法原地修改；含列表的元组也不可用作键，因为元组只有在只包含字符串、数字或元组时才可作为键，直接或间接包含可变对象就不能作为键。",
+            "excerpt_id": "reading:bcd68c8647c89c56d476364ba90d55c93b62f425f50cd0836a6230a85946528b:P2",
+            "reason": "稿件说明字典键必须是不可变类型，列表不能作键；元组只在仅含字符串、数字或元组时可作键，直接或间接含可变对象则不可。"
+          }
+        ]
+      }
+    },
+    {
+      "stage": "wt_verify",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 6105,
+      "output_tokens": 1258,
+      "total_tokens": 7363,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "results": [
+          {
+            "condition_id": "cab0cda7-2697-484c-9224-e2771cf35310",
+            "status": "pass",
+            "reason": "reading.status为pass；稿件示例给出从 tel={'jack':4098,'sape':4139} 添加 guido、删除 sape、添加 irv 及最终字典；按同一赋值规则把 jack 改为 5000，最终字典为 {'jack': 5000, 'guido': 4127, 'irv': 4127}，与材料示例和赋值/删除规则一致。",
+            "citations": [
+              {
+                "evidence_id": "fa6b940a-f904-4928-bd57-4a26b997f344:f945855024f1f68b9308a460c81bd165d11e15d390ce69c43ca0d710a77f41b8:P7"
+              },
+              {
+                "evidence_id": "fa6b940a-f904-4928-bd57-4a26b997f344:f945855024f1f68b9308a460c81bd165d11e15d390ce69c43ca0d710a77f41b8:P4"
+              }
+            ]
+          },
+          {
+            "condition_id": "1746d92d-e0d8-42e1-99d1-9fce246021e3",
+            "status": "pass",
+            "reason": "reading.status为pass；稿件说明 list(d) 按插入顺序返回键列表，sorted(d) 返回排序后的键列表；示例直接显示 list(tel) 为 ['jack', 'guido', 'irv']、sorted(tel) 为 ['guido', 'irv', 'jack']。修改 jack 的值并删除 sape 后，键及插入顺序仍为 jack、guido、irv，因此结果与材料一致。",
+            "citations": [
+              {
+                "evidence_id": "fa6b940a-f904-4928-bd57-4a26b997f344:f945855024f1f68b9308a460c81bd165d11e15d390ce69c43ca0d710a77f41b8:P7"
+              },
+              {
+                "evidence_id": "fa6b940a-f904-4928-bd57-4a26b997f344:f945855024f1f68b9308a460c81bd165d11e15d390ce69c43ca0d710a77f41b8:P5"
+              }
+            ]
+          },
+          {
+            "condition_id": "2e1bf544-5ee6-4ea4-9d7f-99f5bfb6bd0e",
+            "status": "pass",
+            "reason": "reading.status为pass；稿件示例直接给出表达式 'guido' in tel 输出 True，且示例中 guido 被添加后仍在字典中，与材料一致。",
+            "citations": [
+              {
+                "evidence_id": "fa6b940a-f904-4928-bd57-4a26b997f344:f945855024f1f68b9308a460c81bd165d11e15d390ce69c43ca0d710a77f41b8:P7"
+              },
+              {
+                "evidence_id": "fa6b940a-f904-4928-bd57-4a26b997f344:f945855024f1f68b9308a460c81bd165d11e15d390ce69c43ca0d710a77f41b8:P5"
+              }
+            ]
+          },
+          {
+            "condition_id": "e3ddcd2b-a294-41f6-8d5e-7c1281f53d90",
+            "status": "pass",
+            "reason": "reading.status为pass；稿件说明用 del 删除键值对，且用不存在的键提取值是一个错误；示例已删除 sape，因此再读取 sape 会出错，与材料一致。",
+            "citations": [
+              {
+                "evidence_id": "fa6b940a-f904-4928-bd57-4a26b997f344:f945855024f1f68b9308a460c81bd165d11e15d390ce69c43ca0d710a77f41b8:P4"
+              },
+              {
+                "evidence_id": "fa6b940a-f904-4928-bd57-4a26b997f344:f945855024f1f68b9308a460c81bd165d11e15d390ce69c43ca0d710a77f41b8:P7"
+              }
+            ]
+          },
+          {
+            "condition_id": "1ad96a9f-f509-4bf0-8609-1ca5a122c390",
+            "status": "pass",
+            "reason": "reading.status为pass；稿件明确说列表不能作键，因为列表可原地修改；元组只有在仅包含字符串、数字或元组时可作键，直接或间接包含可变对象就不能作键，因此含列表的元组不可作键。",
+            "citations": [
+              {
+                "evidence_id": "fa6b940a-f904-4928-bd57-4a26b997f344:f945855024f1f68b9308a460c81bd165d11e15d390ce69c43ca0d710a77f41b8:P2"
+              }
+            ]
+          }
+        ],
+        "new_issues": []
+      }
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 1.48075,
+    "reserved_unknown_cny": 0.04281,
+    "committed_upper_cny": 1.52356,
+    "calls": 121,
+    "unknown_calls": 1
+  }
+}

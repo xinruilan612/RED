@@ -1,0 +1,69 @@
+{
+  "status": "received_user_confirmed_independent",
+  "distinct_people": 3,
+  "independent_reviewers": 3,
+  "rows": 18,
+  "scores": 90,
+  "notes_filled": 0,
+  "all": {
+    "completeness": 3.5555555555555554,
+    "factuality": 3.888888888888889,
+    "coherence": 3.9444444444444446,
+    "naturalness": 4,
+    "usefulness": 4.055555555555555,
+    "overall": 3.888888888888889
+  },
+  "groups": {
+    "A": {
+      "completeness": 3.6666666666666665,
+      "factuality": 3.888888888888889,
+      "coherence": 3.888888888888889,
+      "naturalness": 4.222222222222222,
+      "usefulness": 4.111111111111111,
+      "overall": 3.9555555555555557
+    },
+    "E": {
+      "completeness": 3.4444444444444446,
+      "factuality": 3.888888888888889,
+      "coherence": 4,
+      "naturalness": 3.7777777777777777,
+      "usefulness": 4,
+      "overall": 3.8222222222222224
+    }
+  },
+  "tasks": {
+    "REAL-D01": {
+      "A": 4,
+      "E": 3.533333333333333
+    },
+    "REAL-D02": {
+      "A": 3.6666666666666665,
+      "E": 4.133333333333334
+    },
+    "REAL-H01": {
+      "A": 4.2,
+      "E": 3.8
+    }
+  },
+  "sources": [
+    {
+      "path": "/Users/lanxinrui/Downloads/reviewer-01-scores.csv",
+      "sha256": "69ff8a48cdbc70b196c24b806da396bd39837a2b0a8ac9a56d3318d87d309527",
+      "archived_path": "originals/reviewer-01-scores.csv"
+    },
+    {
+      "path": "/Users/lanxinrui/Downloads/reviewer-02-scores.csv",
+      "sha256": "641d2754308b14be8c89c94225e771897875be8b59d37cf0f85de2e5d86ce8f0",
+      "archived_path": "originals/reviewer-02-scores.csv"
+    },
+    {
+      "path": "/Users/lanxinrui/Downloads/reviewer-03-scores.csv",
+      "sha256": "da0fb2373d21351437ad162e068acf5307e6a5bcaaf8d2d7677a84525fe32fad",
+      "archived_path": "originals/reviewer-03-scores.csv"
+    }
+  ],
+  "source_generation_commit": "6f925cf",
+  "supports_current_v3_quality": false,
+  "independence_basis": "用户于2026-11-03明确确认三份由三位未参与开发的人分别填写；未另外核验身份",
+  "quality_improvement_supported": false
+}

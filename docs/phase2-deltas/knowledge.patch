@@ -1,0 +1,55 @@
+--- a/frontend/knowledge.js
++++ b/frontend/knowledge.js
+@@ -67 +67 @@
+-function ragSearchPanel(){return `<section class="panel"><h2>想研究什么主题？</h2><p class="muted">研究助手先寻找并读取资料。预览结果、勾选确认后，资料才会加入当前账号供后续创作使用。</p><form id="ragSearchForm"><label for="ragQuery">主题</label><input id="ragQuery" required minlength="2" maxlength="120" placeholder="例如：适合通勤的口红色号"><label for="ragProvider">资料来源</label><select id="ragProvider"><option value="xhs_local">小红书公开笔记</option><option value="bing">公开网页</option><option value="baidu">百度搜索（需配置）</option><option value="wikipedia">百科资料</option></select><details id="ragAdvanced"><summary>高级筛选（可选）</summary><div class="rag-filters"><div><label for="ragLikes">点赞至少</label><input id="ragLikes" type="number" min="1" max="1000000000" value="100" required></div><div><label for="ragFavorites">或收藏至少</label><input id="ragFavorites" type="number" min="1" max="1000000000" value="50" required></div><div><label for="ragSort">优先排序</label><select id="ragSort"><option value="likes">最多点赞</option><option value="favorites">最多收藏</option></select></div></div><p class="helper">小红书结果需达到任一赞藏阈值；最多核对 6 篇、提供 3 篇候选。视频仅使用文字描述。</p></details><button class="primary">搜索资料</button></form><div id="ragJobResult" aria-live="polite"></div></section>`;}
++function ragSearchPanel(){return `<section class="panel"><h2>想研究什么主题？</h2><p class="muted">研究助手先寻找并读取资料。预览结果、勾选确认后，资料才会加入当前账号供后续创作使用。</p><form id="ragSearchForm"><label for="ragQuery">主题</label><input id="ragQuery" required minlength="2" maxlength="120" placeholder="例如：适合通勤的口红色号"><label for="ragProvider">资料来源</label><select id="ragProvider"><option value="xhs_local">小红书公开笔记 · 正在核对连接</option><option value="bing">通用网页 · 未核验</option><option value="baidu">百度搜索 · 未核验</option><option value="wikipedia">百科资料 · 未核验</option></select><p id="ragCapabilityNote" class="helper">正在读取来源配置；配置存在不等于当前搜索已接通。</p><label for="ragTarget">网页搜索范围</label><select id="ragTarget"><option value="web">通用网页</option><option value="jd">京东 · 搜索引擎收录范围</option><option value="taobao">淘宝 / 天猫 · 搜索引擎收录范围</option></select><p class="helper">京东、淘宝是搜索引擎站点限定，不是商城专用接口；可能没有可读取正文。</p><details id="ragAdvanced"><summary>高级筛选（可选）</summary><div class="rag-filters"><div><label for="ragLikes">点赞至少</label><input id="ragLikes" type="number" min="1" max="1000000000" value="100" required></div><div><label for="ragFavorites">或收藏至少</label><input id="ragFavorites" type="number" min="1" max="1000000000" value="50" required></div><div><label for="ragSort">优先排序</label><select id="ragSort"><option value="likes">最多点赞</option><option value="favorites">最多收藏</option></select></div></div><p class="helper">小红书结果需达到任一赞藏阈值；最多核对 6 篇、提供 3 篇候选。视频仅使用文字描述。</p></details><button id="ragSearchButton" class="primary" disabled>搜索资料</button></form><div id="ragRecovery" class="helper"><button type="button" id="ragRefresh" class="quiet">刷新研究记录</button><button type="button" id="ragPaste" class="quiet">改为粘贴资料</button></div><div id="ragJobResult" aria-live="polite"></div></section>`;}
+@@ -71,0 +72 @@
++const ragSourceCapabilities=new Map(),ragSearchAttempts=new Map();
+@@ -77 +78 @@
+- return `<form data-rag-confirm="${esc(job.id)}"><p class="helper">找到 ${candidates.length} 篇候选，尚未加入资料库。请先预览，再勾选需要的资料。</p>${candidates.map(c=>{const p=c.packet||{},m=p.metrics||{};return `<article class="source-card"><label><input type="checkbox" data-rag-candidate value="${esc(c.id)}" ${selected.has(c.id)?'checked':''} ${busy?'disabled':''}> ${esc(p.title||'未命名资料')}</label><p class="helper">${researchSourceLink(p.source_url)}${p.platform==='xiaohongshu'?` · 点赞 ${esc(m.likes??'未知')} · 收藏 ${esc(m.favorites??'未知')}`:''}</p><p>${esc((p.text||'').slice(0,360))}</p><details><summary>查看完整候选正文</summary><pre class="source-text">${esc(p.text||'')}</pre></details></article>`;}).join('')}<button class="primary" type="submit" ${busy||!candidates.some(c=>selected.has(c.id))?'disabled':''}>${busy?'正在确认…':'确认加入所选资料'}</button><p class="helper">未勾选的候选不会加入资料库。</p></form>`;
++ return `<form data-rag-confirm="${esc(job.id)}"><p class="helper">找到 ${candidates.length} 篇候选，尚未加入资料库。请先预览，再勾选需要的资料。</p>${candidates.map(c=>{const p=c.packet||{},m=p.metrics||{};return `<article class="source-card"><label><input type="checkbox" data-rag-candidate value="${esc(c.id)}" ${selected.has(c.id)?'checked':''} ${busy?'disabled':''}> ${esc(p.title||'未命名资料')}</label><p class="helper">${researchSourceLink(p.source_url)} · 获取时间 ${esc(p.observed_at||'未知')}${p.platform==='xiaohongshu'?` · 点赞 ${esc(m.likes??'未知')} · 收藏 ${esc(m.favorites??'未知')}`:''}</p><p>${esc((p.text||'').slice(0,360))}</p><details><summary>查看完整候选正文</summary><pre class="source-text">${esc(p.text||'')}</pre></details></article>`;}).join('')}<button class="primary" type="submit" ${busy||!candidates.some(c=>selected.has(c.id))?'disabled':''}>${busy?'正在确认…':'确认加入所选资料'}</button><p class="helper">未勾选的候选不会加入资料库。</p></form>`;
+@@ -110 +111 @@
+- $('ragJobResult').innerHTML=shown.map(j=>`<article class="detail-block"><h3>${esc((j.queries||[]).join(' / '))}</h3><p class="helper">${esc(names[j.status]||j.status)}${j.status==='awaiting_confirmation'?' · 尚未入库':` · 已加入 ${(j.documents||[]).length} 篇`}${j.error?' · '+esc(ragErrorText(j.error)):''}</p>${j.status==='awaiting_confirmation'?ragCandidatePanel(j,account):['queued','running'].includes(j.status)?'<p>研究完成后会显示候选，等待你确认。</p>':(j.documents||[]).length?`<a class="button quiet" href="/api/research/jobs/${encodeURIComponent(j.id)}/export">导出已确认资料</a>`:''}</article>`).join('');
++ $('ragJobResult').innerHTML=shown.map(j=>`<article class="detail-block"><h3>${esc((j.queries||[]).join(' / '))}</h3><p class="helper">${esc(names[j.status]||j.status)}${j.status==='awaiting_confirmation'?' · 尚未入库':` · 已加入 ${(j.documents||[]).length} 篇`}${j.error?' · '+esc(ragErrorText(j.error)):''}</p>${['failed','interrupted','partial'].includes(j.status)?`<p class="helper">原记录已保留；可修改上方主题或切换来源后重新搜索，也可使用“改为粘贴资料”。</p>`:''}${j.status==='awaiting_confirmation'?ragCandidatePanel(j,account):['queued','running'].includes(j.status)?'<p>研究完成后会显示候选，等待你确认。</p>':(j.documents||[]).length?`<a class="button quiet" href="/api/research/jobs/${encodeURIComponent(j.id)}/export">导出已确认资料</a>`:''}</article>`).join('');
+@@ -114,0 +116,21 @@
++async function loadRagCapabilities(account,request){
++ const [settings,sync]=await Promise.all([api('/api/search/settings'),api('/api/social/sync?account_id='+encodeURIComponent(account))]);
++ if(request!==libraryLoad||account!==activeAccountId||currentPage!=='library')return;
++ const providers=(settings.providers||[]).map(p=>({...p,can_attempt:p.can_attempt===true}));
++ providers.push({id:'xhs_local',can_attempt:sync.bound===true&&sync.enabled!==false,status_note:sync.bound?'已绑定本机连接；当前搜索可用性仍需本次读取验证':'尚未绑定小红书，请到账号数据连接页处理'});
++ ragSourceCapabilities.set(account,providers);
++ for(const option of Array.from($('ragProvider').options||[])){
++  const cap=providers.find(p=>p.id===option.value);option.disabled=!cap?.can_attempt;
++  const label=({xhs_local:'小红书公开笔记',bing:'通用网页',baidu:'百度搜索',wikipedia:'百科资料'})[option.value];
++  option.textContent=label+(cap?.can_attempt?' · 可尝试，尚未核验':' · 当前不可用');
++ }
++ const selected=providers.find(p=>p.id===$('ragProvider').value);
++ if(!selected?.can_attempt)$('ragProvider').value=providers.find(p=>p.can_attempt)?.id||'';
++ $('ragSearchButton').disabled=!providers.some(p=>p.can_attempt);
++ $('ragProvider').onchange();
++}
++function ragSearchRequest(account,payload){
++ const fingerprint=JSON.stringify(payload),previous=ragSearchAttempts.get(account);
++ if(previous?.fingerprint===fingerprint)return {...payload,key:previous.key};
++ const attempt={fingerprint,key:crypto.randomUUID()};ragSearchAttempts.set(account,attempt);return {...payload,key:attempt.key};
++}
+@@ -116 +138,5 @@
+- const updateSource=()=>{const isXhs=$('ragProvider').value==='xhs_local';$('ragAdvanced').hidden=!isXhs;for(const id of ['ragLikes','ragFavorites','ragSort'])$(id).disabled=!isXhs;};
++ const updateSource=()=>{const provider=$('ragProvider').value,isXhs=provider==='xhs_local';$('ragAdvanced').hidden=!isXhs;for(const id of ['ragLikes','ragFavorites','ragSort'])$(id).disabled=!isXhs;
++  $('ragTarget').disabled=isXhs||provider==='wikipedia';
++  const cap=ragSourceCapabilities.get(account)?.find(p=>p.id===provider);
++  $('ragCapabilityNote').textContent=cap?.status_note||'来源尚未实测；本次成功取得正文才构成读取证据。';
++ };
+@@ -117,0 +144,2 @@
++ $('ragRefresh').onclick=()=>refreshRagJobs(account,request).catch(error);
++ $('ragPaste').onclick=()=>{const form=$('documentForm');const details=form?.closest?.('details');if(details)details.open=true;$('documentText')?.focus?.();};
+@@ -120 +148,3 @@
+-  const provider=$('ragProvider').value,payload={account_id:account,queries:[$('ragQuery').value.trim()],provider,targets:[provider==='xhs_local'?'xiaohongshu':'web'],evidence_role:'expression_reference',permission_confirmed:true,confirmation_required:true,key:crypto.randomUUID()};
++  const provider=$('ragProvider').value,cap=ragSourceCapabilities.get(account)?.find(p=>p.id===provider);
++  if(cap&& !cap.can_attempt)throw new Error('此来源当前不可用，请切换来源或粘贴有权使用的资料');
++  const payload={account_id:account,queries:[$('ragQuery').value.trim()],provider,targets:[provider==='xhs_local'?'xiaohongshu':provider==='wikipedia'?'web':$('ragTarget').value||'web'],evidence_role:'expression_reference',permission_confirmed:true,confirmation_required:true};
+@@ -122 +152 @@
+-  await api('/api/research/jobs','POST',payload);ragPendingAccounts.add(account);await refreshRagJobs(account,request);
++  await api('/api/research/jobs','POST',ragSearchRequest(account,payload));ragSearchAttempts.delete(account);ragPendingAccounts.add(account);await refreshRagJobs(account,request);
+@@ -123,0 +154 @@
++ loadRagCapabilities(account,request).catch(err=>{if(request===libraryLoad&&account===activeAccountId&&currentPage==='library'){$('ragCapabilityNote').textContent='无法核对来源配置，请刷新页面后重试，或粘贴自己的资料。';error(err);}});

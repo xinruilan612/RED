@@ -1,0 +1,12 @@
+frontend/account.js: exit=0
+frontend/account_profile.js: exit=0
+frontend/app.js: exit=0
+frontend/auth.js: exit=0
+frontend/connections.js: exit=0
+frontend/guidance.js: exit=0
+frontend/knowledge.js: exit=0
+frontend/models.js: exit=0
+frontend/operations.js: exit=0
+frontend/research.js: exit=0
+frontend/trials.js: exit=0
+frontend/windtunnel.js: exit=0

@@ -1,0 +1,38 @@
+{
+  "database": "youji_release_test_20261105",
+  "full_unittest": {
+    "tests": 1359,
+    "duration_seconds": 253.533,
+    "initial_subtest_failures": 2,
+    "skipped": 4,
+    "failures": "two document link subtests subsequently fixed and rechecked",
+    "skip_reasons": {
+      "optional_pinned_local_semantic_model_missing": 2,
+      "Windows_process_integration_unavailable_on_macOS": 2
+    }
+  },
+  "document_recheck": {
+    "tests": 17,
+    "passed": 17
+  },
+  "new_manifest_tests": {
+    "tests": 3,
+    "passed": 3
+  },
+  "frontend_tests": {
+    "tests": 295,
+    "passed": 295,
+    "skipped": 0
+  },
+  "javascript_syntax": {
+    "files": 12,
+    "passed": 12
+  },
+  "agent_card_tests": {
+    "tests": 8,
+    "passed": 8
+  },
+  "git_diff_check": "passed",
+  "network_model_calls": "No paid model/live network tests requested or initiated",
+  "product_code_changes": "none by validation agent"
+}

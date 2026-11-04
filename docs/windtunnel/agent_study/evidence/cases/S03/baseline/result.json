@@ -1,0 +1,41 @@
+{
+  "sample_id": "S03",
+  "method": "baseline",
+  "participant_type": "codex_proxy",
+  "source_url": "https://docs.python.org/3.12/tutorial/controlflow.html#defining-functions",
+  "original_sha256": "54199b2281f7966693709a7965bb02889300375119eb46b7ca7d3beca1a8fff5",
+  "material_sha256": "54199b2281f7966693709a7965bb02889300375119eb46b7ca7d3beca1a8fff5",
+  "outcome": "completed",
+  "error": null,
+  "automatic_adoption": true,
+  "human_author": false,
+  "issues": [],
+  "run_id": "9045c482-524b-47ed-9e1d-a679b0bd7296",
+  "wall_seconds": 3.969,
+  "final_sha256": "54199b2281f7966693709a7965bb02889300375119eb46b7ca7d3beca1a8fff5",
+  "changed": false,
+  "calls": [
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 2742,
+      "output_tokens": 1175,
+      "total_tokens": 3917,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "issues": [],
+        "revised_text": "4.8. Defining Functions\n\nWe can create a function that writes the Fibonacci series to an arbitrary\nboundary:\n\n>>> def fib(n):    # write Fibonacci series less than n\n...     \"\"\"Print a Fibonacci series less than n.\"\"\"\n...     a, b = 0, 1\n...     while a < n:\n...         print(a, end=' ')\n...         a, b = b, a+b\n...     print()\n...\n>>> # Now call the function we just defined:\n>>> fib(2000)\n0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597\n\nThe keyword def introduces a function definition.  It must be\nfollowed by the function name and the parenthesized list of formal parameters.\nThe statements that form the body of the function start at the next line, and\nmust be indented.\n\nThe first statement of the function body can optionally be a string literal;\nthis string literal is the function’s documentation string, or docstring.\n(More about docstrings can be found in the section Documentation Strings.)\nThere are tools which use docstrings to automatically produce online or printed\ndocumentation, or to let the user interactively browse through code; it’s good\npractice to include docstrings in code that you write, so make a habit of it.\n\nThe execution of a function introduces a new symbol table used for the local\nvariables of the function.  More precisely, all variable assignments in a\nfunction store the value in the local symbol table; whereas variable references\nfirst look in the local symbol table, then in the local symbol tables of\nenclosing functions, then in the global symbol table, and finally in the table\nof built-in names. Thus, global variables and variables of enclosing functions\ncannot be directly assigned a value within a function (unless, for global\nvariables, named in a global statement, or, for variables of enclosing\nfunctions, named in a nonlocal statement), although they may be\nreferenced.\n\nThe actual parameters (arguments) to a function call are introduced in the local\nsymbol table of the called function when it is called; thus, arguments are\npassed using call by value (where the value is always an object reference,\nnot the value of the object). [1] When a function calls another function,\nor calls itself recursively, a new\nlocal symbol table is created for that call.\n\nA function definition associates the function name with the function object in\nthe current symbol table.  The interpreter recognizes the object pointed to by\nthat name as a user-defined function.  Other names can also point to that same\nfunction object and can also be used to access the function:\n\n>>> fib\n<function fib at 10042ed0>\n>>> f = fib\n>>> f(100)\n0 1 1 2 3 5 8 13 21 34 55 89\n\nComing from other languages, you might object that fib is not a function but\na procedure since it doesn’t return a value.  In fact, even functions without a\nreturn statement do return a value, albeit a rather boring one.  This\nvalue is called None (it’s a built-in name).  Writing the value None is\nnormally suppressed by the interpreter if it would be the only value written.\nYou can see it if you really want to using print():\n\n>>> fib(0)\n>>> print(fib(0))\nNone\n\nIt is simple to write a function that returns a list of the numbers of the\nFibonacci series, instead of printing it:\n\n>>> def fib2(n):  # return Fibonacci series up to n\n...     \"\"\"Return a list containing the Fibonacci series up to n.\"\"\"\n...     result = []\n...     a, b = 0, 1\n...     while a < n:\n...         result.append(a)    # see below\n...         a, b = b, a+b\n...     return result\n...\n>>> f100 = fib2(100)    # call it\n>>> f100                # write the result\n[0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]\n\nThis example, as usual, demonstrates some new Python features:\n\nThe return statement returns with a value from a function.\nreturn without an expression argument returns None. Falling off\nthe end of a function also returns None.\n\nThe statement result.append(a) calls a method of the list object\nresult.  A method is a function that ‘belongs’ to an object and is named\nobj.methodname, where obj is some object (this may be an expression),\nand methodname is the name of a method that is defined by the object’s type.\nDifferent types define different methods.  Methods of different types may have\nthe same name without causing ambiguity.  (It is possible to define your own\nobject types and methods, using classes, see Classes)\nThe method append() shown in the example is defined for list objects; it\nadds a new element at the end of the list.  In this example it is equivalent to\nresult = result + [a], but more efficient."
+      }
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 0.09098,
+    "reserved_unknown_cny": 0.0,
+    "committed_upper_cny": 0.09098,
+    "calls": 8,
+    "unknown_calls": 0
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "group_mapping_seen": false,
+  "scores": [
+    {
+      "reader_id": "R01",
+      "blind_id": "Bb7b1e9733a61b0c5eadc22bb891395dc",
+      "points": [0, 1, 1, 1, 1],
+      "score": 4,
+      "correct": false,
+      "contradiction": false,
+      "reasons": [
+        "回答包含None、无输出及无错误，但两条逐字引用仅支持None和无输出，未提供无错误的引用证据。",
+        "回答说明必须带值及expected one argument，两条非空逐字引用分别支持原因与报错。",
+        "给出完整等价add_argument写法及True/False，两条逐字引用支持全部必需条件。",
+        "说明无值flag及额外1未识别，逐字引用支持flag性质和unrecognized arguments: 1。",
+        "别名代码、-v输出及help两种名称均完整，四条逐字引用支持所需条件。"
+      ]
+    },
+    {
+      "reader_id": "R01",
+      "blind_id": "B4b1b082ac65da65d050aea9a50714507",
+      "points": [0, 0, 0, 0, 0],
+      "score": 0,
+      "correct": false,
+      "contradiction": false,
+      "reasons": [
+        "缺失追加模式、UTF-8写法和w差异，回答及证据为空。",
+        "缺失with关闭及未完整写盘说明，回答及证据为空。",
+        "缺失EOF与空白行区别，回答及证据为空。",
+        "缺失逐行方案及无size的read行为，回答及证据为空。",
+        "缺失JPEG模式、bytes及encoding限制，回答及证据为空。"
+      ]
+    },
+    {
+      "reader_id": "R01",
+      "blind_id": "Bfceded5a887ce0e09cf371b0a80b53bb",
+      "points": [1, 1, 1, 1, 0],
+      "score": 4,
+      "correct": false,
+      "contradiction": false,
+      "reasons": [
+        "正确给出两个过程名称，逐字引用及其稿内指代支持序列化与反序列化。",
+        "给出json.dumps(x)及完整结果，非空逐字引用直接支持。",
+        "给出写入dump及读取load和文件模式，两条逐字引用完整支持。",
+        "说明文本JSON读写均用UTF-8，逐字引用完整支持。",
+        "说明任意代码风险及JSON列表、字典、类实例限制，但遗漏标准要求的pickle特定于Python，稿件及引用也未提供该条件。"
+      ]
+    },
+    {
+      "reader_id": "R02",
+      "blind_id": "Bb430d91adaf8e165eb552780af92edfb",
+      "points": [0, 0, 0, 0, 0],
+      "score": 0,
+      "correct": false,
+      "contradiction": false,
+      "reasons": [
+        "标记missing_information，未回答缺省值及行为，证据为空。",
+        "标记missing_information，未回答需要值及报错，证据为空。",
+        "标记missing_information，未给代码及启用/缺省值，证据为空。",
+        "标记missing_information，未解释flag及额外1报错，证据为空。",
+        "标记missing_information，未给别名代码、输出及help，证据为空。"
+      ]
+    },
+    {
+      "reader_id": "R02",
+      "blind_id": "Be1f92e481df1a665c9cd6a88aee52faf",
+      "points": [1, 1, 1, 1, 0],
+      "score": 4,
+      "correct": false,
+      "contradiction": false,
+      "reasons": [
+        "正确给出两个过程名称，逐字引用及其稿内指代支持转换和重建。",
+        "给出json.dumps(x)及完整JSON字符串，逐字引用直接支持。",
+        "给出写入json.dump(x,f)及读模式恢复json.load(f)，两条逐字引用支持。",
+        "说明文本读写均指定UTF-8，逐字引用完整支持。",
+        "回答和引用支持任意代码风险及JSON类实例限制，但未回答pickle特定于Python，该标准子条件也无稿内证据。"
+      ]
+    },
+    {
+      "reader_id": "R02",
+      "blind_id": "Baf19632e241d201055331acd1cc48574",
+      "points": [0, 0, 0, 0, 0],
+      "score": 0,
+      "correct": false,
+      "contradiction": false,
+      "reasons": [
+        "标记missing_information，未给追加模式、UTF-8写法及w差异，证据为空。",
+        "标记missing_information，未说明with和写盘风险，证据为空。",
+        "标记missing_information，未说明EOF与空白行，证据为空。",
+        "标记missing_information，未给逐行方案和read差别，证据为空。",
+        "标记missing_information，未说明JPEG模式、类型和encoding，证据为空。"
+      ]
+    },
+    {
+      "reader_id": "R03",
+      "blind_id": "Beb3e2e22daeac1f4f4d882af026af656",
+      "points": [0, 1, 1, 1, 1],
+      "score": 4,
+      "correct": false,
+      "contradiction": false,
+      "reasons": [
+        "未给标准要求的with打开写法；第二条证据不是稿内连续逐字引用，去掉了w/a周围反引号，首条只能支持追加和编码，不能独立支持w差异。",
+        "回答包含块结束及异常时关闭和未完整落盘，两条非空逐字引用支持全部条件。",
+        "说明空串EOF与仅换行空白行，逐字引用完整支持。",
+        "给出逐行代码和内存效率，并说明无size读全文件及内存风险，两条逐字引用支持。",
+        "在读写模式后加b等价表达rb/wb，说明bytes及不能encoding，逐字引用支持这些条件及JPEG损坏风险。"
+      ]
+    },
+    {
+      "reader_id": "R03",
+      "blind_id": "B250c2dcc69158640e8413e2b11c54fa0",
+      "points": [0, 1, 1, 1, 1],
+      "score": 4,
+      "correct": false,
+      "contradiction": false,
+      "reasons": [
+        "回答包含None、无输出及无错误，但提供的逐字证据未覆盖不会报错这一必需子条件。",
+        "正确说明需要值和expected one argument，逐字引用分别支持。",
+        "给出完整等价代码及True/False，逐字代码和说明支持全部标准条件。",
+        "说明无值flag及1为未识别参数，逐字引用支持。",
+        "给出-v别名完整代码、输出及help两种名称，四条逐字引用完整支持。"
+      ]
+    },
+    {
+      "reader_id": "R03",
+      "blind_id": "Bba9786280b362c8ffecd6546da96bce4",
+      "points": [0, 0, 0, 0, 0],
+      "score": 0,
+      "correct": false,
+      "contradiction": false,
+      "reasons": [
+        "缺失序列化与反序列化名称，回答及证据为空。",
+        "缺失dumps函数与结果，回答及证据为空。",
+        "缺失dump/load读写方案，回答及证据为空。",
+        "缺失UTF-8要求，回答及证据为空。",
+        "缺失pickle风险与特定于Python及JSON限制，回答及证据为空。"
+      ]
+    }
+  ]
+}

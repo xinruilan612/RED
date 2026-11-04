@@ -1,0 +1,217 @@
+{
+  "reader_id": "R05",
+  "participant_type": "codex_proxy",
+  "human_reading_seconds": null,
+  "responses": [
+    {
+      "blind_id": "P9283",
+      "answer_found": true,
+      "answer_text": "1. 日志用 with open(文件名, \"a\", encoding=\"utf-8\") as f，再 f.write(字符串)；a 在末尾追加，w 会擦除已有同名文件。\n2. with 在代码块结束时正确关闭文件，即使发生异常也如此，且比 try-finally 简短。\n3. readline() 返回空串表示文件末尾；返回仅一个换行的字符串表示空白行。\n4. 用 with open(文件名, encoding=\"utf-8\") as f，块内 for line in f 逐行处理；稿件称其节省内存且快速。read() 不给 size 会读回全部内容，可能超过机器内存。\n5. JPEG 复制用 rb 读、wb 写，传递 bytes 对象，不指定 encoding；文本模式换行转换会损坏此类二进制数据。",
+      "evidence": [
+        {
+          "point": 1,
+          "quote": "'w'\nfor only writing (an existing file with the same name will be erased), and\n'a' opens the file for appending; any data written to the file is\nautomatically added to the end."
+        },
+        {
+          "point": 2,
+          "quote": "The advantage is that the file is properly closed\nafter its suite finishes, even if an exception is raised at some\npoint."
+        },
+        {
+          "point": 3,
+          "quote": "if f.readline() returns an empty string, the end of the file\nhas been reached, while a blank line is represented by '\\n', a string\ncontaining only a single newline."
+        },
+        {
+          "point": 4,
+          "quote": "For reading lines from a file, you can loop over the file object. This is memory\nefficient, fast, and leads to simple code:"
+        },
+        {
+          "point": 5,
+          "quote": "Binary mode data is read and written as bytes objects.\nYou can not specify encoding when opening file in binary mode."
+        }
+      ],
+      "perceived_difficulty_1_to_5": 2,
+      "missing_information": [],
+      "open_feedback": "要点可从稿件直接定位。"
+    },
+    {
+      "blind_id": "P2194",
+      "answer_found": true,
+      "answer_text": "1. [x*2 for x in vec if x >= 0] 得 [0, 4, 8]。\n2. [num for elem in [[1, 2], [3, 4]] for num in elem] 得 [1, 2, 3, 4]。\n3. 生成数及其平方对用 [(x, x**2) for x in range(6)]，元组表达式必须加括号。\n4. 两个 for 按先外层后内层排列，if 放内层筛选，满足条件才 append((x, y))；推导式与普通循环中 for/if 的顺序相同。\n5. 普通 for 创建或覆盖 x，结束后 x 仍存在；稿内 squares = [x**2 for x in range(10)] 被描述为避免变量副作用。",
+      "evidence": [
+        {
+          "point": 1,
+          "quote": "[x*2 for x in vec if x >= 0]\nResult:\n[0, 4, 8]"
+        },
+        {
+          "point": 2,
+          "quote": "[num for elem in [[1, 2], [3, 4]] for num in elem]\nResult:\n[1, 2, 3, 4]"
+        },
+        {
+          "point": 3,
+          "quote": "If the expression is a tuple (e.g. the (x, y) in the previous example), it must be parenthesized"
+        },
+        {
+          "point": 4,
+          "quote": "The first for is the outer loop; the second for is the inner loop; the if filters the inner results."
+        },
+        {
+          "point": 5,
+          "quote": "Note that this creates (or overwrites) a variable named x that still exists after the loop completes."
+        }
+      ],
+      "perceived_difficulty_1_to_5": 1,
+      "missing_information": [],
+      "open_feedback": "小抄按题目五项排列，查找和转述容易。"
+    },
+    {
+      "blind_id": "P4697",
+      "answer_found": true,
+      "answer_text": "1. from pathlib import Path；p = Path(\".\") 代表当前目录。\n2. [x for x in p.iterdir() if x.is_dir()] 列出子目录。\n3. list(p.glob(\"**/*.py\")) 收集目录树中的 Python 源文件。\n4. p = Path(\"/etc\")；q = p / \"init.d\" / \"reboot\" 拼接为 /etc/init.d/reboot；稿内 q.resolve() 示例返回 /etc/rc.d/init.d/halt，这仅是示例结果。\n5. 示例 q.exists() 为 True，q.is_dir() 为 False，即路径存在且不是目录；with q.open() as f: f.readline() 读取首行，示例为 #!/bin/bash 后接换行。这些结果不保证在所有电脑相同。",
+      "evidence": [
+        {
+          "point": 1,
+          "quote": ">>> from pathlib import Path"
+        },
+        {
+          "point": 2,
+          "quote": ">>> p = Path('.')\n>>> [x for x in p.iterdir() if x.is_dir()]"
+        },
+        {
+          "point": 3,
+          "quote": ">>> list(p.glob('**/*.py'))"
+        },
+        {
+          "point": 4,
+          "quote": ">>> q = p / 'init.d' / 'reboot'\n>>> q\nPosixPath('/etc/init.d/reboot')\n>>> q.resolve()\nPosixPath('/etc/rc.d/init.d/halt')"
+        },
+        {
+          "point": 5,
+          "quote": ">>> q.exists()\nTrue\n>>> q.is_dir()\nFalse\n\nOpening a file:\n\n>>> with q.open() as f: f.readline()\n...\n'#!/bin/bash\\n'"
+        }
+      ],
+      "perceived_difficulty_1_to_5": 1,
+      "missing_information": [],
+      "open_feedback": "要点可从稿件直接定位。"
+    },
+    {
+      "blind_id": "P1591",
+      "answer_found": true,
+      "answer_text": "1. Python 数据转为字符串表示叫 serializing（序列化），从字符串重建叫 deserializing（反序列化）。\n2. import json；x = [1, \"simple\", \"list\"]；json.dumps(x) 产生字符串 [1, \"simple\", \"list\"]。\n3. 已打开写入文本对象 f 时用 json.dump(x, f)；已打开读取对象 f 时用 x = json.load(f)。\n4. JSON 文件必须 UTF-8；文本方式读写都指定 encoding=\"utf-8\"。\n5. 不可信 pickle 反序列化能执行任意代码，不能随意替代；pickle 还限于 Python。JSON 可处理列表和字典，但任意类实例序列化需要额外工作，稿件未提供具体实现。",
+      "evidence": [
+        {
+          "point": 1,
+          "quote": "called serializing.  Reconstructing the data from the string representation\nis called deserializing."
+        },
+        {
+          "point": 2,
+          "quote": ">>> json.dumps(x)\n'[1, \"simple\", \"list\"]'"
+        },
+        {
+          "point": 3,
+          "quote": "json.dump(x, f)\n\nTo decode the object again, if f is a binary file or\ntext file object which has been opened for reading:\n\nx = json.load(f)"
+        },
+        {
+          "point": 4,
+          "quote": "JSON files must be encoded in UTF-8. Use encoding=\"utf-8\" when opening\nJSON file as a text file for both of reading and writing."
+        },
+        {
+          "point": 5,
+          "quote": "deserializing pickle data coming from an untrusted source can execute\narbitrary code, if the data was crafted by a skilled attacker."
+        }
+      ],
+      "perceived_difficulty_1_to_5": 1,
+      "missing_information": [],
+      "open_feedback": "要点可从稿件直接定位。"
+    },
+    {
+      "blind_id": "P9115",
+      "answer_found": true,
+      "answer_text": "1. 整数输入重试用 except ValueError；Ctrl-C 引发 KeyboardInterrupt，因此该处理器不匹配，允许用户中断。\n2. try 出现匹配异常后跳过余下语句，执行匹配的 except，然后在 try/except 后继续；至多执行一个处理器。\n3. 父类处理器也匹配子类；原 D、C、B 顺序输出 B、C、D，若 B 在最前则输出 B、B、B，因为执行首个匹配处理器。\n4. else 在 try 没有异常时执行，位于所有 except 后；把额外工作放 else 可避免误捕获那些并非受保护代码产生的异常。\n5. 意外 Exception 先打印或记录，再 raise 重新抛出，让调用者也能处理；try 调用函数内部甚至间接调用中的异常也能被匹配处理器捕获。",
+      "evidence": [
+        {
+          "point": 1,
+          "quote": "...     except ValueError:\n...         print(\"Oops!  That was no valid number.  Try again...\")"
+        },
+        {
+          "point": 2,
+          "quote": "If an exception occurs during execution of the try clause, the rest of the\nclause is skipped."
+        },
+        {
+          "point": 3,
+          "quote": "Note that if the except clauses were reversed (with except B first), it\nwould have printed B, B, B — the first matching except clause is triggered."
+        },
+        {
+          "point": 4,
+          "quote": "it avoids accidentally catching an exception\nthat wasn’t raised by the code being protected by the try …\nexcept statement."
+        },
+        {
+          "point": 5,
+          "quote": "The most common pattern for handling Exception is to print or log\nthe exception and then re-raise it (allowing a caller to handle the\nexception as well):"
+        }
+      ],
+      "perceived_difficulty_1_to_5": 2,
+      "missing_information": [],
+      "open_feedback": "要点可从稿件直接定位。"
+    },
+    {
+      "blind_id": "P4752",
+      "answer_found": true,
+      "answer_text": "1. 依次 tel[\"guido\"] = 4127；tel[\"jack\"] = 5000；del tel[\"sape\"]；tel[\"irv\"] = 4127。最终 {\"jack\": 5000, \"guido\": 4127, \"irv\": 4127}。\n2. list(tel) 为 [\"jack\", \"guido\", \"irv\"]；sorted(tel) 为 [\"guido\", \"irv\", \"jack\"]。\n3. \"guido\" in tel 为 True。\n4. 再读 tel[\"sape\"] 会报错，因为键已删除；具体异常名称稿件未提供。\n5. 列表不能作键，因其可原地修改；含列表的元组也不能作键，因其直接包含可变对象。",
+      "evidence": [
+        {
+          "point": 1,
+          "quote": "If you store using a key that is already in use, the old\nvalue associated with that key is forgotten."
+        },
+        {
+          "point": 2,
+          "quote": ">>> list(tel)\n['jack', 'guido', 'irv']\n>>> sorted(tel)\n['guido', 'irv', 'jack']"
+        },
+        {
+          "point": 3,
+          "quote": ">>> 'guido' in tel\nTrue"
+        },
+        {
+          "point": 4,
+          "quote": "It is an error to extract a value\nusing a non-existent key."
+        },
+        {
+          "point": 5,
+          "quote": "if a tuple contains\nany mutable object either directly or indirectly, it cannot be used as a key."
+        }
+      ],
+      "perceived_difficulty_1_to_5": 2,
+      "missing_information": [],
+      "open_feedback": "要点可从稿件直接定位。"
+    },
+    {
+      "blind_id": "P3107",
+      "answer_found": true,
+      "answer_text": "1. 初始 --verbosity 缺省时 args.verbosity 是 None，if 真值判断失败，无输出且不报错。\n2. 只写 --verbosity 缺少所需的值，报 expected one argument。\n3. parser.add_argument(\"--verbose\", help=\"increase output verbosity\", action=\"store_true\")；出现开关设 args.verbose=True，缺省 False。\n4. --verbose 1 报 unrecognized arguments: 1，因为该开关无需值。\n5. parser.add_argument(\"-v\", \"--verbose\", help=\"increase output verbosity\", action=\"store_true\")；-v 输出 verbosity turned on；help 列出 -v, --verbose，usage 显示 [-v]，反映短别名。",
+      "evidence": [
+        {
+          "point": 1,
+          "quote": "given None as a value, which is the reason it fails the truth\ntest of the if statement."
+        },
+        {
+          "point": 2,
+          "quote": "prog.py: error: argument --verbosity: expected one argument"
+        },
+        {
+          "point": 3,
+          "quote": "parser.add_argument(\"--verbose\", help=\"increase output verbosity\",\n                    action=\"store_true\")"
+        },
+        {
+          "point": 4,
+          "quote": "prog.py: error: unrecognized arguments: 1"
+        },
+        {
+          "point": 5,
+          "quote": "$ python prog.py -v\nverbosity turned on"
+        }
+      ],
+      "perceived_difficulty_1_to_5": 1,
+      "missing_information": [],
+      "open_feedback": "要点可从稿件直接定位。"
+    }
+  ]
+}

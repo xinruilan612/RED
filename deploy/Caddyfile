@@ -1,0 +1,5 @@
+# Replace CHANGE_ME.example.com with PUBLIC_ORIGIN's hostname.
+# Preserve Host: the application checks it against PUBLIC_ORIGIN.
+CHANGE_ME.example.com {
+    reverse_proxy 127.0.0.1:8765
+}

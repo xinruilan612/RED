@@ -5,10 +5,8 @@ function showLogin(session){
  document.body.classList.add('signed-out');
  const panel=document.getElementById('loginPanel');panel.hidden=false;
  document.getElementById('authInviteWrap').hidden=!session.invite_required;
- // Legacy records are opt-in; a new user starts with their own clean workspace.
- document.getElementById('claimLegacy').checked=false;
  document.getElementById('authForm').onsubmit=async e=>{
-  e.preventDefault();const button=e.submitter;button.disabled=true;
+  e.preventDefault();const button=e.submitter;if(button.disabled)return;button.disabled=true;document.getElementById('authError').textContent='';
   const mode=document.getElementById('authMode').value;
   const data={username:document.getElementById('authUsername').value,password:document.getElementById('authPassword').value};
   if(mode==='register'){data.invite=document.getElementById('authInvite').value;data.claim_legacy=document.getElementById('claimLegacy').checked;}
@@ -19,13 +17,13 @@ function showLogin(session){
    if(result.recovery_code){
     document.getElementById('authForm').hidden=true;document.getElementById('recoverySaved').hidden=false;
     document.getElementById('newRecovery').textContent=result.recovery_code;
-    document.getElementById('enterWorkspace').onclick=()=>{location.hash='overview';location.reload();};
+    document.getElementById('enterWorkspace').onclick=()=>location.reload();
    }else location.reload();
   }catch(err){document.getElementById('authError').textContent=err.message;}
   finally{button.disabled=false;}
  };
  document.getElementById('authMode').onchange=e=>{
-  const mode=e.target.value;
+  const mode=e.target.value;document.getElementById('authError').textContent='';
   document.getElementById('claimLegacyWrap').hidden=mode!=='register';
   document.getElementById('authInviteWrap').hidden=mode!=='register'||!session.invite_required;
   document.getElementById('authRecoveryWrap').hidden=mode!=='reset';
@@ -43,9 +41,10 @@ function showLogin(session){
 }
 function showWebsiteUser(session){
  websiteSession=session;
- document.querySelector('[data-page="windtunnel"]').hidden=!session.auth_required;
+ if(typeof mountDomainPicker==='function')mountDomainPicker('creationDomains');
  if(!session.auth_required)return;
  document.getElementById('websiteUser').hidden=false;
+ for(const id of ['connectionsNav','modelsNav'])document.getElementById(id).hidden=false;
  document.getElementById('libraryNav').hidden=false;document.getElementById('knowledgeOption').hidden=false;
  document.getElementById('websiteUsername').textContent=session.user.username;
  document.getElementById('materialFileBox').hidden=false;

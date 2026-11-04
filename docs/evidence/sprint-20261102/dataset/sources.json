@@ -1,0 +1,388 @@
+{
+  "schema": "youji-controlled-sources/1",
+  "items": [
+    {
+      "source_id": "sprint-source:D01",
+      "text": "静点D03鼠标是虚构验收产品。支持蓝牙和2.4GHz接收器两种连接，外形尺寸108×60×35毫米，重量68克，使用一节AA电池，包装不含电池。没有续航、延迟或静音测试数据。",
+      "text_sha256": "1f98ab6972e298e72d073b0c6c88f72093daa3e5aa5f8cb8f8ba062db70004b4",
+      "provenance": {
+        "kind": "existing_project_fictional_fixture",
+        "path": "docs/evidence/evaluation/gold_set.json",
+        "json_pointer": "/items/2/facts",
+        "license_scope": "仅本项目自编受控评测素材；不对应真实商品、真实用户或真实效果证据",
+        "container_sha256": "20271db3c1d30ef987be1c6fa2a264705daf990ed0fd79647cf68e98e71b5bb6"
+      },
+      "classification": {
+        "domains": [
+          "digital"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "material_type": "fact"
+      }
+    },
+    {
+      "source_id": "sprint-source:H01",
+      "text": "木序F04边桌是虚构验收产品。桌面为圆形，直径45厘米，高度52厘米，材质为橡胶木，底部设一层置物板。没有承重、耐水或环保等级检测结论。",
+      "text_sha256": "ca78535c6811f6942410217de9569699741cd3de0265133747661ed871988049",
+      "provenance": {
+        "kind": "existing_project_fictional_fixture",
+        "path": "docs/evidence/evaluation/gold_set.json",
+        "json_pointer": "/items/3/facts",
+        "license_scope": "仅本项目自编受控评测素材；不对应真实商品、真实用户或真实效果证据",
+        "container_sha256": "20271db3c1d30ef987be1c6fa2a264705daf990ed0fd79647cf68e98e71b5bb6"
+      },
+      "classification": {
+        "domains": [
+          "furniture"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "material_type": "fact"
+      }
+    },
+    {
+      "source_id": "sprint-source:D02",
+      "text": "轻行P02三脚架是虚构验收产品。重量1.2千克，收纳长度40厘米，最大展开高度150厘米，含一个便携袋。没有负重稳定性、抗风或实拍测试数据。",
+      "text_sha256": "6aae99438b697765aaaab2758a1cc4a5ed548dab26990bf96e7cd9f11acfee93",
+      "provenance": {
+        "kind": "existing_project_fictional_fixture",
+        "path": "docs/evidence/evaluation/gold_set.json",
+        "json_pointer": "/items/1/facts",
+        "license_scope": "仅本项目自编受控评测素材；不对应真实商品、真实用户或真实效果证据",
+        "container_sha256": "20271db3c1d30ef987be1c6fa2a264705daf990ed0fd79647cf68e98e71b5bb6"
+      },
+      "classification": {
+        "domains": [
+          "photography"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "material_type": "fact"
+      }
+    },
+    {
+      "source_id": "sprint-source:D03",
+      "text": "移电C06是虚构验收充电宝。标称容量10000毫安时。机身重量210克。包装含一条20厘米USB-C线。规格页只登记一个USB-C接口。没有可用容量、输出功率、快充协议和实测充电次数数据。",
+      "text_sha256": "fa079cacb8b0d737d4c2286ef108fbc52f5f0d4d04ddf0046f7a81f5cfd25dda",
+      "provenance": {
+        "kind": "new_fictional_controlled_fixture",
+        "path": "docs/evidence/sprint-20261102/dataset/sources.json",
+        "json_pointer": "/items/3/text",
+        "license_scope": "仅本项目自编受控评测素材；不对应真实商品、真实用户或真实效果证据"
+      },
+      "classification": {
+        "domains": [
+          "digital"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "material_type": "fact"
+      }
+    },
+    {
+      "source_id": "sprint-source:D04",
+      "text": "支点M07是虚构验收显示器支架。安装方式为桌边夹持。夹具登记适配桌板厚度20至50毫米。规格页注明VESA孔距75×75或100×100毫米。包装含内六角工具。没有承重、桌板材质兼容或实测稳定性数据。",
+      "text_sha256": "b431bc97f0b85fd925dc616430703126130542bd2149b9629b29e6cb365128a7",
+      "provenance": {
+        "kind": "new_fictional_controlled_fixture",
+        "path": "docs/evidence/sprint-20261102/dataset/sources.json",
+        "json_pointer": "/items/4/text",
+        "license_scope": "仅本项目自编受控评测素材；不对应真实商品、真实用户或真实效果证据"
+      },
+      "classification": {
+        "domains": [
+          "digital"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "material_type": "fact"
+      }
+    },
+    {
+      "source_id": "sprint-source:D05",
+      "text": "简键K08是虚构验收键盘。采用有线USB-C连接。键位数量为84。机身尺寸为310×120×30毫米。包装附1.5米连接线。没有无线、静音、轴体寿命或操作系统完整兼容测试数据。",
+      "text_sha256": "868ffd1d95482bace31213a9b12eba48756866c774711c05f153abbca5cfeaf0",
+      "provenance": {
+        "kind": "new_fictional_controlled_fixture",
+        "path": "docs/evidence/sprint-20261102/dataset/sources.json",
+        "json_pointer": "/items/5/text",
+        "license_scope": "仅本项目自编受控评测素材；不对应真实商品、真实用户或真实效果证据"
+      },
+      "classification": {
+        "domains": [
+          "digital"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "material_type": "fact"
+      }
+    },
+    {
+      "source_id": "sprint-source:D06",
+      "text": "汇口U09是虚构验收扩展坞。输入端为一根15厘米USB-C连接线。接口包括两个USB-A接口与一个HDMI接口。壳体尺寸为100×40×12毫米。说明页要求先核对主机端口功能。没有分辨率、刷新率、充电功率或主机兼容清单。",
+      "text_sha256": "d906d572fd8a50a40ebe09171b67a2130c68a082fa0b95132c4031658d3482e2",
+      "provenance": {
+        "kind": "new_fictional_controlled_fixture",
+        "path": "docs/evidence/sprint-20261102/dataset/sources.json",
+        "json_pointer": "/items/6/text",
+        "license_scope": "仅本项目自编受控评测素材；不对应真实商品、真实用户或真实效果证据"
+      },
+      "classification": {
+        "domains": [
+          "digital"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "material_type": "fact"
+      }
+    },
+    {
+      "source_id": "sprint-source:D07",
+      "text": "微光L10是虚构验收桌面灯。供电接口为USB-C。底座直径12厘米。灯臂高度32厘米。开关设在底座。没有照度、色温、功率、护眼认证或电池续航资料。",
+      "text_sha256": "37955f32735485fe71c1f0a8938ba8f6dc0d716d6fb8b6e6a32e19664ea47c8b",
+      "provenance": {
+        "kind": "new_fictional_controlled_fixture",
+        "path": "docs/evidence/sprint-20261102/dataset/sources.json",
+        "json_pointer": "/items/7/text",
+        "license_scope": "仅本项目自编受控评测素材；不对应真实商品、真实用户或真实效果证据"
+      },
+      "classification": {
+        "domains": [
+          "digital"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "material_type": "fact"
+      }
+    },
+    {
+      "source_id": "sprint-source:H02",
+      "text": "层序S11是虚构验收收纳柜。外形宽60厘米、深30厘米、高90厘米。共有三层开放隔板。背面附一套固定配件。说明页要求按附图装配后再放物品。没有承重、防倾倒测试、板材环保等级或防水资料。",
+      "text_sha256": "af40a35adfb828ea508670c0eb693723007d2298d21156e5e0ede7b200004841",
+      "provenance": {
+        "kind": "new_fictional_controlled_fixture",
+        "path": "docs/evidence/sprint-20261102/dataset/sources.json",
+        "json_pointer": "/items/8/text",
+        "license_scope": "仅本项目自编受控评测素材；不对应真实商品、真实用户或真实效果证据"
+      },
+      "classification": {
+        "domains": [
+          "furniture"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "material_type": "fact"
+      }
+    },
+    {
+      "source_id": "sprint-source:H03",
+      "text": "垂线C12是虚构验收窗帘。单片宽140厘米、高200厘米。每包包含两片。挂接形式为穿杆。材质登记为聚酯纤维。没有遮光率、阻燃等级、隔音或洗涤温度数据。",
+      "text_sha256": "b06425362a78524bb8f24eec1a3f021bab4c844be5cbe2666f42bfa15861057b",
+      "provenance": {
+        "kind": "new_fictional_controlled_fixture",
+        "path": "docs/evidence/sprint-20261102/dataset/sources.json",
+        "json_pointer": "/items/9/text",
+        "license_scope": "仅本项目自编受控评测素材；不对应真实商品、真实用户或真实效果证据"
+      },
+      "classification": {
+        "domains": [
+          "furniture"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "material_type": "fact"
+      }
+    },
+    {
+      "source_id": "sprint-source:H04",
+      "text": "拭角B13是虚构验收清洁刷。刷头宽4厘米。手柄长20厘米。刷头不可拆卸。包装含一个悬挂环。没有杀菌、除霉、防刮测试或适用表面清单。",
+      "text_sha256": "9e365012ce0fda6155325a6457f7083f8138f08946d34c5a15d2dc6f75ec6dcc",
+      "provenance": {
+        "kind": "new_fictional_controlled_fixture",
+        "path": "docs/evidence/sprint-20261102/dataset/sources.json",
+        "json_pointer": "/items/10/text",
+        "license_scope": "仅本项目自编受控评测素材；不对应真实商品、真实用户或真实效果证据"
+      },
+      "classification": {
+        "domains": [
+          "furniture"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "material_type": "fact"
+      }
+    },
+    {
+      "source_id": "sprint-source:H05",
+      "text": "轻挂R14是虚构验收衣架。单只宽42厘米。挂钩不可旋转。每包五只。材质登记为塑料。没有单只承重、防滑测试或耐晒数据。",
+      "text_sha256": "1c3c31366789e0ccfee5c3b4047442364d1e6607c0ea58be4bbee0e4a37f5701",
+      "provenance": {
+        "kind": "new_fictional_controlled_fixture",
+        "path": "docs/evidence/sprint-20261102/dataset/sources.json",
+        "json_pointer": "/items/11/text",
+        "license_scope": "仅本项目自编受控评测素材；不对应真实商品、真实用户或真实效果证据"
+      },
+      "classification": {
+        "domains": [
+          "furniture"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "material_type": "fact"
+      }
+    },
+    {
+      "source_id": "sprint-source:H06",
+      "text": "素格P15是虚构验收靠垫。外套尺寸45×45厘米。外套可拆卸。包装含一个枕芯。外套闭合方式为拉链。没有支撑力、矫姿、过敏或洗涤方式资料。",
+      "text_sha256": "e49a647dbc288ddd8524b104d0e76559c233bff3d359a11a8f08c5972c6b944a",
+      "provenance": {
+        "kind": "new_fictional_controlled_fixture",
+        "path": "docs/evidence/sprint-20261102/dataset/sources.json",
+        "json_pointer": "/items/12/text",
+        "license_scope": "仅本项目自编受控评测素材；不对应真实商品、真实用户或真实效果证据"
+      },
+      "classification": {
+        "domains": [
+          "furniture"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "material_type": "fact"
+      }
+    },
+    {
+      "source_id": "sprint-source:H07",
+      "text": "分格O16是虚构验收抽屉盒。外形尺寸30×20×8厘米。内部有六个固定格。材质登记为PP。包装不含标签贴。没有食品接触认证、耐热温度或防潮测试数据。",
+      "text_sha256": "71234ca81321f41a472fb8ac5a5a27a84f55b6d1c238530de7798eab2982b86f",
+      "provenance": {
+        "kind": "new_fictional_controlled_fixture",
+        "path": "docs/evidence/sprint-20261102/dataset/sources.json",
+        "json_pointer": "/items/13/text",
+        "license_scope": "仅本项目自编受控评测素材；不对应真实商品、真实用户或真实效果证据"
+      },
+      "classification": {
+        "domains": [
+          "furniture"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "material_type": "fact"
+      }
+    },
+    {
+      "source_id": "sprint-source:S01",
+      "text": "清单T17是虚构验收任务卡工具。每张卡包含标题、截止日期、状态三个字段。状态可选待办、进行中、完成。支持按截止日期排序。导出格式为CSV。没有多人同步、提醒、学习成绩或效率提升测试数据。",
+      "text_sha256": "549f97d1c024c82674eab475d24dc4216d85d545d90f99ea25688ba680a14413",
+      "provenance": {
+        "kind": "new_fictional_controlled_fixture",
+        "path": "docs/evidence/sprint-20261102/dataset/sources.json",
+        "json_pointer": "/items/14/text",
+        "license_scope": "仅本项目自编受控评测素材；不对应真实商品、真实用户或真实效果证据"
+      },
+      "classification": {
+        "domains": [
+          "general"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "material_type": "fact"
+      }
+    },
+    {
+      "source_id": "sprint-source:S02",
+      "text": "周记N18是虚构验收计划本。每册包含52张周计划页。每页含七个日期栏。纸张尺寸为A5。页尾设空白复盘区。没有记忆提升、成绩变化或书写防渗测试资料。",
+      "text_sha256": "e2bcb209d89c40e1002520dc25ee3dded637ab37138586cb5a011e04f1d77cf8",
+      "provenance": {
+        "kind": "new_fictional_controlled_fixture",
+        "path": "docs/evidence/sprint-20261102/dataset/sources.json",
+        "json_pointer": "/items/15/text",
+        "license_scope": "仅本项目自编受控评测素材；不对应真实商品、真实用户或真实效果证据"
+      },
+      "classification": {
+        "domains": [
+          "general"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "material_type": "fact"
+      }
+    },
+    {
+      "source_id": "sprint-source:S03",
+      "text": "词盒F19是虚构验收卡片工具。每张卡支持正面和背面两个文本字段。可按标签筛选卡片。支持手动标记已复习。导出格式为JSON。没有自动间隔重复调度、发音、词库版权或记忆效果数据。",
+      "text_sha256": "42a61509218fa502ff28665a39418fe5eada0b64e865233dc5bb4060d13433f0",
+      "provenance": {
+        "kind": "new_fictional_controlled_fixture",
+        "path": "docs/evidence/sprint-20261102/dataset/sources.json",
+        "json_pointer": "/items/16/text",
+        "license_scope": "仅本项目自编受控评测素材；不对应真实商品、真实用户或真实效果证据"
+      },
+      "classification": {
+        "domains": [
+          "general"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "material_type": "fact"
+      }
+    },
+    {
+      "source_id": "sprint-source:S04",
+      "text": "索引I20是虚构验收文件目录工具。导入字段为文件名、所在目录和手工标签。支持文件名关键词筛选。导出格式为CSV。记录不包含文件正文。没有全文搜索、云同步、内容理解或隐私审计结论。",
+      "text_sha256": "0b32fc617f07cfa6cd1ce63705bd117697decc1838ae80225bebe73ab17f47eb",
+      "provenance": {
+        "kind": "new_fictional_controlled_fixture",
+        "path": "docs/evidence/sprint-20261102/dataset/sources.json",
+        "json_pointer": "/items/17/text",
+        "license_scope": "仅本项目自编受控评测素材；不对应真实商品、真实用户或真实效果证据"
+      },
+      "classification": {
+        "domains": [
+          "general"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "material_type": "fact"
+      }
+    },
+    {
+      "source_id": "sprint-source:S05",
+      "text": "四栏Q21是虚构验收笔记模板。每页包含问题、资料摘录、自己的解释和待核对四个栏。每页有一个来源链接栏。模板格式为可编辑Markdown。模板不自动联网核验。没有提高分数、避免遗忘或自动判断真伪的测试资料。",
+      "text_sha256": "ffce6293edec95964a544c0788d0536c5a6c0560d7ce8318695cd058dadc45a7",
+      "provenance": {
+        "kind": "new_fictional_controlled_fixture",
+        "path": "docs/evidence/sprint-20261102/dataset/sources.json",
+        "json_pointer": "/items/18/text",
+        "license_scope": "仅本项目自编受控评测素材；不对应真实商品、真实用户或真实效果证据"
+      },
+      "classification": {
+        "domains": [
+          "general"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "material_type": "fact"
+      }
+    },
+    {
+      "source_id": "sprint-source:S06",
+      "text": "片刻J22是虚构验收计时器。可设置1至60分钟倒计时。结束后显示文字提示。记录每次设定时长。可手动清除本地记录。没有后台提醒、跨设备同步、专注力变化或长期成绩资料。",
+      "text_sha256": "35a9cc4eb703ad33d2e013199244f7a41564c8078f1cffcb750e98a584f3930a",
+      "provenance": {
+        "kind": "new_fictional_controlled_fixture",
+        "path": "docs/evidence/sprint-20261102/dataset/sources.json",
+        "json_pointer": "/items/19/text",
+        "license_scope": "仅本项目自编受控评测素材；不对应真实商品、真实用户或真实效果证据"
+      },
+      "classification": {
+        "domains": [
+          "general"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "material_type": "fact"
+      }
+    }
+  ]
+}

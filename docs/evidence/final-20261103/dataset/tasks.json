@@ -1,0 +1,1484 @@
+{
+  "schema": "youji-official-source-tasks/1",
+  "frozen_on": "2026-11-03",
+  "status": "dataset_prepared_not_quality_evaluated",
+  "items": [
+    {
+      "id": "REAL-D01",
+      "category": "digital",
+      "domain": "digital",
+      "data_kind": "researcher_constructed_task_with_real_official_source",
+      "is_real_user_task": false,
+      "is_fictional_product": false,
+      "gold_status": "proposed_pending_independent_human_review",
+      "topic": "2024款Mac mini M4桌面接口介绍",
+      "material": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象是Apple在2024年10月29日新闻稿中介绍的2024款Mac mini，本文只讨论M4版本。\nF2：该代Mac mini机身底部为边长12.7厘米的正方形。\nF3：M4版本有10核中央处理器和10核图形处理器，统一内存从16GB起。\nF4：机身正面提供两个支持USB 3的USB-C口和耳机插孔。\nF5：M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。\n【完整限制】本材料没有本次作者的实测、当前售价、购买渠道库存或2026年最新在售代际核验。不可把2024年首发价格写成今天价格，不可把厂家性能宣传转成作者亲测，不补写未提供的机身高度、显示器兼容结论或所有场景的性能保证。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+      "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+      "answer": "没有新增事实：仍按初始材料介绍2024款M4的已知尺寸、配置与接口；无亲测和当前价格资料，不补充这些结论。",
+      "input": {
+        "topic": "2024款Mac mini M4桌面接口介绍",
+        "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+        "material": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象是Apple在2024年10月29日新闻稿中介绍的2024款Mac mini，本文只讨论M4版本。\nF2：该代Mac mini机身底部为边长12.7厘米的正方形。\nF3：M4版本有10核中央处理器和10核图形处理器，统一内存从16GB起。\nF4：机身正面提供两个支持USB 3的USB-C口和耳机插孔。\nF5：M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。\n【完整限制】本材料没有本次作者的实测、当前售价、购买渠道库存或2026年最新在售代际核验。不可把2024年首发价格写成今天价格，不可把厂家性能宣传转成作者亲测，不补写未提供的机身高度、显示器兼容结论或所有场景的性能保证。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+        "creation": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测"
+        }
+      },
+      "source_urls": [
+        "https://www.apple.com.cn/newsroom/2024/10/apples-all-new-mac-mini-is-even-more-mighty-and-more-mini/"
+      ],
+      "source_id": "official:REAL-D01",
+      "facts": [
+        {
+          "id": "F1",
+          "fact_id": "F1",
+          "source_id": "official:REAL-D01",
+          "statement": "对象是Apple在2024年10月29日新闻稿中介绍的2024款Mac mini，本文只讨论M4版本。",
+          "quote": "对象是Apple在2024年10月29日新闻稿中介绍的2024款Mac mini，本文只讨论M4版本。",
+          "start": 97,
+          "end": 148,
+          "unit": "unicode_codepoint",
+          "quote_kind": "researcher_paraphrase_in_model_material_not_verbatim_official_quote",
+          "source_locator": {
+            "url": "https://www.apple.com.cn/newsroom/2024/10/apples-all-new-mac-mini-is-even-more-mighty-and-more-mini/",
+            "web_lines": [
+              35,
+              47
+            ],
+            "original_excerpt_ids": []
+          },
+          "human_verification_status": "researcher_draft_pending_independent_confirmation"
+        },
+        {
+          "id": "F2",
+          "fact_id": "F2",
+          "source_id": "official:REAL-D01",
+          "statement": "该代Mac mini机身底部为边长12.7厘米的正方形。",
+          "quote": "该代Mac mini机身底部为边长12.7厘米的正方形。",
+          "start": 152,
+          "end": 180,
+          "unit": "unicode_codepoint",
+          "quote_kind": "researcher_paraphrase_in_model_material_not_verbatim_official_quote",
+          "source_locator": {
+            "url": "https://www.apple.com.cn/newsroom/2024/10/apples-all-new-mac-mini-is-even-more-mighty-and-more-mini/",
+            "web_lines": [
+              47,
+              51
+            ],
+            "original_excerpt_ids": [
+              "official:REAL-D01:e1"
+            ]
+          },
+          "human_verification_status": "researcher_draft_pending_independent_confirmation"
+        },
+        {
+          "id": "F3",
+          "fact_id": "F3",
+          "source_id": "official:REAL-D01",
+          "statement": "M4版本有10核中央处理器和10核图形处理器，统一内存从16GB起。",
+          "quote": "M4版本有10核中央处理器和10核图形处理器，统一内存从16GB起。",
+          "start": 184,
+          "end": 218,
+          "unit": "unicode_codepoint",
+          "quote_kind": "researcher_paraphrase_in_model_material_not_verbatim_official_quote",
+          "source_locator": {
+            "url": "https://www.apple.com.cn/newsroom/2024/10/apples-all-new-mac-mini-is-even-more-mighty-and-more-mini/",
+            "web_lines": [
+              55
+            ],
+            "original_excerpt_ids": [
+              "official:REAL-D01:e2",
+              "official:REAL-D01:e3"
+            ]
+          },
+          "human_verification_status": "researcher_draft_pending_independent_confirmation"
+        },
+        {
+          "id": "F4",
+          "fact_id": "F4",
+          "source_id": "official:REAL-D01",
+          "statement": "机身正面提供两个支持USB 3的USB-C口和耳机插孔。",
+          "quote": "机身正面提供两个支持USB 3的USB-C口和耳机插孔。",
+          "start": 222,
+          "end": 250,
+          "unit": "unicode_codepoint",
+          "quote_kind": "researcher_paraphrase_in_model_material_not_verbatim_official_quote",
+          "source_locator": {
+            "url": "https://www.apple.com.cn/newsroom/2024/10/apples-all-new-mac-mini-is-even-more-mighty-and-more-mini/",
+            "web_lines": [
+              93,
+              97
+            ],
+            "original_excerpt_ids": [
+              "official:REAL-D01:e4"
+            ]
+          },
+          "human_verification_status": "researcher_draft_pending_independent_confirmation"
+        },
+        {
+          "id": "F5",
+          "fact_id": "F5",
+          "source_id": "official:REAL-D01",
+          "statement": "M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。",
+          "quote": "M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。",
+          "start": 254,
+          "end": 291,
+          "unit": "unicode_codepoint",
+          "quote_kind": "researcher_paraphrase_in_model_material_not_verbatim_official_quote",
+          "source_locator": {
+            "url": "https://www.apple.com.cn/newsroom/2024/10/apples-all-new-mac-mini-is-even-more-mighty-and-more-mini/",
+            "web_lines": [
+              93,
+              100
+            ],
+            "original_excerpt_ids": [
+              "official:REAL-D01:e5"
+            ]
+          },
+          "human_verification_status": "researcher_draft_pending_independent_confirmation"
+        }
+      ],
+      "proposed_requirements": [
+        {
+          "id": "r1",
+          "question": "明确2024款和M4版本边界",
+          "weight": 3,
+          "fact_ids": [
+            "F1"
+          ],
+          "support": [
+            {
+              "source_id": "official:REAL-D01",
+              "fact_id": "F1",
+              "start": 97,
+              "end": 148,
+              "unit": "unicode_codepoint"
+            }
+          ],
+          "status": "proposed_gold_pending_independent_human_review"
+        },
+        {
+          "id": "r2",
+          "question": "说明桌面占位的底部尺寸",
+          "weight": 3,
+          "fact_ids": [
+            "F2"
+          ],
+          "support": [
+            {
+              "source_id": "official:REAL-D01",
+              "fact_id": "F2",
+              "start": 152,
+              "end": 180,
+              "unit": "unicode_codepoint"
+            }
+          ],
+          "status": "proposed_gold_pending_independent_human_review"
+        },
+        {
+          "id": "r3",
+          "question": "解释M4基础核心数与内存起点",
+          "weight": 2,
+          "fact_ids": [
+            "F3"
+          ],
+          "support": [
+            {
+              "source_id": "official:REAL-D01",
+              "fact_id": "F3",
+              "start": 184,
+              "end": 218,
+              "unit": "unicode_codepoint"
+            }
+          ],
+          "status": "proposed_gold_pending_independent_human_review"
+        },
+        {
+          "id": "r4",
+          "question": "区分正面USB-C与背面雷雳接口并避免混入Pro规格",
+          "weight": 3,
+          "fact_ids": [
+            "F4",
+            "F5"
+          ],
+          "support": [
+            {
+              "source_id": "official:REAL-D01",
+              "fact_id": "F4",
+              "start": 222,
+              "end": 250,
+              "unit": "unicode_codepoint"
+            },
+            {
+              "source_id": "official:REAL-D01",
+              "fact_id": "F5",
+              "start": 254,
+              "end": 291,
+              "unit": "unicode_codepoint"
+            }
+          ],
+          "status": "proposed_gold_pending_independent_human_review"
+        }
+      ],
+      "reference_example": {
+        "source_id": "synthetic-reference:REAL-D01",
+        "text": "买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是桌面连接。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+        "text_sha256": "fb652e90ac9bdec1920c7b93b1eec53dd16213d85a30b01cf42fef3ffeafa34b",
+        "classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example"
+        },
+        "evidence_role": "expression_reference",
+        "provenance": {
+          "path": "docs/evidence/sprint-20261102/dataset/structure_texts/STR-D01.txt",
+          "sample_id": "STR-D01",
+          "source_kind": "new_fictional_controlled_fixture",
+          "scope": "已有自编结构参考，仅学习段落功能，虚构参数与经历绝非本任务事实"
+        },
+        "source_kind": "synthetic_structure_reference"
+      },
+      "forbidden_claims": [
+        "虚构个人亲测或用户见证",
+        "把未提供的价格库存或效果写成已核验",
+        "把任务构造描述成真实用户访谈",
+        "本材料没有本次作者的实测、当前售价、购买渠道库存或2026年最新在售代际核验。不可把2024年首发价格写成今天价格，不可把厂家性能宣传转成作者亲测，不补写未提供的机身高度、显示器兼容结论或所有场景的性能保证。"
+      ],
+      "same_facts_policy": "A/E initial material identical; answers only repeat known facts or unknowns, no extra product facts",
+      "material_chars": 470,
+      "input_sha256": "c817e6ea4b96b31eeffe27e5deddae995abb3fc356db01c132bc36916b7cab93"
+    },
+    {
+      "id": "REAL-D02",
+      "category": "digital",
+      "domain": "digital",
+      "data_kind": "researcher_constructed_task_with_real_official_source",
+      "is_real_user_task": false,
+      "is_fictional_product": false,
+      "gold_status": "proposed_pending_independent_human_review",
+      "topic": "罗技Signature M650按手型与连接方式介绍",
+      "material": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：罗技官方建议中小手型考虑M650、大手型考虑M650 L，左利手对应M650 L Left。\nF2：SmartWheel滚动既提供逐行定位，也支持长页面快速滚动，通过轻弹手指切换。\nF3：连接方式包括低功耗蓝牙和Logi Bolt USB接收器。\nF4：官方列出Windows、macOS、Linux、iPadOS、Android等支持平台。\n【完整限制】官方支持平台名单不等于本次用户每台设备均已测试，购买前仍需核对具体系统与接口。本次读取未取得电池寿命、DPI数值、机身尺寸的正文参数，FAQ标题不能当作答案。没有作者亲测、实时价格或全网对比，不写完全无声、提升效率百分比、最适合所有人的结论。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+      "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+      "answer": "没有新增事实：本任务未提供具体个人手型、系统版本或亲测记录；请保留官方分款与连接信息，不替用户补出体验。",
+      "input": {
+        "topic": "罗技Signature M650按手型与连接方式介绍",
+        "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+        "material": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：罗技官方建议中小手型考虑M650、大手型考虑M650 L，左利手对应M650 L Left。\nF2：SmartWheel滚动既提供逐行定位，也支持长页面快速滚动，通过轻弹手指切换。\nF3：连接方式包括低功耗蓝牙和Logi Bolt USB接收器。\nF4：官方列出Windows、macOS、Linux、iPadOS、Android等支持平台。\n【完整限制】官方支持平台名单不等于本次用户每台设备均已测试，购买前仍需核对具体系统与接口。本次读取未取得电池寿命、DPI数值、机身尺寸的正文参数，FAQ标题不能当作答案。没有作者亲测、实时价格或全网对比，不写完全无声、提升效率百分比、最适合所有人的结论。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+        "creation": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测"
+        }
+      },
+      "source_urls": [
+        "https://www.logi.com/zh-cn/shop/p/m650-signature-wireless-mouse"
+      ],
+      "source_id": "official:REAL-D02",
+      "facts": [
+        {
+          "id": "F1",
+          "fact_id": "F1",
+          "source_id": "official:REAL-D02",
+          "statement": "罗技官方建议中小手型考虑M650、大手型考虑M650 L，左利手对应M650 L Left。",
+          "quote": "罗技官方建议中小手型考虑M650、大手型考虑M650 L，左利手对应M650 L Left。",
+          "start": 97,
+          "end": 143,
+          "unit": "unicode_codepoint",
+          "quote_kind": "researcher_paraphrase_in_model_material_not_verbatim_official_quote",
+          "source_locator": {
+            "url": "https://www.logi.com/zh-cn/shop/p/m650-signature-wireless-mouse",
+            "web_lines": [
+              79,
+              82
+            ],
+            "original_excerpt_ids": [
+              "official:REAL-D02:e2",
+              "official:REAL-D02:e3"
+            ]
+          },
+          "human_verification_status": "researcher_draft_pending_independent_confirmation"
+        },
+        {
+          "id": "F2",
+          "fact_id": "F2",
+          "source_id": "official:REAL-D02",
+          "statement": "SmartWheel滚动既提供逐行定位，也支持长页面快速滚动，通过轻弹手指切换。",
+          "quote": "SmartWheel滚动既提供逐行定位，也支持长页面快速滚动，通过轻弹手指切换。",
+          "start": 147,
+          "end": 187,
+          "unit": "unicode_codepoint",
+          "quote_kind": "researcher_paraphrase_in_model_material_not_verbatim_official_quote",
+          "source_locator": {
+            "url": "https://www.logi.com/zh-cn/shop/p/m650-signature-wireless-mouse",
+            "web_lines": [
+              69,
+              71
+            ],
+            "original_excerpt_ids": [
+              "official:REAL-D02:e1"
+            ]
+          },
+          "human_verification_status": "researcher_draft_pending_independent_confirmation"
+        },
+        {
+          "id": "F3",
+          "fact_id": "F3",
+          "source_id": "official:REAL-D02",
+          "statement": "连接方式包括低功耗蓝牙和Logi Bolt USB接收器。",
+          "quote": "连接方式包括低功耗蓝牙和Logi Bolt USB接收器。",
+          "start": 191,
+          "end": 220,
+          "unit": "unicode_codepoint",
+          "quote_kind": "researcher_paraphrase_in_model_material_not_verbatim_official_quote",
+          "source_locator": {
+            "url": "https://www.logi.com/zh-cn/shop/p/m650-signature-wireless-mouse",
+            "web_lines": [
+              97,
+              101
+            ],
+            "original_excerpt_ids": [
+              "official:REAL-D02:e4",
+              "official:REAL-D02:e5"
+            ]
+          },
+          "human_verification_status": "researcher_draft_pending_independent_confirmation"
+        },
+        {
+          "id": "F4",
+          "fact_id": "F4",
+          "source_id": "official:REAL-D02",
+          "statement": "官方列出Windows、macOS、Linux、iPadOS、Android等支持平台。",
+          "quote": "官方列出Windows、macOS、Linux、iPadOS、Android等支持平台。",
+          "start": 224,
+          "end": 268,
+          "unit": "unicode_codepoint",
+          "quote_kind": "researcher_paraphrase_in_model_material_not_verbatim_official_quote",
+          "source_locator": {
+            "url": "https://www.logi.com/zh-cn/shop/p/m650-signature-wireless-mouse",
+            "web_lines": [
+              97,
+              101
+            ],
+            "original_excerpt_ids": []
+          },
+          "human_verification_status": "researcher_draft_pending_independent_confirmation"
+        }
+      ],
+      "proposed_requirements": [
+        {
+          "id": "r1",
+          "question": "按手型区分标准、大号和左手版本",
+          "weight": 3,
+          "fact_ids": [
+            "F1"
+          ],
+          "support": [
+            {
+              "source_id": "official:REAL-D02",
+              "fact_id": "F1",
+              "start": 97,
+              "end": 143,
+              "unit": "unicode_codepoint"
+            }
+          ],
+          "status": "proposed_gold_pending_independent_human_review"
+        },
+        {
+          "id": "r2",
+          "question": "解释滚轮两种使用节奏",
+          "weight": 2,
+          "fact_ids": [
+            "F2"
+          ],
+          "support": [
+            {
+              "source_id": "official:REAL-D02",
+              "fact_id": "F2",
+              "start": 147,
+              "end": 187,
+              "unit": "unicode_codepoint"
+            }
+          ],
+          "status": "proposed_gold_pending_independent_human_review"
+        },
+        {
+          "id": "r3",
+          "question": "交代两种连接方式",
+          "weight": 3,
+          "fact_ids": [
+            "F3"
+          ],
+          "support": [
+            {
+              "source_id": "official:REAL-D02",
+              "fact_id": "F3",
+              "start": 191,
+              "end": 220,
+              "unit": "unicode_codepoint"
+            }
+          ],
+          "status": "proposed_gold_pending_independent_human_review"
+        },
+        {
+          "id": "r4",
+          "question": "列出平台支持但不扩大为所有设备均保证兼容",
+          "weight": 2,
+          "fact_ids": [
+            "F4"
+          ],
+          "support": [
+            {
+              "source_id": "official:REAL-D02",
+              "fact_id": "F4",
+              "start": 224,
+              "end": 268,
+              "unit": "unicode_codepoint"
+            }
+          ],
+          "status": "proposed_gold_pending_independent_human_review"
+        }
+      ],
+      "reference_example": {
+        "source_id": "synthetic-reference:REAL-D02",
+        "text": "你可能想要一个直接答案，但决定还缺少自己的需求。\n\n虚构规格页登记型号X15，尺寸为15厘米，未提供其他测试。\n\n把选择拆成三个步骤：确认目标、核对资料、记录仍然未知的地方。\n\n不要把参考人物的个人记录移植到当前任务。\n\n愿意的话，留下最想确认的一项条件。",
+        "text_sha256": "96459dc3aaef4061bdb0c08e77f22125432c96d2e5b5488164254988c778b01e",
+        "classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example"
+        },
+        "evidence_role": "expression_reference",
+        "provenance": {
+          "path": "docs/evidence/sprint-20261102/dataset/structure_texts/STR-D05.txt",
+          "sample_id": "STR-D05",
+          "source_kind": "new_fictional_controlled_fixture",
+          "scope": "已有自编结构参考，仅学习段落功能，虚构参数与经历绝非本任务事实"
+        },
+        "source_kind": "synthetic_structure_reference"
+      },
+      "forbidden_claims": [
+        "虚构个人亲测或用户见证",
+        "把未提供的价格库存或效果写成已核验",
+        "把任务构造描述成真实用户访谈",
+        "官方支持平台名单不等于本次用户每台设备均已测试，购买前仍需核对具体系统与接口。本次读取未取得电池寿命、DPI数值、机身尺寸的正文参数，FAQ标题不能当作答案。没有作者亲测、实时价格或全网对比，不写完全无声、提升效率百分比、最适合所有人的结论。"
+      ],
+      "same_facts_policy": "A/E initial material identical; answers only repeat known facts or unknowns, no extra product facts",
+      "material_chars": 464,
+      "input_sha256": "7644c2aec5d97f43fbf1443c09f848e179379218526ed850ff298c854bddc918"
+    },
+    {
+      "id": "REAL-H01",
+      "category": "home",
+      "domain": "furniture",
+      "data_kind": "researcher_constructed_task_with_real_official_source",
+      "is_real_user_task": false,
+      "is_fictional_product": false,
+      "gold_status": "proposed_pending_independent_human_review",
+      "topic": "宜家LACK白色边桌尺寸与使用前检查",
+      "material": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象为货号104.499.09的白色LACK边桌，桌面长55厘米、宽55厘米，高45厘米。\nF2：官方列出的桌面最大载重是10公斤。\nF3：同系列35×35厘米小桌需要另外购买，不能把它当作本商品附赠。\nF4：官方保养说明包括湿布清洁、再擦干，并定期检查和重新紧固松动的组装件。\n【完整限制】这里没有作者家中实测、座站安全认证、长期耐水或抗刮试验记录。10公斤是该页面列出的桌面载重值，不应扩大成可坐可站或任何受力方式都安全；不要把包装尺寸当家具尺寸。不写即时库存、促销价格或环保等级认证，购买信息应由读者当时另查。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+      "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+      "answer": "没有新增事实：本任务没有家庭尺寸或实际摆放测量记录；只重复已给55×55×45厘米及桌面10公斤限制，保留现场核对提醒。",
+      "input": {
+        "topic": "宜家LACK白色边桌尺寸与使用前检查",
+        "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+        "material": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象为货号104.499.09的白色LACK边桌，桌面长55厘米、宽55厘米，高45厘米。\nF2：官方列出的桌面最大载重是10公斤。\nF3：同系列35×35厘米小桌需要另外购买，不能把它当作本商品附赠。\nF4：官方保养说明包括湿布清洁、再擦干，并定期检查和重新紧固松动的组装件。\n【完整限制】这里没有作者家中实测、座站安全认证、长期耐水或抗刮试验记录。10公斤是该页面列出的桌面载重值，不应扩大成可坐可站或任何受力方式都安全；不要把包装尺寸当家具尺寸。不写即时库存、促销价格或环保等级认证，购买信息应由读者当时另查。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+        "creation": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测"
+        }
+      },
+      "source_urls": [
+        "https://www.ikea.cn/cn/zh/p/lack-side-table-white-10449909/"
+      ],
+      "source_id": "official:REAL-H01",
+      "facts": [
+        {
+          "id": "F1",
+          "fact_id": "F1",
+          "source_id": "official:REAL-H01",
+          "statement": "对象为货号104.499.09的白色LACK边桌，桌面长55厘米、宽55厘米，高45厘米。",
+          "quote": "对象为货号104.499.09的白色LACK边桌，桌面长55厘米、宽55厘米，高45厘米。",
+          "start": 97,
+          "end": 142,
+          "unit": "unicode_codepoint",
+          "quote_kind": "researcher_paraphrase_in_model_material_not_verbatim_official_quote",
+          "source_locator": {
+            "url": "https://www.ikea.cn/cn/zh/p/lack-side-table-white-10449909/",
+            "web_lines": [
+              44,
+              77,
+              79,
+              81,
+              83,
+              85,
+              87
+            ],
+            "original_excerpt_ids": [
+              "official:REAL-H01:e1",
+              "official:REAL-H01:e2",
+              "official:REAL-H01:e3"
+            ]
+          },
+          "human_verification_status": "researcher_draft_pending_independent_confirmation"
+        },
+        {
+          "id": "F2",
+          "fact_id": "F2",
+          "source_id": "official:REAL-H01",
+          "statement": "官方列出的桌面最大载重是10公斤。",
+          "quote": "官方列出的桌面最大载重是10公斤。",
+          "start": 146,
+          "end": 163,
+          "unit": "unicode_codepoint",
+          "quote_kind": "researcher_paraphrase_in_model_material_not_verbatim_official_quote",
+          "source_locator": {
+            "url": "https://www.ikea.cn/cn/zh/p/lack-side-table-white-10449909/",
+            "web_lines": [
+              65,
+              89,
+              91
+            ],
+            "original_excerpt_ids": [
+              "official:REAL-H01:e4"
+            ]
+          },
+          "human_verification_status": "researcher_draft_pending_independent_confirmation"
+        },
+        {
+          "id": "F3",
+          "fact_id": "F3",
+          "source_id": "official:REAL-H01",
+          "statement": "同系列35×35厘米小桌需要另外购买，不能把它当作本商品附赠。",
+          "quote": "同系列35×35厘米小桌需要另外购买，不能把它当作本商品附赠。",
+          "start": 167,
+          "end": 198,
+          "unit": "unicode_codepoint",
+          "quote_kind": "researcher_paraphrase_in_model_material_not_verbatim_official_quote",
+          "source_locator": {
+            "url": "https://www.ikea.cn/cn/zh/p/lack-side-table-white-10449909/",
+            "web_lines": [
+              55,
+              67
+            ],
+            "original_excerpt_ids": [
+              "official:REAL-H01:e5"
+            ]
+          },
+          "human_verification_status": "researcher_draft_pending_independent_confirmation"
+        },
+        {
+          "id": "F4",
+          "fact_id": "F4",
+          "source_id": "official:REAL-H01",
+          "statement": "官方保养说明包括湿布清洁、再擦干，并定期检查和重新紧固松动的组装件。",
+          "quote": "官方保养说明包括湿布清洁、再擦干，并定期检查和重新紧固松动的组装件。",
+          "start": 202,
+          "end": 236,
+          "unit": "unicode_codepoint",
+          "quote_kind": "researcher_paraphrase_in_model_material_not_verbatim_official_quote",
+          "source_locator": {
+            "url": "https://www.ikea.cn/cn/zh/p/lack-side-table-white-10449909/",
+            "web_lines": [
+              125,
+              127,
+              129,
+              131
+            ],
+            "original_excerpt_ids": [
+              "official:REAL-H01:e6"
+            ]
+          },
+          "human_verification_status": "researcher_draft_pending_independent_confirmation"
+        }
+      ],
+      "proposed_requirements": [
+        {
+          "id": "r1",
+          "question": "说清指定货号与55×55×45厘米尺寸",
+          "weight": 3,
+          "fact_ids": [
+            "F1"
+          ],
+          "support": [
+            {
+              "source_id": "official:REAL-H01",
+              "fact_id": "F1",
+              "start": 97,
+              "end": 142,
+              "unit": "unicode_codepoint"
+            }
+          ],
+          "status": "proposed_gold_pending_independent_human_review"
+        },
+        {
+          "id": "r2",
+          "question": "保留桌面10公斤载重限制",
+          "weight": 3,
+          "fact_ids": [
+            "F2"
+          ],
+          "support": [
+            {
+              "source_id": "official:REAL-H01",
+              "fact_id": "F2",
+              "start": 146,
+              "end": 163,
+              "unit": "unicode_codepoint"
+            }
+          ],
+          "status": "proposed_gold_pending_independent_human_review"
+        },
+        {
+          "id": "r3",
+          "question": "说明小桌另购避免套装误解",
+          "weight": 2,
+          "fact_ids": [
+            "F3"
+          ],
+          "support": [
+            {
+              "source_id": "official:REAL-H01",
+              "fact_id": "F3",
+              "start": 167,
+              "end": 198,
+              "unit": "unicode_codepoint"
+            }
+          ],
+          "status": "proposed_gold_pending_independent_human_review"
+        },
+        {
+          "id": "r4",
+          "question": "给出清洁和紧固检查事项",
+          "weight": 2,
+          "fact_ids": [
+            "F4"
+          ],
+          "support": [
+            {
+              "source_id": "official:REAL-H01",
+              "fact_id": "F4",
+              "start": 202,
+              "end": 236,
+              "unit": "unicode_codepoint"
+            }
+          ],
+          "status": "proposed_gold_pending_independent_human_review"
+        }
+      ],
+      "reference_example": {
+        "source_id": "synthetic-reference:REAL-H01",
+        "text": "买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是边桌摆放。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+        "text_sha256": "8118c210204fbfe716ba444a64a616f9f7429d2fd31dfd6e7b53424b439ae79e",
+        "classification": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example"
+        },
+        "evidence_role": "expression_reference",
+        "provenance": {
+          "path": "docs/evidence/sprint-20261102/dataset/structure_texts/STR-H01.txt",
+          "sample_id": "STR-H01",
+          "source_kind": "new_fictional_controlled_fixture",
+          "scope": "已有自编结构参考，仅学习段落功能，虚构参数与经历绝非本任务事实"
+        },
+        "source_kind": "synthetic_structure_reference"
+      },
+      "forbidden_claims": [
+        "虚构个人亲测或用户见证",
+        "把未提供的价格库存或效果写成已核验",
+        "把任务构造描述成真实用户访谈",
+        "这里没有作者家中实测、座站安全认证、长期耐水或抗刮试验记录。10公斤是该页面列出的桌面载重值，不应扩大成可坐可站或任何受力方式都安全；不要把包装尺寸当家具尺寸。不写即时库存、促销价格或环保等级认证，购买信息应由读者当时另查。"
+      ],
+      "same_facts_policy": "A/E initial material identical; answers only repeat known facts or unknowns, no extra product facts",
+      "material_chars": 423,
+      "input_sha256": "4a606d964af918345dc54cdb0b5ac0b0e5f857d3abaeae265e85cf8058ece856"
+    },
+    {
+      "id": "REAL-H02",
+      "category": "home",
+      "domain": "furniture",
+      "data_kind": "researcher_constructed_task_with_real_official_source",
+      "is_real_user_task": false,
+      "is_fictional_product": false,
+      "gold_status": "proposed_pending_independent_human_review",
+      "topic": "宜家BILLY加高书架选前尺寸与固定提醒",
+      "material": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象是货号895.452.91的白色BILLY加高组合，含加高件。\nF2：组合宽80厘米、深28厘米、高237厘米，不是202厘米版本。\nF3：页面列明每块搁板最大承重30公斤；这不是整个柜体可任意加总的承重声明。\nF4：官方要求安全固定产品，采用合适螺丝和螺栓；不确定应咨询专业人士，并在柜顶与天花板之间预留固定操作空间。\n【完整限制】材料没有具体墙体类型、适用紧固件型号、顶部最小间距数值或作者安装实测，不可替读者编一个通用螺栓方案或精确预留厘米数。柜顶和天花板的操作空间要求不能省略；不能把包装高度或普通202厘米版本的数据混入。价格、库存及本次用户现场条件均未核验。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+      "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+      "answer": "没有新增事实：墙体、现场层高和紧固件型号都未提供；只能保留初始材料的尺寸、承重和安全固定要求，不编具体安装方案。",
+      "input": {
+        "topic": "宜家BILLY加高书架选前尺寸与固定提醒",
+        "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+        "material": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象是货号895.452.91的白色BILLY加高组合，含加高件。\nF2：组合宽80厘米、深28厘米、高237厘米，不是202厘米版本。\nF3：页面列明每块搁板最大承重30公斤；这不是整个柜体可任意加总的承重声明。\nF4：官方要求安全固定产品，采用合适螺丝和螺栓；不确定应咨询专业人士，并在柜顶与天花板之间预留固定操作空间。\n【完整限制】材料没有具体墙体类型、适用紧固件型号、顶部最小间距数值或作者安装实测，不可替读者编一个通用螺栓方案或精确预留厘米数。柜顶和天花板的操作空间要求不能省略；不能把包装高度或普通202厘米版本的数据混入。价格、库存及本次用户现场条件均未核验。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+        "creation": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测"
+        }
+      },
+      "source_urls": [
+        "https://www.ikea.cn/cn/zh/p/billy-bookcase-white-s89545291/"
+      ],
+      "source_id": "official:REAL-H02",
+      "facts": [
+        {
+          "id": "F1",
+          "fact_id": "F1",
+          "source_id": "official:REAL-H02",
+          "statement": "对象是货号895.452.91的白色BILLY加高组合，含加高件。",
+          "quote": "对象是货号895.452.91的白色BILLY加高组合，含加高件。",
+          "start": 97,
+          "end": 130,
+          "unit": "unicode_codepoint",
+          "quote_kind": "researcher_paraphrase_in_model_material_not_verbatim_official_quote",
+          "source_locator": {
+            "url": "https://www.ikea.cn/cn/zh/p/billy-bookcase-white-s89545291/",
+            "web_lines": [
+              40,
+              42,
+              49
+            ],
+            "original_excerpt_ids": [
+              "official:REAL-H02:e1",
+              "official:REAL-H02:e6"
+            ]
+          },
+          "human_verification_status": "researcher_draft_pending_independent_confirmation"
+        },
+        {
+          "id": "F2",
+          "fact_id": "F2",
+          "source_id": "official:REAL-H02",
+          "statement": "组合宽80厘米、深28厘米、高237厘米，不是202厘米版本。",
+          "quote": "组合宽80厘米、深28厘米、高237厘米，不是202厘米版本。",
+          "start": 134,
+          "end": 165,
+          "unit": "unicode_codepoint",
+          "quote_kind": "researcher_paraphrase_in_model_material_not_verbatim_official_quote",
+          "source_locator": {
+            "url": "https://www.ikea.cn/cn/zh/p/billy-bookcase-white-s89545291/",
+            "web_lines": [
+              69,
+              71,
+              73,
+              75,
+              77,
+              79
+            ],
+            "original_excerpt_ids": [
+              "official:REAL-H02:e2",
+              "official:REAL-H02:e3",
+              "official:REAL-H02:e4"
+            ]
+          },
+          "human_verification_status": "researcher_draft_pending_independent_confirmation"
+        },
+        {
+          "id": "F3",
+          "fact_id": "F3",
+          "source_id": "official:REAL-H02",
+          "statement": "页面列明每块搁板最大承重30公斤；这不是整个柜体可任意加总的承重声明。",
+          "quote": "页面列明每块搁板最大承重30公斤；这不是整个柜体可任意加总的承重声明。",
+          "start": 169,
+          "end": 204,
+          "unit": "unicode_codepoint",
+          "quote_kind": "researcher_paraphrase_in_model_material_not_verbatim_official_quote",
+          "source_locator": {
+            "url": "https://www.ikea.cn/cn/zh/p/billy-bookcase-white-s89545291/",
+            "web_lines": [
+              81,
+              83
+            ],
+            "original_excerpt_ids": [
+              "official:REAL-H02:e5"
+            ]
+          },
+          "human_verification_status": "researcher_draft_pending_independent_confirmation"
+        },
+        {
+          "id": "F4",
+          "fact_id": "F4",
+          "source_id": "official:REAL-H02",
+          "statement": "官方要求安全固定产品，采用合适螺丝和螺栓；不确定应咨询专业人士，并在柜顶与天花板之间预留固定操作空间。",
+          "quote": "官方要求安全固定产品，采用合适螺丝和螺栓；不确定应咨询专业人士，并在柜顶与天花板之间预留固定操作空间。",
+          "start": 208,
+          "end": 259,
+          "unit": "unicode_codepoint",
+          "quote_kind": "researcher_paraphrase_in_model_material_not_verbatim_official_quote",
+          "source_locator": {
+            "url": "https://www.ikea.cn/cn/zh/p/billy-bookcase-white-s89545291/",
+            "web_lines": [
+              57,
+              59
+            ],
+            "original_excerpt_ids": [
+              "official:REAL-H02:e7"
+            ]
+          },
+          "human_verification_status": "researcher_draft_pending_independent_confirmation"
+        }
+      ],
+      "proposed_requirements": [
+        {
+          "id": "r1",
+          "question": "准确指出加高组合及237厘米高度",
+          "weight": 3,
+          "fact_ids": [
+            "F1",
+            "F2"
+          ],
+          "support": [
+            {
+              "source_id": "official:REAL-H02",
+              "fact_id": "F1",
+              "start": 97,
+              "end": 130,
+              "unit": "unicode_codepoint"
+            },
+            {
+              "source_id": "official:REAL-H02",
+              "fact_id": "F2",
+              "start": 134,
+              "end": 165,
+              "unit": "unicode_codepoint"
+            }
+          ],
+          "status": "proposed_gold_pending_independent_human_review"
+        },
+        {
+          "id": "r2",
+          "question": "交代宽80深28的占位",
+          "weight": 2,
+          "fact_ids": [
+            "F2"
+          ],
+          "support": [
+            {
+              "source_id": "official:REAL-H02",
+              "fact_id": "F2",
+              "start": 134,
+              "end": 165,
+              "unit": "unicode_codepoint"
+            }
+          ],
+          "status": "proposed_gold_pending_independent_human_review"
+        },
+        {
+          "id": "r3",
+          "question": "限定30公斤是每块搁板参数",
+          "weight": 3,
+          "fact_ids": [
+            "F3"
+          ],
+          "support": [
+            {
+              "source_id": "official:REAL-H02",
+              "fact_id": "F3",
+              "start": 169,
+              "end": 204,
+              "unit": "unicode_codepoint"
+            }
+          ],
+          "status": "proposed_gold_pending_independent_human_review"
+        },
+        {
+          "id": "r4",
+          "question": "说明固定与顶部操作空间要求",
+          "weight": 3,
+          "fact_ids": [
+            "F4"
+          ],
+          "support": [
+            {
+              "source_id": "official:REAL-H02",
+              "fact_id": "F4",
+              "start": 208,
+              "end": 259,
+              "unit": "unicode_codepoint"
+            }
+          ],
+          "status": "proposed_gold_pending_independent_human_review"
+        }
+      ],
+      "reference_example": {
+        "source_id": "synthetic-reference:REAL-H02",
+        "text": "真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是抽屉分区。\n\n整理抽屉分区时，先保留可核对的信息，再决定文章顺序。\n\n材料中列出三个字段，分别是名称、位置和手工标签。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。",
+        "text_sha256": "db138b37bdfeb21e43bc69af3f5c0887422ea0573e210af06147b0aaa806a23e",
+        "classification": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example"
+        },
+        "evidence_role": "expression_reference",
+        "provenance": {
+          "path": "docs/evidence/sprint-20261102/dataset/structure_texts/STR-H02.txt",
+          "sample_id": "STR-H02",
+          "source_kind": "new_fictional_controlled_fixture",
+          "scope": "已有自编结构参考，仅学习段落功能，虚构参数与经历绝非本任务事实"
+        },
+        "source_kind": "synthetic_structure_reference"
+      },
+      "forbidden_claims": [
+        "虚构个人亲测或用户见证",
+        "把未提供的价格库存或效果写成已核验",
+        "把任务构造描述成真实用户访谈",
+        "材料没有具体墙体类型、适用紧固件型号、顶部最小间距数值或作者安装实测，不可替读者编一个通用螺栓方案或精确预留厘米数。柜顶和天花板的操作空间要求不能省略；不能把包装高度或普通202厘米版本的数据混入。价格、库存及本次用户现场条件均未核验。"
+      ],
+      "same_facts_policy": "A/E initial material identical; answers only repeat known facts or unknowns, no extra product facts",
+      "material_chars": 452,
+      "input_sha256": "a60dc66061b2c7ca052d2cbb0b87a013dd1b35b5e16fe73016f6652208961a3e"
+    },
+    {
+      "id": "REAL-S01",
+      "category": "tutorial",
+      "domain": "general",
+      "data_kind": "researcher_constructed_task_with_real_official_source",
+      "is_real_user_task": false,
+      "is_fictional_product": false,
+      "gold_status": "proposed_pending_independent_human_review",
+      "topic": "GitHub Pages个人作品页入门检查",
+      "material": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：GitHub Pages可以使用新建仓库，也可以使用已有仓库；GitHub Free场景下仓库必须公开。\nF2：个人或组织站点的仓库名按账号名.github.io形式设置，名称中的大写字母需要转为小写。\nF3：入口可使用index.html、index.md或README.md，并应位于所选发布源的顶层。\nF4：需要配置发布源，可以采用分支和文件夹或GitHub Actions工作流。\nF5：即使套餐允许私有仓库，Pages网站仍会公开在互联网；不要把敏感数据发布上去。\n【完整限制】任务只做入门说明，不实际创建仓库、上传文件或发布网站。没有实测构建时长、运行费用或国内可达性结果，不保证一分钟上线、长期永久免费、任何私有仓库都可免费使用。不要声称本项目已经替用户部署成功，也不从文档外补入数据库或动态后端承诺。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+      "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+      "answer": "没有新增事实：未提供现有仓库、付费套餐和部署回执；仍按初始官方流程做检查说明，不声称已经发布。",
+      "input": {
+        "topic": "GitHub Pages个人作品页入门检查",
+        "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+        "material": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：GitHub Pages可以使用新建仓库，也可以使用已有仓库；GitHub Free场景下仓库必须公开。\nF2：个人或组织站点的仓库名按账号名.github.io形式设置，名称中的大写字母需要转为小写。\nF3：入口可使用index.html、index.md或README.md，并应位于所选发布源的顶层。\nF4：需要配置发布源，可以采用分支和文件夹或GitHub Actions工作流。\nF5：即使套餐允许私有仓库，Pages网站仍会公开在互联网；不要把敏感数据发布上去。\n【完整限制】任务只做入门说明，不实际创建仓库、上传文件或发布网站。没有实测构建时长、运行费用或国内可达性结果，不保证一分钟上线、长期永久免费、任何私有仓库都可免费使用。不要声称本项目已经替用户部署成功，也不从文档外补入数据库或动态后端承诺。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+        "creation": {
+          "domains": [
+            "general"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测"
+        }
+      },
+      "source_urls": [
+        "https://docs.github.com/zh/pages/getting-started-with-github-pages/creating-a-github-pages-site"
+      ],
+      "source_id": "official:REAL-S01",
+      "facts": [
+        {
+          "id": "F1",
+          "fact_id": "F1",
+          "source_id": "official:REAL-S01",
+          "statement": "GitHub Pages可以使用新建仓库，也可以使用已有仓库；GitHub Free场景下仓库必须公开。",
+          "quote": "GitHub Pages可以使用新建仓库，也可以使用已有仓库；GitHub Free场景下仓库必须公开。",
+          "start": 97,
+          "end": 149,
+          "unit": "unicode_codepoint",
+          "quote_kind": "researcher_paraphrase_in_model_material_not_verbatim_official_quote",
+          "source_locator": {
+            "url": "https://docs.github.com/zh/pages/getting-started-with-github-pages/creating-a-github-pages-site",
+            "web_lines": [
+              19,
+              25,
+              43,
+              46
+            ],
+            "original_excerpt_ids": [
+              "official:REAL-S01:e1",
+              "official:REAL-S01:e2"
+            ]
+          },
+          "human_verification_status": "researcher_draft_pending_independent_confirmation"
+        },
+        {
+          "id": "F2",
+          "fact_id": "F2",
+          "source_id": "official:REAL-S01",
+          "statement": "个人或组织站点的仓库名按账号名.github.io形式设置，名称中的大写字母需要转为小写。",
+          "quote": "个人或组织站点的仓库名按账号名.github.io形式设置，名称中的大写字母需要转为小写。",
+          "start": 153,
+          "end": 198,
+          "unit": "unicode_codepoint",
+          "quote_kind": "researcher_paraphrase_in_model_material_not_verbatim_official_quote",
+          "source_locator": {
+            "url": "https://docs.github.com/zh/pages/getting-started-with-github-pages/creating-a-github-pages-site",
+            "web_lines": [
+              54
+            ],
+            "original_excerpt_ids": []
+          },
+          "human_verification_status": "researcher_draft_pending_independent_confirmation"
+        },
+        {
+          "id": "F3",
+          "fact_id": "F3",
+          "source_id": "official:REAL-S01",
+          "statement": "入口可使用index.html、index.md或README.md，并应位于所选发布源的顶层。",
+          "quote": "入口可使用index.html、index.md或README.md，并应位于所选发布源的顶层。",
+          "start": 202,
+          "end": 250,
+          "unit": "unicode_codepoint",
+          "quote_kind": "researcher_paraphrase_in_model_material_not_verbatim_official_quote",
+          "source_locator": {
+            "url": "https://docs.github.com/zh/pages/getting-started-with-github-pages/creating-a-github-pages-site",
+            "web_lines": [
+              70,
+              72,
+              73
+            ],
+            "original_excerpt_ids": [
+              "official:REAL-S01:e3",
+              "official:REAL-S01:e4",
+              "official:REAL-S01:e5"
+            ]
+          },
+          "human_verification_status": "researcher_draft_pending_independent_confirmation"
+        },
+        {
+          "id": "F4",
+          "fact_id": "F4",
+          "source_id": "official:REAL-S01",
+          "statement": "需要配置发布源，可以采用分支和文件夹或GitHub Actions工作流。",
+          "quote": "需要配置发布源，可以采用分支和文件夹或GitHub Actions工作流。",
+          "start": 254,
+          "end": 291,
+          "unit": "unicode_codepoint",
+          "quote_kind": "researcher_paraphrase_in_model_material_not_verbatim_official_quote",
+          "source_locator": {
+            "url": "https://docs.github.com/zh/pages/getting-started-with-github-pages/creating-a-github-pages-site",
+            "web_lines": [
+              45,
+              69,
+              75,
+              77
+            ],
+            "original_excerpt_ids": [
+              "official:REAL-S01:e7"
+            ]
+          },
+          "human_verification_status": "researcher_draft_pending_independent_confirmation"
+        },
+        {
+          "id": "F5",
+          "fact_id": "F5",
+          "source_id": "official:REAL-S01",
+          "statement": "即使套餐允许私有仓库，Pages网站仍会公开在互联网；不要把敏感数据发布上去。",
+          "quote": "即使套餐允许私有仓库，Pages网站仍会公开在互联网；不要把敏感数据发布上去。",
+          "start": 295,
+          "end": 334,
+          "unit": "unicode_codepoint",
+          "quote_kind": "researcher_paraphrase_in_model_material_not_verbatim_official_quote",
+          "source_locator": {
+            "url": "https://docs.github.com/zh/pages/getting-started-with-github-pages/creating-a-github-pages-site",
+            "web_lines": [
+              64,
+              65
+            ],
+            "original_excerpt_ids": [
+              "official:REAL-S01:e6"
+            ]
+          },
+          "human_verification_status": "researcher_draft_pending_independent_confirmation"
+        }
+      ],
+      "proposed_requirements": [
+        {
+          "id": "r1",
+          "question": "说明Free公开仓库前提和仓库命名",
+          "weight": 3,
+          "fact_ids": [
+            "F1",
+            "F2"
+          ],
+          "support": [
+            {
+              "source_id": "official:REAL-S01",
+              "fact_id": "F1",
+              "start": 97,
+              "end": 149,
+              "unit": "unicode_codepoint"
+            },
+            {
+              "source_id": "official:REAL-S01",
+              "fact_id": "F2",
+              "start": 153,
+              "end": 198,
+              "unit": "unicode_codepoint"
+            }
+          ],
+          "status": "proposed_gold_pending_independent_human_review"
+        },
+        {
+          "id": "r2",
+          "question": "列出入口文件与顶层位置",
+          "weight": 3,
+          "fact_ids": [
+            "F3"
+          ],
+          "support": [
+            {
+              "source_id": "official:REAL-S01",
+              "fact_id": "F3",
+              "start": 202,
+              "end": 250,
+              "unit": "unicode_codepoint"
+            }
+          ],
+          "status": "proposed_gold_pending_independent_human_review"
+        },
+        {
+          "id": "r3",
+          "question": "说明发布源需要配置",
+          "weight": 2,
+          "fact_ids": [
+            "F4"
+          ],
+          "support": [
+            {
+              "source_id": "official:REAL-S01",
+              "fact_id": "F4",
+              "start": 254,
+              "end": 291,
+              "unit": "unicode_codepoint"
+            }
+          ],
+          "status": "proposed_gold_pending_independent_human_review"
+        },
+        {
+          "id": "r4",
+          "question": "强调网站公开和敏感数据边界",
+          "weight": 3,
+          "fact_ids": [
+            "F5"
+          ],
+          "support": [
+            {
+              "source_id": "official:REAL-S01",
+              "fact_id": "F5",
+              "start": 295,
+              "end": 334,
+              "unit": "unicode_codepoint"
+            }
+          ],
+          "status": "proposed_gold_pending_independent_human_review"
+        }
+      ],
+      "reference_example": {
+        "source_id": "synthetic-reference:REAL-S01",
+        "text": "先别急着下结论，把桌上的现有条件列出来。\n\n材料中列出三个字段，分别是名称、位置和手工标签。\n\n操作时先列出自己的条件，然后逐项对照材料里的已知字段。\n\n收藏前先核对这份清单是否适合你的场景。",
+        "text_sha256": "4d5fe97e2687012393cd25e9e836f90634ac8158cb1fa745082991d26f04021f",
+        "classification": {
+          "domains": [
+            "general"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example"
+        },
+        "evidence_role": "expression_reference",
+        "provenance": {
+          "path": "docs/evidence/sprint-20261102/dataset/structure_texts/STR-S04.txt",
+          "sample_id": "STR-S04",
+          "source_kind": "new_fictional_controlled_fixture",
+          "scope": "已有自编结构参考，仅学习段落功能，虚构参数与经历绝非本任务事实"
+        },
+        "source_kind": "synthetic_structure_reference"
+      },
+      "forbidden_claims": [
+        "虚构个人亲测或用户见证",
+        "把未提供的价格库存或效果写成已核验",
+        "把任务构造描述成真实用户访谈",
+        "任务只做入门说明，不实际创建仓库、上传文件或发布网站。没有实测构建时长、运行费用或国内可达性结果，不保证一分钟上线、长期永久免费、任何私有仓库都可免费使用。不要声称本项目已经替用户部署成功，也不从文档外补入数据库或动态后端承诺。"
+      ],
+      "same_facts_policy": "A/E initial material identical; answers only repeat known facts or unknowns, no extra product facts",
+      "material_chars": 523,
+      "input_sha256": "d880783892962a4d40935517e881a0c743a17944e5456ec93af7cbf663649c2e"
+    },
+    {
+      "id": "REAL-S02",
+      "category": "tutorial",
+      "domain": "general",
+      "data_kind": "researcher_constructed_task_with_real_official_source",
+      "is_real_user_task": false,
+      "is_fictional_product": false,
+      "gold_status": "proposed_pending_independent_human_review",
+      "topic": "Google表单创作者反馈问卷入门流程",
+      "material": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：官方说明Google表单可以创建调查问卷、测验和表单，供他人填写后分析回复。\nF2：计算机上可进入forms.google.com，创建空白表单并为它命名。\nF3：创建后可以编辑内容和格式；如需多人协作，可共享给协作者。\nF4：如果从Google表格中创建表单，相应回复会保存到新的工作表；也可选择用表格存储回复。\nF5：准备好后发布并发送给填写者，随后查看和分析回复；创建编辑、对外收集与分析是不同阶段。\n【完整限制】本任务只写问卷工具入门，不实际创建表单、向任何人发送消息或收集个人数据。没有本地网络访问、账号权限或调查回收率测试，不承诺所有地区都能访问，也不说自动得到真实用户反馈。不要把问卷建好等同收集完成，不能虚构参与人数、填写答案、满意度或分析结论。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+      "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+      "answer": "没有新增事实：没有实际发出问卷，也没有任何真人填写或回收结果；按初始素材介绍流程，不能编人数或满意度。",
+      "input": {
+        "topic": "Google表单创作者反馈问卷入门流程",
+        "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+        "material": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：官方说明Google表单可以创建调查问卷、测验和表单，供他人填写后分析回复。\nF2：计算机上可进入forms.google.com，创建空白表单并为它命名。\nF3：创建后可以编辑内容和格式；如需多人协作，可共享给协作者。\nF4：如果从Google表格中创建表单，相应回复会保存到新的工作表；也可选择用表格存储回复。\nF5：准备好后发布并发送给填写者，随后查看和分析回复；创建编辑、对外收集与分析是不同阶段。\n【完整限制】本任务只写问卷工具入门，不实际创建表单、向任何人发送消息或收集个人数据。没有本地网络访问、账号权限或调查回收率测试，不承诺所有地区都能访问，也不说自动得到真实用户反馈。不要把问卷建好等同收集完成，不能虚构参与人数、填写答案、满意度或分析结论。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+        "creation": {
+          "domains": [
+            "general"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测"
+        }
+      },
+      "source_urls": [
+        "https://support.google.com/docs/answer/6281888?hl=zh-Hans"
+      ],
+      "source_id": "official:REAL-S02",
+      "facts": [
+        {
+          "id": "F1",
+          "fact_id": "F1",
+          "source_id": "official:REAL-S02",
+          "statement": "官方说明Google表单可以创建调查问卷、测验和表单，供他人填写后分析回复。",
+          "quote": "官方说明Google表单可以创建调查问卷、测验和表单，供他人填写后分析回复。",
+          "start": 97,
+          "end": 135,
+          "unit": "unicode_codepoint",
+          "quote_kind": "researcher_paraphrase_in_model_material_not_verbatim_official_quote",
+          "source_locator": {
+            "url": "https://support.google.com/docs/answer/6281888?hl=zh-Hans",
+            "web_lines": [
+              26
+            ],
+            "original_excerpt_ids": []
+          },
+          "human_verification_status": "researcher_draft_pending_independent_confirmation"
+        },
+        {
+          "id": "F2",
+          "fact_id": "F2",
+          "source_id": "official:REAL-S02",
+          "statement": "计算机上可进入forms.google.com，创建空白表单并为它命名。",
+          "quote": "计算机上可进入forms.google.com，创建空白表单并为它命名。",
+          "start": 139,
+          "end": 175,
+          "unit": "unicode_codepoint",
+          "quote_kind": "researcher_paraphrase_in_model_material_not_verbatim_official_quote",
+          "source_locator": {
+            "url": "https://support.google.com/docs/answer/6281888?hl=zh-Hans",
+            "web_lines": [
+              29,
+              31,
+              32,
+              33
+            ],
+            "original_excerpt_ids": [
+              "official:REAL-S02:e1",
+              "official:REAL-S02:e2"
+            ]
+          },
+          "human_verification_status": "researcher_draft_pending_independent_confirmation"
+        },
+        {
+          "id": "F3",
+          "fact_id": "F3",
+          "source_id": "official:REAL-S02",
+          "statement": "创建后可以编辑内容和格式；如需多人协作，可共享给协作者。",
+          "quote": "创建后可以编辑内容和格式；如需多人协作，可共享给协作者。",
+          "start": 179,
+          "end": 207,
+          "unit": "unicode_codepoint",
+          "quote_kind": "researcher_paraphrase_in_model_material_not_verbatim_official_quote",
+          "source_locator": {
+            "url": "https://support.google.com/docs/answer/6281888?hl=zh-Hans",
+            "web_lines": [
+              28,
+              48,
+              50,
+              52,
+              56
+            ],
+            "original_excerpt_ids": [
+              "official:REAL-S02:e4"
+            ]
+          },
+          "human_verification_status": "researcher_draft_pending_independent_confirmation"
+        },
+        {
+          "id": "F4",
+          "fact_id": "F4",
+          "source_id": "official:REAL-S02",
+          "statement": "如果从Google表格中创建表单，相应回复会保存到新的工作表；也可选择用表格存储回复。",
+          "quote": "如果从Google表格中创建表单，相应回复会保存到新的工作表；也可选择用表格存储回复。",
+          "start": 211,
+          "end": 254,
+          "unit": "unicode_codepoint",
+          "quote_kind": "researcher_paraphrase_in_model_material_not_verbatim_official_quote",
+          "source_locator": {
+            "url": "https://support.google.com/docs/answer/6281888?hl=zh-Hans",
+            "web_lines": [
+              35,
+              37,
+              41,
+              54
+            ],
+            "original_excerpt_ids": [
+              "official:REAL-S02:e3"
+            ]
+          },
+          "human_verification_status": "researcher_draft_pending_independent_confirmation"
+        },
+        {
+          "id": "F5",
+          "fact_id": "F5",
+          "source_id": "official:REAL-S02",
+          "statement": "准备好后发布并发送给填写者，随后查看和分析回复；创建编辑、对外收集与分析是不同阶段。",
+          "quote": "准备好后发布并发送给填写者，随后查看和分析回复；创建编辑、对外收集与分析是不同阶段。",
+          "start": 258,
+          "end": 300,
+          "unit": "unicode_codepoint",
+          "quote_kind": "researcher_paraphrase_in_model_material_not_verbatim_official_quote",
+          "source_locator": {
+            "url": "https://support.google.com/docs/answer/6281888?hl=zh-Hans",
+            "web_lines": [
+              58,
+              60,
+              62,
+              64
+            ],
+            "original_excerpt_ids": [
+              "official:REAL-S02:e5",
+              "official:REAL-S02:e6"
+            ]
+          },
+          "human_verification_status": "researcher_draft_pending_independent_confirmation"
+        }
+      ],
+      "proposed_requirements": [
+        {
+          "id": "r1",
+          "question": "说明空白表单创建与命名",
+          "weight": 3,
+          "fact_ids": [
+            "F2"
+          ],
+          "support": [
+            {
+              "source_id": "official:REAL-S02",
+              "fact_id": "F2",
+              "start": 139,
+              "end": 175,
+              "unit": "unicode_codepoint"
+            }
+          ],
+          "status": "proposed_gold_pending_independent_human_review"
+        },
+        {
+          "id": "r2",
+          "question": "说明编辑和协作入口",
+          "weight": 2,
+          "fact_ids": [
+            "F3"
+          ],
+          "support": [
+            {
+              "source_id": "official:REAL-S02",
+              "fact_id": "F3",
+              "start": 179,
+              "end": 207,
+              "unit": "unicode_codepoint"
+            }
+          ],
+          "status": "proposed_gold_pending_independent_human_review"
+        },
+        {
+          "id": "r3",
+          "question": "准确限定从表格创建时的新工作表规则",
+          "weight": 3,
+          "fact_ids": [
+            "F4"
+          ],
+          "support": [
+            {
+              "source_id": "official:REAL-S02",
+              "fact_id": "F4",
+              "start": 211,
+              "end": 254,
+              "unit": "unicode_codepoint"
+            }
+          ],
+          "status": "proposed_gold_pending_independent_human_review"
+        },
+        {
+          "id": "r4",
+          "question": "区分发布收集与查看分析两个阶段",
+          "weight": 3,
+          "fact_ids": [
+            "F1",
+            "F5"
+          ],
+          "support": [
+            {
+              "source_id": "official:REAL-S02",
+              "fact_id": "F1",
+              "start": 97,
+              "end": 135,
+              "unit": "unicode_codepoint"
+            },
+            {
+              "source_id": "official:REAL-S02",
+              "fact_id": "F5",
+              "start": 258,
+              "end": 300,
+              "unit": "unicode_codepoint"
+            }
+          ],
+          "status": "proposed_gold_pending_independent_human_review"
+        }
+      ],
+      "reference_example": {
+        "source_id": "synthetic-reference:REAL-S02",
+        "text": "你可能想要一个直接答案，但决定还缺少自己的需求。\n\n虚构规格页登记型号X15，尺寸为15厘米，未提供其他测试。\n\n把选择拆成三个步骤：确认目标、核对资料、记录仍然未知的地方。\n\n不要把参考人物的个人记录移植到当前任务。\n\n愿意的话，留下最想确认的一项条件。",
+        "text_sha256": "96459dc3aaef4061bdb0c08e77f22125432c96d2e5b5488164254988c778b01e",
+        "classification": {
+          "domains": [
+            "general"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example"
+        },
+        "evidence_role": "expression_reference",
+        "provenance": {
+          "path": "docs/evidence/sprint-20261102/dataset/structure_texts/STR-S05.txt",
+          "sample_id": "STR-S05",
+          "source_kind": "new_fictional_controlled_fixture",
+          "scope": "已有自编结构参考，仅学习段落功能，虚构参数与经历绝非本任务事实"
+        },
+        "source_kind": "synthetic_structure_reference"
+      },
+      "forbidden_claims": [
+        "虚构个人亲测或用户见证",
+        "把未提供的价格库存或效果写成已核验",
+        "把任务构造描述成真实用户访谈",
+        "本任务只写问卷工具入门，不实际创建表单、向任何人发送消息或收集个人数据。没有本地网络访问、账号权限或调查回收率测试，不承诺所有地区都能访问，也不说自动得到真实用户反馈。不要把问卷建好等同收集完成，不能虚构参与人数、填写答案、满意度或分析结论。"
+      ],
+      "same_facts_policy": "A/E initial material identical; answers only repeat known facts or unknowns, no extra product facts",
+      "material_chars": 496,
+      "input_sha256": "f92860e6c0979af3c081645fcfdd22b6a287131e237942d110d69380897c49c3"
+    }
+  ]
+}

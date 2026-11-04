@@ -1,0 +1,5672 @@
+{
+  "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07",
+  "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+  "schema_version": 2,
+  "run_status": "WAITING_USER",
+  "current_stage": "reviewer",
+  "wait_reason": "final_confirmation",
+  "status_version": 19,
+  "iteration": 0,
+  "supplements": 0,
+  "context": {
+    "topic": "2024款Mac mini M4桌面接口介绍",
+    "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+    "tone": "清楚自然克制",
+    "material": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象是Apple在2024年10月29日新闻稿中介绍的2024款Mac mini，本文只讨论M4版本。\nF2：该代Mac mini机身底部为边长12.7厘米的正方形。\nF3：M4版本有10核中央处理器和10核图形处理器，统一内存从16GB起。\nF4：机身正面提供两个支持USB 3的USB-C口和耳机插孔。\nF5：M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。\n【完整限制】本材料没有本次作者的实测、当前售价、购买渠道库存或2026年最新在售代际核验。不可把2024年首发价格写成今天价格，不可把厂家性能宣传转成作者亲测，不补写未提供的机身高度、显示器兼容结论或所有场景的性能保证。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+    "scenario": "standard",
+    "allow_hypothesis": false,
+    "algorithm_options": {
+      "enabled": true,
+      "ask_questions": true,
+      "coverage": true,
+      "structure": true
+    },
+    "web_research": {
+      "enabled": false,
+      "queries": [],
+      "provider": "bing",
+      "targets": [
+        "web"
+      ],
+      "status": "pending"
+    },
+    "mode": "live",
+    "material_policy": "available_only",
+    "material_policy_version": "available-only-v1",
+    "model_policy": {
+      "version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "routes": {
+        "audience": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "research": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "strategy": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "outline": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "hook": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "title": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "body": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "revise": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "review": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        }
+      },
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1+evidence-creation-v2"
+    },
+    "operations": {
+      "platform": "xiaohongshu",
+      "account": "我的账号",
+      "account_id": "[已隐去]",
+      "hypothesis_id": null,
+      "profile": {
+        "id": "5285e961-e866-5533-b51e-87cd6014586e",
+        "name": "我的账号",
+        "platform": "xiaohongshu",
+        "aliases": [
+          "我的账号"
+        ],
+        "revision": 1,
+        "profile": {
+          "positioning": "",
+          "audience": "",
+          "tone": "",
+          "pillars": "",
+          "goal": "",
+          "resources": "",
+          "banned": "",
+          "weekly_frequency": 3
+        },
+        "revisions": []
+      },
+      "trend": null,
+      "memories": [],
+      "active_hypothesis": null,
+      "experiment_memory": [],
+      "history": [],
+      "metrics": [],
+      "competitors": [],
+      "preferences": []
+    },
+    "knowledge_selection": {
+      "enabled": false,
+      "automatic_references": true
+    },
+    "creation_classification": {
+      "domains": [
+        "digital"
+      ],
+      "channel": "xiaohongshu",
+      "format": "note",
+      "word_count": 300,
+      "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+      "origin": "user",
+      "ambiguities": []
+    },
+    "comment_feedback": {
+      "enabled": false,
+      "note_ids": [],
+      "notes": [],
+      "samples": []
+    },
+    "creation_retrieval": {
+      "engine": "filtered-bm25-zh-bigram-v1",
+      "reranker": "bm25-zh-bigram-v1",
+      "classification": {
+        "domains": [
+          "digital"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "word_count": 300,
+        "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+        "origin": "user",
+        "ambiguities": []
+      },
+      "groups": {
+        "methods": [],
+        "examples": [
+          {
+            "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+            "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+            "version": 1,
+            "page": 1,
+            "offset": 0,
+            "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是桌面连接。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+            "title": "虚构选购结构参考-REAL-D01",
+            "url": "",
+            "source_type": "text",
+            "filename": "虚构选购结构参考-REAL-D01.txt",
+            "location_type": "page",
+            "evidence_role": "expression_reference",
+            "content_kind": "text",
+            "source_scope": "current_account",
+            "body_kind": "text",
+            "classification": {
+              "domains": [
+                "digital"
+              ],
+              "channel": "xiaohongshu",
+              "format": "note",
+              "material_type": "example",
+              "origin": "user"
+            },
+            "case_ref": null,
+            "score": 2.013775,
+            "semantic_score": null,
+            "retrieval_mode": "bm25",
+            "topic_coverage": 0.1,
+            "material_type": "example",
+            "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+          }
+        ],
+        "facts": []
+      },
+      "sources": [
+        {
+          "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+          "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+          "version": 1,
+          "page": 1,
+          "offset": 0,
+          "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是桌面连接。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+          "title": "虚构选购结构参考-REAL-D01",
+          "url": "",
+          "source_type": "text",
+          "filename": "虚构选购结构参考-REAL-D01.txt",
+          "location_type": "page",
+          "evidence_role": "expression_reference",
+          "content_kind": "text",
+          "source_scope": "current_account",
+          "body_kind": "text",
+          "classification": {
+            "domains": [
+              "digital"
+            ],
+            "channel": "xiaohongshu",
+            "format": "note",
+            "material_type": "example",
+            "origin": "user"
+          },
+          "case_ref": null,
+          "score": 2.013775,
+          "semantic_score": null,
+          "retrieval_mode": "bm25",
+          "topic_coverage": 0.1,
+          "material_type": "example",
+          "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+        }
+      ],
+      "filters": {
+        "methods": {
+          "owner": "[已隐去]",
+          "account_id": "[已隐去]",
+          "material_type": "method",
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "allow_general": true,
+          "document_ids": null,
+          "enabled": true,
+          "candidate_count": 0,
+          "vector_query": "图文笔记 原创写作 开篇 节奏 结构 表达 行动引导",
+          "retrieval_mode": "bm25",
+          "vector_candidate_count": 0,
+          "lexical_candidate_count": 0
+        },
+        "examples": {
+          "owner": "[已隐去]",
+          "account_id": "[已隐去]",
+          "material_type": "example",
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "allow_general": false,
+          "document_ids": null,
+          "enabled": true,
+          "candidate_count": 1,
+          "vector_query": "数码 图文笔记 开篇 结构 表达",
+          "retrieval_mode": "bm25",
+          "vector_candidate_count": 0,
+          "lexical_candidate_count": 1
+        },
+        "facts": {
+          "owner": "[已隐去]",
+          "account_id": "[已隐去]",
+          "material_type": "fact",
+          "domains": [
+            "digital"
+          ],
+          "channel": null,
+          "format": null,
+          "allow_general": false,
+          "document_ids": null,
+          "enabled": false,
+          "candidate_count": 0,
+          "vector_query": "2024款Mac mini M4桌面接口介绍",
+          "retrieval_mode": "disabled",
+          "vector_candidate_count": 0,
+          "lexical_candidate_count": 0
+        }
+      },
+      "gaps": [
+        {
+          "code": "VECTOR_UNAVAILABLE",
+          "detail": "本地语义检索已关闭，使用 BM25",
+          "fallback": "bm25"
+        },
+        {
+          "code": "NO_MATCHING_METHODS",
+          "group": "methods",
+          "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+        }
+      ],
+      "insufficient": true,
+      "context_chars": 209,
+      "limits": {
+        "limits": {
+          "methods": 2,
+          "examples": 3,
+          "facts": 4
+        },
+        "total_chars": 5200,
+        "chunk_chars": 700
+      },
+      "embedding_note": "本地语义检索已关闭，使用 BM25；缺失或不可用向量组已降级为限定范围 BM25；不是语义向量结果"
+    },
+    "retrieval": {
+      "engine": "filtered-bm25-zh-bigram-v1",
+      "reranker": "bm25-zh-bigram-v1",
+      "classification": {
+        "domains": [
+          "digital"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "word_count": 300,
+        "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+        "origin": "user",
+        "ambiguities": []
+      },
+      "groups": {
+        "methods": [],
+        "examples": [
+          {
+            "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+            "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+            "version": 1,
+            "page": 1,
+            "offset": 0,
+            "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是桌面连接。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+            "title": "虚构选购结构参考-REAL-D01",
+            "url": "",
+            "source_type": "text",
+            "filename": "虚构选购结构参考-REAL-D01.txt",
+            "location_type": "page",
+            "evidence_role": "expression_reference",
+            "content_kind": "text",
+            "source_scope": "current_account",
+            "body_kind": "text",
+            "classification": {
+              "domains": [
+                "digital"
+              ],
+              "channel": "xiaohongshu",
+              "format": "note",
+              "material_type": "example",
+              "origin": "user"
+            },
+            "case_ref": null,
+            "score": 2.013775,
+            "semantic_score": null,
+            "retrieval_mode": "bm25",
+            "topic_coverage": 0.1,
+            "material_type": "example",
+            "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+          }
+        ],
+        "facts": []
+      },
+      "sources": [
+        {
+          "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+          "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+          "version": 1,
+          "page": 1,
+          "offset": 0,
+          "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是桌面连接。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+          "title": "虚构选购结构参考-REAL-D01",
+          "url": "",
+          "source_type": "text",
+          "filename": "虚构选购结构参考-REAL-D01.txt",
+          "location_type": "page",
+          "evidence_role": "expression_reference",
+          "content_kind": "text",
+          "source_scope": "current_account",
+          "body_kind": "text",
+          "classification": {
+            "domains": [
+              "digital"
+            ],
+            "channel": "xiaohongshu",
+            "format": "note",
+            "material_type": "example",
+            "origin": "user"
+          },
+          "case_ref": null,
+          "score": 2.013775,
+          "semantic_score": null,
+          "retrieval_mode": "bm25",
+          "topic_coverage": 0.1,
+          "material_type": "example",
+          "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+        }
+      ],
+      "filters": {
+        "methods": {
+          "owner": "[已隐去]",
+          "account_id": "[已隐去]",
+          "material_type": "method",
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "allow_general": true,
+          "document_ids": null,
+          "enabled": true,
+          "candidate_count": 0,
+          "vector_query": "图文笔记 原创写作 开篇 节奏 结构 表达 行动引导",
+          "retrieval_mode": "bm25",
+          "vector_candidate_count": 0,
+          "lexical_candidate_count": 0
+        },
+        "examples": {
+          "owner": "[已隐去]",
+          "account_id": "[已隐去]",
+          "material_type": "example",
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "allow_general": false,
+          "document_ids": null,
+          "enabled": true,
+          "candidate_count": 1,
+          "vector_query": "数码 图文笔记 开篇 结构 表达",
+          "retrieval_mode": "bm25",
+          "vector_candidate_count": 0,
+          "lexical_candidate_count": 1
+        },
+        "facts": {
+          "owner": "[已隐去]",
+          "account_id": "[已隐去]",
+          "material_type": "fact",
+          "domains": [
+            "digital"
+          ],
+          "channel": null,
+          "format": null,
+          "allow_general": false,
+          "document_ids": null,
+          "enabled": false,
+          "candidate_count": 0,
+          "vector_query": "2024款Mac mini M4桌面接口介绍",
+          "retrieval_mode": "disabled",
+          "vector_candidate_count": 0,
+          "lexical_candidate_count": 0
+        }
+      },
+      "gaps": [
+        {
+          "code": "VECTOR_UNAVAILABLE",
+          "detail": "本地语义检索已关闭，使用 BM25",
+          "fallback": "bm25"
+        },
+        {
+          "code": "NO_MATCHING_METHODS",
+          "group": "methods",
+          "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+        }
+      ],
+      "insufficient": true,
+      "context_chars": 209,
+      "limits": {
+        "limits": {
+          "methods": 2,
+          "examples": 3,
+          "facts": 4
+        },
+        "total_chars": 5200,
+        "chunk_chars": 700
+      },
+      "embedding_note": "本地语义检索已关闭，使用 BM25；缺失或不可用向量组已降级为限定范围 BM25；不是语义向量结果"
+    },
+    "evidence": [
+      {
+        "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+        "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+        "version": 1,
+        "page": 1,
+        "offset": 0,
+        "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是桌面连接。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+        "title": "虚构选购结构参考-REAL-D01",
+        "url": "",
+        "source_type": "text",
+        "filename": "虚构选购结构参考-REAL-D01.txt",
+        "location_type": "page",
+        "evidence_role": "expression_reference",
+        "content_kind": "text",
+        "source_scope": "current_account",
+        "body_kind": "text",
+        "classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example",
+          "origin": "user"
+        },
+        "case_ref": null,
+        "score": 2.013775,
+        "semantic_score": null,
+        "retrieval_mode": "bm25",
+        "topic_coverage": 0.1,
+        "material_type": "example",
+        "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+      }
+    ],
+    "runtime_execution": {
+      "mode": "automatic"
+    },
+    "algorithm_state": {
+      "schema_version": 1,
+      "algorithm_version": "evidence-creation-v2",
+      "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07",
+      "input_hash": "4710a1691360c57b4ed5ac45c4726e192e4e5e156f23705b8d49d1a18aad07b2",
+      "active_modules": {
+        "coverage": true,
+        "structure": true
+      },
+      "planning": {
+        "algorithm": "evidence-gated-budgeted-exact-v2",
+        "optimality_guaranteed": true,
+        "optimality_scope": "current admitted candidate pool and stated estimated-length objective only",
+        "global_retrieval_optimality": false,
+        "eligible_candidate_count": 2,
+        "exact_candidate_limit": 12,
+        "subsets_examined": 4,
+        "objective_value": 10.0,
+        "greedy_objective": 10.0,
+        "objective_gap_vs_greedy": 0.0,
+        "greedy_selected_module_ids": [
+          "m1",
+          "m2"
+        ],
+        "steps_strategy": "greedy_comparator",
+        "candidate_recall_numerator": 4,
+        "candidate_recall_denominator": 5,
+        "candidate_recall": 0.8,
+        "elapsed_ms": 0.11966699821641669,
+        "selected_modules": [
+          {
+            "id": "m1",
+            "title": "正面接口：两个USB-C（USB 3）+ 耳机孔",
+            "covers": [
+              "r2",
+              "r4"
+            ],
+            "length": 51,
+            "source_ids": [
+              "user-material"
+            ],
+            "quote": "F4：机身正面提供两个支持USB 3的USB-C口和耳机插孔。",
+            "supported": true,
+            "support_scope": "quotation_location_only",
+            "statement_type": "assertion"
+          },
+          {
+            "id": "m2",
+            "title": "背面接口：三个雷雳4端口（仅M4版）",
+            "covers": [
+              "r1",
+              "r3"
+            ],
+            "length": 60,
+            "source_ids": [
+              "user-material"
+            ],
+            "quote": "F5：M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。",
+            "supported": true,
+            "support_scope": "quotation_location_only",
+            "statement_type": "assertion"
+          }
+        ],
+        "selected_module_ids": [
+          "m1",
+          "m2"
+        ],
+        "covered_requirement_ids": [
+          "r1",
+          "r2",
+          "r3",
+          "r4"
+        ],
+        "uncovered_requirement_ids": [
+          "r5"
+        ],
+        "covered_weight": 10.0,
+        "total_weight": 11.0,
+        "weighted_coverage": 0.9090909090909091,
+        "budget": 300.0,
+        "used_budget": 111.0,
+        "remaining_budget": 189.0,
+        "redundancy_penalty": 0.15,
+        "steps": [
+          {
+            "step": 1,
+            "selected_id": "m1",
+            "candidates": [
+              {
+                "id": "m1",
+                "new_requirement_ids": [
+                  "r2",
+                  "r4"
+                ],
+                "new_weight": 5.0,
+                "redundant_weight": 0,
+                "marginal_gain": 5.0,
+                "length": 51.0,
+                "score": 0.09803921568627451,
+                "fits_budget": true
+              },
+              {
+                "id": "m2",
+                "new_requirement_ids": [
+                  "r1",
+                  "r3"
+                ],
+                "new_weight": 5.0,
+                "redundant_weight": 0,
+                "marginal_gain": 5.0,
+                "length": 60.0,
+                "score": 0.08333333333333333,
+                "fits_budget": true
+              }
+            ],
+            "used_budget": 51.0,
+            "remaining_budget": 249.0
+          },
+          {
+            "step": 2,
+            "selected_id": "m2",
+            "candidates": [
+              {
+                "id": "m2",
+                "new_requirement_ids": [
+                  "r1",
+                  "r3"
+                ],
+                "new_weight": 5.0,
+                "redundant_weight": 0,
+                "marginal_gain": 5.0,
+                "length": 60.0,
+                "score": 0.08333333333333333,
+                "fits_budget": true
+              }
+            ],
+            "used_budget": 111.0,
+            "remaining_budget": 189.0
+          }
+        ],
+        "excluded": [],
+        "requirements": [
+          {
+            "id": "r1",
+            "question": "我的显示器带雷雳4输入，能直连2024款M4 Mac mini背面接口吗？",
+            "weight": 3,
+            "origin": "model_suggested_reader_need"
+          },
+          {
+            "id": "r2",
+            "question": "正面两个USB-C口是否支持视频输出或充电？",
+            "weight": 3,
+            "origin": "model_suggested_reader_need"
+          },
+          {
+            "id": "r3",
+            "question": "三个雷雳4接口能否同时接显示器、硬盘和扩展坞？",
+            "weight": 2,
+            "origin": "model_suggested_reader_need"
+          },
+          {
+            "id": "r4",
+            "question": "耳机孔是否支持模拟麦克风输入？",
+            "weight": 2,
+            "origin": "model_suggested_reader_need"
+          },
+          {
+            "id": "r5",
+            "question": "统一内存16GB起，是否影响外接设备识别速度？",
+            "weight": 1,
+            "origin": "model_suggested_reader_need"
+          }
+        ],
+        "rejected_candidates": [],
+        "scope": "预计篇幅与候选覆盖；不是正文覆盖或独立事实核验"
+      },
+      "gap_ranking": {
+        "algorithm": "rule-weighted-gap-value-v1",
+        "is_information_entropy": false,
+        "rule": "importance * (1 + new_block_count) * resolvable / (1 + cost)",
+        "questions": [],
+        "skipped": [],
+        "threshold": 0.5,
+        "max_questions": 2,
+        "steps": [],
+        "can_continue_without_answers": true
+      },
+      "structure": {
+        "schema_version": 1,
+        "method": "structure-rules-v1",
+        "selected_profile_id": "structure:53174b97d137afd03e466f58",
+        "fallback": false,
+        "slots": [
+          {
+            "slot_id": "s1",
+            "role": "HOOK",
+            "function": "引出当前任务的阅读动机",
+            "needs": [],
+            "position": {
+              "start": 0,
+              "end": 27,
+              "unit": "unicode_codepoint"
+            },
+            "segment_sha256": "18298fef0d8e7278fed1364ca549cf05f918ae40e69195ba7f54c0927ac9415b",
+            "adaptation": "retain"
+          },
+          {
+            "slot_id": "s2",
+            "role": "CONTEXT",
+            "function": "交代当前任务的背景与适用范围",
+            "needs": [],
+            "position": {
+              "start": 27,
+              "end": 37,
+              "unit": "unicode_codepoint"
+            },
+            "segment_sha256": "52882a04c340b81cc381475648a8b3f60bf878e34177fc071de161a9d458a8eb",
+            "adaptation": "retain"
+          },
+          {
+            "slot_id": "s3",
+            "role": "WARNING",
+            "function": "列出需要核对的事项；不陈述未经支持的体验、对比或参数结论",
+            "needs": [],
+            "position": {
+              "start": 39,
+              "end": 59,
+              "unit": "unicode_codepoint"
+            },
+            "segment_sha256": "78d041172f09a9c35baf36c98ab0d256a0ee441a5865742a7a94740e89d10833",
+            "adaptation": "replace_with_checklist"
+          },
+          {
+            "slot_id": "s4",
+            "role": "WARNING",
+            "function": "列出需要核对的事项；不陈述未经支持的体验、对比或参数结论",
+            "needs": [],
+            "position": {
+              "start": 61,
+              "end": 85,
+              "unit": "unicode_codepoint"
+            },
+            "segment_sha256": "33b022ca6e5d4790f20f796793f0262c524da85f29c6eba03b0641c53892d6f4",
+            "adaptation": "replace_with_checklist"
+          },
+          {
+            "slot_id": "s5",
+            "role": "CONTEXT",
+            "function": "交代当前任务的背景与适用范围",
+            "needs": [],
+            "position": {
+              "start": 87,
+              "end": 109,
+              "unit": "unicode_codepoint"
+            },
+            "segment_sha256": "f694fb046511793f9fdecb277f496145775e48b859a2c2be288731c7ee7a8af1",
+            "adaptation": "retain"
+          },
+          {
+            "slot_id": "s6",
+            "role": "CONTEXT",
+            "function": "交代当前任务的背景与适用范围",
+            "needs": [],
+            "position": {
+              "start": 111,
+              "end": 134,
+              "unit": "unicode_codepoint"
+            },
+            "segment_sha256": "29b65151970b6a5520a0183f2908df50bc4747e1b082a36579eb59c3fc0a719f",
+            "adaptation": "retain"
+          },
+          {
+            "slot_id": "s7",
+            "role": "CONTEXT",
+            "function": "交代当前任务的背景与适用范围",
+            "needs": [],
+            "position": {
+              "start": 136,
+              "end": 161,
+              "unit": "unicode_codepoint"
+            },
+            "segment_sha256": "7f95d719dac56bd9055fa17804ce16952db8d728a0625c9b2a9961f639ffea3c",
+            "adaptation": "retain"
+          },
+          {
+            "slot_id": "s8",
+            "role": "WARNING",
+            "function": "说明限制和需要核对的条件",
+            "needs": [
+              "limitations"
+            ],
+            "position": {
+              "start": 163,
+              "end": 188,
+              "unit": "unicode_codepoint"
+            },
+            "segment_sha256": "e3c7a7ecce69b9bfba06961ddd429de0a252a69043cf0ed909f452d2d1e821ab",
+            "adaptation": "retain"
+          },
+          {
+            "slot_id": "s9",
+            "role": "CTA",
+            "function": "给出与正文一致的下一步建议",
+            "needs": [],
+            "position": {
+              "start": 190,
+              "end": 209,
+              "unit": "unicode_codepoint"
+            },
+            "segment_sha256": "f3b9481fcf5f46a9c373510d648db69bee7e1eedc7236d78595bed9ff5af116b",
+            "adaptation": "retain"
+          }
+        ],
+        "adaptations": [
+          {
+            "slot_id": "s3",
+            "original_role": "SOLUTION",
+            "missing_fields": [
+              "use_steps"
+            ],
+            "action": "replace_with_checklist",
+            "reason": "当前资料不具备该段所需证据，改为待核对事项并缩小表达范围。"
+          },
+          {
+            "slot_id": "s4",
+            "original_role": "EVIDENCE",
+            "missing_fields": [
+              "comparison_specs"
+            ],
+            "action": "replace_with_checklist",
+            "reason": "当前资料不具备该段所需证据，改为待核对事项并缩小表达范围。"
+          }
+        ],
+        "rejected_profiles": [],
+        "selection_rule": "先隔离领域渠道形式，再最小化缺失证据字段数，最后按稳定ID排序",
+        "verification_boundary": "资料字段存在仅用于结构适配，不等于事实核验或原创保证。",
+        "profiles": [
+          {
+            "schema_version": 1,
+            "extraction_method": "structure-rules-v1",
+            "profile_id": "structure:53174b97d137afd03e466f58",
+            "classification": {
+              "domains": [
+                "digital"
+              ],
+              "channel": "xiaohongshu",
+              "format": "note"
+            },
+            "provenance": {
+              "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+              "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+              "version": 1,
+              "page": 1,
+              "text_sha256": "80ec4c268f857d726cf1ad0804fac842cdeec60aaac435188992afdf07d5f040"
+            },
+            "slots": [
+              {
+                "slot_id": "s1",
+                "role": "HOOK",
+                "function": "引出当前任务的阅读动机",
+                "needs": [],
+                "position": {
+                  "start": 0,
+                  "end": 27,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "18298fef0d8e7278fed1364ca549cf05f918ae40e69195ba7f54c0927ac9415b"
+              },
+              {
+                "slot_id": "s2",
+                "role": "CONTEXT",
+                "function": "交代当前任务的背景与适用范围",
+                "needs": [],
+                "position": {
+                  "start": 27,
+                  "end": 37,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "52882a04c340b81cc381475648a8b3f60bf878e34177fc071de161a9d458a8eb"
+              },
+              {
+                "slot_id": "s3",
+                "role": "SOLUTION",
+                "function": "组织有依据的方案或操作步骤",
+                "needs": [
+                  "use_steps"
+                ],
+                "position": {
+                  "start": 39,
+                  "end": 59,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "78d041172f09a9c35baf36c98ab0d256a0ee441a5865742a7a94740e89d10833"
+              },
+              {
+                "slot_id": "s4",
+                "role": "EVIDENCE",
+                "function": "用当前任务的证据支撑判断",
+                "needs": [
+                  "comparison_specs"
+                ],
+                "position": {
+                  "start": 61,
+                  "end": 85,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "33b022ca6e5d4790f20f796793f0262c524da85f29c6eba03b0641c53892d6f4"
+              },
+              {
+                "slot_id": "s5",
+                "role": "CONTEXT",
+                "function": "交代当前任务的背景与适用范围",
+                "needs": [],
+                "position": {
+                  "start": 87,
+                  "end": 109,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "f694fb046511793f9fdecb277f496145775e48b859a2c2be288731c7ee7a8af1"
+              },
+              {
+                "slot_id": "s6",
+                "role": "CONTEXT",
+                "function": "交代当前任务的背景与适用范围",
+                "needs": [],
+                "position": {
+                  "start": 111,
+                  "end": 134,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "29b65151970b6a5520a0183f2908df50bc4747e1b082a36579eb59c3fc0a719f"
+              },
+              {
+                "slot_id": "s7",
+                "role": "CONTEXT",
+                "function": "交代当前任务的背景与适用范围",
+                "needs": [],
+                "position": {
+                  "start": 136,
+                  "end": 161,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "7f95d719dac56bd9055fa17804ce16952db8d728a0625c9b2a9961f639ffea3c"
+              },
+              {
+                "slot_id": "s8",
+                "role": "WARNING",
+                "function": "说明限制和需要核对的条件",
+                "needs": [
+                  "limitations"
+                ],
+                "position": {
+                  "start": 163,
+                  "end": 188,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "e3c7a7ecce69b9bfba06961ddd429de0a252a69043cf0ed909f452d2d1e821ab"
+              },
+              {
+                "slot_id": "s9",
+                "role": "CTA",
+                "function": "给出与正文一致的下一步建议",
+                "needs": [],
+                "position": {
+                  "start": 190,
+                  "end": 209,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "f3b9481fcf5f46a9c373510d648db69bee7e1eedc7236d78595bed9ff5af116b"
+              }
+            ],
+            "limitations": [
+              "规则标签可能误判；资料存在不代表已核实事实。",
+              "仅复用段落功能，不能继承原作者经历、参数和结论。"
+            ]
+          }
+        ],
+        "available_fields": [
+          "user_need",
+          "product_specs",
+          "limitations"
+        ],
+        "availability_scope": "字段存在启发式；不证明事实真实或充分"
+      },
+      "review": {
+        "draft_ref": "3c1b03d1-55aa-4234-8f68-e508d042bb00@1",
+        "content_hash": "1165542506b29371de8ebdc23a29f05bfcbfdfd2776e8af687438d20fdd96696",
+        "copy_risk": {
+          "method": "limited-contiguous-match-v1",
+          "risk_detected": false,
+          "matches": [],
+          "checked_sources": 1,
+          "truncated": false,
+          "automatic_approval_condition": false,
+          "scope": "仅比较本次参考中至少12字符且至少10个文字字符的连续匹配；不是全网查重或原创保证，须人工判断。"
+        },
+        "scope": "仅对本次参考做连续文本风险检测；不证明全网原创或事实正确"
+      }
+    }
+  },
+  "artifacts": [
+    {
+      "stage": "strategy",
+      "value": {
+        "angle": "接口位置与规格的型号专属说明",
+        "reader": "小红书中小创作者及关注Mac mini外设连接的普通用户",
+        "promise": "明确2024款M4 Mac mini正/背面接口类型、数量及关键限制，不混淆M4 Pro",
+        "tone": "清楚自然克制",
+        "assumptions": [
+          "读者已知雷雳4/USB-C基础功能",
+          "读者需区分M4与M4 Pro接口差异",
+          "读者关注多设备直连可行性"
+        ],
+        "candidate_angles": [
+          "按物理位置分述接口能力",
+          "聚焦显示器直连与多外设共存条件"
+        ],
+        "cta": "用前请核对你的设备接口协议版本",
+        "why_account": "kb:aab706a0-afc2-4270-9376-65693cac0c42：借鉴其分栏式信息结构与短句节奏；本题仅使用F4/F5原文事实，不移植其虚构连接场景或兼容性结论。",
+        "content_modules": [
+          {
+            "id": "f4",
+            "title": "正面接口：两个USB-C（USB 3）+ 耳机孔",
+            "covers": [
+              "r2",
+              "r4"
+            ],
+            "source_id": "user-material",
+            "quote": "F4：机身正面提供两个支持USB 3的USB-C口和耳机插孔。",
+            "length": 51
+          },
+          {
+            "id": "f5",
+            "title": "背面接口：三个雷雳4端口（仅M4版）",
+            "covers": [
+              "r1",
+              "r3"
+            ],
+            "source_id": "user-material",
+            "quote": "F5：M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。",
+            "length": 60
+          }
+        ],
+        "content_brief": {
+          "account_id": "[已隐去]",
+          "profile_revision": 1,
+          "goal": "先验证内容是否对目标受众有用",
+          "core_viewpoint": "接口位置与规格的型号专属说明",
+          "audience": "小红书中小创作者及关注Mac mini外设连接的普通用户",
+          "content_type": "图文笔记",
+          "hook_options": [
+            "按物理位置分述接口能力",
+            "聚焦显示器直连与多外设共存条件"
+          ],
+          "evidence_scope": "引用用户素材与检索原文；历史表现与竞品观察不能证明正文事实",
+          "cta": "用前请核对你的设备接口协议版本",
+          "banned": "",
+          "publishing_window": "由用户安排；暂无经过验证的最佳发布时间",
+          "recommendation_reason": "kb:aab706a0-afc2-4270-9376-65693cac0c42：借鉴其分栏式信息结构与短句节奏；本题仅使用F4/F5原文事实，不移植其虚构连接场景或兼容性结论。"
+        },
+        "learning_refs": [],
+        "next_experiments": []
+      },
+      "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07"
+    },
+    {
+      "stage": "outline",
+      "value": [
+        "正面接口：两个USB 3协议的USB-C口+耳机孔，不支持视频输出或充电",
+        "背面接口：M4版专属三个雷雳4端口，非雷雳5（M4 Pro才配）",
+        "尺寸参考：机身底面为12.7cm正方形，便于预估桌面布线空间",
+        "关键提醒：接口功能需匹配外设协议；雷雳4直连显示器可行，但多设备共用需查扩展坞兼容性"
+      ],
+      "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07"
+    },
+    {
+      "stage": "hook",
+      "value": "你的显示器带雷雳4输入？先确认它连的是Mac mini背面——2024款M4版只有三个雷雳4口，不支持雷雳5（那是M4 Pro的）。",
+      "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07"
+    },
+    {
+      "stage": "title",
+      "value": {
+        "candidates": [
+          "M4 Mac mini背面3雷雳4口",
+          "正面2USB-C+耳机孔，M4专属",
+          "别连错！M4只有雷雳4，无5",
+          "Mac mini M4接口位置图解"
+        ],
+        "selected": "M4 Mac mini背面3雷雳4口",
+        "note": "精准锚定核心差异点（M4专属雷雳4）、数量明确、位置清晰，16字符内，符合小红书标题高信息密度要求。",
+        "reasons": [
+          "账号匹配：保留品牌+型号结构；具体性中等——‘背面’+‘3’+‘雷雳4’三要素齐全；同质化较低，但‘接口全看懂’在小红书泛滥，削弱辨识度。",
+          "账号匹配：含关键部件（USB-C/耳机孔）和限定词（M4专属）；具体性中等——正面接口类型与数量明确，但未突出用户最易混淆的‘是否支持视频输出’等未证实功能，留白稳妥；同质化中等。",
+          "账号匹配：以警示语气切入，呼应读者常见误判（雷雳5）；具体性高——‘只有雷雳4，无5’直接引用F5对比逻辑；同质化低，但字符占18（含标点），逼近上限，且‘别连错’稍带主观引导，略弱于纯陈述。",
+          "账号匹配：‘Mac mini M4’为小红书搜索高频组合；具体性弱——‘位置图解’暗示有图，但本任务无图素材，承诺超界；同质化最高，‘图解’类标题过载，且未体现M4与M4 Pro关键区分。"
+        ]
+      },
+      "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07"
+    },
+    {
+      "stage": "body",
+      "value": {
+        "selected_title": "M4 Mac mini背面3雷雳4口",
+        "body": "你的显示器带雷雳4输入？可直连2024款Mac mini M4版背面——三个雷雳4端口，专为M4版本配置（M4 Pro才用雷雳5）。正面则有两个USB 3协议的USB-C口和一个耳机孔，不支持视频输出或充电。机身底面为12.7cm正方形，方便预估桌面布线空间。多设备共用需确认扩展坞是否兼容雷雳4协议。",
+        "cta": "连接前，请核对你的外设接口协议版本",
+        "tags": [
+          "Macmini",
+          "M4",
+          "雷雳4",
+          "USB-C",
+          "小红书科技",
+          "苹果配件",
+          "桌面布线",
+          "Mac接口"
+        ]
+      },
+      "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07"
+    }
+  ],
+  "node_runs": [
+    {
+      "id": "ad2ba950-3065-483e-bca3-7353691398a7",
+      "agent": "audience",
+      "stage": "audience",
+      "mode": "live",
+      "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07",
+      "input": {
+        "brief": {
+          "topic": "2024款Mac mini M4桌面接口介绍",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "tone": "清楚自然克制",
+          "allow_hypothesis": false
+        },
+        "materials": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象是Apple在2024年10月29日新闻稿中介绍的2024款Mac mini，本文只讨论M4版本。\nF2：该代Mac mini机身底部为边长12.7厘米的正方形。\nF3：M4版本有10核中央处理器和10核图形处理器，统一内存从16GB起。\nF4：机身正面提供两个支持USB 3的USB-C口和耳机插孔。\nF5：M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。\n【完整限制】本材料没有本次作者的实测、当前售价、购买渠道库存或2026年最新在售代际核验。不可把2024年首发价格写成今天价格，不可把厂家性能宣传转成作者亲测，不补写未提供的机身高度、显示器兼容结论或所有场景的性能保证。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          }
+        ],
+        "current_date": "2026-11-03",
+        "date_timezone": "Asia/Shanghai",
+        "retrieved_references": [
+          {
+            "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+            "title": "虚构选购结构参考-REAL-D01",
+            "url": "",
+            "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          }
+        ],
+        "creation_classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "creation_retrieval": {
+          "methods": [],
+          "examples": [
+            {
+              "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+              "source_type": "text",
+              "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是桌面连接。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-D01",
+              "url": "",
+              "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "digital"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            }
+          ],
+          "facts": [
+            {
+              "source_id": "user-material"
+            }
+          ],
+          "gaps": [
+            {
+              "code": "VECTOR_UNAVAILABLE",
+              "detail": "本地语义检索已关闭，使用 BM25",
+              "fallback": "bm25"
+            },
+            {
+              "code": "NO_MATCHING_METHODS",
+              "group": "methods",
+              "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+            }
+          ]
+        },
+        "web_research": {
+          "status": "not_requested",
+          "reads": [],
+          "limitation": "本任务没有实际执行联网调查，不能自称已查询官网或媒体。"
+        },
+        "material_policy": "available_only",
+        "material_policy_version": "available-only-v1",
+        "operations": {
+          "platform": "xiaohongshu",
+          "account": "我的账号",
+          "account_id": "[已隐去]",
+          "hypothesis_id": null,
+          "profile": {
+            "id": "5285e961-e866-5533-b51e-87cd6014586e",
+            "name": "我的账号",
+            "platform": "xiaohongshu",
+            "aliases": [
+              "我的账号"
+            ],
+            "revision": 1,
+            "profile": {
+              "positioning": "",
+              "audience": "",
+              "tone": "",
+              "pillars": "",
+              "goal": "",
+              "resources": "",
+              "banned": "",
+              "weekly_frequency": 3
+            },
+            "revisions": []
+          },
+          "trend": null,
+          "memories": [],
+          "active_hypothesis": null,
+          "experiment_memory": [],
+          "history": [],
+          "metrics": [],
+          "competitors": [],
+          "preferences": []
+        }
+      },
+      "output": {
+        "primary_audience": "小红书中小创作者及关注Mac mini接口配置的普通用户",
+        "basis": "kb:aab706a0-afc2-4270-9376-65693cac0c42：借鉴其分栏式结构与‘已知/待确认’提示逻辑，但仅用于组织本次官方公开信息；不移植虚构场景或兼容性结论。",
+        "pain_points": [
+          "不清楚M4版接口位置分布",
+          "易混淆M4与M4 Pro雷雳版本",
+          "担心接口数量是否满足多外设需求"
+        ],
+        "content_opportunities": [
+          "明确区分正/背面接口类型与数量",
+          "强调型号专属规格（如仅M4 Pro配雷雳5）",
+          "用尺寸+布局帮助读者预判桌面布线空间"
+        ],
+        "observations": [
+          {
+            "source_id": "user-material",
+            "quote": "F4：机身正面提供两个支持USB 3的USB-C口和耳机插孔。",
+            "interpretation": "正面接口为双USB-C（USB 3）+ 3.5mm耳机孔，无Thunderbolt标识，功能定位清晰。"
+          },
+          {
+            "source_id": "user-material",
+            "quote": "F5：M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。",
+            "interpretation": "M4版背面为三雷雳4（非5），该差异是型号关键识别点，需严格隔离表述。"
+          },
+          {
+            "source_id": "user-material",
+            "quote": "F2：该代Mac mini机身底部为边长12.7厘米的正方形。",
+            "interpretation": "正方形底座尺寸可辅助判断线缆理线空间，但无高度数据，无法推断竖放/横放稳定性。"
+          }
+        ],
+        "sample_size": 0,
+        "confidence": "low",
+        "status": "needs_data",
+        "reader_questions": [
+          {
+            "id": "q1",
+            "question": "我的显示器带雷雳4输入，能直连2024款M4 Mac mini背面接口吗？",
+            "priority": "high"
+          },
+          {
+            "id": "q2",
+            "question": "正面两个USB-C口是否支持视频输出或充电？",
+            "priority": "high"
+          },
+          {
+            "id": "q3",
+            "question": "三个雷雳4接口能否同时接显示器、硬盘和扩展坞？",
+            "priority": "medium"
+          },
+          {
+            "id": "q4",
+            "question": "耳机孔是否支持模拟麦克风输入？",
+            "priority": "medium"
+          },
+          {
+            "id": "q5",
+            "question": "统一内存16GB起，是否影响外接设备识别速度？",
+            "priority": "low"
+          }
+        ],
+        "account_context": {
+          "account_id": "[已隐去]",
+          "profile_revision": 1
+        },
+        "history_refs": [],
+        "competitor_observations": [],
+        "evidence_limit": "历史仅为描述性记录；偏好与传播效果分开，竞品观察未经独立核验。"
+      },
+      "duration_ms": 14616,
+      "model_calls": 1,
+      "tokens": 3876,
+      "cost": null,
+      "call_id": "6d2f2fe1-21a4-49ba-8d83-27b2856b6c30",
+      "tools": [
+        "knowledge_snapshot"
+      ],
+      "memory": "读取本任务的账号与证据快照"
+    },
+    {
+      "id": "0babaacf-3081-4085-8f1b-9f1602d99da2",
+      "agent": "research",
+      "stage": "research",
+      "mode": "live",
+      "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07",
+      "input": {
+        "brief": {
+          "topic": "2024款Mac mini M4桌面接口介绍",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "tone": "清楚自然克制",
+          "allow_hypothesis": false
+        },
+        "materials": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象是Apple在2024年10月29日新闻稿中介绍的2024款Mac mini，本文只讨论M4版本。\nF2：该代Mac mini机身底部为边长12.7厘米的正方形。\nF3：M4版本有10核中央处理器和10核图形处理器，统一内存从16GB起。\nF4：机身正面提供两个支持USB 3的USB-C口和耳机插孔。\nF5：M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。\n【完整限制】本材料没有本次作者的实测、当前售价、购买渠道库存或2026年最新在售代际核验。不可把2024年首发价格写成今天价格，不可把厂家性能宣传转成作者亲测，不补写未提供的机身高度、显示器兼容结论或所有场景的性能保证。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          }
+        ],
+        "current_date": "2026-11-03",
+        "date_timezone": "Asia/Shanghai",
+        "retrieved_references": [
+          {
+            "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+            "title": "虚构选购结构参考-REAL-D01",
+            "url": "",
+            "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          }
+        ],
+        "creation_classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "creation_retrieval": {
+          "methods": [],
+          "examples": [
+            {
+              "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+              "source_type": "text",
+              "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是桌面连接。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-D01",
+              "url": "",
+              "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "digital"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            }
+          ],
+          "facts": [
+            {
+              "source_id": "user-material"
+            }
+          ],
+          "gaps": [
+            {
+              "code": "VECTOR_UNAVAILABLE",
+              "detail": "本地语义检索已关闭，使用 BM25",
+              "fallback": "bm25"
+            },
+            {
+              "code": "NO_MATCHING_METHODS",
+              "group": "methods",
+              "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+            }
+          ]
+        },
+        "web_research": {
+          "status": "not_requested",
+          "reads": [],
+          "limitation": "本任务没有实际执行联网调查，不能自称已查询官网或媒体。"
+        },
+        "material_policy": "available_only",
+        "material_policy_version": "available-only-v1",
+        "operations": {
+          "platform": "xiaohongshu",
+          "account": "我的账号",
+          "account_id": "[已隐去]",
+          "hypothesis_id": null,
+          "profile": {
+            "id": "5285e961-e866-5533-b51e-87cd6014586e",
+            "name": "我的账号",
+            "platform": "xiaohongshu",
+            "aliases": [
+              "我的账号"
+            ],
+            "revision": 1,
+            "profile": {
+              "positioning": "",
+              "audience": "",
+              "tone": "",
+              "pillars": "",
+              "goal": "",
+              "resources": "",
+              "banned": "",
+              "weekly_frequency": 3
+            },
+            "revisions": []
+          },
+          "trend": null,
+          "memories": [],
+          "active_hypothesis": null,
+          "experiment_memory": [],
+          "history": [],
+          "metrics": [],
+          "competitors": [],
+          "preferences": []
+        }
+      },
+      "output": {
+        "core_gap": false,
+        "gaps": [],
+        "facts": [
+          {
+            "source_id": "user-material",
+            "quote": "F1：对象是Apple在2024年10月29日新闻稿中介绍的2024款Mac mini，本文只讨论M4版本。"
+          },
+          {
+            "source_id": "user-material",
+            "quote": "F2：该代Mac mini机身底部为边长12.7厘米的正方形。"
+          },
+          {
+            "source_id": "user-material",
+            "quote": "F3：M4版本有10核中央处理器和10核图形处理器，统一内存从16GB起。"
+          },
+          {
+            "source_id": "user-material",
+            "quote": "F4：机身正面提供两个支持USB 3的USB-C口和耳机插孔。"
+          },
+          {
+            "source_id": "user-material",
+            "quote": "F5：M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。"
+          }
+        ],
+        "prohibited_claims": [
+          "kb:aab706a0-afc2-4270-9376-65693cac0c42：仅作开篇结构与信息分栏表达参考；不可移植其‘虚构场景’‘两种连接选项’等设定，本题事实无连接选项对比、无场景适配结论、无兼容性判断依据"
+        ],
+        "sources": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象是Apple在2024年10月29日新闻稿中介绍的2024款Mac mini，本文只讨论M4版本。\nF2：该代Mac mini机身底部为边长12.7厘米的正方形。\nF3：M4版本有10核中央处理器和10核图形处理器，统一内存从16GB起。\nF4：机身正面提供两个支持USB 3的USB-C口和耳机插孔。\nF5：M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。\n【完整限制】本材料没有本次作者的实测、当前售价、购买渠道库存或2026年最新在售代际核验。不可把2024年首发价格写成今天价格，不可把厂家性能宣传转成作者亲测，不补写未提供的机身高度、显示器兼容结论或所有场景的性能保证。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          },
+          {
+            "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+            "source_type": "text",
+            "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是桌面连接。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+            "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+            "page": 1,
+            "title": "虚构选购结构参考-REAL-D01",
+            "url": "",
+            "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+            "version": 1,
+            "location_type": "page",
+            "offset": 0,
+            "evidence_role": "expression_reference",
+            "content_kind": "text",
+            "source_scope": "current_account",
+            "case_ref": null,
+            "material_type": "example",
+            "classification": {
+              "domains": [
+                "digital"
+              ],
+              "channel": "xiaohongshu",
+              "format": "note",
+              "material_type": "example",
+              "origin": "user"
+            }
+          }
+        ],
+        "scope": "分析用户素材与检索到的原文快照；引用逐字校验，事实未独立核实",
+        "missing_facts": [],
+        "topic_card": {
+          "topic": "2024款Mac mini M4桌面接口介绍",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "why_now": "自主选题，暂无可核验的时效依据",
+          "evidence": [],
+          "account_fit": "账号定位尚待补充",
+          "risk": [
+            "kb:aab706a0-afc2-4270-9376-65693cac0c42：仅作开篇结构与信息分栏表达参考；不可移植其‘虚构场景’‘两种连接选项’等设定，本题事实无连接选项对比、无场景适配结论、无兼容性判断依据"
+          ],
+          "content_angles": [
+            "结合真实场景解释问题",
+            "整理可验证的尝试步骤"
+          ],
+          "limitation": "选题卡基于用户线索；没有自动抓取、热度统计或时效核实。"
+        }
+      },
+      "duration_ms": 30679,
+      "model_calls": 1,
+      "tokens": 3752,
+      "cost": null,
+      "call_id": "6d8cf14c-bb1b-4e7a-9172-7b97d0be327a",
+      "tools": [
+        "knowledge_snapshot"
+      ],
+      "memory": "读取本任务的账号与证据快照"
+    },
+    {
+      "id": "a96af8d0-7617-44fe-aaaa-994e438702c4",
+      "agent": "content",
+      "stage": "strategy",
+      "mode": "live",
+      "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07",
+      "input": {
+        "brief": {
+          "topic": "2024款Mac mini M4桌面接口介绍",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "tone": "清楚自然克制",
+          "allow_hypothesis": false
+        },
+        "materials": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象是Apple在2024年10月29日新闻稿中介绍的2024款Mac mini，本文只讨论M4版本。\nF2：该代Mac mini机身底部为边长12.7厘米的正方形。\nF3：M4版本有10核中央处理器和10核图形处理器，统一内存从16GB起。\nF4：机身正面提供两个支持USB 3的USB-C口和耳机插孔。\nF5：M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。\n【完整限制】本材料没有本次作者的实测、当前售价、购买渠道库存或2026年最新在售代际核验。不可把2024年首发价格写成今天价格，不可把厂家性能宣传转成作者亲测，不补写未提供的机身高度、显示器兼容结论或所有场景的性能保证。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          }
+        ],
+        "current_date": "2026-11-03",
+        "date_timezone": "Asia/Shanghai",
+        "retrieved_references": [
+          {
+            "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+            "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+            "version": 1,
+            "url": "",
+            "evidence_role": "expression_reference"
+          }
+        ],
+        "creation_plan": {
+          "scope": "只借鉴段落功能；内容来自当前事实；无依据时收窄。规划覆盖不等于成稿覆盖。",
+          "active_modules": {
+            "coverage": true,
+            "structure": true
+          },
+          "requirements": [
+            {
+              "id": "r1",
+              "question": "我的显示器带雷雳4输入，能直连2024款M4 Mac mini背面接口吗？",
+              "weight": 3,
+              "origin": "model_suggested_reader_need"
+            },
+            {
+              "id": "r2",
+              "question": "正面两个USB-C口是否支持视频输出或充电？",
+              "weight": 3,
+              "origin": "model_suggested_reader_need"
+            },
+            {
+              "id": "r3",
+              "question": "三个雷雳4接口能否同时接显示器、硬盘和扩展坞？",
+              "weight": 2,
+              "origin": "model_suggested_reader_need"
+            },
+            {
+              "id": "r4",
+              "question": "耳机孔是否支持模拟麦克风输入？",
+              "weight": 2,
+              "origin": "model_suggested_reader_need"
+            },
+            {
+              "id": "r5",
+              "question": "统一内存16GB起，是否影响外接设备识别速度？",
+              "weight": 1,
+              "origin": "model_suggested_reader_need"
+            }
+          ],
+          "selected_modules": [
+            {
+              "id": "f4",
+              "title": "F4：机身正面提供两个支持USB 3的USB-C口和耳机插孔。",
+              "covers": [
+                "r2",
+                "r4"
+              ],
+              "length": 51,
+              "source_ids": [
+                "user-material"
+              ],
+              "quote": "F4：机身正面提供两个支持USB 3的USB-C口和耳机插孔。",
+              "supported": true,
+              "support_scope": "lexical_candidate_not_entailment",
+              "statement_type": "assertion"
+            },
+            {
+              "id": "f5",
+              "title": "F5：M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。",
+              "covers": [
+                "r1",
+                "r3"
+              ],
+              "length": 60,
+              "source_ids": [
+                "user-material"
+              ],
+              "quote": "F5：M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。",
+              "supported": true,
+              "support_scope": "lexical_candidate_not_entailment",
+              "statement_type": "assertion"
+            }
+          ],
+          "uncovered_requirement_ids": [
+            "r5"
+          ],
+          "budget": 300.0,
+          "structure": {
+            "selected_profile_id": "structure:53174b97d137afd03e466f58",
+            "slots": [
+              {
+                "slot_id": "s1",
+                "role": "HOOK",
+                "function": "引出当前任务的阅读动机",
+                "needs": [],
+                "position": {
+                  "start": 0,
+                  "end": 27,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "18298fef0d8e7278fed1364ca549cf05f918ae40e69195ba7f54c0927ac9415b",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s2",
+                "role": "CONTEXT",
+                "function": "交代当前任务的背景与适用范围",
+                "needs": [],
+                "position": {
+                  "start": 27,
+                  "end": 37,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "52882a04c340b81cc381475648a8b3f60bf878e34177fc071de161a9d458a8eb",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s3",
+                "role": "WARNING",
+                "function": "列出需要核对的事项；不陈述未经支持的体验、对比或参数结论",
+                "needs": [],
+                "position": {
+                  "start": 39,
+                  "end": 59,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "78d041172f09a9c35baf36c98ab0d256a0ee441a5865742a7a94740e89d10833",
+                "adaptation": "replace_with_checklist"
+              },
+              {
+                "slot_id": "s4",
+                "role": "WARNING",
+                "function": "列出需要核对的事项；不陈述未经支持的体验、对比或参数结论",
+                "needs": [],
+                "position": {
+                  "start": 61,
+                  "end": 85,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "33b022ca6e5d4790f20f796793f0262c524da85f29c6eba03b0641c53892d6f4",
+                "adaptation": "replace_with_checklist"
+              },
+              {
+                "slot_id": "s5",
+                "role": "CONTEXT",
+                "function": "交代当前任务的背景与适用范围",
+                "needs": [],
+                "position": {
+                  "start": 87,
+                  "end": 109,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "f694fb046511793f9fdecb277f496145775e48b859a2c2be288731c7ee7a8af1",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s6",
+                "role": "CONTEXT",
+                "function": "交代当前任务的背景与适用范围",
+                "needs": [],
+                "position": {
+                  "start": 111,
+                  "end": 134,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "29b65151970b6a5520a0183f2908df50bc4747e1b082a36579eb59c3fc0a719f",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s7",
+                "role": "CONTEXT",
+                "function": "交代当前任务的背景与适用范围",
+                "needs": [],
+                "position": {
+                  "start": 136,
+                  "end": 161,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "7f95d719dac56bd9055fa17804ce16952db8d728a0625c9b2a9961f639ffea3c",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s8",
+                "role": "WARNING",
+                "function": "说明限制和需要核对的条件",
+                "needs": [
+                  "limitations"
+                ],
+                "position": {
+                  "start": 163,
+                  "end": 188,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "e3c7a7ecce69b9bfba06961ddd429de0a252a69043cf0ed909f452d2d1e821ab",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s9",
+                "role": "CTA",
+                "function": "给出与正文一致的下一步建议",
+                "needs": [],
+                "position": {
+                  "start": 190,
+                  "end": 209,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "f3b9481fcf5f46a9c373510d648db69bee7e1eedc7236d78595bed9ff5af116b",
+                "adaptation": "retain"
+              }
+            ],
+            "adaptations": [
+              {
+                "slot_id": "s3",
+                "original_role": "SOLUTION",
+                "missing_fields": [
+                  "use_steps"
+                ],
+                "action": "replace_with_checklist",
+                "reason": "当前资料不具备该段所需证据，改为待核对事项并缩小表达范围。"
+              },
+              {
+                "slot_id": "s4",
+                "original_role": "EVIDENCE",
+                "missing_fields": [
+                  "comparison_specs"
+                ],
+                "action": "replace_with_checklist",
+                "reason": "当前资料不具备该段所需证据，改为待核对事项并缩小表达范围。"
+              }
+            ],
+            "fallback": false
+          }
+        },
+        "creation_classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "creation_retrieval": {
+          "methods": [],
+          "examples": [
+            {
+              "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+              "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+              "version": 1,
+              "evidence_role": "expression_reference"
+            }
+          ],
+          "facts": [
+            {
+              "source_id": "user-material"
+            }
+          ],
+          "gaps": [
+            {
+              "code": "VECTOR_UNAVAILABLE",
+              "detail": "本地语义检索已关闭，使用 BM25",
+              "fallback": "bm25"
+            },
+            {
+              "code": "NO_MATCHING_METHODS",
+              "group": "methods",
+              "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+            }
+          ]
+        },
+        "web_research": {
+          "status": "not_requested",
+          "reads": [],
+          "limitation": "本任务没有实际执行联网调查，不能自称已查询官网或媒体。"
+        },
+        "branches": {
+          "audience": {
+            "data": {
+              "primary_audience": "小红书中小创作者及关注Mac mini接口配置的普通用户",
+              "sample_size": 0,
+              "confidence": "low",
+              "status": "needs_data",
+              "pain_points": [
+                "不清楚M4版接口位置分布",
+                "易混淆M4与M4 Pro雷雳版本",
+                "担心接口数量是否满足多外设需求"
+              ],
+              "content_opportunities": [
+                "明确区分正/背面接口类型与数量",
+                "强调型号专属规格（如仅M4 Pro配雷雳5）",
+                "用尺寸+布局帮助读者预判桌面布线空间"
+              ]
+            }
+          },
+          "research": {
+            "data": {
+              "core_gap": false,
+              "gaps": [],
+              "prohibited_claims": [
+                "kb:aab706a0-afc2-4270-9376-65693cac0c42：仅作开篇结构与信息分栏表达参考；不可移植其‘虚构场景’‘两种连接选项’等设定，本题事实无连接选项对比、无场景适配结论、无兼容性判断依据"
+              ]
+            }
+          }
+        },
+        "upstream": {},
+        "material_policy": "available_only",
+        "material_policy_version": "available-only-v1",
+        "operations": {
+          "platform": "xiaohongshu",
+          "account": "我的账号",
+          "account_id": "[已隐去]",
+          "hypothesis_id": null,
+          "profile": {
+            "id": "5285e961-e866-5533-b51e-87cd6014586e",
+            "name": "我的账号",
+            "platform": "xiaohongshu",
+            "aliases": [
+              "我的账号"
+            ],
+            "revision": 1,
+            "profile": {
+              "positioning": "",
+              "audience": "",
+              "tone": "",
+              "pillars": "",
+              "goal": "",
+              "resources": "",
+              "banned": "",
+              "weekly_frequency": 3
+            },
+            "revisions": []
+          },
+          "trend": null,
+          "memories": [],
+          "active_hypothesis": null,
+          "experiment_memory": [],
+          "history": [],
+          "metrics": [],
+          "competitors": [],
+          "preferences": []
+        }
+      },
+      "output": {
+        "angle": "接口位置与规格的型号专属说明",
+        "reader": "小红书中小创作者及关注Mac mini外设连接的普通用户",
+        "promise": "明确2024款M4 Mac mini正/背面接口类型、数量及关键限制，不混淆M4 Pro",
+        "tone": "清楚自然克制",
+        "assumptions": [
+          "读者已知雷雳4/USB-C基础功能",
+          "读者需区分M4与M4 Pro接口差异",
+          "读者关注多设备直连可行性"
+        ],
+        "candidate_angles": [
+          "按物理位置分述接口能力",
+          "聚焦显示器直连与多外设共存条件"
+        ],
+        "cta": "用前请核对你的设备接口协议版本",
+        "why_account": "kb:aab706a0-afc2-4270-9376-65693cac0c42：借鉴其分栏式信息结构与短句节奏；本题仅使用F4/F5原文事实，不移植其虚构连接场景或兼容性结论。",
+        "content_modules": [
+          {
+            "id": "f4",
+            "title": "正面接口：两个USB-C（USB 3）+ 耳机孔",
+            "covers": [
+              "r2",
+              "r4"
+            ],
+            "source_id": "user-material",
+            "quote": "F4：机身正面提供两个支持USB 3的USB-C口和耳机插孔。",
+            "length": 51
+          },
+          {
+            "id": "f5",
+            "title": "背面接口：三个雷雳4端口（仅M4版）",
+            "covers": [
+              "r1",
+              "r3"
+            ],
+            "source_id": "user-material",
+            "quote": "F5：M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。",
+            "length": 60
+          }
+        ],
+        "content_brief": {
+          "account_id": "[已隐去]",
+          "profile_revision": 1,
+          "goal": "先验证内容是否对目标受众有用",
+          "core_viewpoint": "接口位置与规格的型号专属说明",
+          "audience": "小红书中小创作者及关注Mac mini外设连接的普通用户",
+          "content_type": "图文笔记",
+          "hook_options": [
+            "按物理位置分述接口能力",
+            "聚焦显示器直连与多外设共存条件"
+          ],
+          "evidence_scope": "引用用户素材与检索原文；历史表现与竞品观察不能证明正文事实",
+          "cta": "用前请核对你的设备接口协议版本",
+          "banned": "",
+          "publishing_window": "由用户安排；暂无经过验证的最佳发布时间",
+          "recommendation_reason": "kb:aab706a0-afc2-4270-9376-65693cac0c42：借鉴其分栏式信息结构与短句节奏；本题仅使用F4/F5原文事实，不移植其虚构连接场景或兼容性结论。"
+        },
+        "learning_refs": [],
+        "next_experiments": []
+      },
+      "duration_ms": 13775,
+      "model_calls": 1,
+      "tokens": 5333,
+      "cost": null,
+      "call_id": "9058c3d2-813a-49d1-b4a6-e727b328206c",
+      "tools": [
+        "knowledge_snapshot"
+      ],
+      "memory": "读取本任务的账号与证据快照"
+    },
+    {
+      "id": "0f7239b9-3587-46a1-b3a2-f3b273320422",
+      "agent": "content",
+      "stage": "outline",
+      "mode": "live",
+      "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07",
+      "input": {
+        "brief": {
+          "topic": "2024款Mac mini M4桌面接口介绍",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "tone": "清楚自然克制",
+          "allow_hypothesis": false
+        },
+        "materials": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象是Apple在2024年10月29日新闻稿中介绍的2024款Mac mini，本文只讨论M4版本。\nF2：该代Mac mini机身底部为边长12.7厘米的正方形。\nF3：M4版本有10核中央处理器和10核图形处理器，统一内存从16GB起。\nF4：机身正面提供两个支持USB 3的USB-C口和耳机插孔。\nF5：M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。\n【完整限制】本材料没有本次作者的实测、当前售价、购买渠道库存或2026年最新在售代际核验。不可把2024年首发价格写成今天价格，不可把厂家性能宣传转成作者亲测，不补写未提供的机身高度、显示器兼容结论或所有场景的性能保证。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          }
+        ],
+        "current_date": "2026-11-03",
+        "date_timezone": "Asia/Shanghai",
+        "retrieved_references": [
+          {
+            "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+            "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+            "version": 1,
+            "url": "",
+            "evidence_role": "expression_reference"
+          }
+        ],
+        "creation_plan": {
+          "scope": "只借鉴段落功能；内容来自当前事实；无依据时收窄。规划覆盖不等于成稿覆盖。",
+          "active_modules": {
+            "coverage": true,
+            "structure": true
+          },
+          "requirements": [
+            {
+              "id": "r1",
+              "question": "我的显示器带雷雳4输入，能直连2024款M4 Mac mini背面接口吗？",
+              "weight": 3,
+              "origin": "model_suggested_reader_need"
+            },
+            {
+              "id": "r2",
+              "question": "正面两个USB-C口是否支持视频输出或充电？",
+              "weight": 3,
+              "origin": "model_suggested_reader_need"
+            },
+            {
+              "id": "r3",
+              "question": "三个雷雳4接口能否同时接显示器、硬盘和扩展坞？",
+              "weight": 2,
+              "origin": "model_suggested_reader_need"
+            },
+            {
+              "id": "r4",
+              "question": "耳机孔是否支持模拟麦克风输入？",
+              "weight": 2,
+              "origin": "model_suggested_reader_need"
+            },
+            {
+              "id": "r5",
+              "question": "统一内存16GB起，是否影响外接设备识别速度？",
+              "weight": 1,
+              "origin": "model_suggested_reader_need"
+            }
+          ],
+          "selected_modules": [
+            {
+              "id": "m1",
+              "title": "正面接口：两个USB-C（USB 3）+ 耳机孔",
+              "covers": [
+                "r2",
+                "r4"
+              ],
+              "length": 51,
+              "source_ids": [
+                "user-material"
+              ],
+              "quote": "F4：机身正面提供两个支持USB 3的USB-C口和耳机插孔。",
+              "supported": true,
+              "support_scope": "quotation_location_only",
+              "statement_type": "assertion"
+            },
+            {
+              "id": "m2",
+              "title": "背面接口：三个雷雳4端口（仅M4版）",
+              "covers": [
+                "r1",
+                "r3"
+              ],
+              "length": 60,
+              "source_ids": [
+                "user-material"
+              ],
+              "quote": "F5：M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。",
+              "supported": true,
+              "support_scope": "quotation_location_only",
+              "statement_type": "assertion"
+            }
+          ],
+          "uncovered_requirement_ids": [
+            "r5"
+          ],
+          "budget": 300.0,
+          "structure": {
+            "selected_profile_id": "structure:53174b97d137afd03e466f58",
+            "slots": [
+              {
+                "slot_id": "s1",
+                "role": "HOOK",
+                "function": "引出当前任务的阅读动机",
+                "needs": [],
+                "position": {
+                  "start": 0,
+                  "end": 27,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "18298fef0d8e7278fed1364ca549cf05f918ae40e69195ba7f54c0927ac9415b",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s2",
+                "role": "CONTEXT",
+                "function": "交代当前任务的背景与适用范围",
+                "needs": [],
+                "position": {
+                  "start": 27,
+                  "end": 37,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "52882a04c340b81cc381475648a8b3f60bf878e34177fc071de161a9d458a8eb",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s3",
+                "role": "WARNING",
+                "function": "列出需要核对的事项；不陈述未经支持的体验、对比或参数结论",
+                "needs": [],
+                "position": {
+                  "start": 39,
+                  "end": 59,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "78d041172f09a9c35baf36c98ab0d256a0ee441a5865742a7a94740e89d10833",
+                "adaptation": "replace_with_checklist"
+              },
+              {
+                "slot_id": "s4",
+                "role": "WARNING",
+                "function": "列出需要核对的事项；不陈述未经支持的体验、对比或参数结论",
+                "needs": [],
+                "position": {
+                  "start": 61,
+                  "end": 85,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "33b022ca6e5d4790f20f796793f0262c524da85f29c6eba03b0641c53892d6f4",
+                "adaptation": "replace_with_checklist"
+              },
+              {
+                "slot_id": "s5",
+                "role": "CONTEXT",
+                "function": "交代当前任务的背景与适用范围",
+                "needs": [],
+                "position": {
+                  "start": 87,
+                  "end": 109,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "f694fb046511793f9fdecb277f496145775e48b859a2c2be288731c7ee7a8af1",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s6",
+                "role": "CONTEXT",
+                "function": "交代当前任务的背景与适用范围",
+                "needs": [],
+                "position": {
+                  "start": 111,
+                  "end": 134,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "29b65151970b6a5520a0183f2908df50bc4747e1b082a36579eb59c3fc0a719f",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s7",
+                "role": "CONTEXT",
+                "function": "交代当前任务的背景与适用范围",
+                "needs": [],
+                "position": {
+                  "start": 136,
+                  "end": 161,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "7f95d719dac56bd9055fa17804ce16952db8d728a0625c9b2a9961f639ffea3c",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s8",
+                "role": "WARNING",
+                "function": "说明限制和需要核对的条件",
+                "needs": [
+                  "limitations"
+                ],
+                "position": {
+                  "start": 163,
+                  "end": 188,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "e3c7a7ecce69b9bfba06961ddd429de0a252a69043cf0ed909f452d2d1e821ab",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s9",
+                "role": "CTA",
+                "function": "给出与正文一致的下一步建议",
+                "needs": [],
+                "position": {
+                  "start": 190,
+                  "end": 209,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "f3b9481fcf5f46a9c373510d648db69bee7e1eedc7236d78595bed9ff5af116b",
+                "adaptation": "retain"
+              }
+            ],
+            "adaptations": [
+              {
+                "slot_id": "s3",
+                "original_role": "SOLUTION",
+                "missing_fields": [
+                  "use_steps"
+                ],
+                "action": "replace_with_checklist",
+                "reason": "当前资料不具备该段所需证据，改为待核对事项并缩小表达范围。"
+              },
+              {
+                "slot_id": "s4",
+                "original_role": "EVIDENCE",
+                "missing_fields": [
+                  "comparison_specs"
+                ],
+                "action": "replace_with_checklist",
+                "reason": "当前资料不具备该段所需证据，改为待核对事项并缩小表达范围。"
+              }
+            ],
+            "fallback": false
+          }
+        },
+        "creation_classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "creation_retrieval": {
+          "methods": [],
+          "examples": [
+            {
+              "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+              "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+              "version": 1,
+              "evidence_role": "expression_reference"
+            }
+          ],
+          "facts": [
+            {
+              "source_id": "user-material"
+            }
+          ],
+          "gaps": [
+            {
+              "code": "VECTOR_UNAVAILABLE",
+              "detail": "本地语义检索已关闭，使用 BM25",
+              "fallback": "bm25"
+            },
+            {
+              "code": "NO_MATCHING_METHODS",
+              "group": "methods",
+              "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+            }
+          ]
+        },
+        "web_research": {
+          "status": "not_requested",
+          "reads": [],
+          "limitation": "本任务没有实际执行联网调查，不能自称已查询官网或媒体。"
+        },
+        "branches": {
+          "audience": {
+            "data": {
+              "primary_audience": "小红书中小创作者及关注Mac mini接口配置的普通用户",
+              "sample_size": 0,
+              "confidence": "low",
+              "status": "needs_data",
+              "pain_points": [
+                "不清楚M4版接口位置分布",
+                "易混淆M4与M4 Pro雷雳版本",
+                "担心接口数量是否满足多外设需求"
+              ],
+              "content_opportunities": [
+                "明确区分正/背面接口类型与数量",
+                "强调型号专属规格（如仅M4 Pro配雷雳5）",
+                "用尺寸+布局帮助读者预判桌面布线空间"
+              ]
+            }
+          },
+          "research": {
+            "data": {
+              "core_gap": false,
+              "gaps": [],
+              "prohibited_claims": [
+                "kb:aab706a0-afc2-4270-9376-65693cac0c42：仅作开篇结构与信息分栏表达参考；不可移植其‘虚构场景’‘两种连接选项’等设定，本题事实无连接选项对比、无场景适配结论、无兼容性判断依据"
+              ]
+            }
+          }
+        },
+        "upstream": {
+          "strategy": {
+            "angle": "接口位置与规格的型号专属说明",
+            "reader": "小红书中小创作者及关注Mac mini外设连接的普通用户",
+            "promise": "明确2024款M4 Mac mini正/背面接口类型、数量及关键限制，不混淆M4 Pro",
+            "tone": "清楚自然克制",
+            "assumptions": [
+              "读者已知雷雳4/USB-C基础功能",
+              "读者需区分M4与M4 Pro接口差异",
+              "读者关注多设备直连可行性"
+            ],
+            "cta": "用前请核对你的设备接口协议版本"
+          }
+        },
+        "material_policy": "available_only",
+        "material_policy_version": "available-only-v1",
+        "operations": {
+          "platform": "xiaohongshu",
+          "account": "我的账号",
+          "account_id": "[已隐去]",
+          "hypothesis_id": null,
+          "profile": {
+            "id": "5285e961-e866-5533-b51e-87cd6014586e",
+            "name": "我的账号",
+            "platform": "xiaohongshu",
+            "aliases": [
+              "我的账号"
+            ],
+            "revision": 1,
+            "profile": {
+              "positioning": "",
+              "audience": "",
+              "tone": "",
+              "pillars": "",
+              "goal": "",
+              "resources": "",
+              "banned": "",
+              "weekly_frequency": 3
+            },
+            "revisions": []
+          },
+          "trend": null,
+          "memories": [],
+          "active_hypothesis": null,
+          "experiment_memory": [],
+          "history": [],
+          "metrics": [],
+          "competitors": [],
+          "preferences": []
+        }
+      },
+      "output": [
+        "正面接口：两个USB 3协议的USB-C口+耳机孔，不支持视频输出或充电",
+        "背面接口：M4版专属三个雷雳4端口，非雷雳5（M4 Pro才配）",
+        "尺寸参考：机身底面为12.7cm正方形，便于预估桌面布线空间",
+        "关键提醒：接口功能需匹配外设协议；雷雳4直连显示器可行，但多设备共用需查扩展坞兼容性"
+      ],
+      "duration_ms": 3736,
+      "model_calls": 1,
+      "tokens": 5113,
+      "cost": null,
+      "call_id": "0f6a3f92-fcde-4f7c-9535-a1e9bb2675fd",
+      "tools": [
+        "knowledge_snapshot"
+      ],
+      "memory": "读取本任务的账号与证据快照"
+    },
+    {
+      "id": "f1553ea2-e1d8-4443-852d-4c201a2f0526",
+      "agent": "content",
+      "stage": "hook",
+      "mode": "live",
+      "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07",
+      "input": {
+        "brief": {
+          "topic": "2024款Mac mini M4桌面接口介绍",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "tone": "清楚自然克制",
+          "allow_hypothesis": false
+        },
+        "materials": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象是Apple在2024年10月29日新闻稿中介绍的2024款Mac mini，本文只讨论M4版本。\nF2：该代Mac mini机身底部为边长12.7厘米的正方形。\nF3：M4版本有10核中央处理器和10核图形处理器，统一内存从16GB起。\nF4：机身正面提供两个支持USB 3的USB-C口和耳机插孔。\nF5：M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。\n【完整限制】本材料没有本次作者的实测、当前售价、购买渠道库存或2026年最新在售代际核验。不可把2024年首发价格写成今天价格，不可把厂家性能宣传转成作者亲测，不补写未提供的机身高度、显示器兼容结论或所有场景的性能保证。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          }
+        ],
+        "current_date": "2026-11-03",
+        "date_timezone": "Asia/Shanghai",
+        "retrieved_references": [
+          {
+            "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+            "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+            "version": 1,
+            "url": "",
+            "evidence_role": "expression_reference"
+          }
+        ],
+        "creation_plan": {
+          "scope": "只借鉴段落功能；内容来自当前事实；无依据时收窄。规划覆盖不等于成稿覆盖。",
+          "active_modules": {
+            "coverage": true,
+            "structure": true
+          },
+          "requirements": [
+            {
+              "id": "r1",
+              "question": "我的显示器带雷雳4输入，能直连2024款M4 Mac mini背面接口吗？",
+              "weight": 3,
+              "origin": "model_suggested_reader_need"
+            },
+            {
+              "id": "r2",
+              "question": "正面两个USB-C口是否支持视频输出或充电？",
+              "weight": 3,
+              "origin": "model_suggested_reader_need"
+            },
+            {
+              "id": "r3",
+              "question": "三个雷雳4接口能否同时接显示器、硬盘和扩展坞？",
+              "weight": 2,
+              "origin": "model_suggested_reader_need"
+            },
+            {
+              "id": "r4",
+              "question": "耳机孔是否支持模拟麦克风输入？",
+              "weight": 2,
+              "origin": "model_suggested_reader_need"
+            },
+            {
+              "id": "r5",
+              "question": "统一内存16GB起，是否影响外接设备识别速度？",
+              "weight": 1,
+              "origin": "model_suggested_reader_need"
+            }
+          ],
+          "selected_modules": [
+            {
+              "id": "m1",
+              "title": "正面接口：两个USB-C（USB 3）+ 耳机孔",
+              "covers": [
+                "r2",
+                "r4"
+              ],
+              "length": 51,
+              "source_ids": [
+                "user-material"
+              ],
+              "quote": "F4：机身正面提供两个支持USB 3的USB-C口和耳机插孔。",
+              "supported": true,
+              "support_scope": "quotation_location_only",
+              "statement_type": "assertion"
+            },
+            {
+              "id": "m2",
+              "title": "背面接口：三个雷雳4端口（仅M4版）",
+              "covers": [
+                "r1",
+                "r3"
+              ],
+              "length": 60,
+              "source_ids": [
+                "user-material"
+              ],
+              "quote": "F5：M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。",
+              "supported": true,
+              "support_scope": "quotation_location_only",
+              "statement_type": "assertion"
+            }
+          ],
+          "uncovered_requirement_ids": [
+            "r5"
+          ],
+          "budget": 300.0,
+          "structure": {
+            "selected_profile_id": "structure:53174b97d137afd03e466f58",
+            "slots": [
+              {
+                "slot_id": "s1",
+                "role": "HOOK",
+                "function": "引出当前任务的阅读动机",
+                "needs": [],
+                "position": {
+                  "start": 0,
+                  "end": 27,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "18298fef0d8e7278fed1364ca549cf05f918ae40e69195ba7f54c0927ac9415b",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s2",
+                "role": "CONTEXT",
+                "function": "交代当前任务的背景与适用范围",
+                "needs": [],
+                "position": {
+                  "start": 27,
+                  "end": 37,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "52882a04c340b81cc381475648a8b3f60bf878e34177fc071de161a9d458a8eb",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s3",
+                "role": "WARNING",
+                "function": "列出需要核对的事项；不陈述未经支持的体验、对比或参数结论",
+                "needs": [],
+                "position": {
+                  "start": 39,
+                  "end": 59,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "78d041172f09a9c35baf36c98ab0d256a0ee441a5865742a7a94740e89d10833",
+                "adaptation": "replace_with_checklist"
+              },
+              {
+                "slot_id": "s4",
+                "role": "WARNING",
+                "function": "列出需要核对的事项；不陈述未经支持的体验、对比或参数结论",
+                "needs": [],
+                "position": {
+                  "start": 61,
+                  "end": 85,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "33b022ca6e5d4790f20f796793f0262c524da85f29c6eba03b0641c53892d6f4",
+                "adaptation": "replace_with_checklist"
+              },
+              {
+                "slot_id": "s5",
+                "role": "CONTEXT",
+                "function": "交代当前任务的背景与适用范围",
+                "needs": [],
+                "position": {
+                  "start": 87,
+                  "end": 109,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "f694fb046511793f9fdecb277f496145775e48b859a2c2be288731c7ee7a8af1",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s6",
+                "role": "CONTEXT",
+                "function": "交代当前任务的背景与适用范围",
+                "needs": [],
+                "position": {
+                  "start": 111,
+                  "end": 134,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "29b65151970b6a5520a0183f2908df50bc4747e1b082a36579eb59c3fc0a719f",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s7",
+                "role": "CONTEXT",
+                "function": "交代当前任务的背景与适用范围",
+                "needs": [],
+                "position": {
+                  "start": 136,
+                  "end": 161,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "7f95d719dac56bd9055fa17804ce16952db8d728a0625c9b2a9961f639ffea3c",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s8",
+                "role": "WARNING",
+                "function": "说明限制和需要核对的条件",
+                "needs": [
+                  "limitations"
+                ],
+                "position": {
+                  "start": 163,
+                  "end": 188,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "e3c7a7ecce69b9bfba06961ddd429de0a252a69043cf0ed909f452d2d1e821ab",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s9",
+                "role": "CTA",
+                "function": "给出与正文一致的下一步建议",
+                "needs": [],
+                "position": {
+                  "start": 190,
+                  "end": 209,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "f3b9481fcf5f46a9c373510d648db69bee7e1eedc7236d78595bed9ff5af116b",
+                "adaptation": "retain"
+              }
+            ],
+            "adaptations": [
+              {
+                "slot_id": "s3",
+                "original_role": "SOLUTION",
+                "missing_fields": [
+                  "use_steps"
+                ],
+                "action": "replace_with_checklist",
+                "reason": "当前资料不具备该段所需证据，改为待核对事项并缩小表达范围。"
+              },
+              {
+                "slot_id": "s4",
+                "original_role": "EVIDENCE",
+                "missing_fields": [
+                  "comparison_specs"
+                ],
+                "action": "replace_with_checklist",
+                "reason": "当前资料不具备该段所需证据，改为待核对事项并缩小表达范围。"
+              }
+            ],
+            "fallback": false
+          }
+        },
+        "creation_classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "creation_retrieval": {
+          "methods": [],
+          "examples": [
+            {
+              "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+              "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+              "version": 1,
+              "evidence_role": "expression_reference"
+            }
+          ],
+          "facts": [
+            {
+              "source_id": "user-material"
+            }
+          ],
+          "gaps": [
+            {
+              "code": "VECTOR_UNAVAILABLE",
+              "detail": "本地语义检索已关闭，使用 BM25",
+              "fallback": "bm25"
+            },
+            {
+              "code": "NO_MATCHING_METHODS",
+              "group": "methods",
+              "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+            }
+          ]
+        },
+        "web_research": {
+          "status": "not_requested",
+          "reads": [],
+          "limitation": "本任务没有实际执行联网调查，不能自称已查询官网或媒体。"
+        },
+        "branches": {
+          "audience": {
+            "data": {
+              "primary_audience": "小红书中小创作者及关注Mac mini接口配置的普通用户",
+              "sample_size": 0,
+              "confidence": "low",
+              "status": "needs_data",
+              "pain_points": [
+                "不清楚M4版接口位置分布",
+                "易混淆M4与M4 Pro雷雳版本",
+                "担心接口数量是否满足多外设需求"
+              ],
+              "content_opportunities": [
+                "明确区分正/背面接口类型与数量",
+                "强调型号专属规格（如仅M4 Pro配雷雳5）",
+                "用尺寸+布局帮助读者预判桌面布线空间"
+              ]
+            }
+          },
+          "research": {
+            "data": {
+              "core_gap": false,
+              "gaps": [],
+              "prohibited_claims": [
+                "kb:aab706a0-afc2-4270-9376-65693cac0c42：仅作开篇结构与信息分栏表达参考；不可移植其‘虚构场景’‘两种连接选项’等设定，本题事实无连接选项对比、无场景适配结论、无兼容性判断依据"
+              ]
+            }
+          }
+        },
+        "upstream": {
+          "strategy": {
+            "angle": "接口位置与规格的型号专属说明",
+            "reader": "小红书中小创作者及关注Mac mini外设连接的普通用户",
+            "promise": "明确2024款M4 Mac mini正/背面接口类型、数量及关键限制，不混淆M4 Pro",
+            "tone": "清楚自然克制",
+            "assumptions": [
+              "读者已知雷雳4/USB-C基础功能",
+              "读者需区分M4与M4 Pro接口差异",
+              "读者关注多设备直连可行性"
+            ],
+            "cta": "用前请核对你的设备接口协议版本"
+          },
+          "outline": [
+            "正面接口：两个USB 3协议的USB-C口+耳机孔，不支持视频输出或充电",
+            "背面接口：M4版专属三个雷雳4端口，非雷雳5（M4 Pro才配）",
+            "尺寸参考：机身底面为12.7cm正方形，便于预估桌面布线空间",
+            "关键提醒：接口功能需匹配外设协议；雷雳4直连显示器可行，但多设备共用需查扩展坞兼容性"
+          ]
+        },
+        "material_policy": "available_only",
+        "material_policy_version": "available-only-v1",
+        "operations": {
+          "platform": "xiaohongshu",
+          "account": "我的账号",
+          "account_id": "[已隐去]",
+          "hypothesis_id": null,
+          "profile": {
+            "id": "5285e961-e866-5533-b51e-87cd6014586e",
+            "name": "我的账号",
+            "platform": "xiaohongshu",
+            "aliases": [
+              "我的账号"
+            ],
+            "revision": 1,
+            "profile": {
+              "positioning": "",
+              "audience": "",
+              "tone": "",
+              "pillars": "",
+              "goal": "",
+              "resources": "",
+              "banned": "",
+              "weekly_frequency": 3
+            },
+            "revisions": []
+          },
+          "trend": null,
+          "memories": [],
+          "active_hypothesis": null,
+          "experiment_memory": [],
+          "history": [],
+          "metrics": [],
+          "competitors": [],
+          "preferences": []
+        }
+      },
+      "output": "你的显示器带雷雳4输入？先确认它连的是Mac mini背面——2024款M4版只有三个雷雳4口，不支持雷雳5（那是M4 Pro的）。",
+      "duration_ms": 2399,
+      "model_calls": 1,
+      "tokens": 5171,
+      "cost": null,
+      "call_id": "0403fb83-fcc0-4d65-b360-257179e58c01",
+      "tools": [
+        "knowledge_snapshot"
+      ],
+      "memory": "读取本任务的账号与证据快照"
+    },
+    {
+      "id": "f7698bbe-efb8-4ebf-962f-f8d1bda2b0d9",
+      "agent": "content",
+      "stage": "title",
+      "mode": "live",
+      "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07",
+      "input": {
+        "brief": {
+          "topic": "2024款Mac mini M4桌面接口介绍",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "tone": "清楚自然克制",
+          "allow_hypothesis": false
+        },
+        "materials": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象是Apple在2024年10月29日新闻稿中介绍的2024款Mac mini，本文只讨论M4版本。\nF2：该代Mac mini机身底部为边长12.7厘米的正方形。\nF3：M4版本有10核中央处理器和10核图形处理器，统一内存从16GB起。\nF4：机身正面提供两个支持USB 3的USB-C口和耳机插孔。\nF5：M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。\n【完整限制】本材料没有本次作者的实测、当前售价、购买渠道库存或2026年最新在售代际核验。不可把2024年首发价格写成今天价格，不可把厂家性能宣传转成作者亲测，不补写未提供的机身高度、显示器兼容结论或所有场景的性能保证。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          }
+        ],
+        "current_date": "2026-11-03",
+        "date_timezone": "Asia/Shanghai",
+        "retrieved_references": [
+          {
+            "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+            "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+            "version": 1,
+            "url": "",
+            "evidence_role": "expression_reference"
+          }
+        ],
+        "creation_plan": {
+          "scope": "只借鉴段落功能；内容来自当前事实；无依据时收窄。规划覆盖不等于成稿覆盖。",
+          "active_modules": {
+            "coverage": true,
+            "structure": true
+          },
+          "requirements": [
+            {
+              "id": "r1",
+              "question": "我的显示器带雷雳4输入，能直连2024款M4 Mac mini背面接口吗？",
+              "weight": 3,
+              "origin": "model_suggested_reader_need"
+            },
+            {
+              "id": "r2",
+              "question": "正面两个USB-C口是否支持视频输出或充电？",
+              "weight": 3,
+              "origin": "model_suggested_reader_need"
+            },
+            {
+              "id": "r3",
+              "question": "三个雷雳4接口能否同时接显示器、硬盘和扩展坞？",
+              "weight": 2,
+              "origin": "model_suggested_reader_need"
+            },
+            {
+              "id": "r4",
+              "question": "耳机孔是否支持模拟麦克风输入？",
+              "weight": 2,
+              "origin": "model_suggested_reader_need"
+            },
+            {
+              "id": "r5",
+              "question": "统一内存16GB起，是否影响外接设备识别速度？",
+              "weight": 1,
+              "origin": "model_suggested_reader_need"
+            }
+          ],
+          "selected_modules": [
+            {
+              "id": "m1",
+              "title": "正面接口：两个USB-C（USB 3）+ 耳机孔",
+              "covers": [
+                "r2",
+                "r4"
+              ],
+              "length": 51,
+              "source_ids": [
+                "user-material"
+              ],
+              "quote": "F4：机身正面提供两个支持USB 3的USB-C口和耳机插孔。",
+              "supported": true,
+              "support_scope": "quotation_location_only",
+              "statement_type": "assertion"
+            },
+            {
+              "id": "m2",
+              "title": "背面接口：三个雷雳4端口（仅M4版）",
+              "covers": [
+                "r1",
+                "r3"
+              ],
+              "length": 60,
+              "source_ids": [
+                "user-material"
+              ],
+              "quote": "F5：M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。",
+              "supported": true,
+              "support_scope": "quotation_location_only",
+              "statement_type": "assertion"
+            }
+          ],
+          "uncovered_requirement_ids": [
+            "r5"
+          ],
+          "budget": 300.0,
+          "structure": {
+            "selected_profile_id": "structure:53174b97d137afd03e466f58",
+            "slots": [
+              {
+                "slot_id": "s1",
+                "role": "HOOK",
+                "function": "引出当前任务的阅读动机",
+                "needs": [],
+                "position": {
+                  "start": 0,
+                  "end": 27,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "18298fef0d8e7278fed1364ca549cf05f918ae40e69195ba7f54c0927ac9415b",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s2",
+                "role": "CONTEXT",
+                "function": "交代当前任务的背景与适用范围",
+                "needs": [],
+                "position": {
+                  "start": 27,
+                  "end": 37,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "52882a04c340b81cc381475648a8b3f60bf878e34177fc071de161a9d458a8eb",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s3",
+                "role": "WARNING",
+                "function": "列出需要核对的事项；不陈述未经支持的体验、对比或参数结论",
+                "needs": [],
+                "position": {
+                  "start": 39,
+                  "end": 59,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "78d041172f09a9c35baf36c98ab0d256a0ee441a5865742a7a94740e89d10833",
+                "adaptation": "replace_with_checklist"
+              },
+              {
+                "slot_id": "s4",
+                "role": "WARNING",
+                "function": "列出需要核对的事项；不陈述未经支持的体验、对比或参数结论",
+                "needs": [],
+                "position": {
+                  "start": 61,
+                  "end": 85,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "33b022ca6e5d4790f20f796793f0262c524da85f29c6eba03b0641c53892d6f4",
+                "adaptation": "replace_with_checklist"
+              },
+              {
+                "slot_id": "s5",
+                "role": "CONTEXT",
+                "function": "交代当前任务的背景与适用范围",
+                "needs": [],
+                "position": {
+                  "start": 87,
+                  "end": 109,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "f694fb046511793f9fdecb277f496145775e48b859a2c2be288731c7ee7a8af1",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s6",
+                "role": "CONTEXT",
+                "function": "交代当前任务的背景与适用范围",
+                "needs": [],
+                "position": {
+                  "start": 111,
+                  "end": 134,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "29b65151970b6a5520a0183f2908df50bc4747e1b082a36579eb59c3fc0a719f",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s7",
+                "role": "CONTEXT",
+                "function": "交代当前任务的背景与适用范围",
+                "needs": [],
+                "position": {
+                  "start": 136,
+                  "end": 161,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "7f95d719dac56bd9055fa17804ce16952db8d728a0625c9b2a9961f639ffea3c",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s8",
+                "role": "WARNING",
+                "function": "说明限制和需要核对的条件",
+                "needs": [
+                  "limitations"
+                ],
+                "position": {
+                  "start": 163,
+                  "end": 188,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "e3c7a7ecce69b9bfba06961ddd429de0a252a69043cf0ed909f452d2d1e821ab",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s9",
+                "role": "CTA",
+                "function": "给出与正文一致的下一步建议",
+                "needs": [],
+                "position": {
+                  "start": 190,
+                  "end": 209,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "f3b9481fcf5f46a9c373510d648db69bee7e1eedc7236d78595bed9ff5af116b",
+                "adaptation": "retain"
+              }
+            ],
+            "adaptations": [
+              {
+                "slot_id": "s3",
+                "original_role": "SOLUTION",
+                "missing_fields": [
+                  "use_steps"
+                ],
+                "action": "replace_with_checklist",
+                "reason": "当前资料不具备该段所需证据，改为待核对事项并缩小表达范围。"
+              },
+              {
+                "slot_id": "s4",
+                "original_role": "EVIDENCE",
+                "missing_fields": [
+                  "comparison_specs"
+                ],
+                "action": "replace_with_checklist",
+                "reason": "当前资料不具备该段所需证据，改为待核对事项并缩小表达范围。"
+              }
+            ],
+            "fallback": false
+          }
+        },
+        "creation_classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "creation_retrieval": {
+          "methods": [],
+          "examples": [
+            {
+              "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+              "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+              "version": 1,
+              "evidence_role": "expression_reference"
+            }
+          ],
+          "facts": [
+            {
+              "source_id": "user-material"
+            }
+          ],
+          "gaps": [
+            {
+              "code": "VECTOR_UNAVAILABLE",
+              "detail": "本地语义检索已关闭，使用 BM25",
+              "fallback": "bm25"
+            },
+            {
+              "code": "NO_MATCHING_METHODS",
+              "group": "methods",
+              "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+            }
+          ]
+        },
+        "web_research": {
+          "status": "not_requested",
+          "reads": [],
+          "limitation": "本任务没有实际执行联网调查，不能自称已查询官网或媒体。"
+        },
+        "branches": {
+          "audience": {
+            "data": {
+              "primary_audience": "小红书中小创作者及关注Mac mini接口配置的普通用户",
+              "sample_size": 0,
+              "confidence": "low",
+              "status": "needs_data",
+              "pain_points": [
+                "不清楚M4版接口位置分布",
+                "易混淆M4与M4 Pro雷雳版本",
+                "担心接口数量是否满足多外设需求"
+              ],
+              "content_opportunities": [
+                "明确区分正/背面接口类型与数量",
+                "强调型号专属规格（如仅M4 Pro配雷雳5）",
+                "用尺寸+布局帮助读者预判桌面布线空间"
+              ]
+            }
+          },
+          "research": {
+            "data": {
+              "core_gap": false,
+              "gaps": [],
+              "prohibited_claims": [
+                "kb:aab706a0-afc2-4270-9376-65693cac0c42：仅作开篇结构与信息分栏表达参考；不可移植其‘虚构场景’‘两种连接选项’等设定，本题事实无连接选项对比、无场景适配结论、无兼容性判断依据"
+              ]
+            }
+          }
+        },
+        "upstream": {
+          "strategy": {
+            "angle": "接口位置与规格的型号专属说明",
+            "reader": "小红书中小创作者及关注Mac mini外设连接的普通用户",
+            "promise": "明确2024款M4 Mac mini正/背面接口类型、数量及关键限制，不混淆M4 Pro",
+            "tone": "清楚自然克制",
+            "assumptions": [
+              "读者已知雷雳4/USB-C基础功能",
+              "读者需区分M4与M4 Pro接口差异",
+              "读者关注多设备直连可行性"
+            ],
+            "cta": "用前请核对你的设备接口协议版本"
+          },
+          "hook": "你的显示器带雷雳4输入？先确认它连的是Mac mini背面——2024款M4版只有三个雷雳4口，不支持雷雳5（那是M4 Pro的）。"
+        },
+        "material_policy": "available_only",
+        "material_policy_version": "available-only-v1",
+        "operations": {
+          "platform": "xiaohongshu",
+          "account": "我的账号",
+          "account_id": "[已隐去]",
+          "hypothesis_id": null,
+          "profile": {
+            "id": "5285e961-e866-5533-b51e-87cd6014586e",
+            "name": "我的账号",
+            "platform": "xiaohongshu",
+            "aliases": [
+              "我的账号"
+            ],
+            "revision": 1,
+            "profile": {
+              "positioning": "",
+              "audience": "",
+              "tone": "",
+              "pillars": "",
+              "goal": "",
+              "resources": "",
+              "banned": "",
+              "weekly_frequency": 3
+            },
+            "revisions": []
+          },
+          "trend": null,
+          "memories": [],
+          "active_hypothesis": null,
+          "experiment_memory": [],
+          "history": [],
+          "metrics": [],
+          "competitors": [],
+          "preferences": []
+        }
+      },
+      "output": {
+        "candidates": [
+          "M4 Mac mini背面3雷雳4口",
+          "正面2USB-C+耳机孔，M4专属",
+          "别连错！M4只有雷雳4，无5",
+          "Mac mini M4接口位置图解"
+        ],
+        "selected": "M4 Mac mini背面3雷雳4口",
+        "note": "精准锚定核心差异点（M4专属雷雳4）、数量明确、位置清晰，16字符内，符合小红书标题高信息密度要求。",
+        "reasons": [
+          "账号匹配：保留品牌+型号结构；具体性中等——‘背面’+‘3’+‘雷雳4’三要素齐全；同质化较低，但‘接口全看懂’在小红书泛滥，削弱辨识度。",
+          "账号匹配：含关键部件（USB-C/耳机孔）和限定词（M4专属）；具体性中等——正面接口类型与数量明确，但未突出用户最易混淆的‘是否支持视频输出’等未证实功能，留白稳妥；同质化中等。",
+          "账号匹配：以警示语气切入，呼应读者常见误判（雷雳5）；具体性高——‘只有雷雳4，无5’直接引用F5对比逻辑；同质化低，但字符占18（含标点），逼近上限，且‘别连错’稍带主观引导，略弱于纯陈述。",
+          "账号匹配：‘Mac mini M4’为小红书搜索高频组合；具体性弱——‘位置图解’暗示有图，但本任务无图素材，承诺超界；同质化最高，‘图解’类标题过载，且未体现M4与M4 Pro关键区分。"
+        ]
+      },
+      "duration_ms": 12933,
+      "model_calls": 1,
+      "tokens": 5777,
+      "cost": null,
+      "call_id": "a386c669-e638-43db-b356-d441652d351a",
+      "tools": [
+        "knowledge_snapshot"
+      ],
+      "memory": "读取本任务的账号与证据快照",
+      "output_normalizations": [
+        {
+          "kind": "bounded_title_candidates",
+          "original_count": 5,
+          "kept_indices": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "selected_index": 1,
+          "rejected_indices": [
+            0
+          ],
+          "rejected_lengths": [
+            21
+          ],
+          "original_selected": "M4 Mac mini背面3雷雳4口",
+          "used_selected": "M4 Mac mini背面3雷雳4口",
+          "policy": "retain existing compliant titles and aligned reasons; at most five, no text rewriting or fabricated padding"
+        }
+      ]
+    },
+    {
+      "id": "a250b59e-bb34-4a5d-aa1a-4826bcf0429c",
+      "agent": "content",
+      "stage": "body",
+      "mode": "live",
+      "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07",
+      "input": {
+        "brief": {
+          "topic": "2024款Mac mini M4桌面接口介绍",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "tone": "清楚自然克制",
+          "allow_hypothesis": false
+        },
+        "materials": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象是Apple在2024年10月29日新闻稿中介绍的2024款Mac mini，本文只讨论M4版本。\nF2：该代Mac mini机身底部为边长12.7厘米的正方形。\nF3：M4版本有10核中央处理器和10核图形处理器，统一内存从16GB起。\nF4：机身正面提供两个支持USB 3的USB-C口和耳机插孔。\nF5：M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。\n【完整限制】本材料没有本次作者的实测、当前售价、购买渠道库存或2026年最新在售代际核验。不可把2024年首发价格写成今天价格，不可把厂家性能宣传转成作者亲测，不补写未提供的机身高度、显示器兼容结论或所有场景的性能保证。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          }
+        ],
+        "current_date": "2026-11-03",
+        "date_timezone": "Asia/Shanghai",
+        "retrieved_references": [
+          {
+            "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+            "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+            "version": 1,
+            "url": "",
+            "evidence_role": "expression_reference"
+          }
+        ],
+        "creation_plan": {
+          "scope": "只借鉴段落功能；内容来自当前事实；无依据时收窄。规划覆盖不等于成稿覆盖。",
+          "active_modules": {
+            "coverage": true,
+            "structure": true
+          },
+          "requirements": [
+            {
+              "id": "r1",
+              "question": "我的显示器带雷雳4输入，能直连2024款M4 Mac mini背面接口吗？",
+              "weight": 3,
+              "origin": "model_suggested_reader_need"
+            },
+            {
+              "id": "r2",
+              "question": "正面两个USB-C口是否支持视频输出或充电？",
+              "weight": 3,
+              "origin": "model_suggested_reader_need"
+            },
+            {
+              "id": "r3",
+              "question": "三个雷雳4接口能否同时接显示器、硬盘和扩展坞？",
+              "weight": 2,
+              "origin": "model_suggested_reader_need"
+            },
+            {
+              "id": "r4",
+              "question": "耳机孔是否支持模拟麦克风输入？",
+              "weight": 2,
+              "origin": "model_suggested_reader_need"
+            },
+            {
+              "id": "r5",
+              "question": "统一内存16GB起，是否影响外接设备识别速度？",
+              "weight": 1,
+              "origin": "model_suggested_reader_need"
+            }
+          ],
+          "selected_modules": [
+            {
+              "id": "m1",
+              "title": "正面接口：两个USB-C（USB 3）+ 耳机孔",
+              "covers": [
+                "r2",
+                "r4"
+              ],
+              "length": 51,
+              "source_ids": [
+                "user-material"
+              ],
+              "quote": "F4：机身正面提供两个支持USB 3的USB-C口和耳机插孔。",
+              "supported": true,
+              "support_scope": "quotation_location_only",
+              "statement_type": "assertion"
+            },
+            {
+              "id": "m2",
+              "title": "背面接口：三个雷雳4端口（仅M4版）",
+              "covers": [
+                "r1",
+                "r3"
+              ],
+              "length": 60,
+              "source_ids": [
+                "user-material"
+              ],
+              "quote": "F5：M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。",
+              "supported": true,
+              "support_scope": "quotation_location_only",
+              "statement_type": "assertion"
+            }
+          ],
+          "uncovered_requirement_ids": [
+            "r5"
+          ],
+          "budget": 300.0,
+          "structure": {
+            "selected_profile_id": "structure:53174b97d137afd03e466f58",
+            "slots": [
+              {
+                "slot_id": "s1",
+                "role": "HOOK",
+                "function": "引出当前任务的阅读动机",
+                "needs": [],
+                "position": {
+                  "start": 0,
+                  "end": 27,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "18298fef0d8e7278fed1364ca549cf05f918ae40e69195ba7f54c0927ac9415b",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s2",
+                "role": "CONTEXT",
+                "function": "交代当前任务的背景与适用范围",
+                "needs": [],
+                "position": {
+                  "start": 27,
+                  "end": 37,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "52882a04c340b81cc381475648a8b3f60bf878e34177fc071de161a9d458a8eb",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s3",
+                "role": "WARNING",
+                "function": "列出需要核对的事项；不陈述未经支持的体验、对比或参数结论",
+                "needs": [],
+                "position": {
+                  "start": 39,
+                  "end": 59,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "78d041172f09a9c35baf36c98ab0d256a0ee441a5865742a7a94740e89d10833",
+                "adaptation": "replace_with_checklist"
+              },
+              {
+                "slot_id": "s4",
+                "role": "WARNING",
+                "function": "列出需要核对的事项；不陈述未经支持的体验、对比或参数结论",
+                "needs": [],
+                "position": {
+                  "start": 61,
+                  "end": 85,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "33b022ca6e5d4790f20f796793f0262c524da85f29c6eba03b0641c53892d6f4",
+                "adaptation": "replace_with_checklist"
+              },
+              {
+                "slot_id": "s5",
+                "role": "CONTEXT",
+                "function": "交代当前任务的背景与适用范围",
+                "needs": [],
+                "position": {
+                  "start": 87,
+                  "end": 109,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "f694fb046511793f9fdecb277f496145775e48b859a2c2be288731c7ee7a8af1",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s6",
+                "role": "CONTEXT",
+                "function": "交代当前任务的背景与适用范围",
+                "needs": [],
+                "position": {
+                  "start": 111,
+                  "end": 134,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "29b65151970b6a5520a0183f2908df50bc4747e1b082a36579eb59c3fc0a719f",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s7",
+                "role": "CONTEXT",
+                "function": "交代当前任务的背景与适用范围",
+                "needs": [],
+                "position": {
+                  "start": 136,
+                  "end": 161,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "7f95d719dac56bd9055fa17804ce16952db8d728a0625c9b2a9961f639ffea3c",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s8",
+                "role": "WARNING",
+                "function": "说明限制和需要核对的条件",
+                "needs": [
+                  "limitations"
+                ],
+                "position": {
+                  "start": 163,
+                  "end": 188,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "e3c7a7ecce69b9bfba06961ddd429de0a252a69043cf0ed909f452d2d1e821ab",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s9",
+                "role": "CTA",
+                "function": "给出与正文一致的下一步建议",
+                "needs": [],
+                "position": {
+                  "start": 190,
+                  "end": 209,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "f3b9481fcf5f46a9c373510d648db69bee7e1eedc7236d78595bed9ff5af116b",
+                "adaptation": "retain"
+              }
+            ],
+            "adaptations": [
+              {
+                "slot_id": "s3",
+                "original_role": "SOLUTION",
+                "missing_fields": [
+                  "use_steps"
+                ],
+                "action": "replace_with_checklist",
+                "reason": "当前资料不具备该段所需证据，改为待核对事项并缩小表达范围。"
+              },
+              {
+                "slot_id": "s4",
+                "original_role": "EVIDENCE",
+                "missing_fields": [
+                  "comparison_specs"
+                ],
+                "action": "replace_with_checklist",
+                "reason": "当前资料不具备该段所需证据，改为待核对事项并缩小表达范围。"
+              }
+            ],
+            "fallback": false
+          }
+        },
+        "creation_classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "creation_retrieval": {
+          "methods": [],
+          "examples": [
+            {
+              "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+              "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+              "version": 1,
+              "evidence_role": "expression_reference"
+            }
+          ],
+          "facts": [
+            {
+              "source_id": "user-material"
+            }
+          ],
+          "gaps": [
+            {
+              "code": "VECTOR_UNAVAILABLE",
+              "detail": "本地语义检索已关闭，使用 BM25",
+              "fallback": "bm25"
+            },
+            {
+              "code": "NO_MATCHING_METHODS",
+              "group": "methods",
+              "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+            }
+          ]
+        },
+        "web_research": {
+          "status": "not_requested",
+          "reads": [],
+          "limitation": "本任务没有实际执行联网调查，不能自称已查询官网或媒体。"
+        },
+        "branches": {
+          "audience": {
+            "data": {
+              "primary_audience": "小红书中小创作者及关注Mac mini接口配置的普通用户",
+              "sample_size": 0,
+              "confidence": "low",
+              "status": "needs_data",
+              "pain_points": [
+                "不清楚M4版接口位置分布",
+                "易混淆M4与M4 Pro雷雳版本",
+                "担心接口数量是否满足多外设需求"
+              ],
+              "content_opportunities": [
+                "明确区分正/背面接口类型与数量",
+                "强调型号专属规格（如仅M4 Pro配雷雳5）",
+                "用尺寸+布局帮助读者预判桌面布线空间"
+              ]
+            }
+          },
+          "research": {
+            "data": {
+              "core_gap": false,
+              "gaps": [],
+              "prohibited_claims": [
+                "kb:aab706a0-afc2-4270-9376-65693cac0c42：仅作开篇结构与信息分栏表达参考；不可移植其‘虚构场景’‘两种连接选项’等设定，本题事实无连接选项对比、无场景适配结论、无兼容性判断依据"
+              ]
+            }
+          }
+        },
+        "upstream": {
+          "strategy": {
+            "angle": "接口位置与规格的型号专属说明",
+            "reader": "小红书中小创作者及关注Mac mini外设连接的普通用户",
+            "promise": "明确2024款M4 Mac mini正/背面接口类型、数量及关键限制，不混淆M4 Pro",
+            "tone": "清楚自然克制",
+            "assumptions": [
+              "读者已知雷雳4/USB-C基础功能",
+              "读者需区分M4与M4 Pro接口差异",
+              "读者关注多设备直连可行性"
+            ],
+            "cta": "用前请核对你的设备接口协议版本"
+          },
+          "outline": [
+            "正面接口：两个USB 3协议的USB-C口+耳机孔，不支持视频输出或充电",
+            "背面接口：M4版专属三个雷雳4端口，非雷雳5（M4 Pro才配）",
+            "尺寸参考：机身底面为12.7cm正方形，便于预估桌面布线空间",
+            "关键提醒：接口功能需匹配外设协议；雷雳4直连显示器可行，但多设备共用需查扩展坞兼容性"
+          ],
+          "hook": "你的显示器带雷雳4输入？先确认它连的是Mac mini背面——2024款M4版只有三个雷雳4口，不支持雷雳5（那是M4 Pro的）。",
+          "title": {
+            "candidates": [
+              "M4 Mac mini背面3雷雳4口",
+              "正面2USB-C+耳机孔，M4专属",
+              "别连错！M4只有雷雳4，无5",
+              "Mac mini M4接口位置图解"
+            ],
+            "selected": "M4 Mac mini背面3雷雳4口",
+            "note": "精准锚定核心差异点（M4专属雷雳4）、数量明确、位置清晰，16字符内，符合小红书标题高信息密度要求。",
+            "reasons": [
+              "账号匹配：保留品牌+型号结构；具体性中等——‘背面’+‘3’+‘雷雳4’三要素齐全；同质化较低，但‘接口全看懂’在小红书泛滥，削弱辨识度。",
+              "账号匹配：含关键部件（USB-C/耳机孔）和限定词（M4专属）；具体性中等——正面接口类型与数量明确，但未突出用户最易混淆的‘是否支持视频输出’等未证实功能，留白稳妥；同质化中等。",
+              "账号匹配：以警示语气切入，呼应读者常见误判（雷雳5）；具体性高——‘只有雷雳4，无5’直接引用F5对比逻辑；同质化低，但字符占18（含标点），逼近上限，且‘别连错’稍带主观引导，略弱于纯陈述。",
+              "账号匹配：‘Mac mini M4’为小红书搜索高频组合；具体性弱——‘位置图解’暗示有图，但本任务无图素材，承诺超界；同质化最高，‘图解’类标题过载，且未体现M4与M4 Pro关键区分。"
+            ]
+          }
+        },
+        "material_policy": "available_only",
+        "material_policy_version": "available-only-v1",
+        "operations": {
+          "platform": "xiaohongshu",
+          "account": "我的账号",
+          "account_id": "[已隐去]",
+          "hypothesis_id": null,
+          "profile": {
+            "id": "5285e961-e866-5533-b51e-87cd6014586e",
+            "name": "我的账号",
+            "platform": "xiaohongshu",
+            "aliases": [
+              "我的账号"
+            ],
+            "revision": 1,
+            "profile": {
+              "positioning": "",
+              "audience": "",
+              "tone": "",
+              "pillars": "",
+              "goal": "",
+              "resources": "",
+              "banned": "",
+              "weekly_frequency": 3
+            },
+            "revisions": []
+          },
+          "trend": null,
+          "memories": [],
+          "active_hypothesis": null,
+          "experiment_memory": [],
+          "history": [],
+          "metrics": [],
+          "competitors": [],
+          "preferences": []
+        }
+      },
+      "output": {
+        "selected_title": "M4 Mac mini背面3雷雳4口",
+        "body": "你的显示器带雷雳4输入？可直连2024款Mac mini M4版背面——三个雷雳4端口，专为M4版本配置（M4 Pro才用雷雳5）。正面则有两个USB 3协议的USB-C口和一个耳机孔，不支持视频输出或充电。机身底面为12.7cm正方形，方便预估桌面布线空间。多设备共用需确认扩展坞是否兼容雷雳4协议。",
+        "cta": "连接前，请核对你的外设接口协议版本",
+        "tags": [
+          "Macmini",
+          "M4",
+          "雷雳4",
+          "USB-C",
+          "小红书科技",
+          "苹果配件",
+          "桌面布线",
+          "Mac接口"
+        ]
+      },
+      "duration_ms": 12972,
+      "model_calls": 1,
+      "tokens": 5781,
+      "cost": null,
+      "call_id": "de421d76-1954-40e0-86f1-edf9db4b9167",
+      "tools": [
+        "knowledge_snapshot"
+      ],
+      "memory": "读取本任务的账号与证据快照"
+    },
+    {
+      "id": "88397761-4eba-4e0d-95d6-fd50e98dbdf3",
+      "agent": "reviewer",
+      "stage": "review",
+      "mode": "live",
+      "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07",
+      "input": {
+        "brief": {
+          "topic": "2024款Mac mini M4桌面接口介绍",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "tone": "清楚自然克制",
+          "allow_hypothesis": false
+        },
+        "materials": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象是Apple在2024年10月29日新闻稿中介绍的2024款Mac mini，本文只讨论M4版本。\nF2：该代Mac mini机身底部为边长12.7厘米的正方形。\nF3：M4版本有10核中央处理器和10核图形处理器，统一内存从16GB起。\nF4：机身正面提供两个支持USB 3的USB-C口和耳机插孔。\nF5：M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。\n【完整限制】本材料没有本次作者的实测、当前售价、购买渠道库存或2026年最新在售代际核验。不可把2024年首发价格写成今天价格，不可把厂家性能宣传转成作者亲测，不补写未提供的机身高度、显示器兼容结论或所有场景的性能保证。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          }
+        ],
+        "current_date": "2026-11-03",
+        "date_timezone": "Asia/Shanghai",
+        "retrieved_references": [
+          {
+            "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+            "title": "虚构选购结构参考-REAL-D01",
+            "url": "",
+            "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          }
+        ],
+        "creation_plan": {
+          "scope": "只借鉴段落功能；内容来自当前事实；无依据时收窄。规划覆盖不等于成稿覆盖。",
+          "active_modules": {
+            "coverage": true,
+            "structure": true
+          },
+          "requirements": [
+            {
+              "id": "r1",
+              "question": "我的显示器带雷雳4输入，能直连2024款M4 Mac mini背面接口吗？",
+              "weight": 3,
+              "origin": "model_suggested_reader_need"
+            },
+            {
+              "id": "r2",
+              "question": "正面两个USB-C口是否支持视频输出或充电？",
+              "weight": 3,
+              "origin": "model_suggested_reader_need"
+            },
+            {
+              "id": "r3",
+              "question": "三个雷雳4接口能否同时接显示器、硬盘和扩展坞？",
+              "weight": 2,
+              "origin": "model_suggested_reader_need"
+            },
+            {
+              "id": "r4",
+              "question": "耳机孔是否支持模拟麦克风输入？",
+              "weight": 2,
+              "origin": "model_suggested_reader_need"
+            },
+            {
+              "id": "r5",
+              "question": "统一内存16GB起，是否影响外接设备识别速度？",
+              "weight": 1,
+              "origin": "model_suggested_reader_need"
+            }
+          ],
+          "selected_modules": [
+            {
+              "id": "m1",
+              "title": "正面接口：两个USB-C（USB 3）+ 耳机孔",
+              "covers": [
+                "r2",
+                "r4"
+              ],
+              "length": 51,
+              "source_ids": [
+                "user-material"
+              ],
+              "quote": "F4：机身正面提供两个支持USB 3的USB-C口和耳机插孔。",
+              "supported": true,
+              "support_scope": "quotation_location_only",
+              "statement_type": "assertion"
+            },
+            {
+              "id": "m2",
+              "title": "背面接口：三个雷雳4端口（仅M4版）",
+              "covers": [
+                "r1",
+                "r3"
+              ],
+              "length": 60,
+              "source_ids": [
+                "user-material"
+              ],
+              "quote": "F5：M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。",
+              "supported": true,
+              "support_scope": "quotation_location_only",
+              "statement_type": "assertion"
+            }
+          ],
+          "uncovered_requirement_ids": [
+            "r5"
+          ],
+          "budget": 300.0,
+          "structure": {
+            "selected_profile_id": "structure:53174b97d137afd03e466f58",
+            "slots": [
+              {
+                "slot_id": "s1",
+                "role": "HOOK",
+                "function": "引出当前任务的阅读动机",
+                "needs": [],
+                "position": {
+                  "start": 0,
+                  "end": 27,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "18298fef0d8e7278fed1364ca549cf05f918ae40e69195ba7f54c0927ac9415b",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s2",
+                "role": "CONTEXT",
+                "function": "交代当前任务的背景与适用范围",
+                "needs": [],
+                "position": {
+                  "start": 27,
+                  "end": 37,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "52882a04c340b81cc381475648a8b3f60bf878e34177fc071de161a9d458a8eb",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s3",
+                "role": "WARNING",
+                "function": "列出需要核对的事项；不陈述未经支持的体验、对比或参数结论",
+                "needs": [],
+                "position": {
+                  "start": 39,
+                  "end": 59,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "78d041172f09a9c35baf36c98ab0d256a0ee441a5865742a7a94740e89d10833",
+                "adaptation": "replace_with_checklist"
+              },
+              {
+                "slot_id": "s4",
+                "role": "WARNING",
+                "function": "列出需要核对的事项；不陈述未经支持的体验、对比或参数结论",
+                "needs": [],
+                "position": {
+                  "start": 61,
+                  "end": 85,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "33b022ca6e5d4790f20f796793f0262c524da85f29c6eba03b0641c53892d6f4",
+                "adaptation": "replace_with_checklist"
+              },
+              {
+                "slot_id": "s5",
+                "role": "CONTEXT",
+                "function": "交代当前任务的背景与适用范围",
+                "needs": [],
+                "position": {
+                  "start": 87,
+                  "end": 109,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "f694fb046511793f9fdecb277f496145775e48b859a2c2be288731c7ee7a8af1",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s6",
+                "role": "CONTEXT",
+                "function": "交代当前任务的背景与适用范围",
+                "needs": [],
+                "position": {
+                  "start": 111,
+                  "end": 134,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "29b65151970b6a5520a0183f2908df50bc4747e1b082a36579eb59c3fc0a719f",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s7",
+                "role": "CONTEXT",
+                "function": "交代当前任务的背景与适用范围",
+                "needs": [],
+                "position": {
+                  "start": 136,
+                  "end": 161,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "7f95d719dac56bd9055fa17804ce16952db8d728a0625c9b2a9961f639ffea3c",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s8",
+                "role": "WARNING",
+                "function": "说明限制和需要核对的条件",
+                "needs": [
+                  "limitations"
+                ],
+                "position": {
+                  "start": 163,
+                  "end": 188,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "e3c7a7ecce69b9bfba06961ddd429de0a252a69043cf0ed909f452d2d1e821ab",
+                "adaptation": "retain"
+              },
+              {
+                "slot_id": "s9",
+                "role": "CTA",
+                "function": "给出与正文一致的下一步建议",
+                "needs": [],
+                "position": {
+                  "start": 190,
+                  "end": 209,
+                  "unit": "unicode_codepoint"
+                },
+                "segment_sha256": "f3b9481fcf5f46a9c373510d648db69bee7e1eedc7236d78595bed9ff5af116b",
+                "adaptation": "retain"
+              }
+            ],
+            "adaptations": [
+              {
+                "slot_id": "s3",
+                "original_role": "SOLUTION",
+                "missing_fields": [
+                  "use_steps"
+                ],
+                "action": "replace_with_checklist",
+                "reason": "当前资料不具备该段所需证据，改为待核对事项并缩小表达范围。"
+              },
+              {
+                "slot_id": "s4",
+                "original_role": "EVIDENCE",
+                "missing_fields": [
+                  "comparison_specs"
+                ],
+                "action": "replace_with_checklist",
+                "reason": "当前资料不具备该段所需证据，改为待核对事项并缩小表达范围。"
+              }
+            ],
+            "fallback": false
+          }
+        },
+        "creation_classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "creation_retrieval": {
+          "methods": [],
+          "examples": [
+            {
+              "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+              "source_type": "text",
+              "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是桌面连接。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-D01",
+              "url": "",
+              "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "digital"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            }
+          ],
+          "facts": [
+            {
+              "source_id": "user-material"
+            }
+          ],
+          "gaps": [
+            {
+              "code": "VECTOR_UNAVAILABLE",
+              "detail": "本地语义检索已关闭，使用 BM25",
+              "fallback": "bm25"
+            },
+            {
+              "code": "NO_MATCHING_METHODS",
+              "group": "methods",
+              "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+            }
+          ]
+        },
+        "web_research": {
+          "status": "not_requested",
+          "reads": [],
+          "limitation": "本任务没有实际执行联网调查，不能自称已查询官网或媒体。"
+        },
+        "branches": {
+          "audience": {
+            "data": {
+              "primary_audience": "小红书中小创作者及关注Mac mini接口配置的普通用户",
+              "sample_size": 0,
+              "confidence": "low",
+              "status": "needs_data"
+            }
+          },
+          "research": {
+            "data": {
+              "core_gap": false,
+              "gaps": [],
+              "prohibited_claims": [
+                "kb:aab706a0-afc2-4270-9376-65693cac0c42：仅作开篇结构与信息分栏表达参考；不可移植其‘虚构场景’‘两种连接选项’等设定，本题事实无连接选项对比、无场景适配结论、无兼容性判断依据"
+              ]
+            }
+          }
+        },
+        "upstream": {},
+        "draft": {
+          "selected_title": "M4 Mac mini背面3雷雳4口",
+          "body": "你的显示器带雷雳4输入？可直连2024款Mac mini M4版背面——三个雷雳4端口，专为M4版本配置（M4 Pro才用雷雳5）。正面则有两个USB 3协议的USB-C口和一个耳机孔，不支持视频输出或充电。机身底面为12.7cm正方形，方便预估桌面布线空间。多设备共用需确认扩展坞是否兼容雷雳4协议。",
+          "cta": "连接前，请核对你的外设接口协议版本",
+          "tags": [
+            "Macmini",
+            "M4",
+            "雷雳4",
+            "USB-C",
+            "小红书科技",
+            "苹果配件",
+            "桌面布线",
+            "Mac接口"
+          ]
+        },
+        "previous_review": null,
+        "required_previous_issue_ids": [],
+        "draft_excerpt_candidates": [
+          {
+            "location": "selected_title",
+            "text": "M4 Mac mini背面3雷雳4口"
+          },
+          {
+            "location": "body",
+            "text": "你的显示器带雷雳4输入？"
+          },
+          {
+            "location": "body",
+            "text": "可直连2024款Mac mini M4版背面——三个雷雳4端口，专为M4版本配置（M4 Pro才用雷雳5）。"
+          },
+          {
+            "location": "body",
+            "text": "正面则有两个USB 3协议的USB-C口和一个耳机孔，不支持视频输出或充电。"
+          },
+          {
+            "location": "body",
+            "text": "机身底面为12.7cm正方形，方便预估桌面布线空间。"
+          },
+          {
+            "location": "body",
+            "text": "多设备共用需确认扩展坞是否兼容雷雳4协议。"
+          },
+          {
+            "location": "cta",
+            "text": "连接前，请核对你的外设接口协议版本"
+          },
+          {
+            "location": "tags",
+            "text": "Macmini"
+          },
+          {
+            "location": "tags",
+            "text": "M4"
+          },
+          {
+            "location": "tags",
+            "text": "雷雳4"
+          },
+          {
+            "location": "tags",
+            "text": "USB-C"
+          },
+          {
+            "location": "tags",
+            "text": "小红书科技"
+          },
+          {
+            "location": "tags",
+            "text": "苹果配件"
+          },
+          {
+            "location": "tags",
+            "text": "桌面布线"
+          },
+          {
+            "location": "tags",
+            "text": "Mac接口"
+          }
+        ],
+        "material_policy": "available_only",
+        "material_policy_version": "available-only-v1",
+        "operations": {
+          "platform": "xiaohongshu",
+          "account": "我的账号",
+          "account_id": "[已隐去]",
+          "hypothesis_id": null,
+          "profile": {
+            "id": "5285e961-e866-5533-b51e-87cd6014586e",
+            "name": "我的账号",
+            "platform": "xiaohongshu",
+            "aliases": [
+              "我的账号"
+            ],
+            "revision": 1,
+            "profile": {
+              "positioning": "",
+              "audience": "",
+              "tone": "",
+              "pillars": "",
+              "goal": "",
+              "resources": "",
+              "banned": "",
+              "weekly_frequency": 3
+            },
+            "revisions": []
+          },
+          "trend": null,
+          "memories": [],
+          "active_hypothesis": null,
+          "experiment_memory": [],
+          "history": [],
+          "metrics": [],
+          "competitors": [],
+          "preferences": []
+        }
+      },
+      "output": {
+        "decision": "needs_human",
+        "next_action": "request_human",
+        "checks": [
+          {
+            "name": "brief_fit",
+            "result": "unknown",
+            "basis": "已收到的模型审核未通过校验；本项没有可接受的审核结论，需人工检查。"
+          },
+          {
+            "name": "audience_fit",
+            "result": "unknown",
+            "basis": "已收到的模型审核未通过校验；本项没有可接受的审核结论，需人工检查。"
+          },
+          {
+            "name": "usefulness_and_readability",
+            "result": "unknown",
+            "basis": "已收到的模型审核未通过校验；本项没有可接受的审核结论，需人工检查。"
+          },
+          {
+            "name": "title_body_alignment",
+            "result": "unknown",
+            "basis": "已收到的模型审核未通过校验；本项没有可接受的审核结论，需人工检查。"
+          },
+          {
+            "name": "evidence_integrity",
+            "result": "unknown",
+            "basis": "已收到的模型审核未通过校验；本项没有可接受的审核结论，需人工检查。"
+          },
+          {
+            "name": "experience_authenticity",
+            "result": "unknown",
+            "basis": "已收到的模型审核未通过校验；本项没有可接受的审核结论，需人工检查。"
+          },
+          {
+            "name": "originality_risk",
+            "result": "unknown",
+            "basis": "已收到的模型审核未通过校验；本项没有可接受的审核结论，需人工检查。"
+          },
+          {
+            "name": "privacy_and_policy",
+            "result": "unknown",
+            "basis": "已收到的模型审核未通过校验；本项没有可接受的审核结论，需人工检查。"
+          }
+        ],
+        "issues": [
+          {
+            "issue_id": "review-handoff-0ad2f7fd-02fc-4753-9079-5afff150f0df",
+            "severity": "major",
+            "state": "open",
+            "location": "body",
+            "excerpt": "模型未能定位陈述（请对照完整稿件）",
+            "reason": "审核引用无法匹配当前稿件",
+            "suggestion": "请人工核对完整稿件；本条没有有效的模型稿件定位，不表示正文某一具体句已被核实。"
+          }
+        ],
+        "previous_issue_results": [],
+        "limitations": [
+          "系统保守交接：已收到的审核未通过校验（审核引用无法匹配当前稿件）。原始响应保留在调用审计；此报告不代表模型已完成审核。",
+          "无效审核中的引用与定位未作为有效证据采用；系统没有补写或近似匹配来源、稿件文字。",
+          "部分模型摘录未在当前稿件中原样找到；原始摘录仅保留于调用审计，不冒充有效的稿件定位。",
+          "实际提供的参考 source_id：kb:aab706a0-afc2-4270-9376-65693cac0c42；仅记录输入来源，未证明模型采用或完成比对，借鉴要点及本题改写差异需人工核对。",
+          "来源匹配只验证引用存在，不能证明素材真实或检查完全；最终由用户确认。"
+        ],
+        "human_questions": [
+          "请逐项核对当前稿件与实际来源、原创性及既有问题；补充资料或保存修改后重新审核。"
+        ],
+        "claim_map": [],
+        "recovery_kind": "conservative_handoff",
+        "ref": "155145b6-08e9-4c39-8b22-96efb325529b@1",
+        "draft_ref": "3c1b03d1-55aa-4234-8f68-e508d042bb00@1",
+        "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07",
+        "content_hash": "1165542506b29371de8ebdc23a29f05bfcbfdfd2776e8af687438d20fdd96696",
+        "policy_ref": "text-review@1",
+        "mode": "live",
+        "reference_records": {
+          "classification": {
+            "domains": [
+              "digital"
+            ],
+            "channel": "xiaohongshu",
+            "format": "note",
+            "word_count": 300,
+            "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+            "origin": "user",
+            "ambiguities": []
+          },
+          "groups": {
+            "methods": [],
+            "examples": [
+              "kb:aab706a0-afc2-4270-9376-65693cac0c42"
+            ],
+            "facts": [
+              "user-material"
+            ]
+          },
+          "example_gap": false,
+          "adoption_notes": [
+            "kb:aab706a0-afc2-4270-9376-65693cac0c42：借鉴其分栏式信息结构与短句节奏；本题仅使用F4/F5原文事实，不移植其虚构连接场景或兼容性结论。"
+          ],
+          "claim_map": [],
+          "scope": "仅验证逐字引文和本任务事实组；不等同独立真实性核验或全网原创证明"
+        }
+      },
+      "duration_ms": 35502,
+      "model_calls": 1,
+      "tokens": 7820,
+      "cost": null,
+      "call_id": "d1b42e1a-8a30-4098-9036-5f95688b8a54",
+      "tools": [
+        "knowledge_snapshot"
+      ],
+      "memory": "读取本任务的账号与证据快照"
+    }
+  ],
+  "reviews": [
+    {
+      "decision": "needs_human",
+      "next_action": "request_human",
+      "checks": [
+        {
+          "name": "brief_fit",
+          "result": "unknown",
+          "basis": "已收到的模型审核未通过校验；本项没有可接受的审核结论，需人工检查。"
+        },
+        {
+          "name": "audience_fit",
+          "result": "unknown",
+          "basis": "已收到的模型审核未通过校验；本项没有可接受的审核结论，需人工检查。"
+        },
+        {
+          "name": "usefulness_and_readability",
+          "result": "unknown",
+          "basis": "已收到的模型审核未通过校验；本项没有可接受的审核结论，需人工检查。"
+        },
+        {
+          "name": "title_body_alignment",
+          "result": "unknown",
+          "basis": "已收到的模型审核未通过校验；本项没有可接受的审核结论，需人工检查。"
+        },
+        {
+          "name": "evidence_integrity",
+          "result": "unknown",
+          "basis": "已收到的模型审核未通过校验；本项没有可接受的审核结论，需人工检查。"
+        },
+        {
+          "name": "experience_authenticity",
+          "result": "unknown",
+          "basis": "已收到的模型审核未通过校验；本项没有可接受的审核结论，需人工检查。"
+        },
+        {
+          "name": "originality_risk",
+          "result": "unknown",
+          "basis": "已收到的模型审核未通过校验；本项没有可接受的审核结论，需人工检查。"
+        },
+        {
+          "name": "privacy_and_policy",
+          "result": "unknown",
+          "basis": "已收到的模型审核未通过校验；本项没有可接受的审核结论，需人工检查。"
+        }
+      ],
+      "issues": [
+        {
+          "issue_id": "review-handoff-0ad2f7fd-02fc-4753-9079-5afff150f0df",
+          "severity": "major",
+          "state": "open",
+          "location": "body",
+          "excerpt": "模型未能定位陈述（请对照完整稿件）",
+          "reason": "审核引用无法匹配当前稿件",
+          "suggestion": "请人工核对完整稿件；本条没有有效的模型稿件定位，不表示正文某一具体句已被核实。"
+        }
+      ],
+      "previous_issue_results": [],
+      "limitations": [
+        "系统保守交接：已收到的审核未通过校验（审核引用无法匹配当前稿件）。原始响应保留在调用审计；此报告不代表模型已完成审核。",
+        "无效审核中的引用与定位未作为有效证据采用；系统没有补写或近似匹配来源、稿件文字。",
+        "部分模型摘录未在当前稿件中原样找到；原始摘录仅保留于调用审计，不冒充有效的稿件定位。",
+        "实际提供的参考 source_id：kb:aab706a0-afc2-4270-9376-65693cac0c42；仅记录输入来源，未证明模型采用或完成比对，借鉴要点及本题改写差异需人工核对。",
+        "来源匹配只验证引用存在，不能证明素材真实或检查完全；最终由用户确认。"
+      ],
+      "human_questions": [
+        "请逐项核对当前稿件与实际来源、原创性及既有问题；补充资料或保存修改后重新审核。"
+      ],
+      "claim_map": [],
+      "recovery_kind": "conservative_handoff",
+      "ref": "155145b6-08e9-4c39-8b22-96efb325529b@1",
+      "draft_ref": "3c1b03d1-55aa-4234-8f68-e508d042bb00@1",
+      "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07",
+      "content_hash": "1165542506b29371de8ebdc23a29f05bfcbfdfd2776e8af687438d20fdd96696",
+      "policy_ref": "text-review@1",
+      "mode": "live",
+      "reference_records": {
+        "classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "groups": {
+          "methods": [],
+          "examples": [
+            "kb:aab706a0-afc2-4270-9376-65693cac0c42"
+          ],
+          "facts": [
+            "user-material"
+          ]
+        },
+        "example_gap": false,
+        "adoption_notes": [
+          "kb:aab706a0-afc2-4270-9376-65693cac0c42：借鉴其分栏式信息结构与短句节奏；本题仅使用F4/F5原文事实，不移植其虚构连接场景或兼容性结论。"
+        ],
+        "claim_map": [],
+        "scope": "仅验证逐字引文和本任务事实组；不等同独立真实性核验或全网原创证明"
+      }
+    }
+  ],
+  "branches": {
+    "audience": {
+      "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07",
+      "data": {
+        "primary_audience": "小红书中小创作者及关注Mac mini接口配置的普通用户",
+        "basis": "kb:aab706a0-afc2-4270-9376-65693cac0c42：借鉴其分栏式结构与‘已知/待确认’提示逻辑，但仅用于组织本次官方公开信息；不移植虚构场景或兼容性结论。",
+        "pain_points": [
+          "不清楚M4版接口位置分布",
+          "易混淆M4与M4 Pro雷雳版本",
+          "担心接口数量是否满足多外设需求"
+        ],
+        "content_opportunities": [
+          "明确区分正/背面接口类型与数量",
+          "强调型号专属规格（如仅M4 Pro配雷雳5）",
+          "用尺寸+布局帮助读者预判桌面布线空间"
+        ],
+        "observations": [
+          {
+            "source_id": "user-material",
+            "quote": "F4：机身正面提供两个支持USB 3的USB-C口和耳机插孔。",
+            "interpretation": "正面接口为双USB-C（USB 3）+ 3.5mm耳机孔，无Thunderbolt标识，功能定位清晰。"
+          },
+          {
+            "source_id": "user-material",
+            "quote": "F5：M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。",
+            "interpretation": "M4版背面为三雷雳4（非5），该差异是型号关键识别点，需严格隔离表述。"
+          },
+          {
+            "source_id": "user-material",
+            "quote": "F2：该代Mac mini机身底部为边长12.7厘米的正方形。",
+            "interpretation": "正方形底座尺寸可辅助判断线缆理线空间，但无高度数据，无法推断竖放/横放稳定性。"
+          }
+        ],
+        "sample_size": 0,
+        "confidence": "low",
+        "status": "needs_data",
+        "reader_questions": [
+          {
+            "id": "q1",
+            "question": "我的显示器带雷雳4输入，能直连2024款M4 Mac mini背面接口吗？",
+            "priority": "high"
+          },
+          {
+            "id": "q2",
+            "question": "正面两个USB-C口是否支持视频输出或充电？",
+            "priority": "high"
+          },
+          {
+            "id": "q3",
+            "question": "三个雷雳4接口能否同时接显示器、硬盘和扩展坞？",
+            "priority": "medium"
+          },
+          {
+            "id": "q4",
+            "question": "耳机孔是否支持模拟麦克风输入？",
+            "priority": "medium"
+          },
+          {
+            "id": "q5",
+            "question": "统一内存16GB起，是否影响外接设备识别速度？",
+            "priority": "low"
+          }
+        ],
+        "account_context": {
+          "account_id": "[已隐去]",
+          "profile_revision": 1
+        },
+        "history_refs": [],
+        "competitor_observations": [],
+        "evidence_limit": "历史仅为描述性记录；偏好与传播效果分开，竞品观察未经独立核验。"
+      }
+    },
+    "research": {
+      "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07",
+      "data": {
+        "core_gap": false,
+        "gaps": [],
+        "facts": [
+          {
+            "source_id": "user-material",
+            "quote": "F1：对象是Apple在2024年10月29日新闻稿中介绍的2024款Mac mini，本文只讨论M4版本。"
+          },
+          {
+            "source_id": "user-material",
+            "quote": "F2：该代Mac mini机身底部为边长12.7厘米的正方形。"
+          },
+          {
+            "source_id": "user-material",
+            "quote": "F3：M4版本有10核中央处理器和10核图形处理器，统一内存从16GB起。"
+          },
+          {
+            "source_id": "user-material",
+            "quote": "F4：机身正面提供两个支持USB 3的USB-C口和耳机插孔。"
+          },
+          {
+            "source_id": "user-material",
+            "quote": "F5：M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。"
+          }
+        ],
+        "prohibited_claims": [
+          "kb:aab706a0-afc2-4270-9376-65693cac0c42：仅作开篇结构与信息分栏表达参考；不可移植其‘虚构场景’‘两种连接选项’等设定，本题事实无连接选项对比、无场景适配结论、无兼容性判断依据"
+        ],
+        "sources": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象是Apple在2024年10月29日新闻稿中介绍的2024款Mac mini，本文只讨论M4版本。\nF2：该代Mac mini机身底部为边长12.7厘米的正方形。\nF3：M4版本有10核中央处理器和10核图形处理器，统一内存从16GB起。\nF4：机身正面提供两个支持USB 3的USB-C口和耳机插孔。\nF5：M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。\n【完整限制】本材料没有本次作者的实测、当前售价、购买渠道库存或2026年最新在售代际核验。不可把2024年首发价格写成今天价格，不可把厂家性能宣传转成作者亲测，不补写未提供的机身高度、显示器兼容结论或所有场景的性能保证。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          },
+          {
+            "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+            "source_type": "text",
+            "text": "资料标签（非正文）：数码 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是桌面连接。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+            "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+            "page": 1,
+            "title": "虚构选购结构参考-REAL-D01",
+            "url": "",
+            "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+            "version": 1,
+            "location_type": "page",
+            "offset": 0,
+            "evidence_role": "expression_reference",
+            "content_kind": "text",
+            "source_scope": "current_account",
+            "case_ref": null,
+            "material_type": "example",
+            "classification": {
+              "domains": [
+                "digital"
+              ],
+              "channel": "xiaohongshu",
+              "format": "note",
+              "material_type": "example",
+              "origin": "user"
+            }
+          }
+        ],
+        "scope": "分析用户素材与检索到的原文快照；引用逐字校验，事实未独立核实",
+        "missing_facts": [],
+        "topic_card": {
+          "topic": "2024款Mac mini M4桌面接口介绍",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "why_now": "自主选题，暂无可核验的时效依据",
+          "evidence": [],
+          "account_fit": "账号定位尚待补充",
+          "risk": [
+            "kb:aab706a0-afc2-4270-9376-65693cac0c42：仅作开篇结构与信息分栏表达参考；不可移植其‘虚构场景’‘两种连接选项’等设定，本题事实无连接选项对比、无场景适配结论、无兼容性判断依据"
+          ],
+          "content_angles": [
+            "结合真实场景解释问题",
+            "整理可验证的尝试步骤"
+          ],
+          "limitation": "选题卡基于用户线索；没有自动抓取、热度统计或时效核实。"
+        }
+      }
+    }
+  },
+  "branch_errors": {},
+  "drafts": [
+    {
+      "ref": "3c1b03d1-55aa-4234-8f68-e508d042bb00@1",
+      "content": {
+        "selected_title": "M4 Mac mini背面3雷雳4口",
+        "body": "你的显示器带雷雳4输入？可直连2024款Mac mini M4版背面——三个雷雳4端口，专为M4版本配置（M4 Pro才用雷雳5）。正面则有两个USB 3协议的USB-C口和一个耳机孔，不支持视频输出或充电。机身底面为12.7cm正方形，方便预估桌面布线空间。多设备共用需确认扩展坞是否兼容雷雳4协议。",
+        "cta": "连接前，请核对你的外设接口协议版本",
+        "tags": [
+          "Macmini",
+          "M4",
+          "雷雳4",
+          "USB-C",
+          "小红书科技",
+          "苹果配件",
+          "桌面布线",
+          "Mac接口"
+        ]
+      },
+      "content_hash": "1165542506b29371de8ebdc23a29f05bfcbfdfd2776e8af687438d20fdd96696",
+      "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07",
+      "actor": "content"
+    }
+  ],
+  "review": {
+    "decision": "needs_human",
+    "next_action": "request_human",
+    "checks": [
+      {
+        "name": "brief_fit",
+        "result": "unknown",
+        "basis": "已收到的模型审核未通过校验；本项没有可接受的审核结论，需人工检查。"
+      },
+      {
+        "name": "audience_fit",
+        "result": "unknown",
+        "basis": "已收到的模型审核未通过校验；本项没有可接受的审核结论，需人工检查。"
+      },
+      {
+        "name": "usefulness_and_readability",
+        "result": "unknown",
+        "basis": "已收到的模型审核未通过校验；本项没有可接受的审核结论，需人工检查。"
+      },
+      {
+        "name": "title_body_alignment",
+        "result": "unknown",
+        "basis": "已收到的模型审核未通过校验；本项没有可接受的审核结论，需人工检查。"
+      },
+      {
+        "name": "evidence_integrity",
+        "result": "unknown",
+        "basis": "已收到的模型审核未通过校验；本项没有可接受的审核结论，需人工检查。"
+      },
+      {
+        "name": "experience_authenticity",
+        "result": "unknown",
+        "basis": "已收到的模型审核未通过校验；本项没有可接受的审核结论，需人工检查。"
+      },
+      {
+        "name": "originality_risk",
+        "result": "unknown",
+        "basis": "已收到的模型审核未通过校验；本项没有可接受的审核结论，需人工检查。"
+      },
+      {
+        "name": "privacy_and_policy",
+        "result": "unknown",
+        "basis": "已收到的模型审核未通过校验；本项没有可接受的审核结论，需人工检查。"
+      }
+    ],
+    "issues": [
+      {
+        "issue_id": "review-handoff-0ad2f7fd-02fc-4753-9079-5afff150f0df",
+        "severity": "major",
+        "state": "open",
+        "location": "body",
+        "excerpt": "模型未能定位陈述（请对照完整稿件）",
+        "reason": "审核引用无法匹配当前稿件",
+        "suggestion": "请人工核对完整稿件；本条没有有效的模型稿件定位，不表示正文某一具体句已被核实。"
+      }
+    ],
+    "previous_issue_results": [],
+    "limitations": [
+      "系统保守交接：已收到的审核未通过校验（审核引用无法匹配当前稿件）。原始响应保留在调用审计；此报告不代表模型已完成审核。",
+      "无效审核中的引用与定位未作为有效证据采用；系统没有补写或近似匹配来源、稿件文字。",
+      "部分模型摘录未在当前稿件中原样找到；原始摘录仅保留于调用审计，不冒充有效的稿件定位。",
+      "实际提供的参考 source_id：kb:aab706a0-afc2-4270-9376-65693cac0c42；仅记录输入来源，未证明模型采用或完成比对，借鉴要点及本题改写差异需人工核对。",
+      "来源匹配只验证引用存在，不能证明素材真实或检查完全；最终由用户确认。"
+    ],
+    "human_questions": [
+      "请逐项核对当前稿件与实际来源、原创性及既有问题；补充资料或保存修改后重新审核。"
+    ],
+    "claim_map": [],
+    "recovery_kind": "conservative_handoff",
+    "ref": "155145b6-08e9-4c39-8b22-96efb325529b@1",
+    "draft_ref": "3c1b03d1-55aa-4234-8f68-e508d042bb00@1",
+    "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07",
+    "content_hash": "1165542506b29371de8ebdc23a29f05bfcbfdfd2776e8af687438d20fdd96696",
+    "policy_ref": "text-review@1",
+    "mode": "live",
+    "reference_records": {
+      "classification": {
+        "domains": [
+          "digital"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "word_count": 300,
+        "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+        "origin": "user",
+        "ambiguities": []
+      },
+      "groups": {
+        "methods": [],
+        "examples": [
+          "kb:aab706a0-afc2-4270-9376-65693cac0c42"
+        ],
+        "facts": [
+          "user-material"
+        ]
+      },
+      "example_gap": false,
+      "adoption_notes": [
+        "kb:aab706a0-afc2-4270-9376-65693cac0c42：借鉴其分栏式信息结构与短句节奏；本题仅使用F4/F5原文事实，不移植其虚构连接场景或兼容性结论。"
+      ],
+      "claim_map": [],
+      "scope": "仅验证逐字引文和本任务事实组；不等同独立真实性核验或全网原创证明"
+    }
+  },
+  "prior_review": null,
+  "accepted_ref": null,
+  "acceptance": null,
+  "events": [
+    {
+      "schema_version": 2,
+      "event_id": "9115071a-18c0-4364-86f0-09c04eb675dc",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 1,
+      "occurred_at": "2026-11-03T01:31:46.262395+00:00",
+      "type": "run.queued",
+      "payload": {}
+    },
+    {
+      "schema_version": 2,
+      "event_id": "e81bcde2-d0b9-4672-a6a2-6039faafcb40",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 2,
+      "occurred_at": "2026-11-03T01:31:46.278597+00:00",
+      "type": "workflow.transition",
+      "payload": {
+        "run_status": "RUNNING",
+        "wait_reason": null
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "494036eb-05ec-4dd9-a0f6-f316f06a1c41",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 3,
+      "occurred_at": "2026-11-03T01:31:46.278601+00:00",
+      "type": "run.started",
+      "payload": {}
+    },
+    {
+      "schema_version": 2,
+      "event_id": "6e061eec-cd24-42df-92c0-61c2ce41cff9",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 4,
+      "occurred_at": "2026-11-03T01:31:46.279628+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "audience",
+        "stage": "audience",
+        "node_key": "662f43e5a5683e408dc3c0dc53c67f1880da47a183dd79073e49ebfa963c51d8",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "03d0392f-767f-488b-8492-046dadfd11c7",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 5,
+      "occurred_at": "2026-11-03T01:31:46.280960+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "research",
+        "stage": "research",
+        "node_key": "a49057b44394f482f3b594de2e598c0a465017861cc9fd535d9398153634a562",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "8aeb862f-29a1-4952-bae9-69190b25714a",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 6,
+      "occurred_at": "2026-11-03T01:32:00.897802+00:00",
+      "type": "agent.completed",
+      "payload": {
+        "agent": "audience",
+        "stage": "audience",
+        "mode": "live",
+        "node_ref": "ad2ba950-3065-483e-bca3-7353691398a7"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "8d882f56-4af7-4240-8e05-1fb9b928d06f",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 7,
+      "occurred_at": "2026-11-03T01:32:00.897832+00:00",
+      "type": "branch.completed",
+      "payload": {
+        "agent": "audience"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "cb53bfc2-a084-407c-bb52-56ff6580601a",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 8,
+      "occurred_at": "2026-11-03T01:32:16.961694+00:00",
+      "type": "agent.completed",
+      "payload": {
+        "agent": "research",
+        "stage": "research",
+        "mode": "live",
+        "node_ref": "0babaacf-3081-4085-8f1b-9f1602d99da2"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "4e5dfb6a-967d-48ae-854a-ab98e266f22b",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 9,
+      "occurred_at": "2026-11-03T01:32:16.961718+00:00",
+      "type": "branch.completed",
+      "payload": {
+        "agent": "research"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "d3313095-02df-4d56-ba1f-2b6e6642e42f",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 10,
+      "occurred_at": "2026-11-03T01:32:16.971758+00:00",
+      "type": "join.completed",
+      "payload": {}
+    },
+    {
+      "schema_version": 2,
+      "event_id": "7a5443b4-1b51-49c1-979b-7c3b4abf6cc5",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 11,
+      "occurred_at": "2026-11-03T01:32:16.978276+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "content",
+        "stage": "strategy",
+        "node_key": "2c4706750f590fb7e4e7955a6b336a10b7628c8fb56992a780def233c95ea683",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "31f7797e-8e65-4b01-9a26-16b0670e4ca1",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 12,
+      "occurred_at": "2026-11-03T01:32:30.756110+00:00",
+      "type": "agent.completed",
+      "payload": {
+        "agent": "content",
+        "stage": "strategy",
+        "mode": "live",
+        "node_ref": "a96af8d0-7617-44fe-aaaa-994e438702c4"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "3db99185-ce95-4068-a3fc-8643d8633acd",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 13,
+      "occurred_at": "2026-11-03T01:32:30.756129+00:00",
+      "type": "artifact.created",
+      "payload": {
+        "stage": "strategy",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "0d6bf9fe-304f-47e0-b921-b6b2b1846434",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 14,
+      "occurred_at": "2026-11-03T01:32:30.763891+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "content",
+        "stage": "outline",
+        "node_key": "d973f007e8f07d241199466fe6a9ee0dcc3ce96b0ae4c11ca152e04e5c32ce7f",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "75da3c27-34ab-4f8b-b67d-4cd84ba84fca",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 15,
+      "occurred_at": "2026-11-03T01:32:34.503257+00:00",
+      "type": "agent.completed",
+      "payload": {
+        "agent": "content",
+        "stage": "outline",
+        "mode": "live",
+        "node_ref": "0f7239b9-3587-46a1-b3a2-f3b273320422"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "471f6de8-92f5-4048-b7f7-78be13f16eef",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 16,
+      "occurred_at": "2026-11-03T01:32:34.503283+00:00",
+      "type": "artifact.created",
+      "payload": {
+        "stage": "outline",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "9da9e7a6-b332-4622-bcbe-4022edc5eb26",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 17,
+      "occurred_at": "2026-11-03T01:32:34.512340+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "content",
+        "stage": "hook",
+        "node_key": "64d8f9b7d556f33dd113ea42b202498f5ad881eeea2922284488fc94bdc1a8ab",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "0ef24a77-fb4a-4cb5-88e5-5be6a61a4e57",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 18,
+      "occurred_at": "2026-11-03T01:32:36.915515+00:00",
+      "type": "agent.completed",
+      "payload": {
+        "agent": "content",
+        "stage": "hook",
+        "mode": "live",
+        "node_ref": "f1553ea2-e1d8-4443-852d-4c201a2f0526"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "31aa741a-f50a-4508-a112-d9aa889a79f3",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 19,
+      "occurred_at": "2026-11-03T01:32:36.915532+00:00",
+      "type": "artifact.created",
+      "payload": {
+        "stage": "hook",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "7529b0b5-03b5-4588-8171-ee412f0955b8",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 20,
+      "occurred_at": "2026-11-03T01:32:36.925653+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "content",
+        "stage": "title",
+        "node_key": "7892b79d96f88f1113e2aa5cf6b5b4ddc294235876059dc4d9fd57022e4c80bf",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "865f91a6-d8ca-46af-b578-59aaa555a89f",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 21,
+      "occurred_at": "2026-11-03T01:32:49.863244+00:00",
+      "type": "agent.completed",
+      "payload": {
+        "agent": "content",
+        "stage": "title",
+        "mode": "live",
+        "node_ref": "f7698bbe-efb8-4ebf-962f-f8d1bda2b0d9"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "ff1ed836-fbee-478c-aa40-ba7405ecff44",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 22,
+      "occurred_at": "2026-11-03T01:32:49.863267+00:00",
+      "type": "artifact.created",
+      "payload": {
+        "stage": "title",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "faa2d6a9-d20b-4d5d-84fc-74e251621e17",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 23,
+      "occurred_at": "2026-11-03T01:32:49.872719+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "content",
+        "stage": "body",
+        "node_key": "1141f8e473a488ca44106e4819970d524232132549c23f91d8ffabadabadcc81",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "14f8c62d-6973-46c8-819a-139b8131c126",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 24,
+      "occurred_at": "2026-11-03T01:33:02.849244+00:00",
+      "type": "agent.completed",
+      "payload": {
+        "agent": "content",
+        "stage": "body",
+        "mode": "live",
+        "node_ref": "a250b59e-bb34-4a5d-aa1a-4826bcf0429c"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "2ee5a621-2a7b-4e70-ab8a-dd7e65cb6650",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 25,
+      "occurred_at": "2026-11-03T01:33:02.849263+00:00",
+      "type": "artifact.created",
+      "payload": {
+        "stage": "body",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "bdcf142e-2d2d-41e0-9d86-8e9b720dc2b4",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 26,
+      "occurred_at": "2026-11-03T01:33:02.849427+00:00",
+      "type": "artifact.created",
+      "payload": {
+        "artifact_ref": "3c1b03d1-55aa-4234-8f68-e508d042bb00@1"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "021cf4fe-2e24-4c01-ba69-57cb377ddf36",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 27,
+      "occurred_at": "2026-11-03T01:33:02.858868+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "reviewer",
+        "stage": "review",
+        "node_key": "5c59230a115baeda9530ff1972a3c90e421e4b7dddef0d62c4e4273fe9e612d8",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "860b979c-a20c-4e52-9bcf-c132c11db3f6",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 28,
+      "occurred_at": "2026-11-03T01:33:38.366351+00:00",
+      "type": "agent.completed",
+      "payload": {
+        "agent": "reviewer",
+        "stage": "review",
+        "mode": "live",
+        "node_ref": "88397761-4eba-4e0d-95d6-fd50e98dbdf3"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "f78fd5b9-6505-4088-bc63-79a8b2786b27",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 29,
+      "occurred_at": "2026-11-03T01:33:38.367213+00:00",
+      "type": "review.completed",
+      "payload": {
+        "decision": "needs_human"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "e3248a0a-20dc-40b0-b393-6b1c0bb1b04a",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "seq": 30,
+      "occurred_at": "2026-11-03T01:33:38.367231+00:00",
+      "type": "workflow.transition",
+      "payload": {
+        "run_status": "WAITING_USER",
+        "wait_reason": "final_confirmation"
+      }
+    }
+  ],
+  "workflow_type": "creation",
+  "windtunnel": {},
+  "allowed_actions": [
+    "cancel",
+    "edit",
+    "adopt_manual",
+    "request_revision"
+  ],
+  "mode": "live",
+  "usage": {
+    "model_calls": 8,
+    "tokens": 42623,
+    "unknown_calls": 0,
+    "cost": null,
+    "cost_upper_estimate_usd": 0.048712,
+    "currency": "USD"
+  },
+  "model_policy": {
+    "version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+    "routes": {
+      "audience": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "research": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "strategy": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "outline": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "hook": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "title": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "body": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "revise": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "review": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      }
+    },
+    "prompt_version": "four-role-v1.1-optin-comments-user-revision1+evidence-creation-v2"
+  },
+  "in_flight": false,
+  "calls": [
+    {
+      "id": "6d2f2fe1-21a4-49ba-8d83-27b2856b6c30",
+      "agent": "audience",
+      "stage": "audience",
+      "reserved_tokens": 16935,
+      "tokens": 3876,
+      "status": "validated",
+      "error": null,
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1+evidence-creation-v2",
+      "input_hash": "86d7751d0508948439b6cd221357d90d9d16e32250574ca9b74069b6d70b2e6f",
+      "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07",
+      "duration_ms": 14612,
+      "request_id": "chatcmpl-24305b1c-7aa5-9102-a8a3-a585606af08c",
+      "input_tokens": 3277,
+      "output_tokens": 599,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "639d00a2a449a43dd8947dcf502cd71930a18e9f2e5983c758f5eb3c7102a001"
+        },
+        {
+          "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+          "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "2ea42b7acdd01b9a757904fc8e3d298ce569cea5ba87edcc866bd64c4440cda4"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false
+    },
+    {
+      "id": "6d8cf14c-bb1b-4e7a-9172-7b97d0be327a",
+      "agent": "research",
+      "stage": "research",
+      "reserved_tokens": 17422,
+      "tokens": 3752,
+      "status": "validated",
+      "error": null,
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1+evidence-creation-v2",
+      "input_hash": "150474f55cbe64956fe4eced358ff6f62d073cb3c819d6d9e6233fb5924cc64e",
+      "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07",
+      "duration_ms": 30674,
+      "request_id": "chatcmpl-429266e0-b2f1-96c3-b9ba-9a8265342b2a",
+      "input_tokens": 3401,
+      "output_tokens": 351,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "639d00a2a449a43dd8947dcf502cd71930a18e9f2e5983c758f5eb3c7102a001"
+        },
+        {
+          "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+          "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "2ea42b7acdd01b9a757904fc8e3d298ce569cea5ba87edcc866bd64c4440cda4"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false
+    },
+    {
+      "id": "9058c3d2-813a-49d1-b4a6-e727b328206c",
+      "agent": "content",
+      "stage": "strategy",
+      "reserved_tokens": 24551,
+      "tokens": 5333,
+      "status": "validated",
+      "error": null,
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1+evidence-creation-v2",
+      "input_hash": "8a09cf8b6184b525c00bcc7a6e3ac3dcbe02ffb7916e045c70ff61a91393a05d",
+      "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07",
+      "duration_ms": 13767,
+      "request_id": "chatcmpl-06fbdf0c-0bcc-9f0f-a693-730f971065e0",
+      "input_tokens": 4905,
+      "output_tokens": 428,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "639d00a2a449a43dd8947dcf502cd71930a18e9f2e5983c758f5eb3c7102a001"
+        },
+        {
+          "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+          "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "2ea42b7acdd01b9a757904fc8e3d298ce569cea5ba87edcc866bd64c4440cda4"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false
+    },
+    {
+      "id": "0f6a3f92-fcde-4f7c-9535-a1e9bb2675fd",
+      "agent": "content",
+      "stage": "outline",
+      "reserved_tokens": 22151,
+      "tokens": 5113,
+      "status": "validated",
+      "error": null,
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1+evidence-creation-v2",
+      "input_hash": "a213c0ec8758f4d6656ba4811c438e9f2b5989407a2b4b8205e1e6734972f853",
+      "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07",
+      "duration_ms": 3731,
+      "request_id": "chatcmpl-8c926317-5c80-968e-952f-ec74c59d4c62",
+      "input_tokens": 5007,
+      "output_tokens": 106,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "639d00a2a449a43dd8947dcf502cd71930a18e9f2e5983c758f5eb3c7102a001"
+        },
+        {
+          "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+          "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "2ea42b7acdd01b9a757904fc8e3d298ce569cea5ba87edcc866bd64c4440cda4"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false
+    },
+    {
+      "id": "0403fb83-fcc0-4d65-b360-257179e58c01",
+      "agent": "content",
+      "stage": "hook",
+      "reserved_tokens": 22601,
+      "tokens": 5171,
+      "status": "validated",
+      "error": null,
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1+evidence-creation-v2",
+      "input_hash": "9000f623e684c7e42ef4b69f996609f135ae5ce847b557b6fe511adcfd0c359e",
+      "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07",
+      "duration_ms": 2392,
+      "request_id": "chatcmpl-930c91c2-4719-9cc9-98aa-f53c45a94bcb",
+      "input_tokens": 5123,
+      "output_tokens": 48,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "639d00a2a449a43dd8947dcf502cd71930a18e9f2e5983c758f5eb3c7102a001"
+        },
+        {
+          "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+          "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "2ea42b7acdd01b9a757904fc8e3d298ce569cea5ba87edcc866bd64c4440cda4"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false
+    },
+    {
+      "id": "a386c669-e638-43db-b356-d441652d351a",
+      "agent": "content",
+      "stage": "title",
+      "reserved_tokens": 23391,
+      "tokens": 5777,
+      "status": "validated",
+      "error": null,
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1+evidence-creation-v2",
+      "input_hash": "658fce174b58beff5a187ed7489f2a6a67fee44c1e3c6061daf85277d9e6ccbe",
+      "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07",
+      "duration_ms": 12927,
+      "request_id": "chatcmpl-924ec87f-6211-9d37-830e-ebe5d28fdbc6",
+      "input_tokens": 5298,
+      "output_tokens": 479,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "639d00a2a449a43dd8947dcf502cd71930a18e9f2e5983c758f5eb3c7102a001"
+        },
+        {
+          "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+          "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "2ea42b7acdd01b9a757904fc8e3d298ce569cea5ba87edcc866bd64c4440cda4"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false
+    },
+    {
+      "id": "de421d76-1954-40e0-86f1-edf9db4b9167",
+      "agent": "content",
+      "stage": "body",
+      "reserved_tokens": 24343,
+      "tokens": 5781,
+      "status": "validated",
+      "error": null,
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1+evidence-creation-v2",
+      "input_hash": "c7503be81878fa756a956889c1d0d1d697f9d60615a5c91216b2d89f61aa402b",
+      "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07",
+      "duration_ms": 12966,
+      "request_id": "chatcmpl-aaf6b3d2-dcd6-9f41-851a-276f51572458",
+      "input_tokens": 5601,
+      "output_tokens": 180,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "639d00a2a449a43dd8947dcf502cd71930a18e9f2e5983c758f5eb3c7102a001"
+        },
+        {
+          "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+          "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "2ea42b7acdd01b9a757904fc8e3d298ce569cea5ba87edcc866bd64c4440cda4"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false
+    },
+    {
+      "id": "d1b42e1a-8a30-4098-9036-5f95688b8a54",
+      "agent": "reviewer",
+      "stage": "review",
+      "reserved_tokens": 27417,
+      "tokens": 7820,
+      "status": "invalid",
+      "error": "审核引用无法匹配当前稿件",
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1+evidence-creation-v2",
+      "input_hash": "a75186470877e8cdba496f898d7b661b20227b3c3206147c103598a672483739",
+      "snapshot_id": "de614344-3143-4a64-a27f-6b82f2a06a07",
+      "duration_ms": 35496,
+      "request_id": "chatcmpl-a79e94a4-cd33-9ce0-83c4-abd7c6a84b9c",
+      "input_tokens": 6279,
+      "output_tokens": 1541,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "639d00a2a449a43dd8947dcf502cd71930a18e9f2e5983c758f5eb3c7102a001"
+        },
+        {
+          "source_id": "kb:aab706a0-afc2-4270-9376-65693cac0c42",
+          "document_id": "63110dae-532b-4c93-810d-22174b3ae747",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "2ea42b7acdd01b9a757904fc8e3d298ce569cea5ba87edcc866bd64c4440cda4"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false,
+      "diagnostic_response": {
+        "decision": "revision_required",
+        "next_action": "revise",
+        "checks": [
+          {
+            "name": "brief_fit",
+            "result": "fail",
+            "basis": "标题‘M4 Mac mini背面3雷雳4口’未体现读者核心问题（如显示器直连可行性），且未标注‘2024款’与‘仅M4版’关键限定；正文首句设问未覆盖r2/r4等其他已支持问题"
+          },
+          {
+            "name": "audience_fit",
+            "result": "pass",
+            "basis": "面向中小创作者及普通用户，语言无术语堆砌，结构适配小红书信息分层习惯"
+          },
+          {
+            "name": "usefulness_and_readability",
+            "result": "fail",
+            "basis": "‘不支持视频输出或充电’为绝对断言，但F4仅说明‘支持USB 3的USB-C口’，未提及其视频/供电能力——该结论无原文依据，属过度推断"
+          },
+          {
+            "name": "title_body_alignment",
+            "result": "fail",
+            "basis": "标题聚焦背面接口，但正文混入正面接口功能判断、机身尺寸、扩展坞兼容性等未被F4/F5直接支撑的延伸主张，承诺超范围"
+          },
+          {
+            "name": "evidence_integrity",
+            "result": "fail",
+            "basis": "‘机身底面为12.7cm正方形’（F2）被用于‘方便预估桌面布线空间’，属将物理尺寸直接关联使用体验，无来源支持该推论；‘多设备共用需确认扩展坞是否兼容雷雳4协议’无材料依据"
+          },
+          {
+            "name": "experience_authenticity",
+            "result": "pass",
+            "basis": "全文无亲测、体验、效果描述，未移植样例中‘虚构场景’‘两种连接选项’等禁用设定"
+          },
+          {
+            "name": "originality_risk",
+            "result": "pass",
+            "basis": "未照搬kb:aab706a0-afc2-4270-9376-65693cac0c42样例句子，仅借鉴‘设问引出+分栏提示’结构，无近似复制"
+          },
+          {
+            "name": "privacy_and_policy",
+            "result": "pass",
+            "basis": "无用户数据、隐私承诺、医疗/金融等高风险领域表述，符合平台基础规范"
+          }
+        ],
+        "issues": [
+          {
+            "issue_id": "i1",
+            "severity": "blocker",
+            "state": "open",
+            "location": "selected_title",
+            "excerpt": "M4 Mac mini背面3雷雳4口",
+            "reason": "标题未包含年份‘2024款’，易与历史型号混淆；未呼应读者首要问题‘我的显示器带雷雳4输入，能直连吗？’，缺乏点击动机",
+            "suggestion": "改为‘2024款Mac mini M4：雷雳4显示器能直连背面接口吗？’"
+          },
+          {
+            "issue_id": "i2",
+            "severity": "blocker",
+            "state": "open",
+            "location": "body",
+            "excerpt": "正面则有两个USB 3协议的USB-C口和一个耳机孔，不支持视频输出或充电。",
+            "reason": "F4仅陈述‘提供两个支持USB 3的USB-C口和耳机插孔’，未说明其视频/供电能力；该否定判断无来源，违反allow_hypothesis=false要求",
+            "suggestion": "删去‘不支持视频输出或充电’，仅保留F4原文事实：‘正面有两个支持USB 3的USB-C口和一个耳机孔。’"
+          },
+          {
+            "issue_id": "i3",
+            "severity": "major",
+            "state": "open",
+            "location": "body",
+            "excerpt": "机身底面为12.7cm正方形，方便预估桌面布线空间。",
+            "reason": "F2仅给出尺寸数据，‘方便预估桌面布线空间’属主观效用推断，无材料支持，违背克制语气与事实边界",
+            "suggestion": "删去后半句，仅陈述：‘机身底部为边长12.7厘米的正方形。’"
+          },
+          {
+            "issue_id": "i4",
+            "severity": "major",
+            "state": "open",
+            "location": "body",
+            "excerpt": "多设备共用需确认扩展坞是否兼容雷雳4协议。",
+            "reason": "材料未提及扩展坞、兼容性测试或协议适配条件，该建议无依据，且超出F5对端口数量/版本的客观描述",
+            "suggestion": "删除此句；雷雳4多设备共用能力属未覆盖需求r3，应归入待核对事项而非正文断言"
+          }
+        ],
+        "previous_issue_results": [],
+        "limitations": [
+          "kb:aab706a0-afc2-4270-9376-65693cac0c42：仅借鉴‘设问引出+分栏提示’结构，未移植其‘虚构场景’‘两种连接选项’等禁用设定；本题所有接口描述严格对应F4/F5原文，无跨型号混写",
+          "user-material：F1明确限定为2024年10月29日新闻稿所载2024款M4版；F5强调‘M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5’，已严格区分；F4未说明USB-C口视频/供电能力，故正文不得补全"
+        ],
+        "human_questions": [],
+        "claim_map": [
+          {
+            "excerpt": "你的显示器带雷雳4输入？可直连2024款Mac mini M4版背面——三个雷雳4端口，专为M4版本配置（M4 Pro才用雷雳5）。",
+            "source_id": "user-material",
+            "quote": "F5：M4版本背面使用三个雷雳4端口，M4 Pro版本使用雷雳5；不能混写两者。"
+          },
+          {
+            "excerpt": "正面则有两个USB 3协议的USB-C口和一个耳机孔。",
+            "source_id": "user-material",
+            "quote": "F4：机身正面提供两个支持USB 3的USB-C口和耳机插孔。"
+          },
+          {
+            "excerpt": "机身底部为边长12.7厘米的正方形。",
+            "source_id": "user-material",
+            "quote": "F2：该代Mac mini机身底部为边长12.7厘米的正方形。"
+          }
+        ]
+      }
+    }
+  ],
+  "testing_budget": null,
+  "background": {
+    "status": "waiting",
+    "error": null,
+    "attempts": 1,
+    "updated": 1793669618.3818822,
+    "active_seconds": 110.07807991700247,
+    "completed_nodes": 8,
+    "worker_online": true
+  },
+  "review_recovery": {
+    "available": false
+  }
+}

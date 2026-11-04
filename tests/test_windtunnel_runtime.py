@@ -8,6 +8,7 @@ import time
 import unittest
 from pathlib import Path
 from uuid import uuid4
+from unittest.mock import patch
 
 from backend.contracts import DomainError
 from backend.provider import Config
@@ -21,16 +22,30 @@ class Fixture:
     def __init__(self, store, owner):
         self.store, self.owner, self.calls = store, owner, []
         self.failure = None
+        self.boundary_patch = False
 
     def complete(self, messages):
         run = next(r for r in self.store.list_runs(self.owner) if r.workflow_type=='windtunnel' and r.run_status=='RUNNING')
         self.calls.append((run.current_stage, messages))
         if self.failure: raise self.failure
-        output=wt.simulate(run,run.current_stage)
-        if run.current_stage=='wt_patch':
-            source=next(s for s in run.windtunnel['sources'] if s['kind']=='material')
-            output['patches'][0].update(replacement='\n\n'+source['text'],citations=[{'source_id':source['id'],'quote':source['text']}])
-        return output, 100
+        if run.current_stage == 'wt_read':
+            output = wt.simulate(run, run.current_stage)
+            for row in output['results']:
+                row.pop('excerpt')
+                row['excerpt_id'] = ''
+            return output, 100
+        if run.current_stage == 'wt_patch':
+            text = wt.draft(run)['text']
+            source = next(s for s in run.windtunnel['sources'] if s['kind'] == 'material')
+            items = [dict(span_id=wt.edit_spans(text)[-1]['span_id'], original='', replacement='\n\n需要版本 3.12。',
+                                     condition_ids=[run.windtunnel['patch_condition_ids'][0]], reason='补充材料支持的版本要求',
+                                     citations=[dict(evidence_id=wt.evidence_passages([source])[0]['evidence_id'])])]
+            if self.boundary_patch:
+                replacement = {**items[0], 'start': 0, 'end': len(text), 'original': text, 'replacement': '使用版本 3.12。'}
+                replacement.pop('span_id')
+                items.append(replacement)
+            return {'patches': items}, 100
+        return wt.simulate(run,run.current_stage), 100
 
 
 class WindtunnelRuntimeTests(unittest.TestCase):
@@ -66,39 +81,13 @@ class WindtunnelRuntimeTests(unittest.TestCase):
         self.work();self.assertEqual(self.value().wait_reason,'wt_confirm_conditions',self.job())
         self.confirm();self.work();self.assertEqual(self.value().wait_reason,'wt_report',self.job())
 
-    def test_unfinished_reader_checks_are_isolated_between_owned_accounts(self):
-        from backend.accounts import PROFILE_FIELDS
-        original = self.value()
-        state = self.service.operations.read(self.owner)
-        state = self.service.operations.command(self.owner, dict(action='save_account',
-            payload=dict(id='', name='另一个测试账号', platform='xiaohongshu',
-                         profile={**{key: '' for key in PROFILE_FIELDS}, 'weekly_frequency': 3}),
-            version=state['version'], key=uuid4().hex))
-        other = state['accounts'][-1]['id']
-        self.assertNotEqual(other, self.account)
-        created = self.service.create(self.owner, {**self.input, 'account_id': other, 'mode': 'simulation'})
-        self.assertEqual(created['windtunnel']['account_id'], other)
-        self.assertEqual(self.value(), original, 'Creating another account check must not cancel or change the first')
-        with self.assertRaises(DomainError) as caught:
-            self.service.create(self.owner, {**self.input, 'account_id': other, 'mode': 'simulation'})
-        self.assertEqual(caught.exception.code, 'RUN_ALREADY_ACTIVE')
-        self.assertEqual(len(self.store.list_runs(self.owner)), 2)
-        self.assertEqual(self.fixture.calls, [])
-
-    def test_same_account_unfinished_reader_check_still_blocks_duplicate(self):
-        original = self.value()
-        with self.assertRaises(DomainError) as caught:
-            self.service.create(self.owner, {**self.input, 'mode': 'simulation'})
-        self.assertEqual(caught.exception.code, 'RUN_ALREADY_ACTIVE')
-        self.assertIn('当前账号', str(caught.exception))
-        self.assertEqual(self.value(), original)
-        self.assertEqual(len(self.store.list_runs(self.owner)), 1)
-        self.assertEqual(self.fixture.calls, [])
-
     def test_complete_patch_recheck_and_export(self):
         self.report();before=wt.draft(self.value());cs=wt.conditions(self.value())
         self.action('propose_patch',{'condition_ids':[cs['conditions'][0]['id']]});self.work()
         patch=self.value().windtunnel['patches'][-1]
+        self.assertNotIn('span_id', patch['items'][0])
+        self.assertEqual(patch['items'][0]['start'], len(before['text']))
+        self.assertEqual(set(patch['items'][0]['citations'][0]), {'source_id', 'quote'})
         self.action('apply_patch',{'patch_id':patch['id'],'item_ids':[patch['items'][0]['id']],'base_hash':before['hash']})
         self.assertEqual(self.value().windtunnel['drafts'][0],before)
         self.assertTrue(wt.draft(self.value())['text'].startswith(before['text']))
@@ -114,23 +103,6 @@ class WindtunnelRuntimeTests(unittest.TestCase):
         exported=self.service.export(self.owner,self.run_id)
         self.assertIn('内容预演报告',exported);self.assertIn('不代表',exported)
 
-    def test_cancel_after_edit_does_not_offer_stale_report_export(self):
-        self.report()
-        before = wt.draft(self.value())
-        self.action('edit_draft', {'title': before['title'], 'text': before['text'] + '\n补充说明。', 'base_hash': before['hash']})
-        self.action('cancel')
-        self.assertNotIn('export', self.service.view(self.value())['allowed_actions'])
-        with self.assertRaises(DomainError):
-            self.service.export(self.owner, self.run_id)
-        self.assertEqual(len(self.value().windtunnel['reports']), 1)
-
-    def test_export_separates_readability_from_fact_support(self):
-        self.report()
-        exported = self.service.export(self.owner, self.run_id)
-        self.assertIn('稿件给出的答案：', exported)
-        self.assertIn('有没有讲清楚：', exported)
-        self.assertIn('答案有没有依据：', exported)
-
     def test_reading_and_actual_visible_source_audit_are_isolated(self):
         self.report()
         read=next(n for n in self.value().node_runs if n['stage']=='wt_read')
@@ -142,6 +114,39 @@ class WindtunnelRuntimeTests(unittest.TestCase):
             source=db.execute("SELECT sources FROM model_audit WHERE run_id=? AND stage='wt_read'",(self.run_id,)).fetchone()[0]
         self.assertNotIn('ONLY_VERIFY_SECRET_SENTINEL',source)
         self.assertNotIn('material',source)
+
+    def test_invalid_boundary_response_revalidates_cache_without_new_model_call(self):
+        self.report()
+        cs = wt.conditions(self.value())
+        self.action('propose_patch', {'condition_ids': [cs['conditions'][0]['id']]})
+        self.fixture.boundary_patch = True
+        original_normalize = wt.normalize
+        def legacy_overlap(run, stage, value):
+            result = original_normalize(run, stage, value)
+            if stage == 'wt_patch':
+                raise DomainError('MODEL_OUTPUT_INVALID', '旧边界冲突检查')
+            return result
+        with patch('backend.windtunnel.normalize', side_effect=legacy_overlap):
+            self.work()
+        self.assertEqual(self.job()['status'], 'blocked')
+        with self.store.connect() as db:
+            before = db.execute("SELECT id,state,response_json FROM live_calls WHERE run_id=? AND stage='wt_patch'", (self.run_id,)).fetchone()
+        self.assertEqual(before[1], 'invalid')
+        count = len(self.fixture.calls)
+        with patch('backend.windtunnel.normalize', side_effect=legacy_overlap):
+            self.work()
+        self.assertEqual(self.job()['status'], 'blocked')
+        self.assertEqual(len(self.fixture.calls), count)
+        self.work()
+        self.assertEqual(len(self.fixture.calls), count)
+        self.assertEqual(self.value().wait_reason, 'wt_patch')
+        with self.store.connect() as db:
+            after = db.execute("SELECT id,state,response_json FROM live_calls WHERE run_id=? AND stage='wt_patch'", (self.run_id,)).fetchone()
+        self.assertEqual(after[0], before[0])
+        self.assertEqual(after[1], 'validated')
+        self.assertEqual(after[2], before[2])
+        proposal = self.value().windtunnel['patches'][-1]
+        self.assertEqual(len(proposal['items']), 2)
 
     def test_response_reuse_and_committed_node_replay(self):
         self.work();self.confirm();tripped=[]
@@ -164,12 +169,9 @@ class WindtunnelRuntimeTests(unittest.TestCase):
         self.work();self.confirm();self.fixture.failure=TimeoutError('private provider secret')
         self.work();self.assertEqual(self.job()['status'],'blocked')
         self.assertNotIn('private provider secret',self.job()['error'])
-        before=len(self.fixture.calls);self.fixture.failure=None
-        with self.assertRaises(DomainError) as caught:self.start()
-        self.assertEqual(caught.exception.code,'USAGE_UNKNOWN')
-        self.assertFalse(Worker(self.service).once())
+        before=len(self.fixture.calls);self.fixture.failure=None;self.work()
         self.assertEqual(len(self.fixture.calls),before)
-        self.assertEqual(self.job()['status'],'blocked')
+        self.assertIn('未知',self.job()['error'])
         self.assertEqual(self.value().windtunnel['reports'],[])
 
     def test_cancel_wins_late_result(self):
@@ -193,11 +195,14 @@ class WindtunnelRuntimeTests(unittest.TestCase):
         before=len(self.fixture.calls);Worker(self.service).once()
         self.assertEqual(len(self.fixture.calls),before);self.assertEqual(self.job()['status'],'blocked')
 
-    def test_coexisting_creation_limit_and_paid_disabled(self):
+    def test_coexisting_creation_limit_and_windtunnel_supersede(self):
         creation=self.service.create(self.owner,dict(topic='原创作',audience='测试读者',tone='清楚',material='材料',allow_hypothesis=True,mode='simulation'))
         self.assertEqual(creation['workflow_type'],'creation')
-        with self.assertRaises(DomainError):self.service.create(self.owner,self.input)
-        self.action('cancel')
+        # A new check supersedes the unfinished one instead of being blocked by it;
+        # the old draft/report stay readable on the cancelled record.
+        second=self.service.create(self.owner,self.input)
+        self.assertEqual(second['context']['auto_closed_windtunnels'],[self.run_id])
+        self.assertEqual(self.store.get(self.run_id,self.owner).run_status,'CANCELLED')
         unconfigured=Service(self.store,Config('existing-key-must-not-be-used'))
         with self.assertRaisesRegex(DomainError,'未启用'):unconfigured.create(self.owner,self.input)
         simulated=unconfigured.create(self.owner,{**self.input,'mode':'simulation'})

@@ -1,7 +1,12 @@
 """Subprocess crash fixture: never imports a real provider adapter to make calls."""
 import os
+import sys
 import time
 from pathlib import Path
+
+# Embedded Python isolates sys.path instead of adding the script directory.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
 from backend.store import Store
 from backend.service import Service
 from backend.provider import Config

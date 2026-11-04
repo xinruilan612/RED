@@ -59,16 +59,48 @@ CREATE TABLE testing_budget_roots (
 CREATE TABLE testing_budget_reservations (
  call_id TEXT PRIMARY KEY, reserved_micro INTEGER NOT NULL);
 '''), (6, '''
-CREATE TABLE analytics_review_attempts (
- owner TEXT NOT NULL, analysis_id TEXT NOT NULL, run_id TEXT NOT NULL,
- snapshot_hash TEXT NOT NULL, status TEXT NOT NULL, response TEXT, error TEXT,
- created_at DOUBLE PRECISION NOT NULL, PRIMARY KEY(owner,analysis_id));
+CREATE TABLE model_connections (
+ owner TEXT NOT NULL,id TEXT NOT NULL,version INTEGER NOT NULL,
+ payload TEXT NOT NULL,secret TEXT NOT NULL,active INTEGER NOT NULL,
+ PRIMARY KEY(owner,id));
+CREATE TABLE model_preferences (owner TEXT PRIMARY KEY,connection_id TEXT);
+CREATE TABLE model_connection_tests (
+ id TEXT PRIMARY KEY,owner TEXT NOT NULL,connection_id TEXT NOT NULL,
+ started DOUBLE PRECISION NOT NULL,reserved INTEGER NOT NULL,tokens INTEGER,
+ rate DOUBLE PRECISION NOT NULL,status TEXT NOT NULL);
+ALTER TABLE model_audit ADD COLUMN billing_source TEXT NOT NULL DEFAULT 'platform';
+ALTER TABLE model_audit ADD COLUMN billing_owner TEXT NOT NULL DEFAULT '';
+ALTER TABLE model_audit ADD COLUMN connection_id TEXT;
 '''), (7, '''
-CREATE TABLE run_visibility (
- run_id TEXT PRIMARY KEY REFERENCES runs(id), owner TEXT NOT NULL,
- deleted INTEGER NOT NULL DEFAULT 0 CHECK(deleted IN (0,1)),
- changed_at DOUBLE PRECISION NOT NULL);
-CREATE INDEX run_visibility_owner ON run_visibility(owner,deleted);
+CREATE TABLE search_connections (
+ owner TEXT PRIMARY KEY,secret TEXT NOT NULL,enabled INTEGER NOT NULL,
+ day_limit INTEGER NOT NULL,version INTEGER NOT NULL);
+CREATE TABLE search_requests (
+ id TEXT PRIMARY KEY,owner TEXT NOT NULL,created_at DOUBLE PRECISION NOT NULL);
+CREATE INDEX search_requests_budget ON search_requests(owner,created_at);
+CREATE TABLE research_jobs (
+ id TEXT PRIMARY KEY,owner TEXT NOT NULL,account_id TEXT NOT NULL,
+ key TEXT NOT NULL,fingerprint TEXT NOT NULL,status TEXT NOT NULL,
+ payload TEXT NOT NULL,token TEXT,lease_until DOUBLE PRECISION,
+ created_at DOUBLE PRECISION NOT NULL,updated_at DOUBLE PRECISION NOT NULL,
+ UNIQUE(owner,key));
+CREATE INDEX research_jobs_ready ON research_jobs(status,lease_until);
+CREATE INDEX research_jobs_scope ON research_jobs(owner,account_id,created_at);
+'''), (8, '''
+CREATE TABLE xhs_sync_links (
+ owner TEXT NOT NULL,account_id TEXT NOT NULL,source_id TEXT NOT NULL UNIQUE,
+ bridge_port INTEGER NOT NULL UNIQUE,interval_s INTEGER NOT NULL,enabled INTEGER NOT NULL,
+ status TEXT NOT NULL,next_at DOUBLE PRECISION NOT NULL,last_at DOUBLE PRECISION,
+ error TEXT,failures INTEGER NOT NULL DEFAULT 0,token TEXT,lease_until DOUBLE PRECISION,
+ PRIMARY KEY(owner,account_id));
+CREATE TABLE xhs_sync_entities (
+ owner TEXT NOT NULL,account_id TEXT NOT NULL,kind TEXT NOT NULL,id TEXT NOT NULL,
+ payload TEXT NOT NULL,hash TEXT NOT NULL,first_seen DOUBLE PRECISION NOT NULL,
+ last_seen DOUBLE PRECISION NOT NULL,PRIMARY KEY(owner,account_id,kind,id));
+CREATE TABLE xhs_sync_rounds (
+ id TEXT PRIMARY KEY,owner TEXT NOT NULL,account_id TEXT NOT NULL,
+ observed_at DOUBLE PRECISION NOT NULL,payload TEXT NOT NULL);
+CREATE INDEX xhs_sync_rounds_scope ON xhs_sync_rounds(owner,account_id,observed_at);
 '''))
 
 

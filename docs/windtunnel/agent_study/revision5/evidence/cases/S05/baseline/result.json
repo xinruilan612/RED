@@ -1,0 +1,71 @@
+{
+  "sample_id": "S05",
+  "method": "baseline",
+  "participant_type": "codex_proxy",
+  "revision": "v5",
+  "draft_kind": "public_official_tutorial_excerpt",
+  "adaptation": "layout and attribution only; original English text",
+  "deletion_design": null,
+  "source_url": "https://docs.python.org/3.12/tutorial/datastructures.html#dictionaries",
+  "original_sha256": "5ae9dd634db54503543ac690d00aaba9b7ca8c69e2091cb09f491a1a934abbbc",
+  "material_sha256": "5ae9dd634db54503543ac690d00aaba9b7ca8c69e2091cb09f491a1a934abbbc",
+  "outcome": "completed",
+  "error": null,
+  "automatic_adoption": true,
+  "human_author": false,
+  "issues": [
+    {
+      "issue": "The requested reading task asks for steps that go beyond the manuscript: changing jack from 4098 to 5000 is never shown in the draft, and reading sape after deletion is never demonstrated; the draft only states that reading a non-existent key is an error, so the exact error type cannot be supplied from the manuscript.",
+      "evidence": "The draft example modifies jack only by reading tel['jack'], i.e. 4098; it then deletes sape and adds irv. The draft says only: 'It is an error to extract a value using a non-existent key.'"
+    },
+    {
+      "issue": "The draft already provides the final dictionary, list(tel), sorted(tel), and the guido membership check, so an added walkthrough can be aligned directly with the manuscript's own printed outputs.",
+      "evidence": ">>> tel -> {'jack': 4098, 'guido': 4127, 'irv': 4127}; >>> list(tel) -> ['jack', 'guido', 'irv']; >>> sorted(tel) -> ['guido', 'irv', 'jack']; >>> 'guido' in tel -> True."
+    },
+    {
+      "issue": "The reason lists cannot be keys and tuples containing lists cannot be keys is stated in the draft, but the task asks for it explicitly; this should be kept as a direct explanation without adding unsupported error messages.",
+      "evidence": "Tuples can be used as keys if they contain only strings, numbers, or tuples; if a tuple contains any mutable object either directly or indirectly, it cannot be used as a key. You can’t use lists as keys, since lists can be modified in place using index assignments, slice assignments, or methods like append() and extend()."
+    }
+  ],
+  "run_id": "2e33f3ef-fdeb-46fe-9999-410795bd8b08",
+  "wall_seconds": 7.327,
+  "final_sha256": "06e4d199fdd1f4e723621618f6df5e4b0ee78a3e74e6c9310c78b536b2ff5967",
+  "changed": true,
+  "calls": [
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 2012,
+      "output_tokens": 1794,
+      "total_tokens": 3806,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "issues": [
+          {
+            "issue": "The requested reading task asks for steps that go beyond the manuscript: changing jack from 4098 to 5000 is never shown in the draft, and reading sape after deletion is never demonstrated; the draft only states that reading a non-existent key is an error, so the exact error type cannot be supplied from the manuscript.",
+            "evidence": "The draft example modifies jack only by reading tel['jack'], i.e. 4098; it then deletes sape and adds irv. The draft says only: 'It is an error to extract a value using a non-existent key.'"
+          },
+          {
+            "issue": "The draft already provides the final dictionary, list(tel), sorted(tel), and the guido membership check, so an added walkthrough can be aligned directly with the manuscript's own printed outputs.",
+            "evidence": ">>> tel -> {'jack': 4098, 'guido': 4127, 'irv': 4127}; >>> list(tel) -> ['jack', 'guido', 'irv']; >>> sorted(tel) -> ['guido', 'irv', 'jack']; >>> 'guido' in tel -> True."
+          },
+          {
+            "issue": "The reason lists cannot be keys and tuples containing lists cannot be keys is stated in the draft, but the task asks for it explicitly; this should be kept as a direct explanation without adding unsupported error messages.",
+            "evidence": "Tuples can be used as keys if they contain only strings, numbers, or tuples; if a tuple contains any mutable object either directly or indirectly, it cannot be used as a key. You can’t use lists as keys, since lists can be modified in place using index assignments, slice assignments, or methods like append() and extend()."
+          }
+        ],
+        "revised_text": "5.5. Dictionaries\n\nAnother useful data type built into Python is the dictionary (see\nMapping Types — dict). Dictionaries are sometimes found in other languages as\n“associative memories” or “associative arrays”.  Unlike sequences, which are\nindexed by a range of numbers, dictionaries are indexed by keys, which can be\nany immutable type; strings and numbers can always be keys.  Tuples can be used\nas keys if they contain only strings, numbers, or tuples; if a tuple contains\nany mutable object either directly or indirectly, it cannot be used as a key.\nYou can’t use lists as keys, since lists can be modified in place using index\nassignments, slice assignments, or methods like append() and\nextend().\n\nIt is best to think of a dictionary as a set of key: value pairs,\nwith the requirement that the keys are unique (within one dictionary). A pair of\nbraces creates an empty dictionary: {}. Placing a comma-separated list of\nkey:value pairs within the braces adds initial key:value pairs to the\ndictionary; this is also the way dictionaries are written on output.\n\nThe main operations on a dictionary are storing a value with some key and\nextracting the value given the key.  It is also possible to delete a key:value\npair with del. If you store using a key that is already in use, the old\nvalue associated with that key is forgotten.  It is an error to extract a value\nusing a non-existent key.\n\nPerforming list(d) on a dictionary returns a list of all the keys\nused in the dictionary, in insertion order (if you want it sorted, just use\nsorted(d) instead). To check whether a single key is in the\ndictionary, use the in keyword.\n\nHere is a small example using a dictionary:\n\n>>> tel = {'jack': 4098, 'sape': 4139}\n>>> tel['guido'] = 4127\n>>> tel\n{'jack': 4098, 'sape': 4139, 'guido': 4127}\n>>> tel['jack']\n4098\n>>> del tel['sape']\n>>> tel['irv'] = 4127\n>>> tel\n{'jack': 4098, 'guido': 4127, 'irv': 4127}\n>>> list(tel)\n['jack', 'guido', 'irv']\n>>> sorted(tel)\n['guido', 'irv', 'jack']\n>>> 'guido' in tel\nTrue\n>>> 'jack' not in tel\nFalse\n\nThe dict() constructor builds dictionaries directly from sequences of\nkey-value pairs:\n\n>>> dict([('sape', 4139), ('guido', 4127), ('jack', 4098)])\n{'sape': 4139, 'guido': 4127, 'jack': 4098}\n\nIn addition, dict comprehensions can be used to create dictionaries from\narbitrary key and value expressions:\n\n>>> {x: x**2 for x in (2, 4, 6)}\n{2: 4, 4: 16, 6: 36}\n\nWhen the keys are simple strings, it is sometimes easier to specify pairs using\nkeyword arguments:\n\n>>> dict(sape=4139, guido=4127, jack=4098)\n{'sape': 4139, 'guido': 4127, 'jack': 4098}\n\nIf you start from\ntel = {'jack': 4098, 'sape': 4139}\nand then add guido: 4127, change jack to 5000, delete sape,\nand add irv: 4127, the corresponding final dictionary is\n{'jack': 5000, 'guido': 4127, 'irv': 4127}.\nThe manuscript shows the same pattern when it starts with\ntel = {'jack': 4098, 'sape': 4139}, adds tel['guido'] = 4127,\ndeletes del tel['sape'], and adds tel['irv'] = 4127, giving\n{'jack': 4098, 'guido': 4127, 'irv': 4127}.\nThe manuscript also states that if you store using a key that is already in use,\nthe old value associated with that key is forgotten; that statement covers the\nchange to jack: 5000.\n\nFor this final dictionary, list(tel) returns\n['jack', 'guido', 'irv']\nand sorted(tel) returns\n['guido', 'irv', 'jack'].\nThe manuscript gives the same two results for its own dictionary:\nlist(tel) returns ['jack', 'guido', 'irv'], and sorted(tel)\nreturns ['guido', 'irv', 'jack']. The unsorted list is in insertion order,\nbecause the manuscript says list(d) returns all keys “in insertion order”;\nsorted(d) instead gives sorted order.\n\nTo check whether guido exists in the dictionary, write\n'guido' in tel\nand the result is True. The manuscript shows the expression\n'guido' in tel with result True, and explains that the in\nkeyword checks whether a single key is in the dictionary.\n\nReading sape after it has been deleted is an error. The manuscript says:\n“It is an error to extract a value using a non-existent key.” It also shows\nthat sape was removed by del tel['sape'] and is absent from the later\nlist(tel) and dictionary output, so a later read such as tel['sape']\nwould be extracting a value using a non-existent key. The manuscript does not\nprint the exact exception type for that error.\n\nUsing a list as a key is not possible. The manuscript says, “You can’t use\nlists as keys, since lists can be modified in place using index assignments,\nslice assignments, or methods like append() and extend().” Using a tuple that\ncontains a list as a key is also not possible, because the manuscript says that\nif a tuple contains any mutable object either directly or indirectly, it cannot\nbe used as a key. A tuple is usable as a key only if it contains only strings,\nnumbers, or tuples. Thus a list is mutable and unusable as a key, and a tuple\ncontaining a list is likewise unusable as a key."
+      }
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 1.439946,
+    "reserved_unknown_cny": 0.04281,
+    "committed_upper_cny": 1.482756,
+    "calls": 118,
+    "unknown_calls": 1
+  }
+}

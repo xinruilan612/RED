@@ -122,7 +122,7 @@ class KnowledgeTests(unittest.TestCase):
         from test_live_provider import FixtureModel
         self.save()
         model=FixtureModel();service=Service(self.store,Config('fixture-key'),model)
-        data=dict(mode='live',topic='白衬衫面料护理',audience='学生',tone='真实',material='',scenario='standard',allow_hypothesis=True,
+        data=dict(mode='live',web_research={'enabled':False,'queries':[]},topic='白衬衫面料护理',audience='学生',tone='真实',material='',scenario='standard',allow_hypothesis=True,
                   operations={'account_id':self.account,'platform':'xiaohongshu','account':'我的账号'},knowledge={'enabled':True})
         result=service.create(self.owner,data)
         for _ in range(7):
@@ -184,6 +184,13 @@ class PostgresKnowledgeTests(KnowledgeTests):
 
 
 class SourceTests(unittest.TestCase):
+    def setUp(self):
+        # These fixtures exercise direct DNS/transport, independently of the
+        # developer machine's OS/environment proxy configuration.
+        proxy=patch('backend.public_dns.configured_proxy',return_value=None)
+        proxy.start()
+        self.addCleanup(proxy.stop)
+
     def test_redirect_is_revalidated_before_second_connection(self):
         from backend.sources import fetch_public
         from unittest.mock import MagicMock

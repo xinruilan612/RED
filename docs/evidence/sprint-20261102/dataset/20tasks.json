@@ -1,0 +1,3816 @@
+{
+  "schema": "youji-sprint-tasks/1",
+  "frozen_on": "2026-11-02",
+  "status": "proposed_gold_pending_human_review",
+  "counts": {
+    "digital": 7,
+    "home": 7,
+    "study": 6
+  },
+  "items": [
+    {
+      "id": "D01",
+      "category": "digital",
+      "domain": "digital",
+      "data_kind": "fictional_controlled_task",
+      "is_real_user_task": false,
+      "gold_status": "proposed_pending_two_human_reviewers",
+      "topic": "静点D03鼠标的有依据介绍与选择检查",
+      "material": "静点D03鼠标是虚构验收产品。支持蓝牙和2.4GHz接收器两种连接，外形尺寸108×60×35毫米，重量68克，使用一节AA电池，包装不含电池。没有续航、延迟或静音测试数据。",
+      "audience": "需要根据资料核对适用条件的普通读者",
+      "answer": "受控用户标准答案：电脑没有蓝牙，有空闲USB接口，打算使用2.4GHz接收器。",
+      "answer_policy": "sealed_answer_for_uniform_supplement_only; never include before an actual question",
+      "input": {
+        "topic": "静点D03鼠标的有依据介绍与选择检查",
+        "material": "静点D03鼠标是虚构验收产品。支持蓝牙和2.4GHz接收器两种连接，外形尺寸108×60×35毫米，重量68克，使用一节AA电池，包装不含电池。没有续航、延迟或静音测试数据。",
+        "audience": "需要根据资料核对适用条件的普通读者",
+        "tone": "具体、克制",
+        "mode": "live",
+        "allow_hypothesis": false,
+        "material_policy": "available_only",
+        "web_research": {
+          "enabled": false,
+          "queries": []
+        },
+        "creation": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "用现有资料说明已知信息、适用检查和未知边界，禁止虚构亲测"
+        }
+      },
+      "sources": [
+        {
+          "source_id": "sprint-source:D01",
+          "path": "sources.json",
+          "text_sha256": "1f98ab6972e298e72d073b0c6c88f72093daa3e5aa5f8cb8f8ba062db70004b4"
+        }
+      ],
+      "facts": [
+        {
+          "id": "D01-f1",
+          "quote": "静点D03鼠标是虚构验收产品",
+          "start": 0,
+          "end": 14,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D01"
+        },
+        {
+          "id": "D01-f2",
+          "quote": "支持蓝牙和2.4GHz接收器两种连接，外形尺寸108×60×35毫米，重量68克，使用一节AA电池，包装不含电池",
+          "start": 15,
+          "end": 71,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D01"
+        },
+        {
+          "id": "D01-f3",
+          "quote": "没有续航、延迟或静音测试数据",
+          "start": 72,
+          "end": 86,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D01"
+        }
+      ],
+      "proposed_requirements": [
+        {
+          "id": "r1",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：支持蓝牙和2.4GHz接收器两种连接，外形尺寸108×60×35毫米，重量68克，使用一节AA电池，包装不含电池",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "支持蓝牙和2.4GHz接收器两种连接，外形尺寸108×60×35毫米，重量68克，使用一节AA电池，包装不含电池",
+              "start": 15,
+              "end": 71,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D01"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r2",
+          "question": "明确当前资料缺少哪些重要测试或效果结论，避免把未知写成已证实",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "没有续航、延迟或静音测试数据",
+              "start": 72,
+              "end": 86,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D01"
+            }
+          ],
+          "scope": "限制条件必须保留，不能只删掉有风险句来获得高分"
+        }
+      ],
+      "standard_question_id": "D01-q1",
+      "forbidden_claims": [
+        "虚构作者亲测经历",
+        "把明确未知的测试指标写成已知",
+        "把虚构产品描述成真实在售产品"
+      ],
+      "evaluation_note": "属于场景化受控实验，不代表真实创作者任务；人审金标完成前不得报告人工准确率。",
+      "reference_example": {
+        "source_id": "sprint-example:STR-D01",
+        "text": "买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是桌面连接。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+        "text_sha256": "fb652e90ac9bdec1920c7b93b1eec53dd16213d85a30b01cf42fef3ffeafa34b",
+        "classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example"
+        },
+        "evidence_role": "expression_reference",
+        "provenance": {
+          "path": "docs/evidence/sprint-20261102/dataset/structure_texts/STR-D01.txt",
+          "sample_id": "STR-D01",
+          "source_kind": "new_fictional_controlled_fixture",
+          "scope": "参考只提供写法；其作者经历和参数不属于任务事实"
+        }
+      }
+    },
+    {
+      "id": "H01",
+      "category": "home",
+      "domain": "furniture",
+      "data_kind": "fictional_controlled_task",
+      "is_real_user_task": false,
+      "gold_status": "proposed_pending_two_human_reviewers",
+      "topic": "木序F04边桌的有依据介绍与选择检查",
+      "material": "木序F04边桌是虚构验收产品。桌面为圆形，直径45厘米，高度52厘米，材质为橡胶木，底部设一层置物板。没有承重、耐水或环保等级检测结论。",
+      "audience": "需要根据资料核对适用条件的普通读者",
+      "answer": "受控用户标准答案：放在沙发旁，预留宽度50厘米，高度不超过55厘米；未做亲测。",
+      "answer_policy": "sealed_answer_for_uniform_supplement_only; never include before an actual question",
+      "input": {
+        "topic": "木序F04边桌的有依据介绍与选择检查",
+        "material": "木序F04边桌是虚构验收产品。桌面为圆形，直径45厘米，高度52厘米，材质为橡胶木，底部设一层置物板。没有承重、耐水或环保等级检测结论。",
+        "audience": "需要根据资料核对适用条件的普通读者",
+        "tone": "具体、克制",
+        "mode": "live",
+        "allow_hypothesis": false,
+        "material_policy": "available_only",
+        "web_research": {
+          "enabled": false,
+          "queries": []
+        },
+        "creation": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "用现有资料说明已知信息、适用检查和未知边界，禁止虚构亲测"
+        }
+      },
+      "sources": [
+        {
+          "source_id": "sprint-source:H01",
+          "path": "sources.json",
+          "text_sha256": "ca78535c6811f6942410217de9569699741cd3de0265133747661ed871988049"
+        }
+      ],
+      "facts": [
+        {
+          "id": "H01-f1",
+          "quote": "木序F04边桌是虚构验收产品",
+          "start": 0,
+          "end": 14,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H01"
+        },
+        {
+          "id": "H01-f2",
+          "quote": "桌面为圆形，直径45厘米，高度52厘米，材质为橡胶木，底部设一层置物板",
+          "start": 15,
+          "end": 50,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H01"
+        },
+        {
+          "id": "H01-f3",
+          "quote": "没有承重、耐水或环保等级检测结论",
+          "start": 51,
+          "end": 67,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H01"
+        }
+      ],
+      "proposed_requirements": [
+        {
+          "id": "r1",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：桌面为圆形，直径45厘米，高度52厘米，材质为橡胶木，底部设一层置物板",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "桌面为圆形，直径45厘米，高度52厘米，材质为橡胶木，底部设一层置物板",
+              "start": 15,
+              "end": 50,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H01"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r2",
+          "question": "明确当前资料缺少哪些重要测试或效果结论，避免把未知写成已证实",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "没有承重、耐水或环保等级检测结论",
+              "start": 51,
+              "end": 67,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H01"
+            }
+          ],
+          "scope": "限制条件必须保留，不能只删掉有风险句来获得高分"
+        }
+      ],
+      "standard_question_id": "H01-q1",
+      "forbidden_claims": [
+        "虚构作者亲测经历",
+        "把明确未知的测试指标写成已知",
+        "把虚构产品描述成真实在售产品"
+      ],
+      "evaluation_note": "属于场景化受控实验，不代表真实创作者任务；人审金标完成前不得报告人工准确率。",
+      "reference_example": {
+        "source_id": "sprint-example:STR-H01",
+        "text": "买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是边桌摆放。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+        "text_sha256": "8118c210204fbfe716ba444a64a616f9f7429d2fd31dfd6e7b53424b439ae79e",
+        "classification": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example"
+        },
+        "evidence_role": "expression_reference",
+        "provenance": {
+          "path": "docs/evidence/sprint-20261102/dataset/structure_texts/STR-H01.txt",
+          "sample_id": "STR-H01",
+          "source_kind": "new_fictional_controlled_fixture",
+          "scope": "参考只提供写法；其作者经历和参数不属于任务事实"
+        }
+      }
+    },
+    {
+      "id": "D02",
+      "category": "digital",
+      "domain": "photography",
+      "data_kind": "fictional_controlled_task",
+      "is_real_user_task": false,
+      "gold_status": "proposed_pending_two_human_reviewers",
+      "topic": "轻行P02三脚架的有依据介绍与选择检查",
+      "material": "轻行P02三脚架是虚构验收产品。重量1.2千克，收纳长度40厘米，最大展开高度150厘米，含一个便携袋。没有负重稳定性、抗风或实拍测试数据。",
+      "audience": "需要根据资料核对适用条件的普通读者",
+      "answer": "受控用户标准答案：器材包可用内长42厘米；尚未实装，不声称一定能装下。",
+      "answer_policy": "sealed_answer_for_uniform_supplement_only; never include before an actual question",
+      "input": {
+        "topic": "轻行P02三脚架的有依据介绍与选择检查",
+        "material": "轻行P02三脚架是虚构验收产品。重量1.2千克，收纳长度40厘米，最大展开高度150厘米，含一个便携袋。没有负重稳定性、抗风或实拍测试数据。",
+        "audience": "需要根据资料核对适用条件的普通读者",
+        "tone": "具体、克制",
+        "mode": "live",
+        "allow_hypothesis": false,
+        "material_policy": "available_only",
+        "web_research": {
+          "enabled": false,
+          "queries": []
+        },
+        "creation": {
+          "domains": [
+            "photography"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "用现有资料说明已知信息、适用检查和未知边界，禁止虚构亲测"
+        }
+      },
+      "sources": [
+        {
+          "source_id": "sprint-source:D02",
+          "path": "sources.json",
+          "text_sha256": "6aae99438b697765aaaab2758a1cc4a5ed548dab26990bf96e7cd9f11acfee93"
+        }
+      ],
+      "facts": [
+        {
+          "id": "D02-f1",
+          "quote": "轻行P02三脚架是虚构验收产品",
+          "start": 0,
+          "end": 15,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D02"
+        },
+        {
+          "id": "D02-f2",
+          "quote": "重量1.2千克，收纳长度40厘米，最大展开高度150厘米，含一个便携袋",
+          "start": 16,
+          "end": 51,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D02"
+        },
+        {
+          "id": "D02-f3",
+          "quote": "没有负重稳定性、抗风或实拍测试数据",
+          "start": 52,
+          "end": 69,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D02"
+        }
+      ],
+      "proposed_requirements": [
+        {
+          "id": "r1",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：重量1.2千克，收纳长度40厘米，最大展开高度150厘米，含一个便携袋",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "重量1.2千克，收纳长度40厘米，最大展开高度150厘米，含一个便携袋",
+              "start": 16,
+              "end": 51,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D02"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r2",
+          "question": "明确当前资料缺少哪些重要测试或效果结论，避免把未知写成已证实",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "没有负重稳定性、抗风或实拍测试数据",
+              "start": 52,
+              "end": 69,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D02"
+            }
+          ],
+          "scope": "限制条件必须保留，不能只删掉有风险句来获得高分"
+        }
+      ],
+      "standard_question_id": "D02-q1",
+      "forbidden_claims": [
+        "虚构作者亲测经历",
+        "把明确未知的测试指标写成已知",
+        "把虚构产品描述成真实在售产品"
+      ],
+      "evaluation_note": "属于场景化受控实验，不代表真实创作者任务；人审金标完成前不得报告人工准确率。",
+      "reference_example": {
+        "source_id": "sprint-example:STR-D02",
+        "text": "真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是器材收纳。\n\n整理器材收纳时，先保留可核对的信息，再决定文章顺序。\n\n材料中列出三个字段，分别是名称、位置和手工标签。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。",
+        "text_sha256": "4d64b377259382d744531c4d814dae5c3716b7865f0edaaa8c334935d41b4641",
+        "classification": {
+          "domains": [
+            "photography"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example"
+        },
+        "evidence_role": "expression_reference",
+        "provenance": {
+          "path": "docs/evidence/sprint-20261102/dataset/structure_texts/STR-D02.txt",
+          "sample_id": "STR-D02",
+          "source_kind": "new_fictional_controlled_fixture",
+          "scope": "参考只提供写法；其作者经历和参数不属于任务事实"
+        }
+      }
+    },
+    {
+      "id": "D03",
+      "category": "digital",
+      "domain": "digital",
+      "data_kind": "fictional_controlled_task",
+      "is_real_user_task": false,
+      "gold_status": "proposed_pending_two_human_reviewers",
+      "topic": "移电C06充电宝的有依据介绍与选择检查",
+      "material": "移电C06是虚构验收充电宝。标称容量10000毫安时。机身重量210克。包装含一条20厘米USB-C线。规格页只登记一个USB-C接口。没有可用容量、输出功率、快充协议和实测充电次数数据。",
+      "audience": "需要根据资料核对适用条件的普通读者",
+      "answer": "受控用户标准答案：只做包装与便携信息介绍；没有手机兼容性和快充数据，不推荐具体快充用途。",
+      "answer_policy": "sealed_answer_for_uniform_supplement_only; never include before an actual question",
+      "input": {
+        "topic": "移电C06充电宝的有依据介绍与选择检查",
+        "material": "移电C06是虚构验收充电宝。标称容量10000毫安时。机身重量210克。包装含一条20厘米USB-C线。规格页只登记一个USB-C接口。没有可用容量、输出功率、快充协议和实测充电次数数据。",
+        "audience": "需要根据资料核对适用条件的普通读者",
+        "tone": "具体、克制",
+        "mode": "live",
+        "allow_hypothesis": false,
+        "material_policy": "available_only",
+        "web_research": {
+          "enabled": false,
+          "queries": []
+        },
+        "creation": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "用现有资料说明已知信息、适用检查和未知边界，禁止虚构亲测"
+        }
+      },
+      "sources": [
+        {
+          "source_id": "sprint-source:D03",
+          "path": "sources.json",
+          "text_sha256": "fa079cacb8b0d737d4c2286ef108fbc52f5f0d4d04ddf0046f7a81f5cfd25dda"
+        }
+      ],
+      "facts": [
+        {
+          "id": "D03-f1",
+          "quote": "移电C06是虚构验收充电宝",
+          "start": 0,
+          "end": 13,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D03"
+        },
+        {
+          "id": "D03-f2",
+          "quote": "标称容量10000毫安时",
+          "start": 14,
+          "end": 26,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D03"
+        },
+        {
+          "id": "D03-f3",
+          "quote": "机身重量210克",
+          "start": 27,
+          "end": 35,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D03"
+        },
+        {
+          "id": "D03-f4",
+          "quote": "包装含一条20厘米USB-C线",
+          "start": 36,
+          "end": 51,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D03"
+        },
+        {
+          "id": "D03-f5",
+          "quote": "规格页只登记一个USB-C接口",
+          "start": 52,
+          "end": 67,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D03"
+        },
+        {
+          "id": "D03-f6",
+          "quote": "没有可用容量、输出功率、快充协议和实测充电次数数据",
+          "start": 68,
+          "end": 93,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D03"
+        }
+      ],
+      "proposed_requirements": [
+        {
+          "id": "r1",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：标称容量10000毫安时",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "标称容量10000毫安时",
+              "start": 14,
+              "end": 26,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D03"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r2",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：机身重量210克",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "机身重量210克",
+              "start": 27,
+              "end": 35,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D03"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r3",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：包装含一条20厘米USB-C线",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "包装含一条20厘米USB-C线",
+              "start": 36,
+              "end": 51,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D03"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r4",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：规格页只登记一个USB-C接口",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "规格页只登记一个USB-C接口",
+              "start": 52,
+              "end": 67,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D03"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r5",
+          "question": "明确当前资料缺少哪些重要测试或效果结论，避免把未知写成已证实",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "没有可用容量、输出功率、快充协议和实测充电次数数据",
+              "start": 68,
+              "end": 93,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D03"
+            }
+          ],
+          "scope": "限制条件必须保留，不能只删掉有风险句来获得高分"
+        }
+      ],
+      "standard_question_id": "D03-q1",
+      "forbidden_claims": [
+        "虚构作者亲测经历",
+        "把明确未知的测试指标写成已知",
+        "把虚构产品描述成真实在售产品"
+      ],
+      "evaluation_note": "属于场景化受控实验，不代表真实创作者任务；人审金标完成前不得报告人工准确率。",
+      "reference_example": {
+        "source_id": "sprint-example:STR-D03",
+        "text": "下面的例子来自虚构场景，讨论范围是接口核对。\n\n先别急着下结论，把桌上的现有条件列出来。\n\n材料中列出三个字段，分别是名称、位置和手工标签。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+        "text_sha256": "ffafe2ab283a691738182f7f6191ef66afd0aee75d8ab79f7865410627c580b0",
+        "classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example"
+        },
+        "evidence_role": "expression_reference",
+        "provenance": {
+          "path": "docs/evidence/sprint-20261102/dataset/structure_texts/STR-D03.txt",
+          "sample_id": "STR-D03",
+          "source_kind": "new_fictional_controlled_fixture",
+          "scope": "参考只提供写法；其作者经历和参数不属于任务事实"
+        }
+      }
+    },
+    {
+      "id": "D04",
+      "category": "digital",
+      "domain": "digital",
+      "data_kind": "fictional_controlled_task",
+      "is_real_user_task": false,
+      "gold_status": "proposed_pending_two_human_reviewers",
+      "topic": "支点M07显示器支架的有依据介绍与选择检查",
+      "material": "支点M07是虚构验收显示器支架。安装方式为桌边夹持。夹具登记适配桌板厚度20至50毫米。规格页注明VESA孔距75×75或100×100毫米。包装含内六角工具。没有承重、桌板材质兼容或实测稳定性数据。",
+      "audience": "需要根据资料核对适用条件的普通读者",
+      "answer": "受控用户标准答案：桌板厚30毫米，显示器孔距100×100毫米；显示器重量和桌板材质未确认，不能直接判定安全兼容。",
+      "answer_policy": "sealed_answer_for_uniform_supplement_only; never include before an actual question",
+      "input": {
+        "topic": "支点M07显示器支架的有依据介绍与选择检查",
+        "material": "支点M07是虚构验收显示器支架。安装方式为桌边夹持。夹具登记适配桌板厚度20至50毫米。规格页注明VESA孔距75×75或100×100毫米。包装含内六角工具。没有承重、桌板材质兼容或实测稳定性数据。",
+        "audience": "需要根据资料核对适用条件的普通读者",
+        "tone": "具体、克制",
+        "mode": "live",
+        "allow_hypothesis": false,
+        "material_policy": "available_only",
+        "web_research": {
+          "enabled": false,
+          "queries": []
+        },
+        "creation": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "用现有资料说明已知信息、适用检查和未知边界，禁止虚构亲测"
+        }
+      },
+      "sources": [
+        {
+          "source_id": "sprint-source:D04",
+          "path": "sources.json",
+          "text_sha256": "b431bc97f0b85fd925dc616430703126130542bd2149b9629b29e6cb365128a7"
+        }
+      ],
+      "facts": [
+        {
+          "id": "D04-f1",
+          "quote": "支点M07是虚构验收显示器支架",
+          "start": 0,
+          "end": 15,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D04"
+        },
+        {
+          "id": "D04-f2",
+          "quote": "安装方式为桌边夹持",
+          "start": 16,
+          "end": 25,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D04"
+        },
+        {
+          "id": "D04-f3",
+          "quote": "夹具登记适配桌板厚度20至50毫米",
+          "start": 26,
+          "end": 43,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D04"
+        },
+        {
+          "id": "D04-f4",
+          "quote": "规格页注明VESA孔距75×75或100×100毫米",
+          "start": 44,
+          "end": 70,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D04"
+        },
+        {
+          "id": "D04-f5",
+          "quote": "包装含内六角工具",
+          "start": 71,
+          "end": 79,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D04"
+        },
+        {
+          "id": "D04-f6",
+          "quote": "没有承重、桌板材质兼容或实测稳定性数据",
+          "start": 80,
+          "end": 99,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D04"
+        }
+      ],
+      "proposed_requirements": [
+        {
+          "id": "r1",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：安装方式为桌边夹持",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "安装方式为桌边夹持",
+              "start": 16,
+              "end": 25,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D04"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r2",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：夹具登记适配桌板厚度20至50毫米",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "夹具登记适配桌板厚度20至50毫米",
+              "start": 26,
+              "end": 43,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D04"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r3",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：规格页注明VESA孔距75×75或100×100毫米",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "规格页注明VESA孔距75×75或100×100毫米",
+              "start": 44,
+              "end": 70,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D04"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r4",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：包装含内六角工具",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "包装含内六角工具",
+              "start": 71,
+              "end": 79,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D04"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r5",
+          "question": "明确当前资料缺少哪些重要测试或效果结论，避免把未知写成已证实",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "没有承重、桌板材质兼容或实测稳定性数据",
+              "start": 80,
+              "end": 99,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D04"
+            }
+          ],
+          "scope": "限制条件必须保留，不能只删掉有风险句来获得高分"
+        }
+      ],
+      "standard_question_id": "D04-q1",
+      "forbidden_claims": [
+        "虚构作者亲测经历",
+        "把明确未知的测试指标写成已知",
+        "把虚构产品描述成真实在售产品"
+      ],
+      "evaluation_note": "属于场景化受控实验，不代表真实创作者任务；人审金标完成前不得报告人工准确率。",
+      "reference_example": {
+        "source_id": "sprint-example:STR-D04",
+        "text": "先别急着下结论，把桌上的现有条件列出来。\n\n材料中列出三个字段，分别是名称、位置和手工标签。\n\n操作时先列出自己的条件，然后逐项对照材料里的已知字段。\n\n收藏前先核对这份清单是否适合你的场景。",
+        "text_sha256": "4d5fe97e2687012393cd25e9e836f90634ac8158cb1fa745082991d26f04021f",
+        "classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example"
+        },
+        "evidence_role": "expression_reference",
+        "provenance": {
+          "path": "docs/evidence/sprint-20261102/dataset/structure_texts/STR-D04.txt",
+          "sample_id": "STR-D04",
+          "source_kind": "new_fictional_controlled_fixture",
+          "scope": "参考只提供写法；其作者经历和参数不属于任务事实"
+        }
+      }
+    },
+    {
+      "id": "D05",
+      "category": "digital",
+      "domain": "digital",
+      "data_kind": "fictional_controlled_task",
+      "is_real_user_task": false,
+      "gold_status": "proposed_pending_two_human_reviewers",
+      "topic": "简键K08键盘的有依据介绍与选择检查",
+      "material": "简键K08是虚构验收键盘。采用有线USB-C连接。键位数量为84。机身尺寸为310×120×30毫米。包装附1.5米连接线。没有无线、静音、轴体寿命或操作系统完整兼容测试数据。",
+      "audience": "需要根据资料核对适用条件的普通读者",
+      "answer": "受控用户标准答案：只需要有线，主要写文字；对声音没有实测要求，也没有可提供的静音体验。",
+      "answer_policy": "sealed_answer_for_uniform_supplement_only; never include before an actual question",
+      "input": {
+        "topic": "简键K08键盘的有依据介绍与选择检查",
+        "material": "简键K08是虚构验收键盘。采用有线USB-C连接。键位数量为84。机身尺寸为310×120×30毫米。包装附1.5米连接线。没有无线、静音、轴体寿命或操作系统完整兼容测试数据。",
+        "audience": "需要根据资料核对适用条件的普通读者",
+        "tone": "具体、克制",
+        "mode": "live",
+        "allow_hypothesis": false,
+        "material_policy": "available_only",
+        "web_research": {
+          "enabled": false,
+          "queries": []
+        },
+        "creation": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "用现有资料说明已知信息、适用检查和未知边界，禁止虚构亲测"
+        }
+      },
+      "sources": [
+        {
+          "source_id": "sprint-source:D05",
+          "path": "sources.json",
+          "text_sha256": "868ffd1d95482bace31213a9b12eba48756866c774711c05f153abbca5cfeaf0"
+        }
+      ],
+      "facts": [
+        {
+          "id": "D05-f1",
+          "quote": "简键K08是虚构验收键盘",
+          "start": 0,
+          "end": 12,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D05"
+        },
+        {
+          "id": "D05-f2",
+          "quote": "采用有线USB-C连接",
+          "start": 13,
+          "end": 24,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D05"
+        },
+        {
+          "id": "D05-f3",
+          "quote": "键位数量为84",
+          "start": 25,
+          "end": 32,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D05"
+        },
+        {
+          "id": "D05-f4",
+          "quote": "机身尺寸为310×120×30毫米",
+          "start": 33,
+          "end": 50,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D05"
+        },
+        {
+          "id": "D05-f5",
+          "quote": "包装附1.5米连接线",
+          "start": 51,
+          "end": 61,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D05"
+        },
+        {
+          "id": "D05-f6",
+          "quote": "没有无线、静音、轴体寿命或操作系统完整兼容测试数据",
+          "start": 62,
+          "end": 87,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D05"
+        }
+      ],
+      "proposed_requirements": [
+        {
+          "id": "r1",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：采用有线USB-C连接",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "采用有线USB-C连接",
+              "start": 13,
+              "end": 24,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D05"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r2",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：键位数量为84",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "键位数量为84",
+              "start": 25,
+              "end": 32,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D05"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r3",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：机身尺寸为310×120×30毫米",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "机身尺寸为310×120×30毫米",
+              "start": 33,
+              "end": 50,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D05"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r4",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：包装附1.5米连接线",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "包装附1.5米连接线",
+              "start": 51,
+              "end": 61,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D05"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r5",
+          "question": "明确当前资料缺少哪些重要测试或效果结论，避免把未知写成已证实",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "没有无线、静音、轴体寿命或操作系统完整兼容测试数据",
+              "start": 62,
+              "end": 87,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D05"
+            }
+          ],
+          "scope": "限制条件必须保留，不能只删掉有风险句来获得高分"
+        }
+      ],
+      "standard_question_id": "D05-q1",
+      "forbidden_claims": [
+        "虚构作者亲测经历",
+        "把明确未知的测试指标写成已知",
+        "把虚构产品描述成真实在售产品"
+      ],
+      "evaluation_note": "属于场景化受控实验，不代表真实创作者任务；人审金标完成前不得报告人工准确率。",
+      "reference_example": {
+        "source_id": "sprint-example:STR-D05",
+        "text": "你可能想要一个直接答案，但决定还缺少自己的需求。\n\n虚构规格页登记型号X15，尺寸为15厘米，未提供其他测试。\n\n把选择拆成三个步骤：确认目标、核对资料、记录仍然未知的地方。\n\n不要把参考人物的个人记录移植到当前任务。\n\n愿意的话，留下最想确认的一项条件。",
+        "text_sha256": "96459dc3aaef4061bdb0c08e77f22125432c96d2e5b5488164254988c778b01e",
+        "classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example"
+        },
+        "evidence_role": "expression_reference",
+        "provenance": {
+          "path": "docs/evidence/sprint-20261102/dataset/structure_texts/STR-D05.txt",
+          "sample_id": "STR-D05",
+          "source_kind": "new_fictional_controlled_fixture",
+          "scope": "参考只提供写法；其作者经历和参数不属于任务事实"
+        }
+      }
+    },
+    {
+      "id": "D06",
+      "category": "digital",
+      "domain": "digital",
+      "data_kind": "fictional_controlled_task",
+      "is_real_user_task": false,
+      "gold_status": "proposed_pending_two_human_reviewers",
+      "topic": "汇口U09扩展坞的有依据介绍与选择检查",
+      "material": "汇口U09是虚构验收扩展坞。输入端为一根15厘米USB-C连接线。接口包括两个USB-A接口与一个HDMI接口。壳体尺寸为100×40×12毫米。说明页要求先核对主机端口功能。没有分辨率、刷新率、充电功率或主机兼容清单。",
+      "audience": "需要根据资料核对适用条件的普通读者",
+      "answer": "受控用户标准答案：计划连接鼠标与一台显示器；主机USB-C是否支持视频输出未知，不能承诺能接显示器。",
+      "answer_policy": "sealed_answer_for_uniform_supplement_only; never include before an actual question",
+      "input": {
+        "topic": "汇口U09扩展坞的有依据介绍与选择检查",
+        "material": "汇口U09是虚构验收扩展坞。输入端为一根15厘米USB-C连接线。接口包括两个USB-A接口与一个HDMI接口。壳体尺寸为100×40×12毫米。说明页要求先核对主机端口功能。没有分辨率、刷新率、充电功率或主机兼容清单。",
+        "audience": "需要根据资料核对适用条件的普通读者",
+        "tone": "具体、克制",
+        "mode": "live",
+        "allow_hypothesis": false,
+        "material_policy": "available_only",
+        "web_research": {
+          "enabled": false,
+          "queries": []
+        },
+        "creation": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "用现有资料说明已知信息、适用检查和未知边界，禁止虚构亲测"
+        }
+      },
+      "sources": [
+        {
+          "source_id": "sprint-source:D06",
+          "path": "sources.json",
+          "text_sha256": "d906d572fd8a50a40ebe09171b67a2130c68a082fa0b95132c4031658d3482e2"
+        }
+      ],
+      "facts": [
+        {
+          "id": "D06-f1",
+          "quote": "汇口U09是虚构验收扩展坞",
+          "start": 0,
+          "end": 13,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D06"
+        },
+        {
+          "id": "D06-f2",
+          "quote": "输入端为一根15厘米USB-C连接线",
+          "start": 14,
+          "end": 32,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D06"
+        },
+        {
+          "id": "D06-f3",
+          "quote": "接口包括两个USB-A接口与一个HDMI接口",
+          "start": 33,
+          "end": 55,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D06"
+        },
+        {
+          "id": "D06-f4",
+          "quote": "壳体尺寸为100×40×12毫米",
+          "start": 56,
+          "end": 72,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D06"
+        },
+        {
+          "id": "D06-f5",
+          "quote": "说明页要求先核对主机端口功能",
+          "start": 73,
+          "end": 87,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D06"
+        },
+        {
+          "id": "D06-f6",
+          "quote": "没有分辨率、刷新率、充电功率或主机兼容清单",
+          "start": 88,
+          "end": 109,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D06"
+        }
+      ],
+      "proposed_requirements": [
+        {
+          "id": "r1",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：输入端为一根15厘米USB-C连接线",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "输入端为一根15厘米USB-C连接线",
+              "start": 14,
+              "end": 32,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D06"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r2",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：接口包括两个USB-A接口与一个HDMI接口",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "接口包括两个USB-A接口与一个HDMI接口",
+              "start": 33,
+              "end": 55,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D06"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r3",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：壳体尺寸为100×40×12毫米",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "壳体尺寸为100×40×12毫米",
+              "start": 56,
+              "end": 72,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D06"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r4",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：说明页要求先核对主机端口功能",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "说明页要求先核对主机端口功能",
+              "start": 73,
+              "end": 87,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D06"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r5",
+          "question": "明确当前资料缺少哪些重要测试或效果结论，避免把未知写成已证实",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "没有分辨率、刷新率、充电功率或主机兼容清单",
+              "start": 88,
+              "end": 109,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D06"
+            }
+          ],
+          "scope": "限制条件必须保留，不能只删掉有风险句来获得高分"
+        }
+      ],
+      "standard_question_id": "D06-q1",
+      "forbidden_claims": [
+        "虚构作者亲测经历",
+        "把明确未知的测试指标写成已知",
+        "把虚构产品描述成真实在售产品"
+      ],
+      "evaluation_note": "属于场景化受控实验，不代表真实创作者任务；人审金标完成前不得报告人工准确率。",
+      "reference_example": {
+        "source_id": "sprint-example:STR-D06",
+        "text": "买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是充电配件。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+        "text_sha256": "eb97e41d626c06c0c15214eb28a99fba0d1f95d52164acbde4dd1b773120dd2e",
+        "classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example"
+        },
+        "evidence_role": "expression_reference",
+        "provenance": {
+          "path": "docs/evidence/sprint-20261102/dataset/structure_texts/STR-D06.txt",
+          "sample_id": "STR-D06",
+          "source_kind": "new_fictional_controlled_fixture",
+          "scope": "参考只提供写法；其作者经历和参数不属于任务事实"
+        }
+      }
+    },
+    {
+      "id": "D07",
+      "category": "digital",
+      "domain": "digital",
+      "data_kind": "fictional_controlled_task",
+      "is_real_user_task": false,
+      "gold_status": "proposed_pending_two_human_reviewers",
+      "topic": "微光L10桌面灯的有依据介绍与选择检查",
+      "material": "微光L10是虚构验收桌面灯。供电接口为USB-C。底座直径12厘米。灯臂高度32厘米。开关设在底座。没有照度、色温、功率、护眼认证或电池续航资料。",
+      "audience": "需要根据资料核对适用条件的普通读者",
+      "answer": "受控用户标准答案：固定桌面，有USB供电口；不要求离线使用，不把它介绍成带电池的灯。",
+      "answer_policy": "sealed_answer_for_uniform_supplement_only; never include before an actual question",
+      "input": {
+        "topic": "微光L10桌面灯的有依据介绍与选择检查",
+        "material": "微光L10是虚构验收桌面灯。供电接口为USB-C。底座直径12厘米。灯臂高度32厘米。开关设在底座。没有照度、色温、功率、护眼认证或电池续航资料。",
+        "audience": "需要根据资料核对适用条件的普通读者",
+        "tone": "具体、克制",
+        "mode": "live",
+        "allow_hypothesis": false,
+        "material_policy": "available_only",
+        "web_research": {
+          "enabled": false,
+          "queries": []
+        },
+        "creation": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "用现有资料说明已知信息、适用检查和未知边界，禁止虚构亲测"
+        }
+      },
+      "sources": [
+        {
+          "source_id": "sprint-source:D07",
+          "path": "sources.json",
+          "text_sha256": "37955f32735485fe71c1f0a8938ba8f6dc0d716d6fb8b6e6a32e19664ea47c8b"
+        }
+      ],
+      "facts": [
+        {
+          "id": "D07-f1",
+          "quote": "微光L10是虚构验收桌面灯",
+          "start": 0,
+          "end": 13,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D07"
+        },
+        {
+          "id": "D07-f2",
+          "quote": "供电接口为USB-C",
+          "start": 14,
+          "end": 24,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D07"
+        },
+        {
+          "id": "D07-f3",
+          "quote": "底座直径12厘米",
+          "start": 25,
+          "end": 33,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D07"
+        },
+        {
+          "id": "D07-f4",
+          "quote": "灯臂高度32厘米",
+          "start": 34,
+          "end": 42,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D07"
+        },
+        {
+          "id": "D07-f5",
+          "quote": "开关设在底座",
+          "start": 43,
+          "end": 49,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D07"
+        },
+        {
+          "id": "D07-f6",
+          "quote": "没有照度、色温、功率、护眼认证或电池续航资料",
+          "start": 50,
+          "end": 72,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:D07"
+        }
+      ],
+      "proposed_requirements": [
+        {
+          "id": "r1",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：供电接口为USB-C",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "供电接口为USB-C",
+              "start": 14,
+              "end": 24,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D07"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r2",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：底座直径12厘米",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "底座直径12厘米",
+              "start": 25,
+              "end": 33,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D07"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r3",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：灯臂高度32厘米",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "灯臂高度32厘米",
+              "start": 34,
+              "end": 42,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D07"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r4",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：开关设在底座",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "开关设在底座",
+              "start": 43,
+              "end": 49,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D07"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r5",
+          "question": "明确当前资料缺少哪些重要测试或效果结论，避免把未知写成已证实",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "没有照度、色温、功率、护眼认证或电池续航资料",
+              "start": 50,
+              "end": 72,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:D07"
+            }
+          ],
+          "scope": "限制条件必须保留，不能只删掉有风险句来获得高分"
+        }
+      ],
+      "standard_question_id": "D07-q1",
+      "forbidden_claims": [
+        "虚构作者亲测经历",
+        "把明确未知的测试指标写成已知",
+        "把虚构产品描述成真实在售产品"
+      ],
+      "evaluation_note": "属于场景化受控实验，不代表真实创作者任务；人审金标完成前不得报告人工准确率。",
+      "reference_example": {
+        "source_id": "sprint-example:STR-D07",
+        "text": "真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是灯具摆放。\n\n整理灯具摆放时，先保留可核对的信息，再决定文章顺序。\n\n材料中列出三个字段，分别是名称、位置和手工标签。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。",
+        "text_sha256": "b0091b44a3d9059dceda956551ef683bfd422f1a0fe90e28766a3ed72d19f521",
+        "classification": {
+          "domains": [
+            "digital"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example"
+        },
+        "evidence_role": "expression_reference",
+        "provenance": {
+          "path": "docs/evidence/sprint-20261102/dataset/structure_texts/STR-D07.txt",
+          "sample_id": "STR-D07",
+          "source_kind": "new_fictional_controlled_fixture",
+          "scope": "参考只提供写法；其作者经历和参数不属于任务事实"
+        }
+      }
+    },
+    {
+      "id": "H02",
+      "category": "home",
+      "domain": "furniture",
+      "data_kind": "fictional_controlled_task",
+      "is_real_user_task": false,
+      "gold_status": "proposed_pending_two_human_reviewers",
+      "topic": "层序S11收纳柜的有依据介绍与选择检查",
+      "material": "层序S11是虚构验收收纳柜。外形宽60厘米、深30厘米、高90厘米。共有三层开放隔板。背面附一套固定配件。说明页要求按附图装配后再放物品。没有承重、防倾倒测试、板材环保等级或防水资料。",
+      "audience": "需要根据资料核对适用条件的普通读者",
+      "answer": "受控用户标准答案：净宽65厘米、净深35厘米；墙体类型未确认，固定方式仍需按说明核对。",
+      "answer_policy": "sealed_answer_for_uniform_supplement_only; never include before an actual question",
+      "input": {
+        "topic": "层序S11收纳柜的有依据介绍与选择检查",
+        "material": "层序S11是虚构验收收纳柜。外形宽60厘米、深30厘米、高90厘米。共有三层开放隔板。背面附一套固定配件。说明页要求按附图装配后再放物品。没有承重、防倾倒测试、板材环保等级或防水资料。",
+        "audience": "需要根据资料核对适用条件的普通读者",
+        "tone": "具体、克制",
+        "mode": "live",
+        "allow_hypothesis": false,
+        "material_policy": "available_only",
+        "web_research": {
+          "enabled": false,
+          "queries": []
+        },
+        "creation": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "用现有资料说明已知信息、适用检查和未知边界，禁止虚构亲测"
+        }
+      },
+      "sources": [
+        {
+          "source_id": "sprint-source:H02",
+          "path": "sources.json",
+          "text_sha256": "af40a35adfb828ea508670c0eb693723007d2298d21156e5e0ede7b200004841"
+        }
+      ],
+      "facts": [
+        {
+          "id": "H02-f1",
+          "quote": "层序S11是虚构验收收纳柜",
+          "start": 0,
+          "end": 13,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H02"
+        },
+        {
+          "id": "H02-f2",
+          "quote": "外形宽60厘米、深30厘米、高90厘米",
+          "start": 14,
+          "end": 33,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H02"
+        },
+        {
+          "id": "H02-f3",
+          "quote": "共有三层开放隔板",
+          "start": 34,
+          "end": 42,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H02"
+        },
+        {
+          "id": "H02-f4",
+          "quote": "背面附一套固定配件",
+          "start": 43,
+          "end": 52,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H02"
+        },
+        {
+          "id": "H02-f5",
+          "quote": "说明页要求按附图装配后再放物品",
+          "start": 53,
+          "end": 68,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H02"
+        },
+        {
+          "id": "H02-f6",
+          "quote": "没有承重、防倾倒测试、板材环保等级或防水资料",
+          "start": 69,
+          "end": 91,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H02"
+        }
+      ],
+      "proposed_requirements": [
+        {
+          "id": "r1",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：外形宽60厘米、深30厘米、高90厘米",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "外形宽60厘米、深30厘米、高90厘米",
+              "start": 14,
+              "end": 33,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H02"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r2",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：共有三层开放隔板",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "共有三层开放隔板",
+              "start": 34,
+              "end": 42,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H02"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r3",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：背面附一套固定配件",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "背面附一套固定配件",
+              "start": 43,
+              "end": 52,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H02"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r4",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：说明页要求按附图装配后再放物品",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "说明页要求按附图装配后再放物品",
+              "start": 53,
+              "end": 68,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H02"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r5",
+          "question": "明确当前资料缺少哪些重要测试或效果结论，避免把未知写成已证实",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "没有承重、防倾倒测试、板材环保等级或防水资料",
+              "start": 69,
+              "end": 91,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H02"
+            }
+          ],
+          "scope": "限制条件必须保留，不能只删掉有风险句来获得高分"
+        }
+      ],
+      "standard_question_id": "H02-q1",
+      "forbidden_claims": [
+        "虚构作者亲测经历",
+        "把明确未知的测试指标写成已知",
+        "把虚构产品描述成真实在售产品"
+      ],
+      "evaluation_note": "属于场景化受控实验，不代表真实创作者任务；人审金标完成前不得报告人工准确率。",
+      "reference_example": {
+        "source_id": "sprint-example:STR-H02",
+        "text": "真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是抽屉分区。\n\n整理抽屉分区时，先保留可核对的信息，再决定文章顺序。\n\n材料中列出三个字段，分别是名称、位置和手工标签。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。",
+        "text_sha256": "db138b37bdfeb21e43bc69af3f5c0887422ea0573e210af06147b0aaa806a23e",
+        "classification": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example"
+        },
+        "evidence_role": "expression_reference",
+        "provenance": {
+          "path": "docs/evidence/sprint-20261102/dataset/structure_texts/STR-H02.txt",
+          "sample_id": "STR-H02",
+          "source_kind": "new_fictional_controlled_fixture",
+          "scope": "参考只提供写法；其作者经历和参数不属于任务事实"
+        }
+      }
+    },
+    {
+      "id": "H03",
+      "category": "home",
+      "domain": "furniture",
+      "data_kind": "fictional_controlled_task",
+      "is_real_user_task": false,
+      "gold_status": "proposed_pending_two_human_reviewers",
+      "topic": "垂线C12窗帘的有依据介绍与选择检查",
+      "material": "垂线C12是虚构验收窗帘。单片宽140厘米、高200厘米。每包包含两片。挂接形式为穿杆。材质登记为聚酯纤维。没有遮光率、阻燃等级、隔音或洗涤温度数据。",
+      "audience": "需要根据资料核对适用条件的普通读者",
+      "answer": "受控用户标准答案：现有为轨道挂钩，尚未确认转接方法；不能直接说这款可安装，先讲挂法核对。",
+      "answer_policy": "sealed_answer_for_uniform_supplement_only; never include before an actual question",
+      "input": {
+        "topic": "垂线C12窗帘的有依据介绍与选择检查",
+        "material": "垂线C12是虚构验收窗帘。单片宽140厘米、高200厘米。每包包含两片。挂接形式为穿杆。材质登记为聚酯纤维。没有遮光率、阻燃等级、隔音或洗涤温度数据。",
+        "audience": "需要根据资料核对适用条件的普通读者",
+        "tone": "具体、克制",
+        "mode": "live",
+        "allow_hypothesis": false,
+        "material_policy": "available_only",
+        "web_research": {
+          "enabled": false,
+          "queries": []
+        },
+        "creation": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "用现有资料说明已知信息、适用检查和未知边界，禁止虚构亲测"
+        }
+      },
+      "sources": [
+        {
+          "source_id": "sprint-source:H03",
+          "path": "sources.json",
+          "text_sha256": "b06425362a78524bb8f24eec1a3f021bab4c844be5cbe2666f42bfa15861057b"
+        }
+      ],
+      "facts": [
+        {
+          "id": "H03-f1",
+          "quote": "垂线C12是虚构验收窗帘",
+          "start": 0,
+          "end": 12,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H03"
+        },
+        {
+          "id": "H03-f2",
+          "quote": "单片宽140厘米、高200厘米",
+          "start": 13,
+          "end": 28,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H03"
+        },
+        {
+          "id": "H03-f3",
+          "quote": "每包包含两片",
+          "start": 29,
+          "end": 35,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H03"
+        },
+        {
+          "id": "H03-f4",
+          "quote": "挂接形式为穿杆",
+          "start": 36,
+          "end": 43,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H03"
+        },
+        {
+          "id": "H03-f5",
+          "quote": "材质登记为聚酯纤维",
+          "start": 44,
+          "end": 53,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H03"
+        },
+        {
+          "id": "H03-f6",
+          "quote": "没有遮光率、阻燃等级、隔音或洗涤温度数据",
+          "start": 54,
+          "end": 74,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H03"
+        }
+      ],
+      "proposed_requirements": [
+        {
+          "id": "r1",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：单片宽140厘米、高200厘米",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "单片宽140厘米、高200厘米",
+              "start": 13,
+              "end": 28,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H03"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r2",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：每包包含两片",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "每包包含两片",
+              "start": 29,
+              "end": 35,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H03"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r3",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：挂接形式为穿杆",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "挂接形式为穿杆",
+              "start": 36,
+              "end": 43,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H03"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r4",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：材质登记为聚酯纤维",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "材质登记为聚酯纤维",
+              "start": 44,
+              "end": 53,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H03"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r5",
+          "question": "明确当前资料缺少哪些重要测试或效果结论，避免把未知写成已证实",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "没有遮光率、阻燃等级、隔音或洗涤温度数据",
+              "start": 54,
+              "end": 74,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H03"
+            }
+          ],
+          "scope": "限制条件必须保留，不能只删掉有风险句来获得高分"
+        }
+      ],
+      "standard_question_id": "H03-q1",
+      "forbidden_claims": [
+        "虚构作者亲测经历",
+        "把明确未知的测试指标写成已知",
+        "把虚构产品描述成真实在售产品"
+      ],
+      "evaluation_note": "属于场景化受控实验，不代表真实创作者任务；人审金标完成前不得报告人工准确率。",
+      "reference_example": {
+        "source_id": "sprint-example:STR-H03",
+        "text": "下面的例子来自虚构场景，讨论范围是柜体尺寸。\n\n先别急着下结论，把桌上的现有条件列出来。\n\n材料中列出三个字段，分别是名称、位置和手工标签。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+        "text_sha256": "8857cb3a40cf680fee5cdc1bc0a4b5335459198284bf1f6e29b021e293b6dcf6",
+        "classification": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example"
+        },
+        "evidence_role": "expression_reference",
+        "provenance": {
+          "path": "docs/evidence/sprint-20261102/dataset/structure_texts/STR-H03.txt",
+          "sample_id": "STR-H03",
+          "source_kind": "new_fictional_controlled_fixture",
+          "scope": "参考只提供写法；其作者经历和参数不属于任务事实"
+        }
+      }
+    },
+    {
+      "id": "H04",
+      "category": "home",
+      "domain": "furniture",
+      "data_kind": "fictional_controlled_task",
+      "is_real_user_task": false,
+      "gold_status": "proposed_pending_two_human_reviewers",
+      "topic": "拭角B13清洁刷的有依据介绍与选择检查",
+      "material": "拭角B13是虚构验收清洁刷。刷头宽4厘米。手柄长20厘米。刷头不可拆卸。包装含一个悬挂环。没有杀菌、除霉、防刮测试或适用表面清单。",
+      "audience": "需要根据资料核对适用条件的普通读者",
+      "answer": "受控用户标准答案：只介绍形状、尺寸与收纳；无具体表面测试，不提供除霉或强力去污效果承诺。",
+      "answer_policy": "sealed_answer_for_uniform_supplement_only; never include before an actual question",
+      "input": {
+        "topic": "拭角B13清洁刷的有依据介绍与选择检查",
+        "material": "拭角B13是虚构验收清洁刷。刷头宽4厘米。手柄长20厘米。刷头不可拆卸。包装含一个悬挂环。没有杀菌、除霉、防刮测试或适用表面清单。",
+        "audience": "需要根据资料核对适用条件的普通读者",
+        "tone": "具体、克制",
+        "mode": "live",
+        "allow_hypothesis": false,
+        "material_policy": "available_only",
+        "web_research": {
+          "enabled": false,
+          "queries": []
+        },
+        "creation": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "用现有资料说明已知信息、适用检查和未知边界，禁止虚构亲测"
+        }
+      },
+      "sources": [
+        {
+          "source_id": "sprint-source:H04",
+          "path": "sources.json",
+          "text_sha256": "9e365012ce0fda6155325a6457f7083f8138f08946d34c5a15d2dc6f75ec6dcc"
+        }
+      ],
+      "facts": [
+        {
+          "id": "H04-f1",
+          "quote": "拭角B13是虚构验收清洁刷",
+          "start": 0,
+          "end": 13,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H04"
+        },
+        {
+          "id": "H04-f2",
+          "quote": "刷头宽4厘米",
+          "start": 14,
+          "end": 20,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H04"
+        },
+        {
+          "id": "H04-f3",
+          "quote": "手柄长20厘米",
+          "start": 21,
+          "end": 28,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H04"
+        },
+        {
+          "id": "H04-f4",
+          "quote": "刷头不可拆卸",
+          "start": 29,
+          "end": 35,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H04"
+        },
+        {
+          "id": "H04-f5",
+          "quote": "包装含一个悬挂环",
+          "start": 36,
+          "end": 44,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H04"
+        },
+        {
+          "id": "H04-f6",
+          "quote": "没有杀菌、除霉、防刮测试或适用表面清单",
+          "start": 45,
+          "end": 64,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H04"
+        }
+      ],
+      "proposed_requirements": [
+        {
+          "id": "r1",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：刷头宽4厘米",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "刷头宽4厘米",
+              "start": 14,
+              "end": 20,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H04"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r2",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：手柄长20厘米",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "手柄长20厘米",
+              "start": 21,
+              "end": 28,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H04"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r3",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：刷头不可拆卸",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "刷头不可拆卸",
+              "start": 29,
+              "end": 35,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H04"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r4",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：包装含一个悬挂环",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "包装含一个悬挂环",
+              "start": 36,
+              "end": 44,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H04"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r5",
+          "question": "明确当前资料缺少哪些重要测试或效果结论，避免把未知写成已证实",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "没有杀菌、除霉、防刮测试或适用表面清单",
+              "start": 45,
+              "end": 64,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H04"
+            }
+          ],
+          "scope": "限制条件必须保留，不能只删掉有风险句来获得高分"
+        }
+      ],
+      "standard_question_id": "H04-q1",
+      "forbidden_claims": [
+        "虚构作者亲测经历",
+        "把明确未知的测试指标写成已知",
+        "把虚构产品描述成真实在售产品"
+      ],
+      "evaluation_note": "属于场景化受控实验，不代表真实创作者任务；人审金标完成前不得报告人工准确率。",
+      "reference_example": {
+        "source_id": "sprint-example:STR-H04",
+        "text": "先别急着下结论，把桌上的现有条件列出来。\n\n材料中列出三个字段，分别是名称、位置和手工标签。\n\n操作时先列出自己的条件，然后逐项对照材料里的已知字段。\n\n收藏前先核对这份清单是否适合你的场景。",
+        "text_sha256": "4d5fe97e2687012393cd25e9e836f90634ac8158cb1fa745082991d26f04021f",
+        "classification": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example"
+        },
+        "evidence_role": "expression_reference",
+        "provenance": {
+          "path": "docs/evidence/sprint-20261102/dataset/structure_texts/STR-H04.txt",
+          "sample_id": "STR-H04",
+          "source_kind": "new_fictional_controlled_fixture",
+          "scope": "参考只提供写法；其作者经历和参数不属于任务事实"
+        }
+      }
+    },
+    {
+      "id": "H05",
+      "category": "home",
+      "domain": "furniture",
+      "data_kind": "fictional_controlled_task",
+      "is_real_user_task": false,
+      "gold_status": "proposed_pending_two_human_reviewers",
+      "topic": "轻挂R14衣架的有依据介绍与选择检查",
+      "material": "轻挂R14是虚构验收衣架。单只宽42厘米。挂钩不可旋转。每包五只。材质登记为塑料。没有单只承重、防滑测试或耐晒数据。",
+      "audience": "需要根据资料核对适用条件的普通读者",
+      "answer": "受控用户标准答案：用于整理薄上衣；没有厚外套承重资料，不把它推荐为重衣架。",
+      "answer_policy": "sealed_answer_for_uniform_supplement_only; never include before an actual question",
+      "input": {
+        "topic": "轻挂R14衣架的有依据介绍与选择检查",
+        "material": "轻挂R14是虚构验收衣架。单只宽42厘米。挂钩不可旋转。每包五只。材质登记为塑料。没有单只承重、防滑测试或耐晒数据。",
+        "audience": "需要根据资料核对适用条件的普通读者",
+        "tone": "具体、克制",
+        "mode": "live",
+        "allow_hypothesis": false,
+        "material_policy": "available_only",
+        "web_research": {
+          "enabled": false,
+          "queries": []
+        },
+        "creation": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "用现有资料说明已知信息、适用检查和未知边界，禁止虚构亲测"
+        }
+      },
+      "sources": [
+        {
+          "source_id": "sprint-source:H05",
+          "path": "sources.json",
+          "text_sha256": "1c3c31366789e0ccfee5c3b4047442364d1e6607c0ea58be4bbee0e4a37f5701"
+        }
+      ],
+      "facts": [
+        {
+          "id": "H05-f1",
+          "quote": "轻挂R14是虚构验收衣架",
+          "start": 0,
+          "end": 12,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H05"
+        },
+        {
+          "id": "H05-f2",
+          "quote": "单只宽42厘米",
+          "start": 13,
+          "end": 20,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H05"
+        },
+        {
+          "id": "H05-f3",
+          "quote": "挂钩不可旋转",
+          "start": 21,
+          "end": 27,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H05"
+        },
+        {
+          "id": "H05-f4",
+          "quote": "每包五只",
+          "start": 28,
+          "end": 32,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H05"
+        },
+        {
+          "id": "H05-f5",
+          "quote": "材质登记为塑料",
+          "start": 33,
+          "end": 40,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H05"
+        },
+        {
+          "id": "H05-f6",
+          "quote": "没有单只承重、防滑测试或耐晒数据",
+          "start": 41,
+          "end": 57,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H05"
+        }
+      ],
+      "proposed_requirements": [
+        {
+          "id": "r1",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：单只宽42厘米",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "单只宽42厘米",
+              "start": 13,
+              "end": 20,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H05"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r2",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：挂钩不可旋转",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "挂钩不可旋转",
+              "start": 21,
+              "end": 27,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H05"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r3",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：每包五只",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "每包五只",
+              "start": 28,
+              "end": 32,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H05"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r4",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：材质登记为塑料",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "材质登记为塑料",
+              "start": 33,
+              "end": 40,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H05"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r5",
+          "question": "明确当前资料缺少哪些重要测试或效果结论，避免把未知写成已证实",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "没有单只承重、防滑测试或耐晒数据",
+              "start": 41,
+              "end": 57,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H05"
+            }
+          ],
+          "scope": "限制条件必须保留，不能只删掉有风险句来获得高分"
+        }
+      ],
+      "standard_question_id": "H05-q1",
+      "forbidden_claims": [
+        "虚构作者亲测经历",
+        "把明确未知的测试指标写成已知",
+        "把虚构产品描述成真实在售产品"
+      ],
+      "evaluation_note": "属于场景化受控实验，不代表真实创作者任务；人审金标完成前不得报告人工准确率。",
+      "reference_example": {
+        "source_id": "sprint-example:STR-H05",
+        "text": "你可能想要一个直接答案，但决定还缺少自己的需求。\n\n虚构规格页登记型号X15，尺寸为15厘米，未提供其他测试。\n\n把选择拆成三个步骤：确认目标、核对资料、记录仍然未知的地方。\n\n不要把参考人物的个人记录移植到当前任务。\n\n愿意的话，留下最想确认的一项条件。",
+        "text_sha256": "96459dc3aaef4061bdb0c08e77f22125432c96d2e5b5488164254988c778b01e",
+        "classification": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example"
+        },
+        "evidence_role": "expression_reference",
+        "provenance": {
+          "path": "docs/evidence/sprint-20261102/dataset/structure_texts/STR-H05.txt",
+          "sample_id": "STR-H05",
+          "source_kind": "new_fictional_controlled_fixture",
+          "scope": "参考只提供写法；其作者经历和参数不属于任务事实"
+        }
+      }
+    },
+    {
+      "id": "H06",
+      "category": "home",
+      "domain": "furniture",
+      "data_kind": "fictional_controlled_task",
+      "is_real_user_task": false,
+      "gold_status": "proposed_pending_two_human_reviewers",
+      "topic": "素格P15靠垫的有依据介绍与选择检查",
+      "material": "素格P15是虚构验收靠垫。外套尺寸45×45厘米。外套可拆卸。包装含一个枕芯。外套闭合方式为拉链。没有支撑力、矫姿、过敏或洗涤方式资料。",
+      "audience": "需要根据资料核对适用条件的普通读者",
+      "answer": "受控用户标准答案：只做沙发搭配和外形介绍；不提供护腰、矫姿或医疗功效结论。",
+      "answer_policy": "sealed_answer_for_uniform_supplement_only; never include before an actual question",
+      "input": {
+        "topic": "素格P15靠垫的有依据介绍与选择检查",
+        "material": "素格P15是虚构验收靠垫。外套尺寸45×45厘米。外套可拆卸。包装含一个枕芯。外套闭合方式为拉链。没有支撑力、矫姿、过敏或洗涤方式资料。",
+        "audience": "需要根据资料核对适用条件的普通读者",
+        "tone": "具体、克制",
+        "mode": "live",
+        "allow_hypothesis": false,
+        "material_policy": "available_only",
+        "web_research": {
+          "enabled": false,
+          "queries": []
+        },
+        "creation": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "用现有资料说明已知信息、适用检查和未知边界，禁止虚构亲测"
+        }
+      },
+      "sources": [
+        {
+          "source_id": "sprint-source:H06",
+          "path": "sources.json",
+          "text_sha256": "e49a647dbc288ddd8524b104d0e76559c233bff3d359a11a8f08c5972c6b944a"
+        }
+      ],
+      "facts": [
+        {
+          "id": "H06-f1",
+          "quote": "素格P15是虚构验收靠垫",
+          "start": 0,
+          "end": 12,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H06"
+        },
+        {
+          "id": "H06-f2",
+          "quote": "外套尺寸45×45厘米",
+          "start": 13,
+          "end": 24,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H06"
+        },
+        {
+          "id": "H06-f3",
+          "quote": "外套可拆卸",
+          "start": 25,
+          "end": 30,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H06"
+        },
+        {
+          "id": "H06-f4",
+          "quote": "包装含一个枕芯",
+          "start": 31,
+          "end": 38,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H06"
+        },
+        {
+          "id": "H06-f5",
+          "quote": "外套闭合方式为拉链",
+          "start": 39,
+          "end": 48,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H06"
+        },
+        {
+          "id": "H06-f6",
+          "quote": "没有支撑力、矫姿、过敏或洗涤方式资料",
+          "start": 49,
+          "end": 67,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H06"
+        }
+      ],
+      "proposed_requirements": [
+        {
+          "id": "r1",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：外套尺寸45×45厘米",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "外套尺寸45×45厘米",
+              "start": 13,
+              "end": 24,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H06"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r2",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：外套可拆卸",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "外套可拆卸",
+              "start": 25,
+              "end": 30,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H06"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r3",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：包装含一个枕芯",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "包装含一个枕芯",
+              "start": 31,
+              "end": 38,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H06"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r4",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：外套闭合方式为拉链",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "外套闭合方式为拉链",
+              "start": 39,
+              "end": 48,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H06"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r5",
+          "question": "明确当前资料缺少哪些重要测试或效果结论，避免把未知写成已证实",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "没有支撑力、矫姿、过敏或洗涤方式资料",
+              "start": 49,
+              "end": 67,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H06"
+            }
+          ],
+          "scope": "限制条件必须保留，不能只删掉有风险句来获得高分"
+        }
+      ],
+      "standard_question_id": "H06-q1",
+      "forbidden_claims": [
+        "虚构作者亲测经历",
+        "把明确未知的测试指标写成已知",
+        "把虚构产品描述成真实在售产品"
+      ],
+      "evaluation_note": "属于场景化受控实验，不代表真实创作者任务；人审金标完成前不得报告人工准确率。",
+      "reference_example": {
+        "source_id": "sprint-example:STR-H06",
+        "text": "买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是衣架收纳。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+        "text_sha256": "51dfcdd1555a8fb979a349ed88f9ef4a425d2e59d844be10de59e8ce2e1a68c3",
+        "classification": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example"
+        },
+        "evidence_role": "expression_reference",
+        "provenance": {
+          "path": "docs/evidence/sprint-20261102/dataset/structure_texts/STR-H06.txt",
+          "sample_id": "STR-H06",
+          "source_kind": "new_fictional_controlled_fixture",
+          "scope": "参考只提供写法；其作者经历和参数不属于任务事实"
+        }
+      }
+    },
+    {
+      "id": "H07",
+      "category": "home",
+      "domain": "furniture",
+      "data_kind": "fictional_controlled_task",
+      "is_real_user_task": false,
+      "gold_status": "proposed_pending_two_human_reviewers",
+      "topic": "分格O16抽屉盒的有依据介绍与选择检查",
+      "material": "分格O16是虚构验收抽屉盒。外形尺寸30×20×8厘米。内部有六个固定格。材质登记为PP。包装不含标签贴。没有食品接触认证、耐热温度或防潮测试数据。",
+      "audience": "需要根据资料核对适用条件的普通读者",
+      "answer": "受控用户标准答案：内宽32厘米、内深22厘米、可用高度9厘米；尺寸仅作初步核对，抽屉轨道与凸起仍需检查。",
+      "answer_policy": "sealed_answer_for_uniform_supplement_only; never include before an actual question",
+      "input": {
+        "topic": "分格O16抽屉盒的有依据介绍与选择检查",
+        "material": "分格O16是虚构验收抽屉盒。外形尺寸30×20×8厘米。内部有六个固定格。材质登记为PP。包装不含标签贴。没有食品接触认证、耐热温度或防潮测试数据。",
+        "audience": "需要根据资料核对适用条件的普通读者",
+        "tone": "具体、克制",
+        "mode": "live",
+        "allow_hypothesis": false,
+        "material_policy": "available_only",
+        "web_research": {
+          "enabled": false,
+          "queries": []
+        },
+        "creation": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "用现有资料说明已知信息、适用检查和未知边界，禁止虚构亲测"
+        }
+      },
+      "sources": [
+        {
+          "source_id": "sprint-source:H07",
+          "path": "sources.json",
+          "text_sha256": "71234ca81321f41a472fb8ac5a5a27a84f55b6d1c238530de7798eab2982b86f"
+        }
+      ],
+      "facts": [
+        {
+          "id": "H07-f1",
+          "quote": "分格O16是虚构验收抽屉盒",
+          "start": 0,
+          "end": 13,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H07"
+        },
+        {
+          "id": "H07-f2",
+          "quote": "外形尺寸30×20×8厘米",
+          "start": 14,
+          "end": 27,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H07"
+        },
+        {
+          "id": "H07-f3",
+          "quote": "内部有六个固定格",
+          "start": 28,
+          "end": 36,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H07"
+        },
+        {
+          "id": "H07-f4",
+          "quote": "材质登记为PP",
+          "start": 37,
+          "end": 44,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H07"
+        },
+        {
+          "id": "H07-f5",
+          "quote": "包装不含标签贴",
+          "start": 45,
+          "end": 52,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H07"
+        },
+        {
+          "id": "H07-f6",
+          "quote": "没有食品接触认证、耐热温度或防潮测试数据",
+          "start": 53,
+          "end": 73,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:H07"
+        }
+      ],
+      "proposed_requirements": [
+        {
+          "id": "r1",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：外形尺寸30×20×8厘米",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "外形尺寸30×20×8厘米",
+              "start": 14,
+              "end": 27,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H07"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r2",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：内部有六个固定格",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "内部有六个固定格",
+              "start": 28,
+              "end": 36,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H07"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r3",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：材质登记为PP",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "材质登记为PP",
+              "start": 37,
+              "end": 44,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H07"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r4",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：包装不含标签贴",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "包装不含标签贴",
+              "start": 45,
+              "end": 52,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H07"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r5",
+          "question": "明确当前资料缺少哪些重要测试或效果结论，避免把未知写成已证实",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "没有食品接触认证、耐热温度或防潮测试数据",
+              "start": 53,
+              "end": 73,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:H07"
+            }
+          ],
+          "scope": "限制条件必须保留，不能只删掉有风险句来获得高分"
+        }
+      ],
+      "standard_question_id": "H07-q1",
+      "forbidden_claims": [
+        "虚构作者亲测经历",
+        "把明确未知的测试指标写成已知",
+        "把虚构产品描述成真实在售产品"
+      ],
+      "evaluation_note": "属于场景化受控实验，不代表真实创作者任务；人审金标完成前不得报告人工准确率。",
+      "reference_example": {
+        "source_id": "sprint-example:STR-H07",
+        "text": "真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是靠垫外套。\n\n整理靠垫外套时，先保留可核对的信息，再决定文章顺序。\n\n材料中列出三个字段，分别是名称、位置和手工标签。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。",
+        "text_sha256": "5650d2e1c621fb758bbaff05e122b09ae0ed88f5a5dca880495a1d4141cfa4e6",
+        "classification": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example"
+        },
+        "evidence_role": "expression_reference",
+        "provenance": {
+          "path": "docs/evidence/sprint-20261102/dataset/structure_texts/STR-H07.txt",
+          "sample_id": "STR-H07",
+          "source_kind": "new_fictional_controlled_fixture",
+          "scope": "参考只提供写法；其作者经历和参数不属于任务事实"
+        }
+      }
+    },
+    {
+      "id": "S01",
+      "category": "study",
+      "domain": "general",
+      "data_kind": "fictional_controlled_task",
+      "is_real_user_task": false,
+      "gold_status": "proposed_pending_two_human_reviewers",
+      "topic": "清单T17任务卡的有依据介绍与选择检查",
+      "material": "清单T17是虚构验收任务卡工具。每张卡包含标题、截止日期、状态三个字段。状态可选待办、进行中、完成。支持按截止日期排序。导出格式为CSV。没有多人同步、提醒、学习成绩或效率提升测试数据。",
+      "audience": "需要根据资料核对适用条件的普通读者",
+      "answer": "受控用户标准答案：只供个人使用；不需要多人同步，避免承诺协作或自动提醒。",
+      "answer_policy": "sealed_answer_for_uniform_supplement_only; never include before an actual question",
+      "input": {
+        "topic": "清单T17任务卡的有依据介绍与选择检查",
+        "material": "清单T17是虚构验收任务卡工具。每张卡包含标题、截止日期、状态三个字段。状态可选待办、进行中、完成。支持按截止日期排序。导出格式为CSV。没有多人同步、提醒、学习成绩或效率提升测试数据。",
+        "audience": "需要根据资料核对适用条件的普通读者",
+        "tone": "具体、克制",
+        "mode": "live",
+        "allow_hypothesis": false,
+        "material_policy": "available_only",
+        "web_research": {
+          "enabled": false,
+          "queries": []
+        },
+        "creation": {
+          "domains": [
+            "general"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "用现有资料说明已知信息、适用检查和未知边界，禁止虚构亲测"
+        }
+      },
+      "sources": [
+        {
+          "source_id": "sprint-source:S01",
+          "path": "sources.json",
+          "text_sha256": "549f97d1c024c82674eab475d24dc4216d85d545d90f99ea25688ba680a14413"
+        }
+      ],
+      "facts": [
+        {
+          "id": "S01-f1",
+          "quote": "清单T17是虚构验收任务卡工具",
+          "start": 0,
+          "end": 15,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S01"
+        },
+        {
+          "id": "S01-f2",
+          "quote": "每张卡包含标题、截止日期、状态三个字段",
+          "start": 16,
+          "end": 35,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S01"
+        },
+        {
+          "id": "S01-f3",
+          "quote": "状态可选待办、进行中、完成",
+          "start": 36,
+          "end": 49,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S01"
+        },
+        {
+          "id": "S01-f4",
+          "quote": "支持按截止日期排序",
+          "start": 50,
+          "end": 59,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S01"
+        },
+        {
+          "id": "S01-f5",
+          "quote": "导出格式为CSV",
+          "start": 60,
+          "end": 68,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S01"
+        },
+        {
+          "id": "S01-f6",
+          "quote": "没有多人同步、提醒、学习成绩或效率提升测试数据",
+          "start": 69,
+          "end": 92,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S01"
+        }
+      ],
+      "proposed_requirements": [
+        {
+          "id": "r1",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：每张卡包含标题、截止日期、状态三个字段",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "每张卡包含标题、截止日期、状态三个字段",
+              "start": 16,
+              "end": 35,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S01"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r2",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：状态可选待办、进行中、完成",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "状态可选待办、进行中、完成",
+              "start": 36,
+              "end": 49,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S01"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r3",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：支持按截止日期排序",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "支持按截止日期排序",
+              "start": 50,
+              "end": 59,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S01"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r4",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：导出格式为CSV",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "导出格式为CSV",
+              "start": 60,
+              "end": 68,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S01"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r5",
+          "question": "明确当前资料缺少哪些重要测试或效果结论，避免把未知写成已证实",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "没有多人同步、提醒、学习成绩或效率提升测试数据",
+              "start": 69,
+              "end": 92,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S01"
+            }
+          ],
+          "scope": "限制条件必须保留，不能只删掉有风险句来获得高分"
+        }
+      ],
+      "standard_question_id": "S01-q1",
+      "forbidden_claims": [
+        "虚构作者亲测经历",
+        "把明确未知的测试指标写成已知",
+        "把虚构产品描述成真实在售产品"
+      ],
+      "evaluation_note": "属于场景化受控实验，不代表真实创作者任务；人审金标完成前不得报告人工准确率。",
+      "reference_example": {
+        "source_id": "sprint-example:STR-S01",
+        "text": "买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是任务卡整理。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+        "text_sha256": "031da1cb410946e6339087121cb3954c42b249cdb988008ee55a29f84fe21923",
+        "classification": {
+          "domains": [
+            "general"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example"
+        },
+        "evidence_role": "expression_reference",
+        "provenance": {
+          "path": "docs/evidence/sprint-20261102/dataset/structure_texts/STR-S01.txt",
+          "sample_id": "STR-S01",
+          "source_kind": "new_fictional_controlled_fixture",
+          "scope": "参考只提供写法；其作者经历和参数不属于任务事实"
+        }
+      }
+    },
+    {
+      "id": "S02",
+      "category": "study",
+      "domain": "general",
+      "data_kind": "fictional_controlled_task",
+      "is_real_user_task": false,
+      "gold_status": "proposed_pending_two_human_reviewers",
+      "topic": "周记N18计划本的有依据介绍与选择检查",
+      "material": "周记N18是虚构验收计划本。每册包含52张周计划页。每页含七个日期栏。纸张尺寸为A5。页尾设空白复盘区。没有记忆提升、成绩变化或书写防渗测试资料。",
+      "audience": "需要根据资料核对适用条件的普通读者",
+      "answer": "受控用户标准答案：按周记录三项重点任务；没有逐小时栏位，不虚构课程表功能。",
+      "answer_policy": "sealed_answer_for_uniform_supplement_only; never include before an actual question",
+      "input": {
+        "topic": "周记N18计划本的有依据介绍与选择检查",
+        "material": "周记N18是虚构验收计划本。每册包含52张周计划页。每页含七个日期栏。纸张尺寸为A5。页尾设空白复盘区。没有记忆提升、成绩变化或书写防渗测试资料。",
+        "audience": "需要根据资料核对适用条件的普通读者",
+        "tone": "具体、克制",
+        "mode": "live",
+        "allow_hypothesis": false,
+        "material_policy": "available_only",
+        "web_research": {
+          "enabled": false,
+          "queries": []
+        },
+        "creation": {
+          "domains": [
+            "general"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "用现有资料说明已知信息、适用检查和未知边界，禁止虚构亲测"
+        }
+      },
+      "sources": [
+        {
+          "source_id": "sprint-source:S02",
+          "path": "sources.json",
+          "text_sha256": "e2bcb209d89c40e1002520dc25ee3dded637ab37138586cb5a011e04f1d77cf8"
+        }
+      ],
+      "facts": [
+        {
+          "id": "S02-f1",
+          "quote": "周记N18是虚构验收计划本",
+          "start": 0,
+          "end": 13,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S02"
+        },
+        {
+          "id": "S02-f2",
+          "quote": "每册包含52张周计划页",
+          "start": 14,
+          "end": 25,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S02"
+        },
+        {
+          "id": "S02-f3",
+          "quote": "每页含七个日期栏",
+          "start": 26,
+          "end": 34,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S02"
+        },
+        {
+          "id": "S02-f4",
+          "quote": "纸张尺寸为A5",
+          "start": 35,
+          "end": 42,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S02"
+        },
+        {
+          "id": "S02-f5",
+          "quote": "页尾设空白复盘区",
+          "start": 43,
+          "end": 51,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S02"
+        },
+        {
+          "id": "S02-f6",
+          "quote": "没有记忆提升、成绩变化或书写防渗测试资料",
+          "start": 52,
+          "end": 72,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S02"
+        }
+      ],
+      "proposed_requirements": [
+        {
+          "id": "r1",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：每册包含52张周计划页",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "每册包含52张周计划页",
+              "start": 14,
+              "end": 25,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S02"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r2",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：每页含七个日期栏",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "每页含七个日期栏",
+              "start": 26,
+              "end": 34,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S02"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r3",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：纸张尺寸为A5",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "纸张尺寸为A5",
+              "start": 35,
+              "end": 42,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S02"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r4",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：页尾设空白复盘区",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "页尾设空白复盘区",
+              "start": 43,
+              "end": 51,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S02"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r5",
+          "question": "明确当前资料缺少哪些重要测试或效果结论，避免把未知写成已证实",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "没有记忆提升、成绩变化或书写防渗测试资料",
+              "start": 52,
+              "end": 72,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S02"
+            }
+          ],
+          "scope": "限制条件必须保留，不能只删掉有风险句来获得高分"
+        }
+      ],
+      "standard_question_id": "S02-q1",
+      "forbidden_claims": [
+        "虚构作者亲测经历",
+        "把明确未知的测试指标写成已知",
+        "把虚构产品描述成真实在售产品"
+      ],
+      "evaluation_note": "属于场景化受控实验，不代表真实创作者任务；人审金标完成前不得报告人工准确率。",
+      "reference_example": {
+        "source_id": "sprint-example:STR-S02",
+        "text": "真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是周计划。\n\n整理周计划时，先保留可核对的信息，再决定文章顺序。\n\n材料中列出三个字段，分别是名称、位置和手工标签。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。",
+        "text_sha256": "7e9076f102efdbd493cb721a6a44a5265d8c4c7afb76f0a52d9501237ebcf5c1",
+        "classification": {
+          "domains": [
+            "general"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example"
+        },
+        "evidence_role": "expression_reference",
+        "provenance": {
+          "path": "docs/evidence/sprint-20261102/dataset/structure_texts/STR-S02.txt",
+          "sample_id": "STR-S02",
+          "source_kind": "new_fictional_controlled_fixture",
+          "scope": "参考只提供写法；其作者经历和参数不属于任务事实"
+        }
+      }
+    },
+    {
+      "id": "S03",
+      "category": "study",
+      "domain": "general",
+      "data_kind": "fictional_controlled_task",
+      "is_real_user_task": false,
+      "gold_status": "proposed_pending_two_human_reviewers",
+      "topic": "词盒F19卡片工具的有依据介绍与选择检查",
+      "material": "词盒F19是虚构验收卡片工具。每张卡支持正面和背面两个文本字段。可按标签筛选卡片。支持手动标记已复习。导出格式为JSON。没有自动间隔重复调度、发音、词库版权或记忆效果数据。",
+      "audience": "需要根据资料核对适用条件的普通读者",
+      "answer": "受控用户标准答案：需要手动整理课程术语；接受自行安排复习，不要求自动记忆调度。",
+      "answer_policy": "sealed_answer_for_uniform_supplement_only; never include before an actual question",
+      "input": {
+        "topic": "词盒F19卡片工具的有依据介绍与选择检查",
+        "material": "词盒F19是虚构验收卡片工具。每张卡支持正面和背面两个文本字段。可按标签筛选卡片。支持手动标记已复习。导出格式为JSON。没有自动间隔重复调度、发音、词库版权或记忆效果数据。",
+        "audience": "需要根据资料核对适用条件的普通读者",
+        "tone": "具体、克制",
+        "mode": "live",
+        "allow_hypothesis": false,
+        "material_policy": "available_only",
+        "web_research": {
+          "enabled": false,
+          "queries": []
+        },
+        "creation": {
+          "domains": [
+            "general"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "用现有资料说明已知信息、适用检查和未知边界，禁止虚构亲测"
+        }
+      },
+      "sources": [
+        {
+          "source_id": "sprint-source:S03",
+          "path": "sources.json",
+          "text_sha256": "42a61509218fa502ff28665a39418fe5eada0b64e865233dc5bb4060d13433f0"
+        }
+      ],
+      "facts": [
+        {
+          "id": "S03-f1",
+          "quote": "词盒F19是虚构验收卡片工具",
+          "start": 0,
+          "end": 14,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S03"
+        },
+        {
+          "id": "S03-f2",
+          "quote": "每张卡支持正面和背面两个文本字段",
+          "start": 15,
+          "end": 31,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S03"
+        },
+        {
+          "id": "S03-f3",
+          "quote": "可按标签筛选卡片",
+          "start": 32,
+          "end": 40,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S03"
+        },
+        {
+          "id": "S03-f4",
+          "quote": "支持手动标记已复习",
+          "start": 41,
+          "end": 50,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S03"
+        },
+        {
+          "id": "S03-f5",
+          "quote": "导出格式为JSON",
+          "start": 51,
+          "end": 60,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S03"
+        },
+        {
+          "id": "S03-f6",
+          "quote": "没有自动间隔重复调度、发音、词库版权或记忆效果数据",
+          "start": 61,
+          "end": 86,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S03"
+        }
+      ],
+      "proposed_requirements": [
+        {
+          "id": "r1",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：每张卡支持正面和背面两个文本字段",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "每张卡支持正面和背面两个文本字段",
+              "start": 15,
+              "end": 31,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S03"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r2",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：可按标签筛选卡片",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "可按标签筛选卡片",
+              "start": 32,
+              "end": 40,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S03"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r3",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：支持手动标记已复习",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "支持手动标记已复习",
+              "start": 41,
+              "end": 50,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S03"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r4",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：导出格式为JSON",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "导出格式为JSON",
+              "start": 51,
+              "end": 60,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S03"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r5",
+          "question": "明确当前资料缺少哪些重要测试或效果结论，避免把未知写成已证实",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "没有自动间隔重复调度、发音、词库版权或记忆效果数据",
+              "start": 61,
+              "end": 86,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S03"
+            }
+          ],
+          "scope": "限制条件必须保留，不能只删掉有风险句来获得高分"
+        }
+      ],
+      "standard_question_id": "S03-q1",
+      "forbidden_claims": [
+        "虚构作者亲测经历",
+        "把明确未知的测试指标写成已知",
+        "把虚构产品描述成真实在售产品"
+      ],
+      "evaluation_note": "属于场景化受控实验，不代表真实创作者任务；人审金标完成前不得报告人工准确率。",
+      "reference_example": {
+        "source_id": "sprint-example:STR-S03",
+        "text": "下面的例子来自虚构场景，讨论范围是卡片复习。\n\n先别急着下结论，把桌上的现有条件列出来。\n\n材料中列出三个字段，分别是名称、位置和手工标签。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+        "text_sha256": "ddcf80b70984d357e939d9b124ebda68f0c55171b33443dc7f10eb87654b047d",
+        "classification": {
+          "domains": [
+            "general"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example"
+        },
+        "evidence_role": "expression_reference",
+        "provenance": {
+          "path": "docs/evidence/sprint-20261102/dataset/structure_texts/STR-S03.txt",
+          "sample_id": "STR-S03",
+          "source_kind": "new_fictional_controlled_fixture",
+          "scope": "参考只提供写法；其作者经历和参数不属于任务事实"
+        }
+      }
+    },
+    {
+      "id": "S04",
+      "category": "study",
+      "domain": "general",
+      "data_kind": "fictional_controlled_task",
+      "is_real_user_task": false,
+      "gold_status": "proposed_pending_two_human_reviewers",
+      "topic": "索引I20文件目录工具的有依据介绍与选择检查",
+      "material": "索引I20是虚构验收文件目录工具。导入字段为文件名、所在目录和手工标签。支持文件名关键词筛选。导出格式为CSV。记录不包含文件正文。没有全文搜索、云同步、内容理解或隐私审计结论。",
+      "audience": "需要根据资料核对适用条件的普通读者",
+      "answer": "受控用户标准答案：主要找文件名；明确不提供正文检索，不能把它推荐成全文搜索软件。",
+      "answer_policy": "sealed_answer_for_uniform_supplement_only; never include before an actual question",
+      "input": {
+        "topic": "索引I20文件目录工具的有依据介绍与选择检查",
+        "material": "索引I20是虚构验收文件目录工具。导入字段为文件名、所在目录和手工标签。支持文件名关键词筛选。导出格式为CSV。记录不包含文件正文。没有全文搜索、云同步、内容理解或隐私审计结论。",
+        "audience": "需要根据资料核对适用条件的普通读者",
+        "tone": "具体、克制",
+        "mode": "live",
+        "allow_hypothesis": false,
+        "material_policy": "available_only",
+        "web_research": {
+          "enabled": false,
+          "queries": []
+        },
+        "creation": {
+          "domains": [
+            "general"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "用现有资料说明已知信息、适用检查和未知边界，禁止虚构亲测"
+        }
+      },
+      "sources": [
+        {
+          "source_id": "sprint-source:S04",
+          "path": "sources.json",
+          "text_sha256": "0b32fc617f07cfa6cd1ce63705bd117697decc1838ae80225bebe73ab17f47eb"
+        }
+      ],
+      "facts": [
+        {
+          "id": "S04-f1",
+          "quote": "索引I20是虚构验收文件目录工具",
+          "start": 0,
+          "end": 16,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S04"
+        },
+        {
+          "id": "S04-f2",
+          "quote": "导入字段为文件名、所在目录和手工标签",
+          "start": 17,
+          "end": 35,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S04"
+        },
+        {
+          "id": "S04-f3",
+          "quote": "支持文件名关键词筛选",
+          "start": 36,
+          "end": 46,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S04"
+        },
+        {
+          "id": "S04-f4",
+          "quote": "导出格式为CSV",
+          "start": 47,
+          "end": 55,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S04"
+        },
+        {
+          "id": "S04-f5",
+          "quote": "记录不包含文件正文",
+          "start": 56,
+          "end": 65,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S04"
+        },
+        {
+          "id": "S04-f6",
+          "quote": "没有全文搜索、云同步、内容理解或隐私审计结论",
+          "start": 66,
+          "end": 88,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S04"
+        }
+      ],
+      "proposed_requirements": [
+        {
+          "id": "r1",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：导入字段为文件名、所在目录和手工标签",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "导入字段为文件名、所在目录和手工标签",
+              "start": 17,
+              "end": 35,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S04"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r2",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：支持文件名关键词筛选",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "支持文件名关键词筛选",
+              "start": 36,
+              "end": 46,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S04"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r3",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：导出格式为CSV",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "导出格式为CSV",
+              "start": 47,
+              "end": 55,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S04"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r4",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：记录不包含文件正文",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "记录不包含文件正文",
+              "start": 56,
+              "end": 65,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S04"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r5",
+          "question": "明确当前资料缺少哪些重要测试或效果结论，避免把未知写成已证实",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "没有全文搜索、云同步、内容理解或隐私审计结论",
+              "start": 66,
+              "end": 88,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S04"
+            }
+          ],
+          "scope": "限制条件必须保留，不能只删掉有风险句来获得高分"
+        }
+      ],
+      "standard_question_id": "S04-q1",
+      "forbidden_claims": [
+        "虚构作者亲测经历",
+        "把明确未知的测试指标写成已知",
+        "把虚构产品描述成真实在售产品"
+      ],
+      "evaluation_note": "属于场景化受控实验，不代表真实创作者任务；人审金标完成前不得报告人工准确率。",
+      "reference_example": {
+        "source_id": "sprint-example:STR-S04",
+        "text": "先别急着下结论，把桌上的现有条件列出来。\n\n材料中列出三个字段，分别是名称、位置和手工标签。\n\n操作时先列出自己的条件，然后逐项对照材料里的已知字段。\n\n收藏前先核对这份清单是否适合你的场景。",
+        "text_sha256": "4d5fe97e2687012393cd25e9e836f90634ac8158cb1fa745082991d26f04021f",
+        "classification": {
+          "domains": [
+            "general"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example"
+        },
+        "evidence_role": "expression_reference",
+        "provenance": {
+          "path": "docs/evidence/sprint-20261102/dataset/structure_texts/STR-S04.txt",
+          "sample_id": "STR-S04",
+          "source_kind": "new_fictional_controlled_fixture",
+          "scope": "参考只提供写法；其作者经历和参数不属于任务事实"
+        }
+      }
+    },
+    {
+      "id": "S05",
+      "category": "study",
+      "domain": "general",
+      "data_kind": "fictional_controlled_task",
+      "is_real_user_task": false,
+      "gold_status": "proposed_pending_two_human_reviewers",
+      "topic": "四栏Q21笔记模板的有依据介绍与选择检查",
+      "material": "四栏Q21是虚构验收笔记模板。每页包含问题、资料摘录、自己的解释和待核对四个栏。每页有一个来源链接栏。模板格式为可编辑Markdown。模板不自动联网核验。没有提高分数、避免遗忘或自动判断真伪的测试资料。",
+      "audience": "需要根据资料核对适用条件的普通读者",
+      "answer": "受控用户标准答案：有自己编写的课程提纲，但暂时没有可公开的外部链接；来源栏可标记待补，不伪造网址。",
+      "answer_policy": "sealed_answer_for_uniform_supplement_only; never include before an actual question",
+      "input": {
+        "topic": "四栏Q21笔记模板的有依据介绍与选择检查",
+        "material": "四栏Q21是虚构验收笔记模板。每页包含问题、资料摘录、自己的解释和待核对四个栏。每页有一个来源链接栏。模板格式为可编辑Markdown。模板不自动联网核验。没有提高分数、避免遗忘或自动判断真伪的测试资料。",
+        "audience": "需要根据资料核对适用条件的普通读者",
+        "tone": "具体、克制",
+        "mode": "live",
+        "allow_hypothesis": false,
+        "material_policy": "available_only",
+        "web_research": {
+          "enabled": false,
+          "queries": []
+        },
+        "creation": {
+          "domains": [
+            "general"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "用现有资料说明已知信息、适用检查和未知边界，禁止虚构亲测"
+        }
+      },
+      "sources": [
+        {
+          "source_id": "sprint-source:S05",
+          "path": "sources.json",
+          "text_sha256": "ffce6293edec95964a544c0788d0536c5a6c0560d7ce8318695cd058dadc45a7"
+        }
+      ],
+      "facts": [
+        {
+          "id": "S05-f1",
+          "quote": "四栏Q21是虚构验收笔记模板",
+          "start": 0,
+          "end": 14,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S05"
+        },
+        {
+          "id": "S05-f2",
+          "quote": "每页包含问题、资料摘录、自己的解释和待核对四个栏",
+          "start": 15,
+          "end": 39,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S05"
+        },
+        {
+          "id": "S05-f3",
+          "quote": "每页有一个来源链接栏",
+          "start": 40,
+          "end": 50,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S05"
+        },
+        {
+          "id": "S05-f4",
+          "quote": "模板格式为可编辑Markdown",
+          "start": 51,
+          "end": 67,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S05"
+        },
+        {
+          "id": "S05-f5",
+          "quote": "模板不自动联网核验",
+          "start": 68,
+          "end": 77,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S05"
+        },
+        {
+          "id": "S05-f6",
+          "quote": "没有提高分数、避免遗忘或自动判断真伪的测试资料",
+          "start": 78,
+          "end": 101,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S05"
+        }
+      ],
+      "proposed_requirements": [
+        {
+          "id": "r1",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：每页包含问题、资料摘录、自己的解释和待核对四个栏",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "每页包含问题、资料摘录、自己的解释和待核对四个栏",
+              "start": 15,
+              "end": 39,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S05"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r2",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：每页有一个来源链接栏",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "每页有一个来源链接栏",
+              "start": 40,
+              "end": 50,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S05"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r3",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：模板格式为可编辑Markdown",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "模板格式为可编辑Markdown",
+              "start": 51,
+              "end": 67,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S05"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r4",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：模板不自动联网核验",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "模板不自动联网核验",
+              "start": 68,
+              "end": 77,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S05"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r5",
+          "question": "明确当前资料缺少哪些重要测试或效果结论，避免把未知写成已证实",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "没有提高分数、避免遗忘或自动判断真伪的测试资料",
+              "start": 78,
+              "end": 101,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S05"
+            }
+          ],
+          "scope": "限制条件必须保留，不能只删掉有风险句来获得高分"
+        }
+      ],
+      "standard_question_id": "S05-q1",
+      "forbidden_claims": [
+        "虚构作者亲测经历",
+        "把明确未知的测试指标写成已知",
+        "把虚构产品描述成真实在售产品"
+      ],
+      "evaluation_note": "属于场景化受控实验，不代表真实创作者任务；人审金标完成前不得报告人工准确率。",
+      "reference_example": {
+        "source_id": "sprint-example:STR-S05",
+        "text": "你可能想要一个直接答案，但决定还缺少自己的需求。\n\n虚构规格页登记型号X15，尺寸为15厘米，未提供其他测试。\n\n把选择拆成三个步骤：确认目标、核对资料、记录仍然未知的地方。\n\n不要把参考人物的个人记录移植到当前任务。\n\n愿意的话，留下最想确认的一项条件。",
+        "text_sha256": "96459dc3aaef4061bdb0c08e77f22125432c96d2e5b5488164254988c778b01e",
+        "classification": {
+          "domains": [
+            "general"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example"
+        },
+        "evidence_role": "expression_reference",
+        "provenance": {
+          "path": "docs/evidence/sprint-20261102/dataset/structure_texts/STR-S05.txt",
+          "sample_id": "STR-S05",
+          "source_kind": "new_fictional_controlled_fixture",
+          "scope": "参考只提供写法；其作者经历和参数不属于任务事实"
+        }
+      }
+    },
+    {
+      "id": "S06",
+      "category": "study",
+      "domain": "general",
+      "data_kind": "fictional_controlled_task",
+      "is_real_user_task": false,
+      "gold_status": "proposed_pending_two_human_reviewers",
+      "topic": "片刻J22计时器的有依据介绍与选择检查",
+      "material": "片刻J22是虚构验收计时器。可设置1至60分钟倒计时。结束后显示文字提示。记录每次设定时长。可手动清除本地记录。没有后台提醒、跨设备同步、专注力变化或长期成绩资料。",
+      "audience": "需要根据资料核对适用条件的普通读者",
+      "answer": "受控用户标准答案：只在页面保持打开时计时；不要求关闭后提醒，不把它介绍成后台番茄钟。",
+      "answer_policy": "sealed_answer_for_uniform_supplement_only; never include before an actual question",
+      "input": {
+        "topic": "片刻J22计时器的有依据介绍与选择检查",
+        "material": "片刻J22是虚构验收计时器。可设置1至60分钟倒计时。结束后显示文字提示。记录每次设定时长。可手动清除本地记录。没有后台提醒、跨设备同步、专注力变化或长期成绩资料。",
+        "audience": "需要根据资料核对适用条件的普通读者",
+        "tone": "具体、克制",
+        "mode": "live",
+        "allow_hypothesis": false,
+        "material_policy": "available_only",
+        "web_research": {
+          "enabled": false,
+          "queries": []
+        },
+        "creation": {
+          "domains": [
+            "general"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "用现有资料说明已知信息、适用检查和未知边界，禁止虚构亲测"
+        }
+      },
+      "sources": [
+        {
+          "source_id": "sprint-source:S06",
+          "path": "sources.json",
+          "text_sha256": "35a9cc4eb703ad33d2e013199244f7a41564c8078f1cffcb750e98a584f3930a"
+        }
+      ],
+      "facts": [
+        {
+          "id": "S06-f1",
+          "quote": "片刻J22是虚构验收计时器",
+          "start": 0,
+          "end": 13,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S06"
+        },
+        {
+          "id": "S06-f2",
+          "quote": "可设置1至60分钟倒计时",
+          "start": 14,
+          "end": 26,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S06"
+        },
+        {
+          "id": "S06-f3",
+          "quote": "结束后显示文字提示",
+          "start": 27,
+          "end": 36,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S06"
+        },
+        {
+          "id": "S06-f4",
+          "quote": "记录每次设定时长",
+          "start": 37,
+          "end": 45,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S06"
+        },
+        {
+          "id": "S06-f5",
+          "quote": "可手动清除本地记录",
+          "start": 46,
+          "end": 55,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S06"
+        },
+        {
+          "id": "S06-f6",
+          "quote": "没有后台提醒、跨设备同步、专注力变化或长期成绩资料",
+          "start": 56,
+          "end": 81,
+          "unit": "unicode_codepoint",
+          "source_id": "sprint-source:S06"
+        }
+      ],
+      "proposed_requirements": [
+        {
+          "id": "r1",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：可设置1至60分钟倒计时",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "可设置1至60分钟倒计时",
+              "start": 14,
+              "end": 26,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S06"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r2",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：结束后显示文字提示",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "结束后显示文字提示",
+              "start": 27,
+              "end": 36,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S06"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r3",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：记录每次设定时长",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "记录每次设定时长",
+              "start": 37,
+              "end": 45,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S06"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r4",
+          "question": "介绍并解释这一已知资料对选择或使用的意义：可手动清除本地记录",
+          "weight": 2,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "可手动清除本地记录",
+              "start": 46,
+              "end": 55,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S06"
+            }
+          ],
+          "scope": "初始资料可支持；意义解释仍需人工检查，不由字面匹配判为真"
+        },
+        {
+          "id": "r5",
+          "question": "明确当前资料缺少哪些重要测试或效果结论，避免把未知写成已证实",
+          "weight": 3,
+          "status": "proposed_gold_pending_human_review",
+          "support": [
+            {
+              "quote": "没有后台提醒、跨设备同步、专注力变化或长期成绩资料",
+              "start": 56,
+              "end": 81,
+              "unit": "unicode_codepoint",
+              "source_id": "sprint-source:S06"
+            }
+          ],
+          "scope": "限制条件必须保留，不能只删掉有风险句来获得高分"
+        }
+      ],
+      "standard_question_id": "S06-q1",
+      "forbidden_claims": [
+        "虚构作者亲测经历",
+        "把明确未知的测试指标写成已知",
+        "把虚构产品描述成真实在售产品"
+      ],
+      "evaluation_note": "属于场景化受控实验，不代表真实创作者任务；人审金标完成前不得报告人工准确率。",
+      "reference_example": {
+        "source_id": "sprint-example:STR-S06",
+        "text": "买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是前台计时。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+        "text_sha256": "23dd17de72d88f298c51ef0962d67a91351dcc4dcd9b08309fb181d05987c3da",
+        "classification": {
+          "domains": [
+            "general"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example"
+        },
+        "evidence_role": "expression_reference",
+        "provenance": {
+          "path": "docs/evidence/sprint-20261102/dataset/structure_texts/STR-S06.txt",
+          "sample_id": "STR-S06",
+          "source_kind": "new_fictional_controlled_fixture",
+          "scope": "参考只提供写法；其作者经历和参数不属于任务事实"
+        }
+      }
+    }
+  ]
+}

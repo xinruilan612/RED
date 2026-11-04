@@ -1,0 +1,71 @@
+{
+  "sample_id": "S04",
+  "method": "baseline",
+  "participant_type": "codex_proxy",
+  "revision": "v5",
+  "draft_kind": "public_official_tutorial_excerpt",
+  "adaptation": "layout and attribution only; original English text",
+  "deletion_design": null,
+  "source_url": "https://docs.python.org/3.12/tutorial/datastructures.html#list-comprehensions",
+  "original_sha256": "4d596ed29ac752a04a3f67cdb243e13bca35110b3e82b011680cb42d84f62992",
+  "material_sha256": "4d596ed29ac752a04a3f67cdb243e13bca35110b3e82b011680cb42d84f62992",
+  "outcome": "completed",
+  "error": null,
+  "automatic_adoption": true,
+  "human_author": false,
+  "issues": [
+    {
+      "issue": "The requested cheat sheet asks for flattening [[1,2],[3,4]], but the manuscript only demonstrates flattening [[1,2,3],[4,5,6],[7,8,9]]. The requested input is not present in the source, so the result for [[1,2],[3,4]] cannot be given without executing code, which is disallowed.",
+      "evidence": "Draft: >>> vec = [[1,2,3], [4,5,6], [7,8,9]] and >>> [num for elem in vec for num in elem] -> [1, 2, 3, 4, 5, 6, 7, 8, 9]. No occurrence of [[1,2],[3,4]]."
+    },
+    {
+      "issue": "The requested cheat sheet asks to filter negatives from vec = [-4,-2,0,2,4] and then double the remaining values. The manuscript shows the two operations separately: one example doubles all values, another filters non-negatives. It does not combine them into a single comprehension, nor give that combined result.",
+      "evidence": "Draft: >>> [x*2 for x in vec] -> [-8, -4, 0, 4, 8] and >>> [x for x in vec if x >= 0] -> [0, 2, 4]. No example such as [x*2 for x in vec if x >= 0]."
+    },
+    {
+      "issue": "The draft states that a normal for loop 'creates (or overwrites) a variable named x that still exists after the loop completes' and that map/listcomp avoids 'side effects'. It does not explicitly state the contrasting point requested: that the comprehension example's loop variable is local to the comprehension and does not leak. This requested distinction is absent.",
+      "evidence": "Draft: 'Note that this creates (or overwrites) a variable named x that still exists after the loop completes. We can calculate the list of squares without any side effects using...' The text does not explicitly say the comprehension variable x is local/does not leak."
+    }
+  ],
+  "run_id": "8186ce8b-9123-4983-946b-792b7335fc58",
+  "wall_seconds": 7.133,
+  "final_sha256": "7042f9a6fde1c97a73b9b43e1cb181b7f3451224c75f96089f07c5f204ae6852",
+  "changed": true,
+  "calls": [
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 2579,
+      "output_tokens": 2040,
+      "total_tokens": 4619,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "issues": [
+          {
+            "issue": "The requested cheat sheet asks for flattening [[1,2],[3,4]], but the manuscript only demonstrates flattening [[1,2,3],[4,5,6],[7,8,9]]. The requested input is not present in the source, so the result for [[1,2],[3,4]] cannot be given without executing code, which is disallowed.",
+            "evidence": "Draft: >>> vec = [[1,2,3], [4,5,6], [7,8,9]] and >>> [num for elem in vec for num in elem] -> [1, 2, 3, 4, 5, 6, 7, 8, 9]. No occurrence of [[1,2],[3,4]]."
+          },
+          {
+            "issue": "The requested cheat sheet asks to filter negatives from vec = [-4,-2,0,2,4] and then double the remaining values. The manuscript shows the two operations separately: one example doubles all values, another filters non-negatives. It does not combine them into a single comprehension, nor give that combined result.",
+            "evidence": "Draft: >>> [x*2 for x in vec] -> [-8, -4, 0, 4, 8] and >>> [x for x in vec if x >= 0] -> [0, 2, 4]. No example such as [x*2 for x in vec if x >= 0]."
+          },
+          {
+            "issue": "The draft states that a normal for loop 'creates (or overwrites) a variable named x that still exists after the loop completes' and that map/listcomp avoids 'side effects'. It does not explicitly state the contrasting point requested: that the comprehension example's loop variable is local to the comprehension and does not leak. This requested distinction is absent.",
+            "evidence": "Draft: 'Note that this creates (or overwrites) a variable named x that still exists after the loop completes. We can calculate the list of squares without any side effects using...' The text does not explicitly say the comprehension variable x is local/does not leak."
+          }
+        ],
+        "revised_text": "5.1.3. List Comprehensions\n\nList comprehensions provide a concise way to create lists.\nCommon applications are to make new lists where each element is the result of\nsome operations applied to each member of another sequence or iterable, or to\ncreate a subsequence of those elements that satisfy a certain condition.\n\nFor example, assume we want to create a list of squares, like:\n\n>>> squares = []\n>>> for x in range(10):\n...     squares.append(x**2)\n...\n>>> squares\n[0, 1, 4, 9, 16, 25, 36, 49, 64, 81]\n\nNote that this creates (or overwrites) a variable named x that still exists\nafter the loop completes.  We can calculate the list of squares without any\nside effects using:\n\nsquares = list(map(lambda x: x**2, range(10)))\n\nor, equivalently:\n\nsquares = [x**2 for x in range(10)]\n\nwhich is more concise and readable.\n\nA list comprehension consists of brackets containing an expression followed\nby a for clause, then zero or more for or if\nclauses.  The result will be a new list resulting from evaluating the expression\nin the context of the for and if clauses which follow it.\nFor example, this listcomp combines the elements of two lists if they are not\nequal:\n\n>>> [(x, y) for x in [1,2,3] for y in [3,1,4] if x != y]\n[(1, 3), (1, 4), (2, 3), (2, 1), (2, 4), (3, 1), (3, 4)]\n\nand it’s equivalent to:\n\n>>> combs = []\n>>> for x in [1,2,3]:\n...     for y in [3,1,4]:\n...         if x != y:\n...             combs.append((x, y))\n...\n>>> combs\n[(1, 3), (1, 4), (2, 3), (2, 1), (2, 4), (3, 1), (3, 4)]\n\nNote how the order of the for and if statements is the\nsame in both these snippets.\n\nIf the expression is a tuple (e.g. the (x, y) in the previous example),\nit must be parenthesized.\n\n>>> vec = [-4, -2, 0, 2, 4]\n>>> # create a new list with the values doubled\n>>> [x*2 for x in vec]\n[-8, -4, 0, 4, 8]\n>>> # filter the list to exclude negative numbers\n>>> [x for x in vec if x >= 0]\n[0, 2, 4]\n>>> # apply a function to all the elements\n>>> [abs(x) for x in vec]\n[4, 2, 0, 2, 4]\n>>> # call a method on each element\n>>> freshfruit = ['  banana', '  loganberry ', 'passion fruit  ']\n>>> [weapon.strip() for weapon in freshfruit]\n['banana', 'loganberry', 'passion fruit']\n>>> # create a list of 2-tuples like (number, square)\n>>> [(x, x**2) for x in range(6)]\n[(0, 0), (1, 1), (2, 4), (3, 9), (4, 16), (5, 25)]\n>>> # the tuple must be parenthesized, otherwise an error is raised\n>>> [x, x**2 for x in range(6)]\n  File \"<stdin>\", line 1\n    [x, x**2 for x in range(6)]\n     ^^^^^^^\nSyntaxError: did you forget parentheses around the comprehension target?\n>>> # flatten a list using a listcomp with two 'for'\n>>> vec = [[1,2,3], [4,5,6], [7,8,9]]\n>>> [num for elem in vec for num in elem]\n[1, 2, 3, 4, 5, 6, 7, 8, 9]\n\nList comprehensions can contain complex expressions and nested functions:\n\n>>> from math import pi\n>>> [str(round(pi, i)) for i in range(1, 6)]\n['3.1', '3.14', '3.142', '3.1416', '3.14159']\n\nCheat sheet from this section\n\n- Filter negatives from vec = [-4, -2, 0, 2, 4], then double the remaining values. The section gives the two operations separately: [x*2 for x in vec] gives [-8, -4, 0, 4, 8], and [x for x in vec if x >= 0] gives [0, 2, 4]. It does not show a combined filter-then-double comprehension or its result.\n- Flatten a list of lists in original order. The section’s example is vec = [[1,2,3], [4,5,6], [7,8,9]] with expression [num for elem in vec for num in elem], giving [1, 2, 3, 4, 5, 6, 7, 8, 9]. The section does not show [[1,2],[3,4]] or its flattened result.\n- Tuple expression parentheses. If the expression is a tuple, it must be parenthesized. The (number, square) example is [(x, x**2) for x in range(6)], giving [(0, 0), (1, 1), (2, 4), (3, 9), (4, 16), (5, 25)]. Without parentheses, [x, x**2 for x in range(6)] raises SyntaxError: did you forget parentheses around the comprehension target?\n- Two for clauses and one if correspond to nested loops. [(x, y) for x in [1,2,3] for y in [3,1,4] if x != y] gives [(1, 3), (1, 4), (2, 3), (2, 1), (2, 4), (3, 1), (3, 4)]. It is equivalent to combs = [] then for x in [1,2,3]: for y in [3,1,4]: if x != y: combs.append((x, y)). The order of the for and if statements is the same in both snippets.\n- Variable side effects. A normal for loop creates or overwrites a variable named x that still exists after the loop completes. The section presents the map/range and comprehension forms as ways to calculate the list of squares without any side effects, but it does not explicitly state whether the comprehension variable itself exists after the comprehension."
+      }
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 1.300234,
+    "reserved_unknown_cny": 0.04281,
+    "committed_upper_cny": 1.343044,
+    "calls": 111,
+    "unknown_calls": 1
+  }
+}

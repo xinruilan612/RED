@@ -1,0 +1,151 @@
+{
+  "sample_id": "S10",
+  "method": "windtunnel",
+  "participant_type": "codex_proxy",
+  "revision": "v4",
+  "draft_kind": "public_official_tutorial_excerpt",
+  "adaptation": "layout and attribution only; original English text",
+  "deletion_design": null,
+  "source_url": "https://docs.python.org/3.12/howto/argparse.html#introducing-optional-arguments",
+  "original_sha256": "097a75cb3cc6e2bbe535cba19ca4f53a63d7283298cae24749c47145dac0915f",
+  "material_sha256": "097a75cb3cc6e2bbe535cba19ca4f53a63d7283298cae24749c47145dac0915f",
+  "outcome": "failed",
+  "error": {
+    "code": "STUDY_WORKFLOW_BLOCKED",
+    "message": "阅读引文不在稿件中"
+  },
+  "automatic_adoption": true,
+  "human_author": false,
+  "fallback": "latest preserved draft; does not imply successful review",
+  "run_id": "9f9f1860-bd44-4ed9-a035-470f79e7bffd",
+  "wall_seconds": 6.237,
+  "final_sha256": "097a75cb3cc6e2bbe535cba19ca4f53a63d7283298cae24749c47145dac0915f",
+  "changed": false,
+  "calls": [
+    {
+      "stage": "wt_conditions",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 248,
+      "output_tokens": 471,
+      "total_tokens": 719,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "conditions": [
+          {
+            "question": "稿件中是否需要明确说明未提供 --verbosity 时的缺省值及其对应输出？",
+            "scene": "命令行参数缺省行为设计",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "稿件是否解释仅写 --verbosity 而不赋值时，argparse 为何报错，以及报错信息应反映什么？",
+            "scene": "argparse 参数解析错误说明",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "将 --verbosity 改为无需值的 --verbose 时，add_argument 应使用哪个 action 或参数形式？启用与缺省输出分别是什么？",
+            "scene": "布尔开关参数设计",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "稿件是否说明 --verbose 1 为何报错，以及该错误与需要值/不需要值的参数类型有何关系？",
+            "scene": "参数类型错误解释",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "增加 -v 作为 --verbose 别名时，add_argument 的写法是什么？是否需要同时给出短选项和长选项？",
+            "scene": "参数别名设计",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "-v 的输出应与 --verbose 完全一致吗？稿件是否需要明确说明这一点？",
+            "scene": "短选项输出行为",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "help 输出中应如何体现 --verbose 与 -v？是否需要说明缺省值、action 或 metavar 如何显示？",
+            "scene": "帮助信息设计",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "每个设计决策是否都要求在稿内附证据？你希望证据以代码片段、解释性文字还是两者结合呈现？",
+            "scene": "教程证据呈现格式",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "当前场景为 Python 3.12 初学者教程且稿件为英文，示例代码和解释是否必须使用英文，还是允许中英对照？",
+            "scene": "教程语言与受众适配",
+            "source_ids": [],
+            "origin": "author"
+          }
+        ]
+      }
+    },
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 1594,
+      "output_tokens": 797,
+      "total_tokens": 2391,
+      "outcome": "invalid",
+      "error": "阅读引文不在稿件中",
+      "response": {
+        "results": [
+          {
+            "condition_id": "f06c9b0e-06cf-49d0-86c8-a407e175b345",
+            "status": "pass",
+            "answer": "最初使用 `--verbosity` 时，若未在命令行提供该选项，则相关变量 `args.verbosity` 默认被赋予 `None`，且程序不会输出任何内容（不打印 \"verbosity turned on\"）。",
+            "excerpt": "Note that by default, if an optional argument isn’t used, the relevant variable, in this case args.verbosity, is\ngiven None as a value, which is the reason it fails the truth\ntest of the if statement.",
+            "reason": "稿件明确说明未提供时默认值为 None，且 if 测试为假，故无输出。"
+          },
+          {
+            "condition_id": "fe500ea8-5ae0-4fd5-904f-6fbaa1abd8f5",
+            "status": "pass",
+            "answer": "因为 `--verbosity` 被定义为需要跟一个值，仅写选项而不提供值会导致 argparse 报错，提示缺少参数。",
+            "excerpt": "prog.py: error: argument --verbosity: expected one argument",
+            "reason": "稿件已给出该具体错误信息。"
+          },
+          {
+            "condition_id": "8f3ba696-7f94-4194-bae6-b498ac2763b6",
+            "status": "pass",
+            "answer": "改为无需值的 `--verbose` 的 `add_argument` 写法是：`parser.add_argument(\"--verbose\", help=\"increase output verbosity\", action=\"store_true\")`。启用时 `args.verbose` 为 `True`；未指定时默认隐含为 `False`。",
+            "excerpt": "parser.add_argument(\"--verbose\", help=\"increase output verbosity\",\n                    action=\"store_true\")",
+            "reason": "稿件明确给出了该 add_argument 代码，并说明指定时为 True，不指定隐含 False。"
+          },
+          {
+            "condition_id": "9cd9f07f-98e8-401f-b1f8-fd33d5e5a52d",
+            "status": "pass",
+            "answer": "因为 `--verbose` 是布尔标志（action=\"store_true\"），不接受值，所以在其后提供 `1` 会被视为无法识别的额外参数而报错。",
+            "excerpt": "prog.py: error: unrecognized arguments: 1",
+            "reason": "稿件已给出该错误信息，并说明它作为标志不接受值。"
+          },
+          {
+            "condition_id": "413ca116-aa01-4722-9ab7-1d8d7d160a73",
+            "status": "pass",
+            "answer": "增加 `-v` 别名的 `add_argument` 写法是：`parser.add_argument(\"-v\", \"--verbose\", help=\"increase output verbosity\", action=\"store_true\")`。使用 `-v` 会打开详细输出，打印 \"verbosity turned on\"；help 文本中会同时显示 `-v` 和 `--verbose` 两个选项。",
+            "excerpt": "parser.add_argument(\"-v\", \"--verbose\", help=\"increase output verbosity\",\n                    action=\"store_true\")",
+            "reason": "稿件给出了带别名的 add_argument，并展示 -v 输出及帮助文本中显示 \"-v, --verbose\"。"
+          }
+        ]
+      }
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 1.278756,
+    "reserved_unknown_cny": 0.04281,
+    "committed_upper_cny": 1.321566,
+    "calls": 110,
+    "unknown_calls": 1
+  }
+}

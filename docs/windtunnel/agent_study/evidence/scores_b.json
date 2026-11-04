@@ -1,0 +1,447 @@
+{
+  "scorer": "blind_scorer_b",
+  "group_mapping_seen": false,
+  "scores": [
+    {
+      "reader_id": "R04",
+      "blind_id": "P4752",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "最终字典、覆盖和删除步骤正确；稿内操作规则支持。",
+        "两个键列表及顺序正确；稿内插入顺序与排序示例支持。",
+        "in表达式及True正确；稿内有对应示例。",
+        "删除后读取不存在键报错；稿内规则支持。",
+        "列表及含列表元组不可作键、可变性原因正确；稿内支持。"
+      ]
+    },
+    {
+      "reader_id": "R04",
+      "blind_id": "P1591",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "序列化和反序列化名称及方向正确；稿内支持。",
+        "dumps函数及JSON字符串结果正确；稿内示例支持。",
+        "dump写入、load读取恢复正确；稿内支持。",
+        "文本读写指定UTF-8正确；稿内明确要求。",
+        "pickle任意代码风险、Python专用及JSON类实例限制均正确；稿内支持。"
+      ]
+    },
+    {
+      "reader_id": "R04",
+      "blind_id": "P9283",
+      "points": [
+        1,
+        0,
+        1,
+        1,
+        1
+      ],
+      "score": 4,
+      "correct": false,
+      "contradiction": false,
+      "reasons": [
+        "追加模式、UTF-8及w擦除差异正确；稿内支持。",
+        "仅说明with自动关闭和异常时关闭；漏答冻结标准要求的未关闭可能未完全写盘风险。",
+        "空串是EOF、单换行是空白行正确；稿内支持。",
+        "逐行迭代及内存优势、read无size读全文件的内存风险正确；稿内支持。",
+        "JPEG二进制读写、bytes及禁止encoding均正确；稿内支持。"
+      ]
+    },
+    {
+      "reader_id": "R04",
+      "blind_id": "P7084",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "ValueError重试、KeyboardInterrupt未匹配并中断正确；稿内示例与传播规则支持。",
+        "跳过try剩余语句、执行匹配处理器并继续、至多一个均正确；稿内支持。",
+        "两种处理器顺序对应输出及首个匹配规则正确；稿内支持。",
+        "else位置、无异常条件及避免误捕原因正确；稿内支持。",
+        "记录后raise及直接或间接调用内部异常均正确；稿内支持。"
+      ]
+    },
+    {
+      "reader_id": "R04",
+      "blind_id": "P7699",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "None、真值失败与正常无启用输出正确；稿内缺省示例和说明支持。",
+        "仅选项名缺值导致expected one argument正确；稿内支持。",
+        "store_true定义、启用True和缺省False正确；稿内支持。",
+        "flag不带值及unrecognized arguments: 1正确；稿内支持。",
+        "短别名定义、启用输出及help显示两名均正确；稿内支持。"
+      ]
+    },
+    {
+      "reader_id": "R04",
+      "blind_id": "P2194",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "筛选后翻倍表达式及[0,4,8]正确；稿内规则和示例支持。",
+        "展平表达式及[1,2,3,4]正确；稿内模式支持。",
+        "元组括号表达式及缺括号语法错误说明完整；稿内支持。",
+        "外层、内层、if及append次序正确；稿内普通循环对应支持。",
+        "普通循环变量留存与推导式避免变量副作用正确；稿内支持。"
+      ]
+    },
+    {
+      "reader_id": "R04",
+      "blind_id": "P4697",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "Path导入与当前目录初始化正确；稿内支持。",
+        "iterdir与is_dir筛选表达式正确；稿内支持。",
+        "递归glob表达式正确；稿内目录树示例支持。",
+        "路径拼接及resolve示例值正确且未推广到所有机器；稿内支持。",
+        "exists、is_dir及open/readline首行示例均正确；稿内支持。"
+      ]
+    },
+    {
+      "reader_id": "R05",
+      "blind_id": "P9283",
+      "points": [
+        1,
+        0,
+        1,
+        1,
+        1
+      ],
+      "score": 4,
+      "correct": false,
+      "contradiction": false,
+      "reasons": [
+        "追加模式、UTF-8及w擦除差异正确；稿内支持。",
+        "仅说明with自动关闭和异常时关闭；漏答冻结标准要求的未关闭可能未完全写盘风险。",
+        "空串是EOF、单换行是空白行正确；稿内支持。",
+        "逐行迭代及内存优势、read无size读全文件的内存风险正确；稿内支持。",
+        "JPEG二进制读写、bytes及禁止encoding均正确；稿内支持。"
+      ]
+    },
+    {
+      "reader_id": "R05",
+      "blind_id": "P2194",
+      "points": [
+        1,
+        1,
+        0,
+        1,
+        1
+      ],
+      "score": 4,
+      "correct": false,
+      "contradiction": false,
+      "reasons": [
+        "筛选后翻倍表达式及[0,4,8]正确；稿内规则和示例支持。",
+        "展平表达式及[1,2,3,4]正确；稿内模式支持。",
+        "给出正确括号表达式，但未回答冻结标准要求的缺括号会语法错误。",
+        "外层、内层、if及append次序正确；稿内普通循环对应支持。",
+        "普通循环变量留存与推导式避免变量副作用正确；稿内支持。"
+      ]
+    },
+    {
+      "reader_id": "R05",
+      "blind_id": "P4697",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "Path导入与当前目录初始化正确；稿内支持。",
+        "iterdir与is_dir筛选表达式正确；稿内支持。",
+        "递归glob表达式正确；稿内目录树示例支持。",
+        "路径拼接及resolve示例值正确且未推广到所有机器；稿内支持。",
+        "exists、is_dir及open/readline首行示例均正确；稿内支持。"
+      ]
+    },
+    {
+      "reader_id": "R05",
+      "blind_id": "P1591",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "序列化和反序列化名称及方向正确；稿内支持。",
+        "dumps函数及JSON字符串结果正确；稿内示例支持。",
+        "dump写入、load读取恢复正确；稿内支持。",
+        "文本读写指定UTF-8正确；稿内明确要求。",
+        "pickle任意代码风险、Python专用及JSON类实例限制均正确；稿内支持。"
+      ]
+    },
+    {
+      "reader_id": "R05",
+      "blind_id": "P9115",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "ValueError重试、KeyboardInterrupt未匹配并中断正确；稿内示例与传播规则支持。",
+        "跳过try剩余语句、执行匹配处理器并继续、至多一个均正确；稿内支持。",
+        "两种处理器顺序对应输出及首个匹配规则正确；稿内支持。",
+        "else位置、无异常条件及避免误捕原因正确；稿内支持。",
+        "记录后raise及直接或间接调用内部异常均正确；稿内支持。"
+      ]
+    },
+    {
+      "reader_id": "R05",
+      "blind_id": "P4752",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "最终字典、覆盖和删除步骤正确；稿内操作规则支持。",
+        "两个键列表及顺序正确；稿内插入顺序与排序示例支持。",
+        "in表达式及True正确；稿内有对应示例。",
+        "删除后读取不存在键报错；稿内规则支持。",
+        "列表及含列表元组不可作键、可变性原因正确；稿内支持。"
+      ]
+    },
+    {
+      "reader_id": "R05",
+      "blind_id": "P3107",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "None、真值失败与正常无启用输出正确；稿内缺省示例和说明支持。",
+        "仅选项名缺值导致expected one argument正确；稿内支持。",
+        "store_true定义、启用True和缺省False正确；稿内支持。",
+        "flag不带值及unrecognized arguments: 1正确；稿内支持。",
+        "短别名定义、启用输出及help显示两名均正确；稿内支持。"
+      ]
+    },
+    {
+      "reader_id": "R06",
+      "blind_id": "P1591",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "序列化和反序列化名称及方向正确；稿内支持。",
+        "dumps函数及JSON字符串结果正确；稿内示例支持。",
+        "dump写入、load读取恢复正确；稿内支持。",
+        "文本读写指定UTF-8正确；稿内明确要求。",
+        "pickle任意代码风险、Python专用及JSON类实例限制均正确；稿内支持。"
+      ]
+    },
+    {
+      "reader_id": "R06",
+      "blind_id": "P4697",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "Path导入与当前目录初始化正确；稿内支持。",
+        "iterdir与is_dir筛选表达式正确；稿内支持。",
+        "递归glob表达式正确；稿内目录树示例支持。",
+        "路径拼接及resolve示例值正确且未推广到所有机器；稿内支持。",
+        "exists、is_dir及open/readline首行示例均正确；稿内支持。"
+      ]
+    },
+    {
+      "reader_id": "R06",
+      "blind_id": "P7084",
+      "points": [
+        0,
+        1,
+        1,
+        1,
+        0
+      ],
+      "score": 3,
+      "correct": false,
+      "contradiction": false,
+      "reasons": [
+        "该点引文非稿件逐字连续原文；精确引文约束判0，不修补引文。",
+        "跳过try剩余语句、执行匹配处理器并继续、至多一个均正确；稿内支持。",
+        "两种处理器顺序对应输出及首个匹配规则正确；稿内支持。",
+        "else位置、无异常条件及避免误捕原因正确；稿内支持。",
+        "该点引文非稿件逐字连续原文；精确引文约束判0，不修补引文。"
+      ]
+    },
+    {
+      "reader_id": "R06",
+      "blind_id": "P9283",
+      "points": [
+        0,
+        1,
+        1,
+        0,
+        1
+      ],
+      "score": 3,
+      "correct": false,
+      "contradiction": false,
+      "reasons": [
+        "该点引文非稿件逐字连续原文；精确引文约束判0，不修补引文。",
+        "with异常时也关闭及未关闭写盘风险均正确；稿内支持。",
+        "空串是EOF、单换行是空白行正确；稿内支持。",
+        "该点引文非稿件逐字连续原文；精确引文约束判0，不修补引文。",
+        "JPEG二进制读写、bytes及禁止encoding均正确；稿内支持。"
+      ]
+    },
+    {
+      "reader_id": "R06",
+      "blind_id": "P1759",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "筛选后翻倍表达式及[0,4,8]正确；稿内规则和示例支持。",
+        "展平表达式及[1,2,3,4]正确；稿内模式支持。",
+        "元组括号表达式及缺括号语法错误说明完整；稿内支持。",
+        "外层、内层、if及append次序正确；稿内普通循环对应支持。",
+        "普通循环变量留存与推导式避免变量副作用正确；稿内支持。"
+      ]
+    },
+    {
+      "reader_id": "R06",
+      "blind_id": "P4752",
+      "points": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "score": 5,
+      "correct": true,
+      "contradiction": false,
+      "reasons": [
+        "最终字典、覆盖和删除步骤正确；稿内操作规则支持。",
+        "两个键列表及顺序正确；稿内插入顺序与排序示例支持。",
+        "in表达式及True正确；稿内有对应示例。",
+        "删除后读取不存在键报错；稿内规则支持。",
+        "列表及含列表元组不可作键、可变性原因正确；稿内支持。"
+      ]
+    },
+    {
+      "reader_id": "R06",
+      "blind_id": "P3107",
+      "points": [
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      "score": 3,
+      "correct": false,
+      "contradiction": false,
+      "reasons": [
+        "None、真值失败与正常无启用输出正确；稿内缺省示例和说明支持。",
+        "仅选项名缺值导致expected one argument正确；稿内支持。",
+        "该点引文非稿件逐字连续原文；精确引文约束判0，不修补引文。",
+        "flag不带值及unrecognized arguments: 1正确；稿内支持。",
+        "该点引文非稿件逐字连续原文；精确引文约束判0，不修补引文。"
+      ]
+    }
+  ]
+}

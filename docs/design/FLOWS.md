@@ -1,5 +1,7 @@
 # 四 Agent 业务流程与任务状态
 
+> **当前需求（2026-10-10，已授权实施）**：[小红书连接、研究资料库与多模型](CONNECTED_CREATOR_REQUIREMENTS.md)。新增能力以该基线为准；下文旧阶段限制和完成记录保留其日期与实现边界，不作为拒绝新需求的依据。
+
 v0.3 · 目标设计，待实施。机器可读路由：[design_contract.json](design_contract.json)。
 
 ## 1. 主流程与返修

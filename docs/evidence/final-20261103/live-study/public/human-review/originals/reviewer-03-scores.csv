@@ -1,0 +1,7 @@
+﻿"reviewer_id","article_id","completeness","factuality","coherence","naturalness","usefulness","notes"
+"reviewer-03","P0001","3","4","4","3","4",""
+"reviewer-03","P0002","4","4","5","4","4",""
+"reviewer-03","P0003","4","4","3","4","4",""
+"reviewer-03","P0004","4","4","5","4","5",""
+"reviewer-03","P0005","4","4","4","5","4",""
+"reviewer-03","P0006","4","5","4","5","4",""

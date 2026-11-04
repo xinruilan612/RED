@@ -1,0 +1,24 @@
+{
+  "groups": {
+    "windtunnel_final": {
+      "points": 32,
+      "maximum_points": 45,
+      "correct": 0,
+      "readings": 9
+    },
+    "abbreviated_control": {
+      "points": 0,
+      "maximum_points": 45,
+      "correct": 0,
+      "readings": 9
+    }
+  },
+  "non_exact_quotes": 3,
+  "quoted_strings": 96,
+  "samples": 3,
+  "proxy_readings": 18,
+  "human_participants": 0,
+  "ordinary_ai_editing_comparison": false,
+  "real_creator_distribution": false,
+  "causal_or_human_effect_claim": false
+}

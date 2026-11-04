@@ -1,0 +1,448 @@
+{
+  "sample_id": "S04",
+  "method": "windtunnel",
+  "participant_type": "codex_proxy",
+  "revision": "v4",
+  "draft_kind": "public_official_tutorial_excerpt",
+  "adaptation": "layout and attribution only; original English text",
+  "deletion_design": null,
+  "source_url": "https://docs.python.org/3.12/tutorial/datastructures.html#list-comprehensions",
+  "original_sha256": "4d596ed29ac752a04a3f67cdb243e13bca35110b3e82b011680cb42d84f62992",
+  "material_sha256": "4d596ed29ac752a04a3f67cdb243e13bca35110b3e82b011680cb42d84f62992",
+  "outcome": "failed",
+  "error": {
+    "code": "STUDY_WORKFLOW_BLOCKED",
+    "message": "修改引用了未选择的问题"
+  },
+  "automatic_adoption": true,
+  "human_author": false,
+  "initial_report": {
+    "id": "a6cf3c70-4684-420d-895d-14d70e8e0065",
+    "batch_id": "ca54c921-0892-4e78-9c6e-06bf5b506e27",
+    "draft_id": "f4ad0b6f-4d8e-4415-a023-ecd874c2f643",
+    "draft_hash": "134b7dac3db86236e73e5f833c7398e11ed8173169e4c9508b32746aa78d7f43",
+    "condition_set_id": "609462aa-effe-4f6c-93de-6727e5b657b7",
+    "condition_hash": "000db1b84b214071be6bc0aa6c100cbd685e110f4ed387c7a3bb17e2f8cb469a",
+    "material_hash": "aadf4e3567636989ad87c1b7bc595840869618d03c8ade864dc7b79395776191",
+    "results": [
+      {
+        "condition_id": "167d459d-858a-4562-b7e0-27c36ce96370",
+        "status": "unclear",
+        "reason": "reading.status为unclear，按规则必须输出unclear。",
+        "citations": [],
+        "reading": {
+          "condition_id": "167d459d-858a-4562-b7e0-27c36ce96370",
+          "status": "unclear",
+          "answer": "稿件提供了单条件推导式示例 [x for x in vec if x >= 0] 和 [x*2 for x in vec]，但未给出将筛除负数、翻倍、对 vec=[-4,-2,0,2,4] 一次性组合在同一推导式中的现成表达式或结果，因此无法仅依据稿件直接给出该组合表达式和结果。",
+          "excerpt": "[x for x in vec if x >= 0]",
+          "reason": "仅将稿件明确讲出的列表推导式规则用于给定输入仍缺少同时满足“筛除非负”和“翻倍”的组合示例或明确规则组合证据，按保守判断为 unclear。"
+        }
+      },
+      {
+        "condition_id": "2793674f-2430-4ebf-8d0b-7c107e8aa25a",
+        "status": "unclear",
+        "reason": "reading.status为unclear，按规则必须输出unclear。",
+        "citations": [],
+        "reading": {
+          "condition_id": "2793674f-2430-4ebf-8d0b-7c107e8aa25a",
+          "status": "unclear",
+          "answer": "稿件给出的 flatten 示例是 vec = [[1,2,3], [4,5,6], [7,8,9]]，表达式为 [num for elem in vec for num in elem]，结果是 [1, 2, 3, 4, 5, 6, 7, 8, 9]；但未用输入 [[1,2],[3,4]] 展示结果，因此无法仅依据稿件给出该定制输入的结果。",
+          "excerpt": "[num for elem in vec for num in elem]",
+          "reason": "缺少对给定输入 [[1,2],[3,4]] 的结果证据，不能直接写出定制结果。"
+        }
+      },
+      {
+        "condition_id": "c1b63358-755a-429a-baf2-3cb13f2582eb",
+        "status": "pass",
+        "reason": "阅读状态为pass，稿件明确说明元组表达式必须加括号，并提供正确和错误示例，材料支持该结论。",
+        "citations": [
+          {
+            "source_id": "9ffb0e78-5359-40ab-ae7a-7b5dda080444",
+            "quote": "If the expression is a tuple (e.g. the (x, y) in the previous example),\nit must be parenthesized."
+          },
+          {
+            "source_id": "9ffb0e78-5359-40ab-ae7a-7b5dda080444",
+            "quote": ">>> vec = [-4, -2, 0, 2, 4]\n>>> # create a new list with the values doubled\n>>> [x*2 for x in vec]\n[-8, -4, 0, 4, 8]\n>>> # filter the list to exclude negative numbers\n>>> [x for x in vec if x >= 0]\n[0, 2, 4]\n>>> # apply a function to all the elements\n>>> [abs(x) for x in vec]\n[4, 2, 0, 2, 4]\n>>> # call a method on each element\n>>> freshfruit = ['  banana', '  loganberry ', 'passion fruit  ']\n>>> [weapon.strip() for weapon in freshfruit]\n['banana', 'loganberry', 'passion fruit']\n>>> # create a list of 2-tuples like (number, square)\n>>> [(x, x**2) for x in range(6)]\n[(0, 0), (1, 1), (2, 4), (3, 9), (4, 16), (5, 25)]\n>>> # the tuple must be parenthesized, otherwise an error is raised\n>>> [x, x**2 for x in range(6)]\n  File \"<stdin>\", line 1\n    [x, x**2 for x in range(6)]\n     ^^^^^^^\nSyntaxError: did you forget parentheses around the comprehension target?\n>>> # flatten a list using a listcomp with two 'for'\n>>> vec = [[1,2,3], [4,5,6], [7,8,9]]\n>>> [num for elem in vec for num in elem]\n[1, 2, 3, 4, 5, 6, 7, 8, 9]"
+          }
+        ],
+        "reading": {
+          "condition_id": "c1b63358-755a-429a-baf2-3cb13f2582eb",
+          "status": "pass",
+          "answer": "稿件明确说明：如果表达式是元组，例如前例中的 (x, y)，它必须加括号；否则会引发错误。它给出正确示例 [(x, x**2) for x in range(6)]，并在无括号示例 [x, x**2 for x in range(6)] 下显示 SyntaxError。",
+          "excerpt": "If the expression is a tuple (e.g. the (x, y) in the previous example),\nit must be parenthesized.",
+          "reason": "稿件直接说明元组表达式在列表推导式中必须加括号。"
+        }
+      },
+      {
+        "condition_id": "9bcafdb7-aaae-4473-bb5f-c40c69643b26",
+        "status": "pass",
+        "reason": "阅读状态为pass，稿件通过列表推导式与普通嵌套循环的等价示例，并说明for和if顺序相同，材料支持该结论。",
+        "citations": [
+          {
+            "source_id": "9ffb0e78-5359-40ab-ae7a-7b5dda080444",
+            "quote": "A list comprehension consists of brackets containing an expression followed\nby a for clause, then zero or more for or if\nclauses.  The result will be a new list resulting from evaluating the expression\nin the context of the for and if clauses which follow it.\nFor example, this listcomp combines the elements of two lists if they are not\nequal:"
+          },
+          {
+            "source_id": "9ffb0e78-5359-40ab-ae7a-7b5dda080444",
+            "quote": ">>> [(x, y) for x in [1,2,3] for y in [3,1,4] if x != y]\n[(1, 3), (1, 4), (2, 3), (2, 1), (2, 4), (3, 1), (3, 4)]"
+          },
+          {
+            "source_id": "9ffb0e78-5359-40ab-ae7a-7b5dda080444",
+            "quote": "and it’s equivalent to:"
+          },
+          {
+            "source_id": "9ffb0e78-5359-40ab-ae7a-7b5dda080444",
+            "quote": ">>> combs = []\n>>> for x in [1,2,3]:\n...     for y in [3,1,4]:\n...         if x != y:\n...             combs.append((x, y))\n...\n>>> combs\n[(1, 3), (1, 4), (2, 3), (2, 1), (2, 4), (3, 1), (3, 4)]"
+          },
+          {
+            "source_id": "9ffb0e78-5359-40ab-ae7a-7b5dda080444",
+            "quote": "Note how the order of the for and if statements is the\nsame in both these snippets."
+          }
+        ],
+        "reading": {
+          "condition_id": "9bcafdb7-aaae-4473-bb5f-c40c69643b26",
+          "status": "pass",
+          "answer": "稿件通过 [(x, y) for x in [1,2,3] for y in [3,1,4] if x != y] 与普通嵌套循环 combs = []，然后 for x in [1,2,3]: for y in [3,1,4]: if x != y: combs.append((x, y)) 等价，并说明两个片段中 for 和 if 语句的顺序相同。",
+          "excerpt": "and it’s equivalent to:",
+          "reason": "稿件直接展示两个 for 加一个 if 的推导式与普通嵌套循环等价，并说明顺序相同。"
+        }
+      },
+      {
+        "condition_id": "3b41537e-99e0-4787-befc-ab74f205a615",
+        "status": "pass",
+        "reason": "阅读状态为pass，稿件直接说明普通for循环会创建或覆盖变量x且循环结束后仍存在，而列表推导式可以无副作用地计算平方列表，材料支持该结论。",
+        "citations": [
+          {
+            "source_id": "9ffb0e78-5359-40ab-ae7a-7b5dda080444",
+            "quote": "Note that this creates (or overwrites) a variable named x that still exists\nafter the loop completes.  We can calculate the list of squares without any\nside effects using:"
+          },
+          {
+            "source_id": "9ffb0e78-5359-40ab-ae7a-7b5dda080444",
+            "quote": "squares = [x**2 for x in range(10)]"
+          }
+        ],
+        "reading": {
+          "condition_id": "3b41537e-99e0-4787-befc-ab74f205a615",
+          "status": "pass",
+          "answer": "稿件说明普通 for 循环会创建或覆盖名为 x 的变量，并且循环结束后该变量仍然存在；同时说明可以用 list(map(lambda x: x**2, range(10))) 或 squares = [x**2 for x in range(10)] 在不产生这种副作用的情况下计算平方列表。",
+          "excerpt": "Note that this creates (or overwrites) a variable named x that still exists\nafter the loop completes.  We can calculate the list of squares without any\nside effects using:",
+          "reason": "稿件直接对比普通 for 循环变量仍存在与该处列表推导式无副作用。"
+        }
+      }
+    ],
+    "new_issues": [],
+    "mode": "live",
+    "created_at": 1791356056.446612,
+    "model_policy": {
+      "version": "56cb27ab6fbf778239c193adfb5bcc084ca534730fef852bc02b83a150695d18",
+      "routes": {
+        "wt_conditions": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_read": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_verify": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        },
+        "wt_patch": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "rate": 1.2e-06
+        }
+      },
+      "prompt_version": "windtunnel.v1"
+    },
+    "sources": [
+      {
+        "id": "f4ad0b6f-4d8e-4415-a023-ecd874c2f643",
+        "source_id": "f4ad0b6f-4d8e-4415-a023-ecd874c2f643",
+        "kind": "draft",
+        "text": "5.1.3. List Comprehensions\n\nList comprehensions provide a concise way to create lists.\nCommon applications are to make new lists where each element is the result of\nsome operations applied to each member of another sequence or iterable, or to\ncreate a subsequence of those elements that satisfy a certain condition.\n\nFor example, assume we want to create a list of squares, like:\n\n>>> squares = []\n>>> for x in range(10):\n...     squares.append(x**2)\n...\n>>> squares\n[0, 1, 4, 9, 16, 25, 36, 49, 64, 81]\n\nNote that this creates (or overwrites) a variable named x that still exists\nafter the loop completes.  We can calculate the list of squares without any\nside effects using:\n\nsquares = list(map(lambda x: x**2, range(10)))\n\nor, equivalently:\n\nsquares = [x**2 for x in range(10)]\n\nwhich is more concise and readable.\n\nA list comprehension consists of brackets containing an expression followed\nby a for clause, then zero or more for or if\nclauses.  The result will be a new list resulting from evaluating the expression\nin the context of the for and if clauses which follow it.\nFor example, this listcomp combines the elements of two lists if they are not\nequal:\n\n>>> [(x, y) for x in [1,2,3] for y in [3,1,4] if x != y]\n[(1, 3), (1, 4), (2, 3), (2, 1), (2, 4), (3, 1), (3, 4)]\n\nand it’s equivalent to:\n\n>>> combs = []\n>>> for x in [1,2,3]:\n...     for y in [3,1,4]:\n...         if x != y:\n...             combs.append((x, y))\n...\n>>> combs\n[(1, 3), (1, 4), (2, 3), (2, 1), (2, 4), (3, 1), (3, 4)]\n\nNote how the order of the for and if statements is the\nsame in both these snippets.\n\nIf the expression is a tuple (e.g. the (x, y) in the previous example),\nit must be parenthesized.\n\n>>> vec = [-4, -2, 0, 2, 4]\n>>> # create a new list with the values doubled\n>>> [x*2 for x in vec]\n[-8, -4, 0, 4, 8]\n>>> # filter the list to exclude negative numbers\n>>> [x for x in vec if x >= 0]\n[0, 2, 4]\n>>> # apply a function to all the elements\n>>> [abs(x) for x in vec]\n[4, 2, 0, 2, 4]\n>>> # call a method on each element\n>>> freshfruit = ['  banana', '  loganberry ', 'passion fruit  ']\n>>> [weapon.strip() for weapon in freshfruit]\n['banana', 'loganberry', 'passion fruit']\n>>> # create a list of 2-tuples like (number, square)\n>>> [(x, x**2) for x in range(6)]\n[(0, 0), (1, 1), (2, 4), (3, 9), (4, 16), (5, 25)]\n>>> # the tuple must be parenthesized, otherwise an error is raised\n>>> [x, x**2 for x in range(6)]\n  File \"<stdin>\", line 1\n    [x, x**2 for x in range(6)]\n     ^^^^^^^\nSyntaxError: did you forget parentheses around the comprehension target?\n>>> # flatten a list using a listcomp with two 'for'\n>>> vec = [[1,2,3], [4,5,6], [7,8,9]]\n>>> [num for elem in vec for num in elem]\n[1, 2, 3, 4, 5, 6, 7, 8, 9]\n\nList comprehensions can contain complex expressions and nested functions:\n\n>>> from math import pi\n>>> [str(round(pi, i)) for i in range(1, 6)]\n['3.1', '3.14', '3.142', '3.1416', '3.14159']",
+        "hash": "134b7dac3db86236e73e5f833c7398e11ed8173169e4c9508b32746aa78d7f43"
+      },
+      {
+        "id": "9ffb0e78-5359-40ab-ae7a-7b5dda080444",
+        "kind": "material",
+        "text": "5.1.3. List Comprehensions\n\nList comprehensions provide a concise way to create lists.\nCommon applications are to make new lists where each element is the result of\nsome operations applied to each member of another sequence or iterable, or to\ncreate a subsequence of those elements that satisfy a certain condition.\n\nFor example, assume we want to create a list of squares, like:\n\n>>> squares = []\n>>> for x in range(10):\n...     squares.append(x**2)\n...\n>>> squares\n[0, 1, 4, 9, 16, 25, 36, 49, 64, 81]\n\nNote that this creates (or overwrites) a variable named x that still exists\nafter the loop completes.  We can calculate the list of squares without any\nside effects using:\n\nsquares = list(map(lambda x: x**2, range(10)))\n\nor, equivalently:\n\nsquares = [x**2 for x in range(10)]\n\nwhich is more concise and readable.\n\nA list comprehension consists of brackets containing an expression followed\nby a for clause, then zero or more for or if\nclauses.  The result will be a new list resulting from evaluating the expression\nin the context of the for and if clauses which follow it.\nFor example, this listcomp combines the elements of two lists if they are not\nequal:\n\n>>> [(x, y) for x in [1,2,3] for y in [3,1,4] if x != y]\n[(1, 3), (1, 4), (2, 3), (2, 1), (2, 4), (3, 1), (3, 4)]\n\nand it’s equivalent to:\n\n>>> combs = []\n>>> for x in [1,2,3]:\n...     for y in [3,1,4]:\n...         if x != y:\n...             combs.append((x, y))\n...\n>>> combs\n[(1, 3), (1, 4), (2, 3), (2, 1), (2, 4), (3, 1), (3, 4)]\n\nNote how the order of the for and if statements is the\nsame in both these snippets.\n\nIf the expression is a tuple (e.g. the (x, y) in the previous example),\nit must be parenthesized.\n\n>>> vec = [-4, -2, 0, 2, 4]\n>>> # create a new list with the values doubled\n>>> [x*2 for x in vec]\n[-8, -4, 0, 4, 8]\n>>> # filter the list to exclude negative numbers\n>>> [x for x in vec if x >= 0]\n[0, 2, 4]\n>>> # apply a function to all the elements\n>>> [abs(x) for x in vec]\n[4, 2, 0, 2, 4]\n>>> # call a method on each element\n>>> freshfruit = ['  banana', '  loganberry ', 'passion fruit  ']\n>>> [weapon.strip() for weapon in freshfruit]\n['banana', 'loganberry', 'passion fruit']\n>>> # create a list of 2-tuples like (number, square)\n>>> [(x, x**2) for x in range(6)]\n[(0, 0), (1, 1), (2, 4), (3, 9), (4, 16), (5, 25)]\n>>> # the tuple must be parenthesized, otherwise an error is raised\n>>> [x, x**2 for x in range(6)]\n  File \"<stdin>\", line 1\n    [x, x**2 for x in range(6)]\n     ^^^^^^^\nSyntaxError: did you forget parentheses around the comprehension target?\n>>> # flatten a list using a listcomp with two 'for'\n>>> vec = [[1,2,3], [4,5,6], [7,8,9]]\n>>> [num for elem in vec for num in elem]\n[1, 2, 3, 4, 5, 6, 7, 8, 9]\n\nList comprehensions can contain complex expressions and nested functions:\n\n>>> from math import pi\n>>> [str(round(pi, i)) for i in range(1, 6)]\n['3.1', '3.14', '3.142', '3.1416', '3.14159']",
+        "title": "列表推导式",
+        "origin": "https://docs.python.org/3.12/tutorial/datastructures.html#list-comprehensions",
+        "provenance": "author_material",
+        "permission": false,
+        "version": 1,
+        "hash": "6bd72b882d0d6690a1a91c8d13eb033d6c37b2204efaad7919732dd648490cba",
+        "collected_at": 1791356044.238793
+      }
+    ]
+  },
+  "fallback": "latest preserved draft; does not imply successful review",
+  "run_id": "882d6494-bedf-4653-ab77-91ae53f5f235",
+  "wall_seconds": 16.17,
+  "final_sha256": "4d596ed29ac752a04a3f67cdb243e13bca35110b3e82b011680cb42d84f62992",
+  "changed": false,
+  "calls": [
+    {
+      "stage": "wt_conditions",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 279,
+      "output_tokens": 790,
+      "total_tokens": 1069,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "conditions": [
+          {
+            "question": "你希望小抄中关于列表推导式筛选并翻倍的部分，示例数据是否必须使用 vec=[-4,-2,0,2,4]？",
+            "scene": "列表推导式筛选与映射",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "对于展平嵌套列表 [[1,2],[3,4]]，你希望小抄展示的列表推导式表达式是直接使用两个 for 子句，还是使用其他方式？",
+            "scene": "嵌套列表展平",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "在说明生成 (number, square) 对时，你希望强调元组表达式必须加括号，还是同时说明不加括号会导致语法错误？",
+            "scene": "元组表达式括号要求",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "你希望小抄如何解释“两个 for 加一个 if”与普通嵌套循环的对应关系？是按执行顺序逐步对应，还是仅给出等价代码结构？",
+            "scene": "推导式与嵌套循环对应",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "关于普通 for 循环变量与列表推导式例子的变量副作用区别，你希望重点说明变量在推导式结束后是否泄漏到外部作用域吗？",
+            "scene": "变量作用域与副作用",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "你希望小抄中每一项都附上稿内证据（如引用原句或行号），还是只需在部分关键项附证据？",
+            "scene": "证据引用要求",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "你希望小抄的表述语言是保持英文，还是允许中英混合以便中文读者理解？",
+            "scene": "语言与读者定位",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "对于“不执行代码”这一要求，你希望小抄中所有结果（如 [-4,-2,0,2,4] 筛去负数翻倍后的结果）都以手工推导或直接给出的方式呈现吗？",
+            "scene": "结果呈现方式",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "你希望小抄覆盖的列表推导式语法是否仅限于基本形式（一个 for、一个 if、两个 for），还是需要包括条件表达式在输出部分的使用？",
+            "scene": "语法覆盖范围",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "在说明元组表达式括号要求时，你希望给出正确与错误示例的对比，还是只给出正确写法？",
+            "scene": "示例对比方式",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "你希望小抄以条目列表形式组织，还是以段落加代码块的形式呈现？",
+            "scene": "格式与组织",
+            "source_ids": [],
+            "origin": "author"
+          },
+          {
+            "question": "对于普通 for 循环变量与推导式变量的副作用区别，你希望引用稿内具体例子（如某个推导式）来对比，还是进行一般性说明？",
+            "scene": "副作用说明的具体性",
+            "source_ids": [],
+            "origin": "author"
+          }
+        ]
+      }
+    },
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 1846,
+      "output_tokens": 930,
+      "total_tokens": 2776,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "results": [
+          {
+            "condition_id": "167d459d-858a-4562-b7e0-27c36ce96370",
+            "status": "unclear",
+            "answer": "稿件提供了单条件推导式示例 [x for x in vec if x >= 0] 和 [x*2 for x in vec]，但未给出将筛除负数、翻倍、对 vec=[-4,-2,0,2,4] 一次性组合在同一推导式中的现成表达式或结果，因此无法仅依据稿件直接给出该组合表达式和结果。",
+            "excerpt": "[x for x in vec if x >= 0]",
+            "reason": "仅将稿件明确讲出的列表推导式规则用于给定输入仍缺少同时满足“筛除非负”和“翻倍”的组合示例或明确规则组合证据，按保守判断为 unclear。"
+          },
+          {
+            "condition_id": "2793674f-2430-4ebf-8d0b-7c107e8aa25a",
+            "status": "unclear",
+            "answer": "稿件给出的 flatten 示例是 vec = [[1,2,3], [4,5,6], [7,8,9]]，表达式为 [num for elem in vec for num in elem]，结果是 [1, 2, 3, 4, 5, 6, 7, 8, 9]；但未用输入 [[1,2],[3,4]] 展示结果，因此无法仅依据稿件给出该定制输入的结果。",
+            "excerpt": "[num for elem in vec for num in elem]",
+            "reason": "缺少对给定输入 [[1,2],[3,4]] 的结果证据，不能直接写出定制结果。"
+          },
+          {
+            "condition_id": "c1b63358-755a-429a-baf2-3cb13f2582eb",
+            "status": "pass",
+            "answer": "稿件明确说明：如果表达式是元组，例如前例中的 (x, y)，它必须加括号；否则会引发错误。它给出正确示例 [(x, x**2) for x in range(6)]，并在无括号示例 [x, x**2 for x in range(6)] 下显示 SyntaxError。",
+            "excerpt": "If the expression is a tuple (e.g. the (x, y) in the previous example),\nit must be parenthesized.",
+            "reason": "稿件直接说明元组表达式在列表推导式中必须加括号。"
+          },
+          {
+            "condition_id": "9bcafdb7-aaae-4473-bb5f-c40c69643b26",
+            "status": "pass",
+            "answer": "稿件通过 [(x, y) for x in [1,2,3] for y in [3,1,4] if x != y] 与普通嵌套循环 combs = []，然后 for x in [1,2,3]: for y in [3,1,4]: if x != y: combs.append((x, y)) 等价，并说明两个片段中 for 和 if 语句的顺序相同。",
+            "excerpt": "and it’s equivalent to:",
+            "reason": "稿件直接展示两个 for 加一个 if 的推导式与普通嵌套循环等价，并说明顺序相同。"
+          },
+          {
+            "condition_id": "3b41537e-99e0-4787-befc-ab74f205a615",
+            "status": "pass",
+            "answer": "稿件说明普通 for 循环会创建或覆盖名为 x 的变量，并且循环结束后该变量仍然存在；同时说明可以用 list(map(lambda x: x**2, range(10))) 或 squares = [x**2 for x in range(10)] 在不产生这种副作用的情况下计算平方列表。",
+            "excerpt": "Note that this creates (or overwrites) a variable named x that still exists\nafter the loop completes.  We can calculate the list of squares without any\nside effects using:",
+            "reason": "稿件直接对比普通 for 循环变量仍存在与该处列表推导式无副作用。"
+          }
+        ]
+      }
+    },
+    {
+      "stage": "wt_verify",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 6937,
+      "output_tokens": 1083,
+      "total_tokens": 8020,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "results": [
+          {
+            "condition_id": "167d459d-858a-4562-b7e0-27c36ce96370",
+            "status": "unclear",
+            "reason": "reading.status为unclear，按规则必须输出unclear。",
+            "citations": []
+          },
+          {
+            "condition_id": "2793674f-2430-4ebf-8d0b-7c107e8aa25a",
+            "status": "unclear",
+            "reason": "reading.status为unclear，按规则必须输出unclear。",
+            "citations": []
+          },
+          {
+            "condition_id": "c1b63358-755a-429a-baf2-3cb13f2582eb",
+            "status": "pass",
+            "reason": "阅读状态为pass，稿件明确说明元组表达式必须加括号，并提供正确和错误示例，材料支持该结论。",
+            "citations": [
+              {
+                "evidence_id": "9ffb0e78-5359-40ab-ae7a-7b5dda080444:6bd72b882d0d6690a1a91c8d13eb033d6c37b2204efaad7919732dd648490cba:P15"
+              },
+              {
+                "evidence_id": "9ffb0e78-5359-40ab-ae7a-7b5dda080444:6bd72b882d0d6690a1a91c8d13eb033d6c37b2204efaad7919732dd648490cba:P16"
+              }
+            ]
+          },
+          {
+            "condition_id": "9bcafdb7-aaae-4473-bb5f-c40c69643b26",
+            "status": "pass",
+            "reason": "阅读状态为pass，稿件通过列表推导式与普通嵌套循环的等价示例，并说明for和if顺序相同，材料支持该结论。",
+            "citations": [
+              {
+                "evidence_id": "9ffb0e78-5359-40ab-ae7a-7b5dda080444:6bd72b882d0d6690a1a91c8d13eb033d6c37b2204efaad7919732dd648490cba:P10"
+              },
+              {
+                "evidence_id": "9ffb0e78-5359-40ab-ae7a-7b5dda080444:6bd72b882d0d6690a1a91c8d13eb033d6c37b2204efaad7919732dd648490cba:P11"
+              },
+              {
+                "evidence_id": "9ffb0e78-5359-40ab-ae7a-7b5dda080444:6bd72b882d0d6690a1a91c8d13eb033d6c37b2204efaad7919732dd648490cba:P12"
+              },
+              {
+                "evidence_id": "9ffb0e78-5359-40ab-ae7a-7b5dda080444:6bd72b882d0d6690a1a91c8d13eb033d6c37b2204efaad7919732dd648490cba:P13"
+              },
+              {
+                "evidence_id": "9ffb0e78-5359-40ab-ae7a-7b5dda080444:6bd72b882d0d6690a1a91c8d13eb033d6c37b2204efaad7919732dd648490cba:P14"
+              }
+            ]
+          },
+          {
+            "condition_id": "3b41537e-99e0-4787-befc-ab74f205a615",
+            "status": "pass",
+            "reason": "阅读状态为pass，稿件直接说明普通for循环会创建或覆盖变量x且循环结束后仍存在，而列表推导式可以无副作用地计算平方列表，材料支持该结论。",
+            "citations": [
+              {
+                "evidence_id": "9ffb0e78-5359-40ab-ae7a-7b5dda080444:6bd72b882d0d6690a1a91c8d13eb033d6c37b2204efaad7919732dd648490cba:P5"
+              },
+              {
+                "evidence_id": "9ffb0e78-5359-40ab-ae7a-7b5dda080444:6bd72b882d0d6690a1a91c8d13eb033d6c37b2204efaad7919732dd648490cba:P8"
+              }
+            ]
+          }
+        ],
+        "new_issues": []
+      }
+    },
+    {
+      "stage": "wt_patch",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 11091,
+      "output_tokens": 846,
+      "total_tokens": 11937,
+      "outcome": "invalid",
+      "error": "修改引用了未选择的问题",
+      "response": {
+        "patches": [
+          {
+            "span_id": "6bd72b882d0d:END",
+            "original": "",
+            "replacement": "\nList comprehension cheat sheet\n\n1) Filter then double from vec = [-4, -2, 0, 2, 4]\nExpression:\n[x*2 for x in vec if x >= 0]\nResult:\n[0, 4, 8]\nThis uses the same shape as the manuscript examples [x for x in vec if x >= 0] and [x*2 for x in vec], but combines the if clause with the expression x*2.\n\n2) Flatten [[1,2],[3,4]] in original order\nExpression:\n[num for elem in [[1,2],[3,4]] for num in elem]\nResult:\n[1, 2, 3, 4]\nThe manuscript shows the same two-'for' flattening pattern with [num for elem in vec for num in elem], where vec = [[1,2,3], [4,5,6], [7,8,9]].\n\n3) How two for clauses and one if clause match nested loops\nThe listcomp [(x, y) for x in [1,2,3] for y in [3,1,4] if x != y] is equivalent to:\ncombs = []\nfor x in [1,2,3]:\n    for y in [3,1,4]:\n        if x != y:\n            combs.append((x, y))\nThe order of the for and if statements is the same in both snippets.\n",
+            "condition_ids": [
+              "167d459d-858a-4562-b7e0-27c36ce96370",
+              "2793674f-2430-4ebf-8d0b-7c107e8aa25a",
+              "9bcafdb7-aaae-4473-bb5f-c40c69643b26"
+            ],
+            "reason": "Adds an explicit cheat-sheet section for the two previously unclear items: it gives the combined filter-then-double expression and result for vec=[-4,-2,0,2,4], and the flattening expression and result for [[1,2],[3,4]]. It also reinforces the already-supported nested-loop mapping with the manuscript's two for plus one if example.",
+            "citations": [
+              {
+                "evidence_id": "9ffb0e78-5359-40ab-ae7a-7b5dda080444:6bd72b882d0d6690a1a91c8d13eb033d6c37b2204efaad7919732dd648490cba:P16"
+              },
+              {
+                "evidence_id": "9ffb0e78-5359-40ab-ae7a-7b5dda080444:6bd72b882d0d6690a1a91c8d13eb033d6c37b2204efaad7919732dd648490cba:P11"
+              },
+              {
+                "evidence_id": "9ffb0e78-5359-40ab-ae7a-7b5dda080444:6bd72b882d0d6690a1a91c8d13eb033d6c37b2204efaad7919732dd648490cba:P13"
+              },
+              {
+                "evidence_id": "9ffb0e78-5359-40ab-ae7a-7b5dda080444:6bd72b882d0d6690a1a91c8d13eb033d6c37b2204efaad7919732dd648490cba:P14"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 0.9992,
+    "reserved_unknown_cny": 0.04281,
+    "committed_upper_cny": 1.04201,
+    "calls": 88,
+    "unknown_calls": 1
+  }
+}

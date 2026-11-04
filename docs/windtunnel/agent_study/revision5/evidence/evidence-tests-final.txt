@@ -1,0 +1,11 @@
+test_all_development_freezes_preserve_actual_source_bytes (test_windtunnel_repair_evidence.RepairEvidenceTests.test_all_development_freezes_preserve_actual_source_bytes) ... ok
+test_original_unknown_is_reserved_once_in_same_cumulative_ledger (test_windtunnel_repair_evidence.RepairEvidenceTests.test_original_unknown_is_reserved_once_in_same_cumulative_ledger) ... ok
+test_recovery_preserves_failure_and_known_raw_without_new_patch_request (test_windtunnel_repair_evidence.RepairEvidenceTests.test_recovery_preserves_failure_and_known_raw_without_new_patch_request) ... ok
+test_seven_complete_pairs_and_exact_final_hashes (test_windtunnel_repair_evidence.RepairEvidenceTests.test_seven_complete_pairs_and_exact_final_hashes) ... ok
+test_six_fresh_readers_balanced_packets_and_locked_scores (test_windtunnel_repair_evidence.RepairEvidenceTests.test_six_fresh_readers_balanced_packets_and_locked_scores) ... ok
+test_three_artificial_controls_repair_without_placeholder (test_windtunnel_repair_evidence.RepairEvidenceTests.test_three_artificial_controls_repair_without_placeholder) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.008s
+
+OK

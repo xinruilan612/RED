@@ -1,0 +1,83 @@
+{
+  "sample_id": "S04",
+  "method": "baseline",
+  "participant_type": "codex_proxy",
+  "source_url": "https://docs.python.org/3.12/tutorial/datastructures.html#list-comprehensions",
+  "original_sha256": "4d596ed29ac752a04a3f67cdb243e13bca35110b3e82b011680cb42d84f62992",
+  "material_sha256": "4d596ed29ac752a04a3f67cdb243e13bca35110b3e82b011680cb42d84f62992",
+  "outcome": "completed",
+  "error": null,
+  "automatic_adoption": true,
+  "human_author": false,
+  "issues": [
+    {
+      "explanation": "The manuscript is a verbatim copy of the official Python tutorial section, not a beginner cheat sheet. It lacks the five specific cheat-sheet items requested: combined filter-and-double expression and result; flattening of [[1,2],[3,4]] with expression and result; the tuple-parentheses requirement; mapping of two for plus one if to a nested loop; and the variable side-effect distinction. The manuscript does contain the underlying evidence for all five items.",
+      "evidence": "Manuscript contains the official examples [x for x in vec if x >= 0], [x*2 for x in vec], [num for elem in vec for num in elem], the tuple error [x, x**2 for x in range(6)], and the note about x still existing after the loop."
+    },
+    {
+      "explanation": "The manuscript's flatten example uses vec = [[1,2,3], [4,5,6], [7,8,9]], not the requested [[1,2],[3,4]]. A cheat sheet should provide the requested expression and result.",
+      "evidence": ">>> vec = [[1,2,3], [4,5,6], [7,8,9]]\n>>> [num for elem in vec for num in elem]"
+    },
+    {
+      "explanation": "The requested combined operation (filter out negatives, then double the remaining values) is not directly demonstrated as one expression in the manuscript; it requires composing the separate filter and double examples, which is appropriate for a cheat-sheet summary and can cite both.",
+      "evidence": ">>> [x for x in vec if x >= 0]\n[0, 2, 4]\n>>> [x*2 for x in vec]\n[-8, -4, 0, 4, 8]"
+    },
+    {
+      "explanation": "The manuscript does not explicitly state that list-comprehension variables do not leak whereas ordinary for-loop variables do; it only notes that the plain loop creates or overwrites x and that x still exists after the loop, and that map/list comprehension can avoid side effects.",
+      "evidence": "Note that this creates (or overwrites) a variable named x that still exists after the loop completes. We can calculate the list of squares without any side effects using..."
+    },
+    {
+      "explanation": "The draft is presented as a tutorial section rather than a compact cheat sheet; a beginner study aid should summarize each rule with its evidence concisely.",
+      "evidence": "Full official prose and multiple non-requested examples (freshfruit, abs, pi rounding, map/lambda) remain."
+    }
+  ],
+  "run_id": "6f9f1255-dadc-48d6-baf4-d2e5cc4a7abc",
+  "wall_seconds": 6.316,
+  "final_sha256": "d14f56d644e4a350c4b590a59586b075ff58a6a1dad86a85e725bb4d64d44ca7",
+  "changed": true,
+  "calls": [
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 2579,
+      "output_tokens": 1534,
+      "total_tokens": 4113,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "issues": [
+          {
+            "explanation": "The manuscript is a verbatim copy of the official Python tutorial section, not a beginner cheat sheet. It lacks the five specific cheat-sheet items requested: combined filter-and-double expression and result; flattening of [[1,2],[3,4]] with expression and result; the tuple-parentheses requirement; mapping of two for plus one if to a nested loop; and the variable side-effect distinction. The manuscript does contain the underlying evidence for all five items.",
+            "evidence": "Manuscript contains the official examples [x for x in vec if x >= 0], [x*2 for x in vec], [num for elem in vec for num in elem], the tuple error [x, x**2 for x in range(6)], and the note about x still existing after the loop."
+          },
+          {
+            "explanation": "The manuscript's flatten example uses vec = [[1,2,3], [4,5,6], [7,8,9]], not the requested [[1,2],[3,4]]. A cheat sheet should provide the requested expression and result.",
+            "evidence": ">>> vec = [[1,2,3], [4,5,6], [7,8,9]]\n>>> [num for elem in vec for num in elem]"
+          },
+          {
+            "explanation": "The requested combined operation (filter out negatives, then double the remaining values) is not directly demonstrated as one expression in the manuscript; it requires composing the separate filter and double examples, which is appropriate for a cheat-sheet summary and can cite both.",
+            "evidence": ">>> [x for x in vec if x >= 0]\n[0, 2, 4]\n>>> [x*2 for x in vec]\n[-8, -4, 0, 4, 8]"
+          },
+          {
+            "explanation": "The manuscript does not explicitly state that list-comprehension variables do not leak whereas ordinary for-loop variables do; it only notes that the plain loop creates or overwrites x and that x still exists after the loop, and that map/list comprehension can avoid side effects.",
+            "evidence": "Note that this creates (or overwrites) a variable named x that still exists after the loop completes. We can calculate the list of squares without any side effects using..."
+          },
+          {
+            "explanation": "The draft is presented as a tutorial section rather than a compact cheat sheet; a beginner study aid should summarize each rule with its evidence concisely.",
+            "evidence": "Full official prose and multiple non-requested examples (freshfruit, abs, pi rounding, map/lambda) remain."
+          }
+        ],
+        "revised_text": "List Comprehension Cheat Sheet\n\n1. Filter out negatives and double the rest (vec = [-4, -2, 0, 2, 4]).\nExpression:\n[x*2 for x in vec if x >= 0]\nResult:\n[0, 4, 8]\nEvidence: The manuscript shows [x for x in vec if x >= 0] gives [0, 2, 4], and [x*2 for x in vec] gives [-8, -4, 0, 4, 8]. Combining the filter and the doubling on vec = [-4, -2, 0, 2, 4] yields [0, 4, 8].\n\n2. Flatten [[1, 2], [3, 4]] in order.\nExpression:\n[num for elem in [[1, 2], [3, 4]] for num in elem]\nResult:\n[1, 2, 3, 4]\nEvidence: The manuscript gives the pattern [num for elem in vec for num in elem] with the listed flattening example vec = [[1,2,3], [4,5,6], [7,8,9]], which produces [1, 2, 3, 4, 5, 6, 7, 8, 9]. Applying the same pattern to [[1, 2], [3, 4]] gives [1, 2, 3, 4].\n\n3. Making (number, square) pairs: the tuple expression must be parenthesized.\nExpression:\n[(x, x**2) for x in range(6)]\nResult:\n[(0, 0), (1, 1), (2, 4), (3, 9), (4, 16), (5, 25)]\nEvidence: The manuscript states, \"If the expression is a tuple (e.g. the (x, y) in the previous example), it must be parenthesized,\" and shows that [x, x**2 for x in range(6)] raises SyntaxError: did you forget parentheses around the comprehension target?\n\n4. Two for clauses and one if clause correspond to nested for loops plus an if.\nList comprehension:\n[(x, y) for x in [1,2,3] for y in [3,1,4] if x != y]\nResult:\n[(1, 3), (1, 4), (2, 3), (2, 1), (2, 4), (3, 1), (3, 4)]\nEquivalent ordinary loops (from the manuscript):\n>>> combs = []\n>>> for x in [1,2,3]:\n...     for y in [3,1,4]:\n...         if x != y:\n...             combs.append((x, y))\n...\n>>> combs\n[(1, 3), (1, 4), (2, 3), (2, 1), (2, 4), (3, 1), (3, 4)]\nEvidence: The manuscript says, \"Note how the order of the for and if statements is the same in both these snippets.\" The first for is the outer loop; the second for is the inner loop; the if filters the inner results.\n\n5. Variable side effects: ordinary for-loop variable vs. list-comprehension variable.\nOrdinary for loop:\n>>> squares = []\n>>> for x in range(10):\n...     squares.append(x**2)\n...\n>>> squares\n[0, 1, 4, 9, 16, 25, 36, 49, 64, 81]\nAfter this loop, x still exists. The manuscript says, \"Note that this creates (or overwrites) a variable named x that still exists after the loop completes.\"\nList comprehension example:\nsquares = [x**2 for x in range(10)]\nThe manuscript presents this as avoiding side effects: \"We can calculate the list of squares without any side effects using\" the list comprehension (or the equivalent map/lambda form). Thus the ordinary for loop leaves its loop variable in the surrounding namespace, while the list-comprehension example is described as side-effect-free for the variable it uses."
+      }
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 0.156404,
+    "reserved_unknown_cny": 0.0,
+    "committed_upper_cny": 0.156404,
+    "calls": 15,
+    "unknown_calls": 0
+  }
+}

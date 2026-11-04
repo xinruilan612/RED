@@ -44,7 +44,7 @@ class WebResearchTests(unittest.TestCase):
             result=collect(['公开资料测试','资料测试'])
         self.assertEqual(search.call_count,2);self.assertEqual(read.call_count,3)
         self.assertEqual(result['model_calls'],0);self.assertEqual(len(result['sources']),3)
-        self.assertTrue(all(len(s['text'])<=400 and s['heat'] is None and s['published_at'] is None for s in result['sources']))
+        self.assertTrue(all(len(s['text'])<=4000 and s['heat'] is None and s['published_at'] is None for s in result['sources']))
 
     def test_failed_pages_do_not_hide_later_readable_result(self):
         rows=[{'title':'公开资料测试','url':f'https://example.com/{i}'} for i in range(8)]
@@ -53,11 +53,11 @@ class WebResearchTests(unittest.TestCase):
             return article(url)
         with patch('backend.sources.search_web',return_value={'provider':'fixture','results':rows}),patch('backend.sources.read_article',side_effect=read) as reader:
             result=collect(['公开资料测试'])
-        self.assertEqual(reader.call_count,6)
+        self.assertEqual(reader.call_count,8)
         self.assertEqual(result['status'],'complete')
         self.assertEqual(len(result['sources']),1)
         self.assertEqual(result['sources'][0]['url'],'https://example.com/5')
-        self.assertEqual(result['limits']['reads'],6)
+        self.assertEqual(result['limits']['reads'],8)
 
     def test_worker_shared_evidence_and_replay_no_extra_search(self):
         self.start()

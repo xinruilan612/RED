@@ -1,6 +1,7 @@
 """Claim before network; no provider calls inside SQLite transactions or implicit retries."""
 import json
 import copy
+import time
 from dataclasses import asdict
 from uuid import uuid4
 
@@ -20,6 +21,8 @@ class Executor:
         from backend.model_router import ModelRouter, Calls
         upgrade(store)
         self.router=client if isinstance(client,ModelRouter) else ModelRouter(config,client)
+        from backend.model_connections import ModelConnections
+        self.router.connections=ModelConnections(store,config)
         self.calls=Calls(store,config,self.router)
         with store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
@@ -55,8 +58,8 @@ class Executor:
             require(not any(json.loads(row[0]).get('workflow_type','creation') == old.workflow_type and json.loads(row[0])['run_status'] not in ('SUCCEEDED','FAILED','CANCELLED','EXPIRED') for row in db.execute('SELECT payload FROM runs WHERE owner=?',(owner,))),
                     'RUN_ALREADY_ACTIVE','请先处理已有活跃任务')
             root=self.budget_id(db,run_id)
-            require(not db.execute(f"SELECT 1 FROM live_calls WHERE run_id IN ({FAMILY}) AND actual IS NULL",(root,)).fetchone(),
-                    'USAGE_UNKNOWN','此前调用用量不确定，停止恢复以避免重复计费')
+            from backend.model_router import assert_recoverable_usage
+            assert_recoverable_usage(db,root)
             require(not (old.review and old.review['decision']=='revision_required' and old.iteration>=2),'STAGE_ATTEMPT_LIMIT','已用完3轮稿件，不再恢复')
             candidate=copy.deepcopy(old)
             candidate.run_id=str(uuid4());candidate.run_status='QUEUED';candidate.wait_reason=None;candidate.status_version=0
@@ -73,7 +76,7 @@ class Executor:
             calls=db.execute(f'SELECT id,agent,stage,reserved,actual,state,error,response_json,run_id FROM live_calls WHERE run_id IN ({FAMILY}) ORDER BY {self.store.order_column}',(root,)).fetchall()
             pending=db.execute("SELECT COUNT(*) FROM live_steps WHERE run_id=? AND state='running'",(run.run_id,)).fetchone()[0]
             audits={r[0]:json.loads(r[1]) for r in db.execute("SELECT call_id,sources FROM model_audit WHERE run_id IN ("+FAMILY+")",(root,))}
-            metadata={r[0]:dict(zip(('provider','model','route_version','prompt_version','input_hash','snapshot_id','duration_ms','request_id','input_tokens','output_tokens','rate'),r[1:])) for r in db.execute("SELECT call_id,provider,model,route_version,prompt_version,input_hash,snapshot_id,duration_ms,request_id,input_tokens,output_tokens,rate FROM model_audit WHERE run_id IN ("+FAMILY+")",(root,))}
+            metadata={r[0]:dict(zip(('provider','model','route_version','prompt_version','input_hash','snapshot_id','duration_ms','request_id','input_tokens','output_tokens','rate','billing_source','connection_id'),r[1:])) for r in db.execute("SELECT call_id,provider,model,route_version,prompt_version,input_hash,snapshot_id,duration_ms,request_id,input_tokens,output_tokens,rate,billing_source,connection_id FROM model_audit WHERE run_id IN ("+FAMILY+")",(root,))}
         items=[]
         for c in calls:
             item=dict(zip(('id','agent','stage','reserved_tokens','tokens','status','error'),c[:7]))
@@ -81,15 +84,20 @@ class Executor:
             item['inherited']=c[8]!=run.run_id
             if c[5]=='invalid' and c[7]:item['diagnostic_response']=json.loads(c[7])
             items.append(item)
-        return {'in_flight':bool(pending) and run.run_status not in ('CANCELLED','FAILED'),'calls':items,
-                'usage':{'model_calls':len(items),'tokens':sum(c['tokens'] or 0 for c in items),
-                         'unknown_calls':sum(c['tokens'] is None for c in items),
-                         'cost':None,'cost_upper_estimate_usd':round(sum((c['tokens'] if c['tokens'] is not None else c['reserved_tokens'])*c.get('rate',RATE) for c in items),6),
+        usage_items=[item for item in items if item['status']!='not_sent']
+        policy=run.context.get('model_policy') or self.router.policy()
+        return {'model_policy':policy,'in_flight':bool(pending) and run.run_status not in ('CANCELLED','FAILED'),'calls':items,
+                'usage':{'model_calls':len(usage_items),'tokens':sum(c['tokens'] or 0 for c in usage_items),
+                         'unknown_calls':sum(c['tokens'] is None for c in usage_items),
+                         'cost':None,'cost_upper_estimate_usd':round(sum((c['tokens'] if c['tokens'] is not None else c['reserved_tokens'])*c.get('rate',RATE) for c in usage_items),6),
                          'currency':'USD'}}
 
     def step(self,run_id,owner,version,key):
         self.calls.config=self.config
-        require(self.config.ready,'KEY_REQUIRED','请填写 .env 的 DEEPSEEK_API_KEY，然后重启服务')
+        selected=self.store.get(run_id,owner)
+        policy=selected.context.get('model_policy') or self.router.policy()
+        require(self.config.ready or any(r.get('connection_id') for r in policy['routes'].values()),'KEY_REQUIRED','请配置平台或个人模型连接')
+        self.router.ready(policy,owner)
         fingerprint=digest({'version':version,'action':'next'})
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
@@ -119,7 +127,22 @@ class Executor:
         def validated(call_id,error):
             self.calls.validated(call_id,error)
         failure=None
-        try:advance(run,call,validated)
+        review_call=None
+        review_error=None
+        try:
+            if run.current_stage=='reviewer':
+                from backend import live
+                from backend.creator_context import enrich
+                messages,inputs=live.messages_for(run,'review')
+                started=time.monotonic()
+                raw,tokens,call_id=call('reviewer','review',messages)
+                review_call=(raw,tokens,call_id,inputs,round((time.monotonic()-started)*1000))
+                try:output=enrich('review',live.normalize(run,'review',raw),run.context)
+                except DomainError as error:
+                    if error.code not in ('MODEL_OUTPUT_INVALID','REVIEW_GATE_FAILED'):
+                        self.calls.validated(call_id,str(error));raise
+                    review_error=error
+            else:advance(run,call,validated)
         except Exception as e:
             failure=str(e) if isinstance(e,DomainError) else '模型结果无法使用，已停止执行，未自动重试'
         with self.store.connect() as db:
@@ -129,6 +152,39 @@ class Executor:
                 # Cancellation wins; paid usage is still retained in live_calls.
                 db.execute("UPDATE live_steps SET state='discarded',error=? WHERE run_id=? AND version=?",('任务已取消或更新',run_id,version))
                 return current
+            if review_call is not None and failure is None:
+                from backend import live
+                raw,tokens,call_id,inputs,duration=review_call
+                require(current.snapshot_id==run.snapshot_id and current.drafts[-1]==run.drafts[-1]
+                        and digest(current.drafts[-1]['content'])==run.drafts[-1]['content_hash'],
+                        'VERSION_CONFLICT','稿件版本已变化，拒绝旧审核结果')
+                run=current
+                try:
+                    if review_error is None:
+                        try:run.reviewed(output,live.review_gates(run,output),fail_on_limit=True)
+                        except DomainError as error:
+                            if error.code not in ('MODEL_OUTPUT_INVALID','REVIEW_GATE_FAILED'):raise
+                            review_error=error
+                    if review_error is not None:
+                        row=db.execute('SELECT c.response_json,c.actual,c.state,a.snapshot_id FROM live_calls c JOIN model_audit a ON a.call_id=c.id AND a.run_id=c.run_id WHERE c.id=? AND c.run_id=? AND c.stage=?',
+                                       (call_id,run_id,'review')).fetchone()
+                        require(row and row[0] is not None and type(row[1]) is int and row[2] in ('received','invalid','validated'),
+                                'USAGE_UNKNOWN','审核响应或用量未结算，不能生成保守交接')
+                        require(row[3]==run.snapshot_id and json.loads(row[0])==raw,'VERSION_CONFLICT','审核原始响应或输入快照已变化')
+                        from backend.review_recovery import conservative_review
+                        output=conservative_review(run,raw,review_error)
+                        run.reviewed(output,live.review_gates(run,output),fail_on_limit=True)
+                    self.calls.validated(call_id,str(review_error) if review_error else None,db=db)
+                    log=dict(id=str(uuid4()),agent='reviewer',stage='review',mode='live',snapshot_id=run.snapshot_id,
+                             input=inputs,output=output,duration_ms=duration,model_calls=1,tokens=tokens,cost=None,
+                             call_id=call_id,tools=['knowledge_snapshot'] if run.context.get('evidence') else [],
+                             memory='读取本任务的账号与证据快照')
+                    run.node_runs.append(log)
+                    run.event('agent.completed',agent='reviewer',stage='review',mode='live',node_ref=log['id'])
+                except DomainError as error:
+                    if error.code in ('MODEL_OUTPUT_INVALID','REVIEW_GATE_FAILED'):
+                        self.calls.validated(call_id,str(error),db=db)
+                    failure=str(error)
             if failure:
                 run=current
                 run._transition('FAILED')

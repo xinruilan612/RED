@@ -1,0 +1,9 @@
+{
+  "cap_cny": 5,
+  "charged_upper_cny": 2.076112,
+  "reserved_unknown_cny": 0.04281,
+  "committed_upper_cny": 2.118922,
+  "calls": 162,
+  "unknown_calls": 1,
+  "billing": "conservative peak-rate upper bound, not actual invoice"
+}

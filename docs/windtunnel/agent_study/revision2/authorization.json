@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-07",
+  "revision": "v2",
+  "source": "explicit user follow-up",
+  "user_text": "风洞改稿只追加待补充问题，没有形成有效修复。你修改；一次用量异常触发保护停止，7篇完整对照未跑完。那就把保护停止关了",
+  "total_cap_including_revision1_cny": 5,
+  "same_original_ledger": true,
+  "continue_bounded_unknown": true,
+  "legacy_call_ids_verified": [
+    "7480dc78-9c01-46a5-88a2-2dd4b0cfe204"
+  ],
+  "no_automatic_replay": true,
+  "model": "deepseek-flash",
+  "thinking": "disabled",
+  "max_output_tokens": 3000,
+  "pricing_peak_cny_per_million": {
+    "input": 2,
+    "output": 8
+  },
+  "pricing_source": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing/",
+  "evaluation_scope": "S04-S10 after repair are revised regression, not untouched holdout; same correct official source originals; six Codex readers are not human users"
+}

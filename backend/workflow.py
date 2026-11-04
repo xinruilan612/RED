@@ -62,6 +62,7 @@ class Run:
 
     def cancel(self):
         self._transition('CANCELLED')
+        self.clear_revision('cancelled')
         self.event('run.cancelled')
 
     def branch(self, agent, snapshot_id, outcome, data=None):
@@ -96,9 +97,15 @@ class Run:
         require(set(self.branches) == set(CONTRACT['join_requires']), 'JOIN_INCOMPLETE', '等待两个分支')
         require(all(b['snapshot_id'] == self.snapshot_id for b in self.branches.values()),
                 'VERSION_CONFLICT', '分支版本不一致')
-        if not self.branches['audience']['data']['sample_size'] and not allow_hypothesis:
+        available_only = self.context.get('material_policy') == 'available_only'
+        from backend.creation_algorithms import refresh, should_ask
+        refresh(self)
+        if should_ask(self):
+            self.context['algorithm_questions_status'] = 'pending'
+            self._transition('WAITING_USER', 'missing_material')
+        elif not available_only and not self.branches['audience']['data']['sample_size'] and not allow_hypothesis:
             self._transition('WAITING_USER', 'hypothesis_permission')
-        elif self.branches['research']['data']['core_gap']:
+        elif not available_only and self.branches['research']['data']['core_gap']:
             self._transition('WAITING_USER', 'missing_material')
         else:
             self.current_stage = 'content'
@@ -113,6 +120,7 @@ class Run:
         self.supplements += 1
         self.snapshot_id, self.branches, self.review = snapshot_id, {}, None
         self.prior_review, self.branch_errors = None, {}
+        self.clear_revision('superseded_by_material')
         self.current_stage = 'brief'
         self._transition('QUEUED')
 
@@ -123,7 +131,14 @@ class Run:
         item = {'ref': f'{uuid4()}@1', 'content': json.loads(json.dumps(content)),
                 'content_hash': digest(content), 'snapshot_id': self.snapshot_id, 'actor':'content'}
         self.drafts.append(item)
-        self.prior_review = self.review
+        from backend.creation_algorithms import inspect_draft
+        inspect_draft(self)
+        self.prior_review = self.review or (self.prior_review if self.context.get('pending_revision') else None)
+        pending = self.context.pop('pending_revision', None)
+        if pending:
+            for request in self.context.get('revision_requests', []):
+                if request['id'] == pending['id']:
+                    request.update(status='applied', result_draft_ref=item['ref'])
         self.review = None
         self.current_stage = 'reviewer'
         self.event('artifact.created', artifact_ref=item['ref'])
@@ -132,6 +147,12 @@ class Run:
     def reviewed(self, report, gates, fail_on_limit=False):
         require(self.run_status == 'RUNNING' and self.current_stage == 'reviewer' and self.drafts,
                 'INVALID_TRANSITION', '当前不能接收审核')
+        if (self.context.get('material_policy')=='available_only' and report.get('decision')=='approved'
+                and self.branches.get('research',{}).get('data',{}).get('core_gap')):
+            report=json.loads(json.dumps(report))
+            report.update(decision='needs_human',next_action='request_human')
+            report['human_questions']=list(report.get('human_questions',[]))+['原选题资料仍有缺口，请核对已有稿件后决定是否人工采用。']
+            report['limitations']=list(report.get('limitations',[]))+['按现有资料生成，不代表缺失事实已经核实。']
         validate_review(report, self.drafts[-1], gates, self.prior_review)
         self.review = json.loads(json.dumps(report))
         self.reviews.append(json.loads(json.dumps(report)))
@@ -139,11 +160,10 @@ class Run:
         if report['decision'] == 'approved':
             self._transition('WAITING_USER', 'final_confirmation')
         elif report['decision'] == 'needs_human':
-            self._transition('WAITING_USER', 'missing_material')
+            self._transition('WAITING_USER', 'final_confirmation' if self.context.get('material_policy') == 'available_only' else 'missing_material')
         elif self.iteration >= PARAMETERS['revision_rounds_max']:
-            if fail_on_limit:
-                self._transition('FAILED')
-                self.event('agent.failed',agent='reviewer',mode='live',message='初稿及两次改稿仍未通过审核，已达到3轮上限；停止调用')
+            if self.context.get('material_policy') == 'available_only':
+                self._transition('WAITING_USER', 'final_confirmation')
             else:
                 self._transition('WAITING_USER', 'revision_limit')
         else:
@@ -169,7 +189,7 @@ class Run:
         self._transition('SUCCEEDED')
         self.event('run.completed')
 
-    def can_manual_adopt(self):
+    def _can_edit_state(self):
         if self.workflow_type != 'creation' or not self.drafts:
             return False
         draft = self.drafts[-1]
@@ -178,6 +198,18 @@ class Run:
         return (self.run_status == 'WAITING_USER' and self.wait_reason in
                 ('final_confirmation', 'missing_material', 'revision_limit')) or (
                 self.run_status == 'RUNNING' and self.current_stage in ('content', 'reviewer'))
+
+    def can_manual_adopt(self):
+        # Manual adoption means "I have read the review and accept its issues".
+        # Before the reviewer has produced a report there is nothing to read.
+        # Edit remains available while review runs; adoption must wait for it.
+        if not self._can_edit_state():
+            return False
+        if not self.review:
+            # Only the exhausted-revision fallback may use an older review.
+            # A normal revision must be reviewed again before adoption.
+            return bool(self.prior_review) and self.iteration >= PARAMETERS['revision_rounds_max']
+        return self.review.get('decision') != 'approved'
 
     def adopt_manual(self, draft_ref, content_hash, acknowledge):
         require(acknowledge is True, 'INVALID_INPUT', '请明确知晓审核问题后采用')
@@ -202,8 +234,68 @@ class Run:
         self._transition('SUCCEEDED')
         self.event('run.completed', acceptance_mode='manual_override')
 
+    def can_review_current(self):
+        return (self.workflow_type == 'creation' and bool(self.drafts)
+                and self.run_status in ('WAITING_USER', 'RUNNING')
+                and (not self.review or self.review.get('draft_ref') != self.drafts[-1]['ref']))
+
+    def review_current(self):
+        """Put the latest draft in front of the reviewer again.
+
+        Used after a manual narrowing or after the previous review output failed
+        validation. It does not edit the draft and does not count as a revision.
+        """
+        require(self.can_review_current(), 'INVALID_TRANSITION', '当前版本不能再次审核')
+        if self.run_status == 'WAITING_USER':
+            self._transition('QUEUED')
+            self._transition('RUNNING')
+        self.current_stage = 'reviewer'
+        self.review = None
+        self.event('artifact.created', stage='review_retry', draft_ref=self.drafts[-1]['ref'])
+        return self.drafts[-1]['ref']
+
+    def retitle(self, title):
+        """Shorten a confirmed title without touching body, CTA or facts.
+
+        A confirmed run used to be immutable, so a title over the platform limit
+        could not be exported. This appends a presentation-only version, keeps
+        the original review and acceptance audit, and never re-runs the model.
+        """
+        require(self.run_status == 'SUCCEEDED' and self.drafts and self.accepted_ref,
+                'INVALID_TRANSITION', '只有已确认稿件可以修正标题')
+        current = self.drafts[-1]
+        require(digest(current['content']) == current['content_hash'], 'VERSION_CONFLICT', '当前稿件版本已变化')
+        title = title.strip()
+        require(title and title != current['content']['selected_title'], 'INVALID_INPUT', '新标题不能为空且不能与原标题相同')
+        from backend.demo import require_title_length
+        require_title_length(title, (self.context.get('operations') or {}).get('platform'))
+        content = json.loads(json.dumps(current['content']))
+        previous_title = content['selected_title']
+        content['selected_title'] = title
+        item = {'ref': f'{uuid4()}@1', 'content': content, 'content_hash': digest(content),
+                'snapshot_id': current['snapshot_id'], 'actor': 'user',
+                'title_correction': {'from_ref': current['ref'], 'from_title': previous_title,
+                                     'reason': 'platform_title_limit', 'model_calls': 0}}
+        self.drafts.append(item)
+        self.accepted_ref = item['ref']
+        self.acceptance = {**(self.acceptance or {}), 'draft_ref': item['ref'],
+                           'content_hash': item['content_hash'],
+                           'title_correction': {'from_title': previous_title, 'to_title': title,
+                                                'previous_draft_ref': current['ref']}}
+        self.event('artifact.created', stage='title_correction', artifact_ref=item['ref'],
+                   from_ref=current['ref'], from_title=previous_title, to_title=title, model_calls=0)
+        return item['ref']
+
+    def can_manual_edit(self):
+        return self._can_edit_state() or (
+            self.workflow_type=='creation' and self.run_status=='RUNNING'
+            and self.current_stage=='brief' and bool(self.drafts)
+            and not self.branches and not self.artifacts
+            and self.context.get('web_research',{}).get('status')=='complete')
+
     def edit(self, content):
-        require(self.can_manual_adopt(), 'INVALID_TRANSITION', '当前不能编辑稿件')
+        require(self.can_manual_edit(), 'INVALID_TRANSITION', '当前不能编辑稿件')
+        self.clear_revision('superseded_by_edit')
         if self.run_status == 'WAITING_USER':
             self._transition('QUEUED')
             self._transition('RUNNING')
@@ -213,6 +305,43 @@ class Run:
         self.prior_review = prior
         self.drafts[-1]['actor'] = 'user'
         return ref
+
+    def clear_revision(self, status):
+        pending = self.context.pop('pending_revision', None)
+        if pending:
+            for request in self.context.get('revision_requests', []):
+                if request['id'] == pending['id']:
+                    request['status'] = status
+
+    def can_request_revision(self):
+        return (self.context.get('mode') == 'live' and self._can_edit_state()
+                and not self.context.get('pending_revision')
+                and self.wait_reason != 'revision_limit'
+                and (self.iteration < PARAMETERS['revision_rounds_max'] or
+                     (self.review and self.review['decision'] == 'revision_required'
+                      and self.run_status == 'RUNNING')))
+
+    def request_revision(self, draft_ref, content_hash, instruction):
+        from backend.demo import validate_text
+        instruction = validate_text(instruction, '改稿要求', 1500)
+        require(self.can_request_revision(), 'INVALID_TRANSITION', '当前不能请求 AI 改稿；请等待执行完成，或使用手动编辑')
+        draft = self.drafts[-1]
+        require(draft_ref == draft['ref'] and content_hash == draft['content_hash'] == digest(draft['content']),
+                'VERSION_CONFLICT', '稿件版本已变化，请重新查看最新稿后提交改稿要求')
+        # A reviewer may already have allocated this revision round. User
+        # instructions refine that round; they do not fabricate review issues.
+        if not (self.review and self.review['decision'] == 'revision_required' and self.run_status == 'RUNNING'):
+            self.iteration += 1
+        request = {'id': str(uuid4()), 'draft_ref': draft_ref, 'content_hash': content_hash,
+                   'instruction': instruction, 'snapshot_id': self.snapshot_id, 'status': 'pending'}
+        self.context.setdefault('revision_requests', []).append(dict(request))
+        self.context['pending_revision'] = request
+        self.prior_review = self.review or self.prior_review
+        self.review = None
+        if self.run_status == 'WAITING_USER':
+            self._transition('QUEUED')
+        self.current_stage = 'content'
+        self.event('artifact.created', stage='user_revision_request', request_ref=request['id'], draft_ref=draft_ref)
 
     def demo_step(self):
         from backend.demo import advance
@@ -226,10 +355,28 @@ class Run:
             require(material.strip(), 'INVALID_INPUT', '请补充实际素材')
         if self.wait_reason == 'hypothesis_permission':
             require(allow_hypothesis, 'INVALID_INPUT', '模拟版无历史导入，请允许假设模式或取消')
+        previous = self.context.get('material', '')
+        combined = previous + ('\n\n补充资料：\n' if previous and material else '') + material
+        validate_text(combined, '合并素材', 8000, allow_empty=True)
         self.supplement(str(uuid4()))
-        self.context['material'] = material
+        self.context['material'] = combined
+        if self.context.get('algorithm_questions_status') == 'pending':
+            self.context['algorithm_questions_status'] = 'answered'
+        self.context.pop('algorithm_state', None)
         self.context['allow_hypothesis'] = allow_hypothesis
         self.artifacts = []
+
+    def skip_questions(self):
+        require(self.run_status == 'WAITING_USER' and self.wait_reason == 'missing_material'
+                and self.context.get('algorithm_questions_status') == 'pending',
+                'INVALID_TRANSITION', '当前没有可跳过的关键问题')
+        state = self.context.get('algorithm_state', {})
+        require(state.get('snapshot_id') == self.snapshot_id, 'VERSION_CONFLICT', '问题快照已变化')
+        self.context['algorithm_questions_status'] = 'skipped'
+        state.get('gap_ranking', {})['already_handled'] = True
+        self._transition('QUEUED')
+        self.current_stage = 'content'
+        self.event('artifact.created', stage='questions_skipped', snapshot_id=self.snapshot_id)
 
 
 

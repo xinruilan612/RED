@@ -2,16 +2,13 @@
 
 Run with the bundled artifact Python (reportlab), not the application venv.
 The source pages deliberately use explicit page breaks for predictable layout.
-Optionally set SUBMISSION_CJK_FONT to an installed Chinese TrueType font path.
-The first face of a TrueType collection is used; fonts are never downloaded.
 """
 from pathlib import Path
-import os
 import re
 from xml.sax.saxutils import escape
 
 from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont, TTFError
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib import colors
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, Flowable
@@ -20,50 +17,6 @@ from reportlab.lib.pagesizes import A4
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / 'docs/submission'
 OUTPUT = ROOT / 'output/pdf'
-FIXED_RENDER_TEXT = (
-    '用户界面与执行控制台 编排层 API / 队列 / Worker / LangGraph '
-    '角色层 audience / research / content / reviewer '
-    '工具层 模型调用 / 原文检索 / 来源读取 / 导出 '
-    '数据层 账号 / 证据快照 / 稿件 / 审核 / 运营记录 '
-    '输入需求与证据快照 受众洞察 audience 素材研究 research '
-    '内容创作 策略 > 提纲 > 开头 > 标题 > 正文 '
-    '主编审核 不通过则返修 通过后人工确认准确版本 有迹 | 0123456789'
-)
-
-
-def cjk_font_candidates():
-    windows_fonts = Path(os.environ.get('WINDIR', 'C:/Windows')) / 'Fonts'
-    return (
-        Path('/System/Library/Fonts/STHeiti Light.ttc'),
-        windows_fonts / 'msyh.ttc', windows_fonts / 'simsun.ttc',
-        windows_fonts / 'simhei.ttf',
-        Path('/System/Library/Fonts/PingFang.ttc'),
-        Path('/Library/Fonts/Arial Unicode.ttf'),
-        Path('/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc'),
-        Path('/usr/share/fonts/truetype/wqy/wqy-microhei.ttc'),
-        Path('/usr/share/fonts/truetype/noto/NotoSansSC-Regular.ttf'),
-        Path('/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc'),
-    )
-
-
-def register_cjk_font(font_path=None, required_text=''):
-    configured = font_path if font_path is not None else (os.environ.get('SUBMISSION_CJK_FONT') or None)
-    explicit = configured is not None
-    candidates = (Path(configured).expanduser(),) if explicit else cjk_font_candidates()
-    required = {ord(char) for char in ('中文有迹软件创新' + FIXED_RENDER_TEXT + required_text) if not char.isspace()}
-    for path in candidates:
-        if not path.is_file():
-            continue
-        try:
-            font = TTFont('CN', str(path), subfontIndex=0)
-        except (OSError, ValueError, TTFError):
-            continue
-        if any(not font.face.charToGlyph.get(codepoint) for codepoint in required):
-            continue
-        pdfmetrics.registerFont(font)
-        return path
-    reason = 'Configured font is missing, unsupported or lacks required glyphs.' if explicit else 'No suitable installed Chinese TrueType font was found.'
-    raise ValueError(reason + ' Set SUBMISSION_CJK_FONT to a readable .ttf or TrueType .ttc file containing the source characters. No fonts were downloaded.')
 
 
 class SystemDiagram(Flowable):
@@ -113,30 +66,31 @@ class SystemDiagram(Flowable):
             c.line(255,29,260,32)
 
 
-def build(font_path=None):
-    sources = [(path, path.read_text(encoding='utf-8'))
-               for path in sorted(SOURCE.glob('[0-9][0-9]_*.md'))]
-    register_cjk_font(font_path, ''.join(text for _, text in sources))
+def build():
     OUTPUT.mkdir(parents=True, exist_ok=True)
+    pdfmetrics.registerFont(TTFont('CN', '/System/Library/Fonts/STHeiti Light.ttc', subfontIndex=0))
     styles = {
-        'body': ParagraphStyle('body', fontName='CN', fontSize=10.5, leading=16, spaceAfter=7, wordWrap='CJK'),
-        'h1': ParagraphStyle('h1', fontName='CN', fontSize=20, leading=28, spaceAfter=18, keepWithNext=True),
-        'h2': ParagraphStyle('h2', fontName='CN', fontSize=15, leading=22, spaceAfter=12, keepWithNext=True),
-        'h3': ParagraphStyle('h3', fontName='CN', fontSize=12, leading=19, spaceBefore=9, spaceAfter=6, keepWithNext=True),
-        'cell': ParagraphStyle('cell', fontName='CN', fontSize=9, leading=13, wordWrap='CJK'),
+        'body': ParagraphStyle('body', fontName='CN', fontSize=10.5, leading=17, spaceAfter=8, wordWrap='CJK'),
+        'h1': ParagraphStyle('h1', fontName='CN', fontSize=20, leading=28, spaceAfter=18),
+        'h2': ParagraphStyle('h2', fontName='CN', fontSize=15, leading=22, spaceAfter=12),
+        'h3': ParagraphStyle('h3', fontName='CN', fontSize=12, leading=19, spaceBefore=9, spaceAfter=6),
+        'cell': ParagraphStyle('cell', fontName='CN', fontSize=9, leading=14, wordWrap='CJK'),
         'code': ParagraphStyle('code', fontName='CN', fontSize=8.5, leading=13, wordWrap='CJK', spaceAfter=5),
     }
 
     def rich(text):
         text = escape(text)
         text = re.sub(r'\[([^\]]+)\]\((https?://[^)]+)\)', r'<link href="\2" color="#234E70">\1</link>', text)
+        # Inline emphasis: ``**bold**`` -> <b>. ReportLab paragraphs accept the tag,
+        # and escape() has already run so this cannot inject markup from the source.
+        text = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', text)
         return text.replace('`', '')
 
-    for path, source in sources:
-        title = source.splitlines()[0].lstrip('# ')
+    for path in sorted(SOURCE.glob('[0-9][0-9]_*.md')):
+        title = path.read_text().splitlines()[0].lstrip('# ')
         filename = '47191919-AI+软件创新-有迹-' + path.stem.split('_', 1)[1] + '.pdf'
         story = []
-        lines = source.splitlines()
+        lines = path.read_text().splitlines()
         i = 0
         while i < len(lines):
             line = lines[i].strip()
@@ -145,6 +99,9 @@ def build(font_path=None):
                 continue
             if line == '<!-- page -->':
                 story.append(PageBreak())
+            elif re.fullmatch(r'-{3,}', line):
+                # Markdown horizontal rule: render as spacing, never as literal dashes.
+                story.append(Spacer(1, 10))
             elif line in ('[[architecture]]', '[[workflow]]'):
                 story.extend([SystemDiagram(line[2:-2]), Spacer(1, 12)])
             elif line.startswith('|'):
@@ -162,7 +119,7 @@ def build(font_path=None):
                     ('GRID', (0, 0), (-1, -1), 0.4, colors.HexColor('#D9D9D9')),
                     ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
                     ('LEFTPADDING', (0, 0), (-1, -1), 8), ('RIGHTPADDING', (0, 0), (-1, -1), 8),
-                    ('TOPPADDING', (0, 0), (-1, -1), 6), ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+                    ('TOPPADDING', (0, 0), (-1, -1), 7), ('BOTTOMPADDING', (0, 0), (-1, -1), 7),
                 ]))
                 story.extend([table, Spacer(1, 12)])
                 continue

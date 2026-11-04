@@ -1,0 +1,55 @@
+{
+  "sample_id": "S10",
+  "method": "baseline",
+  "participant_type": "codex_proxy",
+  "revision": "v5.controlled",
+  "draft_kind": "researcher_abbreviated_gap_control",
+  "adaptation": "人为删节缺口控制，非真实创作者",
+  "deletion_design": "Omit --verbosity defaults and value requirement, store_true Boolean flag definition, rejection of a flag value, and the -v/--verbose alias/help example needed by the five-point task.",
+  "source_url": "https://docs.python.org/3.12/howto/argparse.html#introducing-optional-arguments",
+  "original_sha256": "f23aa39adfb7b8a6366ae04d3c45567c24f019fb93f2c9490426bea8c6ba7a23",
+  "material_sha256": "097a75cb3cc6e2bbe535cba19ca4f53a63d7283298cae24749c47145dac0915f",
+  "outcome": "completed",
+  "error": null,
+  "automatic_adoption": true,
+  "human_author": false,
+  "issues": [
+    {
+      "explanation": "This is not a tutorial manuscript; it is only two sentences of background about argparse. It does not address any part of the stated goal (default value/output of --verbosity, why bare --verbosity errors, the action=\"store_true\" --verbose version, why --verbose 1 errors, or the -v alias). Additionally, it contains no citations to the supplied materials, so the requested '每项附稿内证据' cannot be satisfied.",
+      "evidence": "Draft: 'The argparse module lets a program accept command-line arguments. A parser processes the arguments supplied by the user.' No mention of --verbosity, --verbose, store_true, -v, defaults, output, errors, or the official-section material."
+    }
+  ],
+  "run_id": "12742941-2651-4d01-a6c0-233b434da091",
+  "wall_seconds": 1.746,
+  "final_sha256": "f23aa39adfb7b8a6366ae04d3c45567c24f019fb93f2c9490426bea8c6ba7a23",
+  "changed": false,
+  "calls": [
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 1290,
+      "output_tokens": 188,
+      "total_tokens": 1478,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "issues": [
+          {
+            "explanation": "This is not a tutorial manuscript; it is only two sentences of background about argparse. It does not address any part of the stated goal (default value/output of --verbosity, why bare --verbosity errors, the action=\"store_true\" --verbose version, why --verbose 1 errors, or the -v alias). Additionally, it contains no citations to the supplied materials, so the requested '每项附稿内证据' cannot be satisfied.",
+            "evidence": "Draft: 'The argparse module lets a program accept command-line arguments. A parser processes the arguments supplied by the user.' No mention of --verbosity, --verbose, store_true, -v, defaults, output, errors, or the official-section material."
+          }
+        ],
+        "revised_text": "The argparse module lets a program accept command-line arguments. A parser processes the arguments supplied by the user."
+      }
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 1.974708,
+    "reserved_unknown_cny": 0.04281,
+    "committed_upper_cny": 2.017518,
+    "calls": 154,
+    "unknown_calls": 1
+  }
+}

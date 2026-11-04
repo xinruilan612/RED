@@ -3,12 +3,11 @@ import argparse
 import hashlib
 import json
 import secrets
-import time
 from dataclasses import asdict
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, parse_qs
 from uuid import uuid4
 
 from backend.contracts import DomainError, require, integer
@@ -51,35 +50,6 @@ class DemoServer(ThreadingHTTPServer):
 class Handler(BaseHTTPRequestHandler):
     server_version='XHS-Demo/0.1'
 
-    def discard_rejected_body(self):
-        """Bounded transport cleanup only; never parse or execute rejected input."""
-        self.close_connection = True
-        lengths = self.headers.get_all('Content-Length', [])
-        if len(lengths) != 1 or 'Transfer-Encoding' in self.headers:
-            return
-        text = lengths[0].strip()
-        if not (0 < len(text) <= 5 and text.isascii() and text.isdigit()):
-            return
-        remaining = int(text)
-        if not 0 < remaining <= 40000:
-            return
-        previous_timeout = self.connection.gettimeout()
-        deadline = time.monotonic() + .25
-        try:
-            while remaining:
-                timeout = deadline - time.monotonic()
-                if timeout <= 0:
-                    break
-                self.connection.settimeout(timeout)
-                chunk = self.rfile.read1(min(remaining, 8192))
-                if not chunk:
-                    break
-                remaining -= len(chunk)
-        except OSError:
-            pass
-        finally:
-            self.connection.settimeout(previous_timeout)
-
     def send(self, status, value, content_type='application/json; charset=utf-8', cookie=None, filename=None):
         body=json.dumps(value,ensure_ascii=False).encode() if not isinstance(value,bytes) else value
         self.send_response(status)
@@ -117,14 +87,13 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self): self.dispatch(True)
 
     def dispatch(self, write):
-        body_consumed = False
         try:
             origin=self.host(); path=urlsplit(self.path).path
             if not write and path in ('/windtunnel.js','/windtunnel.css'):
                 self.send(200,(FRONTEND/path[1:]).read_bytes(),'text/javascript; charset=utf-8' if path.endswith('.js') else 'text/css; charset=utf-8');return
-            if not write and path in ('/','/app.js','/style.css','/operations.js','/account.js','/account_profile.js','/auth.js','/knowledge.js','/trials.js','/trials.css','/guidance.js','/skapp.js'):
-                name={'/':'index.html','/app.js':'app.js','/style.css':'style.css','/operations.js':'operations.js','/account.js':'account.js','/account_profile.js':'account_profile.js','/auth.js':'auth.js','/knowledge.js':'knowledge.js','/trials.js':'trials.js','/trials.css':'trials.css','/guidance.js':'guidance.js','/skapp.js':'skapp.js'}[path]
-                mime={'/':'text/html; charset=utf-8','/app.js':'text/javascript; charset=utf-8','/style.css':'text/css; charset=utf-8','/operations.js':'text/javascript; charset=utf-8','/account.js':'text/javascript; charset=utf-8','/account_profile.js':'text/javascript; charset=utf-8','/auth.js':'text/javascript; charset=utf-8','/knowledge.js':'text/javascript; charset=utf-8','/trials.js':'text/javascript; charset=utf-8','/trials.css':'text/css; charset=utf-8','/guidance.js':'text/javascript; charset=utf-8','/skapp.js':'text/javascript; charset=utf-8'}[path]
+            if not write and path in ('/','/app.js','/style.css','/theme.css','/mascot-space.png','/mascot-dog.png','/shape-hemisphere.png','/shape-torus.png','/operations.js','/account.js','/account_profile.js','/auth.js','/knowledge.js','/connections.js','/models.js','/research.js','/guidance.js','/trials.js','/trials.css'):
+                name={'/':'index.html','/app.js':'app.js','/style.css':'style.css','/theme.css':'theme.css','/mascot-space.png':'mascot-space.png','/mascot-dog.png':'mascot-dog.png','/shape-hemisphere.png':'shape-hemisphere.png','/shape-torus.png':'shape-torus.png','/operations.js':'operations.js','/account.js':'account.js','/account_profile.js':'account_profile.js','/auth.js':'auth.js','/knowledge.js':'knowledge.js','/connections.js':'connections.js','/models.js':'models.js','/research.js':'research.js','/guidance.js':'guidance.js','/trials.js':'trials.js','/trials.css':'trials.css'}[path]
+                mime={'/':'text/html; charset=utf-8','/app.js':'text/javascript; charset=utf-8','/style.css':'text/css; charset=utf-8','/theme.css':'text/css; charset=utf-8','/mascot-space.png':'image/png','/mascot-dog.png':'image/png','/shape-hemisphere.png':'image/png','/shape-torus.png':'image/png','/operations.js':'text/javascript; charset=utf-8','/account.js':'text/javascript; charset=utf-8','/account_profile.js':'text/javascript; charset=utf-8','/auth.js':'text/javascript; charset=utf-8','/knowledge.js':'text/javascript; charset=utf-8','/connections.js':'text/javascript; charset=utf-8','/models.js':'text/javascript; charset=utf-8','/research.js':'text/javascript; charset=utf-8','/guidance.js':'text/javascript; charset=utf-8','/trials.js':'text/javascript; charset=utf-8','/trials.css':'text/css; charset=utf-8'}[path]
                 self.send(200,(FRONTEND/name).read_bytes(),mime); return
             if not write and path=='/api/session':
                 _,csrf,cookie=self.session(True)
@@ -137,10 +106,7 @@ class Handler(BaseHTTPRequestHandler):
                 try: size=int(self.headers.get('Content-Length','0'))
                 except ValueError: size=-1
                 require(0<size<=40000,'INVALID_INPUT','请求大小超限')
-                try:
-                    body = self.rfile.read(size)
-                    body_consumed = True
-                    data = json.loads(body)
+                try: data=json.loads(self.rfile.read(size))
                 except (ValueError,UnicodeDecodeError): raise DomainError('INVALID_INPUT','JSON 无效')
                 require(isinstance(data,dict),'INVALID_INPUT','请求须为对象')
             if write and path == '/api/session/recovery':
@@ -165,8 +131,7 @@ class Handler(BaseHTTPRequestHandler):
                 from backend.planning import due_reviews
                 self.send(200, due_reviews(self.server.operations.read(owner))); return
             if path=='/api/operations':
-                from backend.public_topics import public_response
-                self.send(200,public_response(self.server.operations.command(owner,data) if write else self.server.operations.read(owner))); return
+                self.send(200,self.server.operations.command(owner,data) if write else self.server.operations.read(owner)); return
             if path=='/api/runs':
                 if write:
                     mode=data.get('mode','simulation')
@@ -188,9 +153,13 @@ class Handler(BaseHTTPRequestHandler):
                 if len(parts)==3: self.send(200,view(run,self.server.executor)); return
                 require(parts[3]=='export' and 'export' in actions(run),'INVALID_TRANSITION','确认稿件后才能导出')
                 draft=run.drafts[-1]['content']
-                heading='AI 创作稿（已人工确认；事实仍需核实）' if run.context.get('mode')=='live' else '模拟创作稿（未调用真实 AI）'
-                if (run.acceptance or {}).get('mode')=='manual_override':heading += ' · 用户人工采用（未通过 AI 审核；审核意见保留）'
-                body='# '+heading+'\n\n# '+draft['selected_title']+'\n\n'+draft['body']+'\n\n'+draft['cta']+'\n\n'+' '.join('#'+t for t in draft['tags'])
+                # Publish-ready copy: the review/acceptance audit stays in the run.
+                body='# '+draft['selected_title']+'\n\n'+draft['body']+'\n\n'+draft['cta']+'\n\n'+' '.join('#'+t for t in draft['tags'])
+                export_format=parse_qs(urlsplit(self.path).query).get('format',['md'])[0]
+                require(export_format in ('md','docx'),'INVALID_INPUT','请选择 Word 或 Markdown 导出格式')
+                if export_format=='docx':
+                    from backend.draft_docx import render,MIME
+                    self.send(200,render(body),MIME,filename='youji-draft.docx');return
                 self.send(200,body.encode(),'text/markdown; charset=utf-8',filename='xhs-draft.md' if run.context.get('mode')=='live' else 'xhs-demo.md'); return
             require(len(parts)==4 and parts[3]=='actions','RESOURCE_NOT_FOUND','操作不存在')
             require(set(data)=={'action','version','key','payload'},'INVALID_INPUT','命令字段无效')
@@ -222,8 +191,6 @@ class Handler(BaseHTTPRequestHandler):
             self.send(200,view(run,self.server.executor))
         except DomainError as error:
             status={'RESOURCE_NOT_FOUND':404,'AUTH_REQUIRED':401,'FORBIDDEN':403,'INVALID_INPUT':400}.get(error.code,409)
-            if write and not body_consumed:
-                self.discard_rejected_body()
             self.send(status,{'error':{'code':error.code,'message':str(error)}})
         except Exception:
             # No raw provider, filesystem or document details leave the server.

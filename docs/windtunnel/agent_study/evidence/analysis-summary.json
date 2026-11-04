@@ -1,0 +1,310 @@
+{
+  "participant_type": "codex_proxy",
+  "human_readers": 0,
+  "readers": 6,
+  "readings": 42,
+  "sample_pairs": 7,
+  "actual_complete_paid_pairs": 1,
+  "actual_partially_executed_paid_pairs": 1,
+  "unexecuted_paid_pairs": 5,
+  "scoring_rule": "five binary points; all subconditions and exact manuscript quotes; correct only 5/5 without contradiction",
+  "group_mapping_opened_after_scoring_lock": true,
+  "causal_or_human_effect_claim": false,
+  "per_sample": [
+    {
+      "sample_id": "S04",
+      "methods": {
+        "baseline": {
+          "scores": [
+            4,
+            5,
+            4
+          ],
+          "correct": 1,
+          "mean_difficulty": 1,
+          "workflow_outcome": "completed",
+          "paid_execution": "started",
+          "changed": true,
+          "known_fee_upper_cny": 0.01743,
+          "error": null
+        },
+        "windtunnel": {
+          "scores": [
+            5,
+            4,
+            5
+          ],
+          "correct": 2,
+          "mean_difficulty": 2,
+          "workflow_outcome": "completed",
+          "paid_execution": "started",
+          "changed": true,
+          "known_fee_upper_cny": 0.044858,
+          "error": null
+        }
+      },
+      "identical_manuscripts": false
+    },
+    {
+      "sample_id": "S05",
+      "methods": {
+        "baseline": {
+          "scores": [
+            5,
+            5,
+            5
+          ],
+          "correct": 3,
+          "mean_difficulty": 2,
+          "workflow_outcome": "completed",
+          "paid_execution": "started",
+          "changed": false,
+          "known_fee_upper_cny": 0.010264,
+          "error": null
+        },
+        "windtunnel": {
+          "scores": [
+            5,
+            5,
+            5
+          ],
+          "correct": 3,
+          "mean_difficulty": 2,
+          "workflow_outcome": "failed",
+          "paid_execution": "started",
+          "changed": false,
+          "known_fee_upper_cny": 0.01043,
+          "error": {
+            "code": "STUDY_WORKFLOW_BLOCKED",
+            "message": "调用未能确认费用，保留预留并停止后续付费调用；未自动重试"
+          }
+        }
+      },
+      "identical_manuscripts": true
+    },
+    {
+      "sample_id": "S06",
+      "methods": {
+        "baseline": {
+          "scores": [
+            4,
+            4,
+            3
+          ],
+          "correct": 0,
+          "mean_difficulty": 1.6666666666666667,
+          "workflow_outcome": "failed",
+          "paid_execution": "not_sent_budget_block",
+          "changed": false,
+          "known_fee_upper_cny": 0.0,
+          "error": {
+            "code": "PROVIDER_ERROR",
+            "message": "已有调用在途或用量未知，已停止后续付费调用"
+          }
+        },
+        "windtunnel": {
+          "scores": [
+            5,
+            4,
+            3
+          ],
+          "correct": 1,
+          "mean_difficulty": 2,
+          "workflow_outcome": "failed",
+          "paid_execution": "not_sent_budget_block",
+          "changed": false,
+          "known_fee_upper_cny": 0.0,
+          "error": {
+            "code": "STUDY_WORKFLOW_BLOCKED",
+            "message": "已有调用在途或用量未知，已停止后续付费调用"
+          }
+        }
+      },
+      "identical_manuscripts": true
+    },
+    {
+      "sample_id": "S07",
+      "methods": {
+        "baseline": {
+          "scores": [
+            5,
+            5,
+            5
+          ],
+          "correct": 3,
+          "mean_difficulty": 1,
+          "workflow_outcome": "failed",
+          "paid_execution": "not_sent_budget_block",
+          "changed": false,
+          "known_fee_upper_cny": 0.0,
+          "error": {
+            "code": "PROVIDER_ERROR",
+            "message": "已有调用在途或用量未知，已停止后续付费调用"
+          }
+        },
+        "windtunnel": {
+          "scores": [
+            5,
+            5,
+            5
+          ],
+          "correct": 3,
+          "mean_difficulty": 1,
+          "workflow_outcome": "failed",
+          "paid_execution": "not_sent_budget_block",
+          "changed": false,
+          "known_fee_upper_cny": 0.0,
+          "error": {
+            "code": "STUDY_WORKFLOW_BLOCKED",
+            "message": "已有调用在途或用量未知，已停止后续付费调用"
+          }
+        }
+      },
+      "identical_manuscripts": true
+    },
+    {
+      "sample_id": "S08",
+      "methods": {
+        "baseline": {
+          "scores": [
+            5,
+            5,
+            3
+          ],
+          "correct": 2,
+          "mean_difficulty": 1.6666666666666667,
+          "workflow_outcome": "failed",
+          "paid_execution": "not_sent_budget_block",
+          "changed": false,
+          "known_fee_upper_cny": 0.0,
+          "error": {
+            "code": "PROVIDER_ERROR",
+            "message": "已有调用在途或用量未知，已停止后续付费调用"
+          }
+        },
+        "windtunnel": {
+          "scores": [
+            5,
+            5,
+            5
+          ],
+          "correct": 3,
+          "mean_difficulty": 2,
+          "workflow_outcome": "failed",
+          "paid_execution": "not_sent_budget_block",
+          "changed": false,
+          "known_fee_upper_cny": 0.0,
+          "error": {
+            "code": "STUDY_WORKFLOW_BLOCKED",
+            "message": "已有调用在途或用量未知，已停止后续付费调用"
+          }
+        }
+      },
+      "identical_manuscripts": true
+    },
+    {
+      "sample_id": "S09",
+      "methods": {
+        "baseline": {
+          "scores": [
+            5,
+            5,
+            5
+          ],
+          "correct": 3,
+          "mean_difficulty": 1,
+          "workflow_outcome": "failed",
+          "paid_execution": "not_sent_budget_block",
+          "changed": false,
+          "known_fee_upper_cny": 0.0,
+          "error": {
+            "code": "PROVIDER_ERROR",
+            "message": "已有调用在途或用量未知，已停止后续付费调用"
+          }
+        },
+        "windtunnel": {
+          "scores": [
+            5,
+            5,
+            5
+          ],
+          "correct": 3,
+          "mean_difficulty": 1,
+          "workflow_outcome": "failed",
+          "paid_execution": "not_sent_budget_block",
+          "changed": false,
+          "known_fee_upper_cny": 0.0,
+          "error": {
+            "code": "STUDY_WORKFLOW_BLOCKED",
+            "message": "已有调用在途或用量未知，已停止后续付费调用"
+          }
+        }
+      },
+      "identical_manuscripts": true
+    },
+    {
+      "sample_id": "S10",
+      "methods": {
+        "baseline": {
+          "scores": [
+            5,
+            5,
+            3
+          ],
+          "correct": 2,
+          "mean_difficulty": 1,
+          "workflow_outcome": "failed",
+          "paid_execution": "not_sent_budget_block",
+          "changed": false,
+          "known_fee_upper_cny": 0.0,
+          "error": {
+            "code": "PROVIDER_ERROR",
+            "message": "已有调用在途或用量未知，已停止后续付费调用"
+          }
+        },
+        "windtunnel": {
+          "scores": [
+            5,
+            5,
+            5
+          ],
+          "correct": 3,
+          "mean_difficulty": 1,
+          "workflow_outcome": "failed",
+          "paid_execution": "not_sent_budget_block",
+          "changed": false,
+          "known_fee_upper_cny": 0.0,
+          "error": {
+            "code": "STUDY_WORKFLOW_BLOCKED",
+            "message": "已有调用在途或用量未知，已停止后续付费调用"
+          }
+        }
+      },
+      "identical_manuscripts": true
+    }
+  ],
+  "groups": {
+    "baseline": {
+      "readings": 21,
+      "strict_correct": 14,
+      "points": 95,
+      "maximum_points": 105,
+      "mean_difficulty": 1.3333333333333333
+    },
+    "windtunnel": {
+      "readings": 21,
+      "strict_correct": 18,
+      "points": 101,
+      "maximum_points": 105,
+      "mean_difficulty": 1.5714285714285714
+    }
+  },
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 0.221956,
+    "reserved_unknown_cny": 0.04281,
+    "committed_upper_cny": 0.264766,
+    "calls": 25,
+    "unknown_calls": 1
+  }
+}

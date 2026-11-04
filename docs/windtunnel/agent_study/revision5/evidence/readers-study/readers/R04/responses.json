@@ -1,0 +1,132 @@
+{
+  "reader_id": "R04",
+  "participant_type": "codex_proxy",
+  "human_reading_seconds": null,
+  "responses": [
+    {
+      "blind_id": "B2ef9fed0a601fb745a2a328056226c6f",
+      "points": [
+        {
+          "point": 1,
+          "answer_text": "missing_information",
+          "evidence": [],
+          "missing_information": "稿件未提供追加模式、UTF-8打开写法或与w模式的差异。"
+        },
+        {
+          "point": 2,
+          "answer_text": "missing_information",
+          "evidence": [],
+          "missing_information": "稿件未提供使用with的原因。"
+        },
+        {
+          "point": 3,
+          "answer_text": "missing_information",
+          "evidence": [],
+          "missing_information": "稿件未提供readline返回空串与仅换行的含义。"
+        },
+        {
+          "point": 4,
+          "answer_text": "missing_information",
+          "evidence": [],
+          "missing_information": "稿件未提供逐行读取大文件方案或read()无size的差别。"
+        },
+        {
+          "point": 5,
+          "answer_text": "missing_information",
+          "evidence": [],
+          "missing_information": "稿件未提供复制JPEG的模式、对象类型或encoding限制。"
+        }
+      ],
+      "perceived_difficulty_1_to_5": null,
+      "open_feedback": ""
+    },
+    {
+      "blind_id": "B0c31ac04e49ffc031947ab86e4663c2d",
+      "points": [
+        {
+          "point": 1,
+          "answer_text": "将Python数据层次转换为字符串表示称为serializing；从字符串表示重建数据称为deserializing。",
+          "evidence": [
+            "this process is called serializing.",
+            "Reconstructing the data from the string representation is called deserializing."
+          ],
+          "missing_information": ""
+        },
+        {
+          "point": 2,
+          "answer_text": "用json.dumps(x)产生JSON字符串，结果是'[1, \"simple\", \"list\"]'。",
+          "evidence": [
+            "json.dumps(x), which produces '[1, \"simple\", \"list\"]'."
+          ],
+          "missing_information": ""
+        },
+        {
+          "point": 3,
+          "answer_text": "f是已打开的写入文本文件对象时用json.dump(x, f)；f是已打开的读取文本文件对象时用x = json.load(f)恢复。",
+          "evidence": [
+            "If f is a text file object opened for writing, call json.dump(x, f).",
+            "if f is a binary file or text file object opened for reading, call x = json.load(f)."
+          ],
+          "missing_information": ""
+        },
+        {
+          "point": 4,
+          "answer_text": "JSON文件必须以UTF-8编码；以文本文件读写时都使用encoding=\"utf-8\"。",
+          "evidence": [
+            "JSON files must be encoded in UTF-8; use encoding=\"utf-8\" when opening a JSON file as a text file for both reading and writing."
+          ],
+          "missing_information": ""
+        },
+        {
+          "point": 5,
+          "answer_text": "不能随意用pickle处理不可信数据，因为它默认不安全，反序列化精心构造的不可信数据可能执行任意代码。JSON能处理列表和字典，但序列化任意类实例需要额外工作。",
+          "evidence": [
+            "pickle is insecure by default",
+            "deserializing pickle data from an untrusted source can execute arbitrary code if the data was crafted by a skilled attacker.",
+            "JSON can handle lists and dictionaries, but serializing arbitrary class instances in JSON requires extra effort."
+          ],
+          "missing_information": ""
+        }
+      ],
+      "perceived_difficulty_1_to_5": null,
+      "open_feedback": ""
+    },
+    {
+      "blind_id": "B8cba36ddf0db59d738741bf6342a7c8b",
+      "points": [
+        {
+          "point": 1,
+          "answer_text": "missing_information",
+          "evidence": [],
+          "missing_information": "稿件未提供--verbosity缺省值及输出。"
+        },
+        {
+          "point": 2,
+          "answer_text": "missing_information",
+          "evidence": [],
+          "missing_information": "稿件未提供仅写--verbosity报错的原因。"
+        },
+        {
+          "point": 3,
+          "answer_text": "missing_information",
+          "evidence": [],
+          "missing_information": "稿件未提供--verbose的add_argument写法或启用与缺省值。"
+        },
+        {
+          "point": 4,
+          "answer_text": "missing_information",
+          "evidence": [],
+          "missing_information": "稿件未提供--verbose 1报错的原因。"
+        },
+        {
+          "point": 5,
+          "answer_text": "missing_information",
+          "evidence": [],
+          "missing_information": "稿件未提供-v别名的add_argument写法、输出或help内容。"
+        }
+      ],
+      "perceived_difficulty_1_to_5": null,
+      "open_feedback": ""
+    }
+  ]
+}

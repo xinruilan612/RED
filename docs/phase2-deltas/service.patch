@@ -1,0 +1,14 @@
+--- a/backend/service.py
++++ b/backend/service.py
+@@ -91 +91,4 @@
+-        require(isinstance(selection,dict) and set(selection)<={'enabled','document_ids'} and 'enabled' in selection and type(selection['enabled']) is bool,'INVALID_INPUT','资料检索设置无效')
++        require(isinstance(selection,dict) and set(selection)<={'enabled','document_ids','automatic_references'} and 'enabled' in selection and type(selection['enabled']) is bool,'INVALID_INPUT','资料检索设置无效')
++        automatic_references=selection.get('automatic_references',True)
++        require(type(automatic_references) is bool,'INVALID_INPUT','自动参考设置无效')
++        context['knowledge_selection']={**selection,'automatic_references':automatic_references}
+@@ -101 +104 @@
+-        if account and context.get('operations',{}).get('platform')=='xiaohongshu':
++        if account and automatic_references and context.get('operations',{}).get('platform')=='xiaohongshu':
+@@ -107 +110 @@
+-        if account:
++        if account and automatic_references:

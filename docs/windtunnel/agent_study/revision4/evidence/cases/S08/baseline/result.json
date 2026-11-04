@@ -1,0 +1,45 @@
+{
+  "sample_id": "S08",
+  "method": "baseline",
+  "participant_type": "codex_proxy",
+  "revision": "v4",
+  "draft_kind": "public_official_tutorial_excerpt",
+  "adaptation": "layout and attribution only; original English text",
+  "deletion_design": null,
+  "source_url": "https://docs.python.org/3.12/tutorial/errors.html#handling-exceptions",
+  "original_sha256": "617f423787fbd1d5e3a0bb2454b7d0b89c69a7162df99a76c3027c0d5b64f6f4",
+  "material_sha256": "617f423787fbd1d5e3a0bb2454b7d0b89c69a7162df99a76c3027c0d5b64f6f4",
+  "outcome": "completed",
+  "error": null,
+  "automatic_adoption": true,
+  "human_author": false,
+  "issues": [],
+  "run_id": "8f6cf66e-dfc9-4f95-979a-23b2c3868514",
+  "wall_seconds": 5.15,
+  "final_sha256": "617f423787fbd1d5e3a0bb2454b7d0b89c69a7162df99a76c3027c0d5b64f6f4",
+  "changed": false,
+  "calls": [
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 3345,
+      "output_tokens": 1457,
+      "total_tokens": 4802,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "issues": [],
+        "revised_text": "8.3. Handling Exceptions\n\nIt is possible to write programs that handle selected exceptions. Look at the\nfollowing example, which asks the user for input until a valid integer has been\nentered, but allows the user to interrupt the program (using Control-C or\nwhatever the operating system supports); note that a user-generated interruption\nis signalled by raising the KeyboardInterrupt exception.\n\n>>> while True:\n...     try:\n...         x = int(input(\"Please enter a number: \"))\n...         break\n...     except ValueError:\n...         print(\"Oops!  That was no valid number.  Try again...\")\n...\n\nThe try statement works as follows.\n\nFirst, the try clause (the statement(s) between the try and\nexcept keywords) is executed.\n\nIf no exception occurs, the except clause is skipped and execution of the\ntry statement is finished.\n\nIf an exception occurs during execution of the try clause, the rest of the\nclause is skipped.  Then, if its type matches the exception named after the\nexcept keyword, the except clause is executed, and then execution\ncontinues after the try/except block.\n\nIf an exception occurs which does not match the exception named in the except\nclause, it is passed on to outer try statements; if no handler is\nfound, it is an unhandled exception and execution stops with an error message.\n\nA try statement may have more than one except clause, to specify\nhandlers for different exceptions.  At most one handler will be executed.\nHandlers only handle exceptions that occur in the corresponding try clause,\nnot in other handlers of the same try statement.  An except clause\nmay name multiple exceptions as a parenthesized tuple, for example:\n\n... except (RuntimeError, TypeError, NameError):\n...     pass\n\nA class in an except clause matches exceptions which are instances of the\nclass itself or one of its derived classes (but not the other way around — an\nexcept clause listing a derived class does not match instances of its base classes).\nFor example, the following code will print B, C, D in that order:\n\nclass B(Exception):\n    pass\n\nclass C(B):\n    pass\n\nclass D(C):\n    pass\n\nfor cls in [B, C, D]:\n    try:\n        raise cls()\n    except D:\n        print(\"D\")\n    except C:\n        print(\"C\")\n    except B:\n        print(\"B\")\n\nNote that if the except clauses were reversed (with except B first), it\nwould have printed B, B, B — the first matching except clause is triggered.\n\nWhen an exception occurs, it may have associated values, also known as the\nexception’s arguments. The presence and types of the arguments depend on the\nexception type.\n\nThe except clause may specify a variable after the exception name.  The\nvariable is bound to the exception instance which typically has an args\nattribute that stores the arguments. For convenience, builtin exception\ntypes define __str__() to print all the arguments without explicitly\naccessing .args.\n\n>>> try:\n...     raise Exception('spam', 'eggs')\n... except Exception as inst:\n...     print(type(inst))    # the exception type\n...     print(inst.args)     # arguments stored in .args\n...     print(inst)          # __str__ allows args to be printed directly,\n...                          # but may be overridden in exception subclasses\n...     x, y = inst.args     # unpack args\n...     print('x =', x)\n...     print('y =', y)\n...\n<class 'Exception'>\n('spam', 'eggs')\n('spam', 'eggs')\nx = spam\ny = eggs\n\nThe exception’s __str__() output is printed as the last part (‘detail’)\nof the message for unhandled exceptions.\n\nBaseException is the common base class of all exceptions. One of its\nsubclasses, Exception, is the base class of all the non-fatal exceptions.\nExceptions which are not subclasses of Exception are not typically\nhandled, because they are used to indicate that the program should terminate.\nThey include SystemExit which is raised by sys.exit() and\nKeyboardInterrupt which is raised when a user wishes to interrupt\nthe program.\n\nException can be used as a wildcard that catches (almost) everything.\nHowever, it is good practice to be as specific as possible with the types\nof exceptions that we intend to handle, and to allow any unexpected\nexceptions to propagate on.\n\nThe most common pattern for handling Exception is to print or log\nthe exception and then re-raise it (allowing a caller to handle the\nexception as well):\n\nimport sys\n\ntry:\n    f = open('myfile.txt')\n    s = f.readline()\n    i = int(s.strip())\nexcept OSError as err:\n    print(\"OS error:\", err)\nexcept ValueError:\n    print(\"Could not convert data to an integer.\")\nexcept Exception as err:\n    print(f\"Unexpected {err=}, {type(err)=}\")\n    raise\n\nThe try … except statement has an optional else\nclause, which, when present, must follow all except clauses.  It is useful\nfor code that must be executed if the try clause does not raise an exception.\nFor example:\n\nfor arg in sys.argv[1:]:\n    try:\n        f = open(arg, 'r')\n    except OSError:\n        print('cannot open', arg)\n    else:\n        print(arg, 'has', len(f.readlines()), 'lines')\n        f.close()\n\nThe use of the else clause is better than adding additional code to\nthe try clause because it avoids accidentally catching an exception\nthat wasn’t raised by the code being protected by the try …\nexcept statement.\n\nException handlers do not handle only exceptions that occur immediately in the\ntry clause, but also those that occur inside functions that are called (even\nindirectly) in the try clause. For example:\n\n>>> def this_fails():\n...     x = 1/0\n...\n>>> try:\n...     this_fails()\n... except ZeroDivisionError as err:\n...     print('Handling run-time error:', err)\n...\nHandling run-time error: division by zero"
+      }
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 1.166204,
+    "reserved_unknown_cny": 0.04281,
+    "committed_upper_cny": 1.209014,
+    "calls": 100,
+    "unknown_calls": 1
+  }
+}

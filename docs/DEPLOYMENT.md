@@ -1,8 +1,14 @@
 # 网站后端运行与迁移
 
+> **2026-10-11 当前阅读顺序**：先读[正式需求](design/CONNECTED_CREATOR_REQUIREMENTS.md)与[六阶段进度及代码核对](CONNECTED_CREATOR_STATUS.md)。以 b50c628 为基线，先统一 AI 参考资料，再补真实产品差距；旧阶段“只改说明/仅第二阶段”限制不适用于本轮。主线为主题/产品资料、可选联网与 RAG、四 Agent、对话改稿、文字导出与选定公开笔记评论反馈。不新增图片、视频、预测、平台或后台。下文旧范围与完成记录仅作历史参考，当前可用性以新代码和本轮独立验收为准。
+
+> **当前需求（2026-10-10，已授权实施）**：[小红书连接、研究资料库与多模型](design/CONNECTED_CREATOR_REQUIREMENTS.md)。新增能力以该基线为准；下文旧阶段限制和完成记录保留其日期与实现边界，不作为拒绝新需求的依据。
+
+云端前置文件、条件清单与 Linux 内测交接见 [云部署准备](PRODUCTION_PREPARATION.md)。这些模板尚未在云服务器执行，不代表公网部署完成。
+
 Windows 本机运行请使用 [Windows 安装与启动](WINDOWS.md) 的 `.cmd` 入口，以下 shell 示例面向 macOS/Linux。跨平台启动器 `scripts/local_dev.py` 支持 `setup`、`doctor`、`start`，启动时同时管理 API 和 Worker。
 
-适用于 v0.6。当前在本机 PostgreSQL 验证；尚未购买云服务、绑定域名或公网部署。前端布局沿用原 Demo。
+下文基础配置始于 v0.6，新增能力与本轮实际环境按页首当前状态说明核对。当前在本机 PostgreSQL 验证；尚未购买云服务、绑定域名或公网部署。前端布局沿用原 Demo。
 
 ## 环境与启动
 
@@ -109,3 +115,26 @@ LangGraph 1.2.11 + PostgreSQL checkpointer 3.1.2 在同数据库持久化检查�
 当前估价限定 deepseek-flash，按官方高峰价输入 2 元/百万 Token、输出 8 元/百万 Token，不假定缓存折扣；价格依据：https://api-docs.deepseek.com/zh-cn/quick_start/pricing/ 。账本估算不等于供应商账单。未决调用按输入 UTF-8 字节加余量和最大输出预估占用，返回后按输入/输出用量结算；未知用量保守占用。预估与调用台账在同一事务，金额或轮数超过目标不阻止新调用。
 
 创作 Token 安全上限从 40,000 调为 80,000，原 16 次调用、任务/日美元安全上限继续适用。约 3 轮是期望，实际费用受输入和返修影响。没有触发自动收费测试。
+
+
+## 2026-10-10 新增配置与启动前检查
+
+本地语义模型按 [本地 RAG 部署](LOCAL_RAG.md) 显式安装；默认不开外部收费向量服务。模型与搜索设置页支持用户 BYOK 与预算配置，平台 DeepSeek Key 仍只保存在服务端。公网运行需要配置 MODEL_CREDENTIAL_KEY 加密主密钥并妥善备份，不能将密钥或连接串写进文档、日志或资料库；本轮未完成公网验收。
+
+先检查目标端口对应的实际 worktree、代码版本及数据库迁移版本。当前本机8765与原默认数据库属于其他worktree的较高版本；当前checkout访问原默认库会触发SCHEMA_TOO_NEW。不要通过删除迁移记录、降级数据库或改动已应用SQL来绕过保护。本轮8775独立schema仅用于隔离验收，正式切换与原默认库兼容尚待明确迁移路线。
+
+
+## 后续统一Worker与网页重连（2026-10-10）
+
+scripts/xhs_sync.py worker 现调用统一Worker，处理创作、研究和账号同步；按 [本机同步运行说明](XHS_LOCAL_SYNC.md) 与serve使用同一隔离schema。提交4876323后API8775和统一Worker已重启。只启动MCP连接器不能执行项目后台研究或创作。
+
+已绑定账号的二维码重连在网页进行，发起时先暂停同步，由本人手机扫码；原绑定身份继续校验。二维码已实际生成且用户扫码重连成功；本人同步已恢复，站内案例研究3份文字描述已实际入库、下载报告并检索召回。
+
+本人已保存笔记可显式导入RAG，评论分页只读取已持久记录；案例普通编辑受保护，专用编辑保留版本，研究报告按冻结版本导出。一次授权真实模型验收使用8次调用、15378 tokens、保守账本$0.0184536，未超过单次授权$0.05且未发布。详见 [当前验收状态](CONNECTED_CREATOR_STATUS.md)，不将本次结果外推为所有模型已验证。
+
+
+### 创作者指标读取器
+
+用户授权定时读取已有权限的创作者首页与笔记管理后，新增 `scripts/xhs_creator_reader.py`。运行依赖本机 `runtime/mediacrawler/.venv` Python/Playwright环境（Playwright 1.61.0及Chromium），不依赖MediaCrawler采集代码；固定依赖见 `requirements-creator.txt`，环境恢复命令见下方本机同步指南。首次由管理员校验并私有绑定 `source_id` 与 `creator_account_id`，使用已有MCP会话bootstrap独立profile，按需添加 `--login` 由本人手动登录。Worker正常执行不发起手动登录、不自动申请权限、不发布，原MCP评论通道独立。具体命令、私有文件位置与边界见 [本机同步](XHS_LOCAL_SYNC.md)。
+
+真实网页触发统一Worker后，首页7日汇总及5篇笔记观看数已完成PostgreSQL入库、API返回和页面逐值核对；16:12:07成功、下轮16:27:07。账号汇总不等于单篇累计流量，单篇曝光未知保留null，原始展示与实际采集时间保留，平台更新时间不伪造。读取器仅校验默认近7日、读取稳定快照，不切换周期；Cookie源fingerprint变化可重新bootstrap，独立profile过期按需 `--login`。仅首屏最多30张创作者笔记，非秒级同步。完整证据见私有 `runtime/connected_acceptance/creator-integration.json` 与 [当前验收状态](CONNECTED_CREATOR_STATUS.md)；新增代码已通过Python660项（含真实PostgreSQL）、Node72项且零跳过，详情见当前验收状态；上一阶段622项结果保留为历史。

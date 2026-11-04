@@ -1,0 +1,55 @@
+{
+  "sample_id": "S06",
+  "method": "baseline",
+  "participant_type": "codex_proxy",
+  "revision": "v5.controlled",
+  "draft_kind": "researcher_abbreviated_gap_control",
+  "adaptation": "人为删节缺口控制，非真实创作者",
+  "deletion_design": "Omit append versus overwrite, UTF-8 text opening, context-manager closing, EOF versus blank lines, streaming versus whole-file reads, and binary JPEG mode/types/encoding restrictions needed by the five-point task.",
+  "source_url": "https://docs.python.org/3.12/tutorial/inputoutput.html#reading-and-writing-files",
+  "original_sha256": "d35848c556c330670931972dbedb15647df1c8723b260aa56c3c64456b26cc22",
+  "material_sha256": "e875cb0dface6cf1ed20c0c5c4815d684aff35321bb80bb955a771c3424226c7",
+  "outcome": "completed",
+  "error": null,
+  "automatic_adoption": true,
+  "human_author": false,
+  "issues": [
+    {
+      "explanation": "The draft is incomplete for the stated goal: it does not cover append mode with UTF-8, differences from 'w' mode, why use 'with', the meaning of readline() returning an empty string versus only a newline, a line-by-line approach for large files and its difference from read() without size, or copying JPEG files with binary mode and the encoding restriction. No factual error is present in the draft, but it lacks the evidence-backed guidance the task requires.",
+      "evidence": "Draft only says: \"Python programs can open files to read or write data. File objects provide methods for handling their contents.\""
+    }
+  ],
+  "run_id": "09582105-c7a8-459e-95d5-3c043a89622b",
+  "wall_seconds": 4.657,
+  "final_sha256": "80212c8294e78d001a67ebcb95ff47baa7d5a949fca29ce4eda7113aca695413",
+  "changed": true,
+  "calls": [
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 2703,
+      "output_tokens": 972,
+      "total_tokens": 3675,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "issues": [
+          {
+            "explanation": "The draft is incomplete for the stated goal: it does not cover append mode with UTF-8, differences from 'w' mode, why use 'with', the meaning of readline() returning an empty string versus only a newline, a line-by-line approach for large files and its difference from read() without size, or copying JPEG files with binary mode and the encoding restriction. No factual error is present in the draft, but it lacks the evidence-backed guidance the task requires.",
+            "evidence": "Draft only says: \"Python programs can open files to read or write data. File objects provide methods for handling their contents.\""
+          }
+        ],
+        "revised_text": "Python programs can open files to read or write data. File objects provide methods for handling their contents.\n\nTo keep existing log content and add new lines at the end, open the file with mode 'a' and specify UTF-8:\n\nopen('app.log', 'a', encoding='utf-8')\n\nThe official section states that mode 'a' \"opens the file for appending; any data written to the file is automatically added to the end.\" In contrast, mode 'w' is \"for only writing (an existing file with the same name will be erased).\" The materials also recommend UTF-8: \"Because UTF-8 is the modern de-facto standard, encoding=\"utf-8\" is recommended unless you know that you need to use a different encoding.\" By default, open() uses text mode, so string data is read and written; if encoding is not specified, \"the default is platform dependent.\"\n\nUse a with statement when opening the log file:\n\nwith open('app.log', 'a', encoding='utf-8') as f:\n    f.write('log message\\n')\n\nThe materials explain: \"It is good practice to use the with keyword when dealing with file objects. The advantage is that the file is properly closed after its suite finishes, even if an exception is raised at some point.\" They also note that using with is shorter than writing equivalent try-finally blocks, and that without with you should call f.close() to \"immediately free up any system resources used by it.\" The warning adds that calling f.write() without using with or calling f.close() \"might result in the arguments of f.write() not being completely written to the disk, even if the program exits successfully.\"\n\nWhen reading a log line by line, distinguish two return values from f.readline(). The materials say that f.readline() returns a string with the trailing newline kept, and it is \"only omitted on the last line of the file if the file doesn't end in a newline.\" Therefore, \"if f.readline() returns an empty string, the end of the file has been reached, while a blank line is represented by '\\n', a string containing only a single newline.\" An empty string does not mean a blank line; it means there is nothing more to read.\n\nFor a large log file, loop over the file object line by line:\n\nwith open('app.log', encoding='utf-8') as f:\n    for line in f:\n        print(line, end='')\n\nThe materials state: \"For reading lines from a file, you can loop over the file object. This is memory efficient, fast, and leads to simple code.\" In contrast, calling f.read() without size reads the whole file at once. The materials say that \"when size is omitted or negative, the entire contents of the file will be read and returned; it's your problem if the file is twice as large as your machine's memory.\" The line-by-line loop avoids loading the entire file into memory at once.\n\nFor copying a JPEG file, binary mode is required. The materials warn that text mode performs platform-specific newline conversion: \"This behind-the-scenes modification to file data is fine for text files, but will corrupt binary data like that in JPEG or EXE files. Be very careful to use binary mode when reading and writing such files.\" Adding 'b' to the mode opens the file in binary mode. In binary mode, data is read and written as bytes objects: \"Binary mode data is read and written as bytes objects.\" Also, you cannot specify encoding in binary mode: \"You can not specify encoding when opening file in binary mode.\" So do not write encoding='utf-8' for a binary JPEG open; use a binary mode such as 'rb' or 'wb' and work with bytes."
+      }
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 1.8113,
+    "reserved_unknown_cny": 0.04281,
+    "committed_upper_cny": 1.85411,
+    "calls": 142,
+    "unknown_calls": 1
+  }
+}

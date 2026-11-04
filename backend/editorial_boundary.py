@@ -12,6 +12,13 @@ _PATTERNS = (
     r'已读(?:取)?(?:公开)?网页(?:正文)?',
     r'(?:素材|材料|资料)(?:里|中)(?:没有|未提供|未给出)[^。！？\n]{0,45}(?:依据|来源|顺序|片段)',
     r'后续找到(?:可标注)?来源[^。！？\n]{0,30}(?:补|拆解)',
+    # 2026-10-19 真人盲评暴露的形态：把资料核验过程写进正文。
+    r'未(?:提供|给出|列出)[^。！？\n]{0,8}(?:数据|信息)',
+    r'未(?:引申|推断|延伸)[^。！？\n]{0,20}',
+    r'未(?:标注|注明)[^。！？\n]{0,10}(?:性能|参数|数据|承重|耐水|续航)',
+    r'(?:该|这些)?(?:数据|参数|规格)(?:来自|源自)[^。！？\n]{0,14}(?:资料|页面|网页)',
+    r'(?:仅|只)(?:列|列出)(?:已确认|已知)',
+    r'(?:无|没有)(?:负重测试|适配机型列表|上市状态说明|使用效果数据)',
 )
 
 
@@ -27,7 +34,7 @@ def findings(content):
     return result
 
 
-def annotate_review(report, content):
+def annotate_review(report, content, *, allow_revision=False):
     """Preserve the response separately; downgrade only explicit copy leakage."""
     matches=findings(content)
     if not matches:return report
@@ -43,9 +50,13 @@ def annotate_review(report, content):
     for check in result['checks']:
         if check.get('name')=='usefulness_and_readability':
             check.update(result='fail',basis='正文包含创作过程或资料缺口说明，尚未区分内部说明与读者文案。')
-    # A human can still adopt this draft explicitly. This is not an approval gate.
-    result['decision']='needs_human';result['next_action']='request_human'
-    question='请核对正文里的资料说明：若关键结论缺少依据，请补充对应原文；若已有依据，请将内部说明与发布正文分开。'
-    if question not in result['human_questions']:result['human_questions'].append(question)
+    # Eligible original tasks use the existing bounded revision loop, never
+    # approval. A reviewer requesting actual missing facts still goes to a human.
+    if allow_revision and report.get('decision') in ('approved','revision_required') and not report.get('human_questions'):
+        result['decision']='revision_required';result['next_action']='revise'
+    else:
+        result['decision']='needs_human';result['next_action']='request_human'
+        question='请核对正文里的资料说明：若关键结论缺少依据，请补充对应原文；若已有依据，请将内部说明与发布正文分开。'
+        if question not in result['human_questions']:result['human_questions'].append(question)
     result['limitations'].append('本地表达对象检查检测到明确的创作过程用语；没有核实外部事实，也没有自动修改原稿。')
     return result

@@ -1,0 +1,5 @@
+﻿record_id,reviewer_id,reviewer_role,evaluation_type,task_id,article_id,completeness,factuality,coherence,naturalness,usefulness,notes,source_csv_sha256
+review:a9f18d62d71b:P0003,developer-self,developer,human_self_review,D01,P0003,4,3,3,3,3,,a9f18d62d71be0a81c64fa5cc64c23be40348b406efcbe7fe90ccf9638d1da00
+review:a9f18d62d71b:P0004,developer-self,developer,human_self_review,D01,P0004,4,3,4,4,4,,a9f18d62d71be0a81c64fa5cc64c23be40348b406efcbe7fe90ccf9638d1da00
+review:a9f18d62d71b:P0002,developer-self,developer,human_self_review,D01,P0002,4,4,4,5,4,,a9f18d62d71be0a81c64fa5cc64c23be40348b406efcbe7fe90ccf9638d1da00
+review:a9f18d62d71b:P0001,developer-self,developer,human_self_review,D01,P0001,4,4,4,4,4,,a9f18d62d71be0a81c64fa5cc64c23be40348b406efcbe7fe90ccf9638d1da00

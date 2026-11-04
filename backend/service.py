@@ -1,7 +1,7 @@
 """Application boundary shared by the production API and domain tests."""
 from uuid import uuid4
 from backend.contracts import require, integer
-from backend.demo import validate_brief, validate_edit, actions
+from backend.demo import validate_brief, validate_edit, actions, require_title_length
 from backend.execution import Executor
 from backend.operations import Operations
 from backend.web import view
@@ -14,10 +14,9 @@ class Service:
         upgrade(store)
         self.operations = Operations(store)
         self.executor = Executor(store,config,client)
+        self.models = self.executor.router.connections
         from backend.operations_planner import OperationsPlanner
         self.operations_planner=OperationsPlanner(store,self.operations,self.executor)
-        from backend.analytics_review import AnalyticsReview
-        self.analytics_review=AnalyticsReview(store,self.operations,self.executor)
         from backend.knowledge import Knowledge
         self.knowledge = Knowledge(store)
         from backend.jobs import Jobs
@@ -36,6 +35,7 @@ class Service:
                 'LIVE_DISABLED','内容风洞付费调用未启用；当前仅验证模拟流程')
 
     def view(self, run):
+        self.guard_source_visibility(run)
         if run.workflow_type=='windtunnel':
             result=self.windtunnel.view(run)
             result.update(self.executor.public(run))
@@ -48,15 +48,19 @@ class Service:
         result['in_flight']=result.get('in_flight',False) or result['background']['status'] in ('queued','running','pausing')
         from backend.review_recovery import public as recovery_public
         result['review_recovery']=recovery_public(self.store,run)
-        if result['review_recovery']['available']:result['allowed_actions'].append('repair_review')
-        from backend.model_router import review_execution
-        with self.store.connect() as db:result['review_execution']=review_execution(db,run)
-        if result['review_execution'] and result['review_execution']['blocked']:
+        if result['review_recovery']['available']:
             result['allowed_actions']=[a for a in result['allowed_actions'] if a!='next']
-        if result.get('usage',{}).get('unknown_calls',0) and (run.run_status=='FAILED' or result['background']['status']=='blocked'):
-            result['allowed_actions']=[a for a in result['allowed_actions'] if a not in ('next','recover')]
+            result['allowed_actions'].append('repair_review')
         if result['in_flight']:result['allowed_actions']=[a for a in result['allowed_actions'] if a=='cancel']
         return result
+
+    def guard_source_visibility(self,run):
+        # A freshly opened read transaction checks current permissions, including
+        # simulation runs; do not expose raw historical inputs or derived drafts.
+        from backend.knowledge import assert_public_model_evidence
+        with self.store.connect() as db:
+            db.execute('BEGIN')
+            assert_public_model_evidence(self.store,run,db)
 
     def background(self, owner, run_id, data):
         self.jobs.command(owner,run_id,data)
@@ -64,33 +68,63 @@ class Service:
 
     def create(self, owner, data):
         require(isinstance(data,dict),'INVALID_INPUT','请求格式无效')
+        connection_id=data.get('model_connection_id')
+        require(connection_id is None or isinstance(connection_id,str),'INVALID_INPUT','模型连接 ID 无效')
+        data={k:v for k,v in data.items() if k!='model_connection_id'}
         workflow_type=data.get('workflow_type','creation')
         require(workflow_type in ('creation','windtunnel'),'INVALID_INPUT','工作流类型无效')
         if workflow_type=='windtunnel':
-            policy=self.executor.router.policy('windtunnel')
+            policy=self.executor.router.policy('windtunnel',owner if data.get('mode')=='live' else None,connection_id)
             if data.get('mode')=='live':self.guard_windtunnel_live(policy)
             return self.view(self.windtunnel.create(owner,{k:v for k,v in data.items() if k!='workflow_type'},policy))
         data={k:v for k,v in data.items() if k!='workflow_type'}
         mode = data.get('mode','simulation')
         require(mode in ('simulation','live'), 'INVALID_INPUT', '运行模式无效')
-        require(mode!='live' or self.config.ready, 'KEY_REQUIRED', '请在服务器配置 DeepSeek Key')
-        context = validate_brief({k:v for k,v in data.items() if k not in ('mode','operations','knowledge','web_research')})
+        policy=self.executor.router.policy(owner=owner if mode=='live' else None,connection_id=connection_id)
+        if mode=='live':self.executor.router.ready(policy,owner)
+        context = validate_brief({k:v for k,v in data.items() if k not in ('mode','operations','knowledge','web_research','creation','comment_feedback','algorithm_options')})
+        from backend.creation_algorithms import options, VERSION as algorithm_version
+        context['algorithm_options'] = options(data.get('algorithm_options'))
+        if context['algorithm_options']['enabled']:
+            policy = {**policy, 'prompt_version': policy['prompt_version']+'+'+algorithm_version}
         from backend.web_research import selection as web_selection
-        context['web_research']=web_selection(data.get('web_research'),mode)
+        web_input=data.get('web_research')
+        if web_input is None and mode=='live':
+            web_input={'enabled':True,'queries':[context['topic'].strip()[:120]],'provider':'bing','targets':['web']}
+        context['web_research']=web_selection(web_input,mode)
         context['mode'] = mode
-        context['model_policy'] = self.executor.router.policy()
+        context['material_policy'] = 'available_only'
+        context['material_policy_version'] = 'available-only-v1'
+        context['model_policy'] = policy
         if 'operations' in data:
             context['operations'] = self.operations.context(owner,data['operations'],mode)
         selection=data.get('knowledge',{'enabled':False})
-        require(isinstance(selection,dict) and set(selection)<={'enabled','document_ids'} and 'enabled' in selection and type(selection['enabled']) is bool,'INVALID_INPUT','资料检索设置无效')
+        require(isinstance(selection,dict) and set(selection)<={'enabled','document_ids','automatic_references'} and 'enabled' in selection and type(selection['enabled']) is bool,'INVALID_INPUT','资料检索设置无效')
+        automatic_references=selection.get('automatic_references',True)
+        require(type(automatic_references) is bool,'INVALID_INPUT','自动参考设置无效')
+        context['knowledge_selection']={**selection,'automatic_references':automatic_references}
         document_ids=selection.get('document_ids',[])
         require(isinstance(document_ids,list) and len(document_ids)<=3 and all(isinstance(x,str) and x for x in document_ids),'INVALID_INPUT','最多选择 3 份资料')
+        from backend.creation_taxonomy import classify_task
+        context['creation_classification']=classify_task(data.get('creation'),context)
+        account=context.get('operations',{}).get('account_id')
+        from backend.comment_feedback import freeze
+        context['comment_feedback']=freeze(self.store,owner,account,data.get('comment_feedback'))
         if selection['enabled']:
-            account=context.get('operations',{}).get('account_id')
             require(account,'INVALID_INPUT','请先选择资料所属账号')
-            result=self.knowledge.retrieve(owner,account,(context['topic']+' '+context['audience'])[:300],limit=3,document_ids=document_ids if 'document_ids' in selection else None)
-            context['retrieval']=result
-            context['evidence']=result['sources']
+        if account and (selection['enabled'] or automatic_references):
+            grouped=self.knowledge.grouped_retrieve(
+                owner,account,context['topic'][:300],context['creation_classification'],
+                document_ids=document_ids if 'document_ids' in selection else None,
+                include_facts=selection['enabled'],include_references=automatic_references)
+        else:
+            grouped={'classification':context['creation_classification'],
+                     'groups':{'methods':[],'examples':[],'facts':[]},'sources':[],
+                     'filters':{},'gaps':['未启用资料检索；仅使用本次用户素材'],
+                     'engine':'disabled'}
+        context['creation_retrieval']=grouped
+        context['retrieval']=grouped
+        context['evidence']=grouped['sources']
         if mode=='live': context['scenario']='standard'
         return self.view(self.store.create(owner,str(uuid4()),context))
 
@@ -102,7 +136,7 @@ class Service:
         data = parse(Command, data)
         require(set(data)=={'action','version','key','payload'}, 'INVALID_INPUT', '命令字段无效')
         action, payload = data['action'],data['payload']
-        require(isinstance(action,str) and action in ('next','edit','supplement','accept','adopt_manual','cancel','recover','repair_review'), 'INVALID_INPUT', '未知操作')
+        require(isinstance(action,str) and action in ('next','edit','retitle','review_current','request_revision','supplement','skip_questions','accept','adopt_manual','cancel','recover','repair_review'), 'INVALID_INPUT', '未知操作')
         integer(data['version'],'version')
         require(isinstance(data['key'],str) and 0<len(data['key'])<=100 and isinstance(payload,dict), 'INVALID_INPUT', '命令参数无效')
         run = self.store.get(run_id,owner)
@@ -110,7 +144,7 @@ class Service:
             job=self.jobs.public(run_id,owner)
             require(job['status'] not in ('queued','running','pausing'),'JOB_ACTIVE','任务正在后台执行，请等待或暂停')
             require(job['status']=='idle','INVALID_TRANSITION','此任务使用后台执行，请点击后台继续')
-        if action in ('next','cancel','recover','repair_review'):
+        if action in ('next','cancel','recover','repair_review','skip_questions'):
             require(not payload,'INVALID_INPUT','此操作无需参数')
         if action=='repair_review':
             from backend.review_recovery import repair
@@ -119,23 +153,64 @@ class Service:
             return self.view(self.executor.recover(run_id,owner,data['version']))
         if action=='next' and run.context.get('mode')=='live':
             require(not run.context.get('web_research',{}).get('enabled'),'INVALID_TRANSITION','联网调查任务请使用后台启动按钮执行')
-            from backend.model_router import review_execution
-            with self.store.connect() as db:preflight=review_execution(db,run)
-            require(not (preflight and preflight['blocked']),'STAGE_ATTEMPT_LIMIT',preflight['message'] if preflight else '复审次数已用完')
             return self.view(self.executor.step(run_id,owner,data['version'],data['key']))
         command = {'next':'demo_step','supplement':'demo_supplement'}.get(action,action)
-        if action=='edit': payload={'content':validate_edit(payload)}
+        if action=='edit': payload={'content':validate_edit(payload,(run.context.get('operations') or {}).get('platform'))}
+        if action=='retitle':
+            require(set(payload)=={'title'} and isinstance(payload['title'],str),'INVALID_INPUT','标题修正字段无效')
+            require_title_length(payload['title'].strip(),(run.context.get('operations') or {}).get('platform'))
+        if action=='request_revision':
+            fields={'draft_ref','content_hash','instruction'}
+            require(fields<=set(payload)<=fields|{'document_ids'} and
+                    all(isinstance(payload[k],str) and payload[k] for k in fields),'INVALID_INPUT','请选择准确稿件并填写改稿要求')
+            if 'document_ids' in payload:
+                with self.store.connect() as db:
+                    repeated=db.execute('SELECT 1 FROM commands WHERE run_id=? AND key=?',(run_id,data['key'])).fetchone()
+                if repeated:
+                    return self.view(self.store.command(run_id,owner,data['version'],data['key'],command,payload))
+                ids=payload['document_ids']
+                require(isinstance(ids,list) and 0<len(ids)<=3 and all(isinstance(x,str) and x for x in ids),
+                        'INVALID_INPUT','请选择1至3份改稿事实资料')
+                account=run.context.get('operations',{}).get('account_id')
+                require(account,'INVALID_INPUT','请先选择资料所属账号')
+                # Explicitly selected supplements can introduce several SKUs.
+                # Retrieve each within its own document scope, so one SKU does
+                # not make every other selected product fail exact-ID matching.
+                parts=[]
+                for identity in dict.fromkeys(ids):
+                    document=self.knowledge.get(owner,account,identity)
+                    parts.append(self.knowledge.grouped_retrieve(owner,account,document['title'][:300],
+                        run.context['creation_classification'],document_ids=[identity],include_facts=True,include_references=False))
+                from copy import deepcopy
+                retrieval=deepcopy(parts[0])
+                retrieval['groups']['facts']=[s for part in parts for s in part['groups']['facts']]
+                retrieval['sources']=retrieval['groups']['facts']
+                retrieval['filters']['facts']['document_ids']=ids
+                retrieval['context_chars']=sum(len(s['text']) for s in retrieval['sources'])
+                require(set(ids)=={s['document_id'] for s in retrieval['groups']['facts']},
+                        'INVALID_INPUT','所选改稿事实资料未全部匹配当前主题')
+                return self.view(self.store.command(run_id,owner,data['version'],data['key'],command,payload,
+                                                   revision_retrieval=retrieval))
         if action=='supplement': require(set(payload)=={'material','allow_hypothesis'},'INVALID_INPUT','补料字段无效')
         if action=='accept': require(set(payload)=={'draft_ref','review_ref'} and all(isinstance(v,str) for v in payload.values()),'INVALID_INPUT','确认版本无效')
         if action=='adopt_manual':
             require(set(payload)=={'draft_ref','content_hash','acknowledge'} and all(isinstance(payload[k],str) and payload[k] for k in ('draft_ref','content_hash')) and payload['acknowledge'] is True,'INVALID_INPUT','请明确确认准确稿件并知晓审核问题')
         return self.view(self.store.command(run_id,owner,data['version'],data['key'],command,payload))
 
+    def delete_run(self, owner, run_id):
+        return self.store.delete_run(run_id, owner)
+
+    def export_docx(self, owner, run_id):
+        from backend.draft_docx import render
+        return render(self.export(owner,run_id))
+
     def export(self, owner, run_id):
         run = self.store.get(run_id,owner)
+        self.guard_source_visibility(run)
         if run.workflow_type=='windtunnel':return self.windtunnel.export(run)
         require('export' in actions(run),'INVALID_TRANSITION','请先确认准确版本')
         c = run.drafts[-1]['content']
-        label = 'AI 创作稿（已人工确认；事实仍需核实）' if run.context.get('mode')=='live' else '模拟创作稿（未调用真实 AI）'
-        if (run.acceptance or {}).get('mode')=='manual_override':label += ' · 用户人工采用（未通过 AI 审核；审核意见保留）'
-        return '# '+label+'\n\n# '+c['selected_title']+'\n\n'+c['body']+'\n\n'+c['cta']+'\n\n'+' '.join('#'+t for t in c['tags'])
+        # Export is the copy the user may paste into a publishing tool. Review
+        # status, acceptance mode and manual-adoption warnings stay in the run
+        # record and the on-screen audit, never inside the manuscript itself.
+        return '# '+c['selected_title']+'\n\n'+c['body']+'\n\n'+c['cta']+'\n\n'+' '.join('#'+t for t in c['tags'])

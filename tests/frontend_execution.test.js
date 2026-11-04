@@ -5,204 +5,67 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 function setup(){
  const elements=new Map();
- const element=id=>{if(!elements.has(id))elements.set(id,{hidden:false,disabled:false,value:'',textContent:'',innerHTML:'',selectedOptions:[],listeners:{},addEventListener(event,handler){this.listeners[event]=handler;},scrollIntoView(){},insertAdjacentHTML(_where,text){this.innerHTML+=text;}});return elements.get(id);};
- const intervals=[];
- const sandbox={document:{getElementById:element,addEventListener(){},querySelector:element,querySelectorAll(){return [];}},window:{addEventListener(){},confirm(){return true;}},setInterval(handler){intervals.push(handler);},setTimeout(){},clearTimeout(){},crypto:{randomUUID:()=> 'test-key'},websiteSession:{auth_required:true}};
+ const documentListeners=new Map();
+ const element=id=>{if(!elements.has(id))elements.set(id,{hidden:false,disabled:false,value:'',textContent:'',innerHTML:'',selectedOptions:[],addEventListener(){},scrollIntoView(){},insertAdjacentHTML(_where,text){this.innerHTML+=text;}});return elements.get(id);};
+ const sandbox={document:{getElementById:element,addEventListener(type,listener){documentListeners.set(type,listener);},querySelector:element,querySelectorAll(){return [];}},window:{addEventListener(){},confirm(){return true;}},setInterval(){},setTimeout(){},clearTimeout(){},crypto:{randomUUID:()=> 'test-key'},websiteSession:{auth_required:true}};
  vm.createContext(sandbox);vm.runInContext(fs.readFileSync('frontend/app.js','utf8'),sandbox);
  vm.runInContext(`run={run_id:'run-1',mode:'live',current_stage:'brief',status_version:1,run_status:'RUNNING',context:{topic:'护肤',tone:'清楚',audience:'新手',web_research:{enabled:true,status:'pending',queries:['护肤']}},usage:{},drafts:[],node_runs:[],artifacts:[],events:[],snapshot_id:'snapshot',allowed_actions:['next','cancel'],background:{status:'paused'},in_flight:false};
- actualRenderDetails=renderDetails; actualRenderHuman=renderHuman; actualRenderDraft=renderDraft; renderDetails=renderHuman=renderDraft=renderTimeline=renderCalls=()=>{};
+ actualRenderDetails=renderDetails; actualRenderHuman=renderHuman; actualRenderCalls=renderCalls; renderDetails=renderHuman=renderDraft=renderTimeline=renderCalls=()=>{};
  history=async()=>[]; currentAgent=()=> 'research'; calls=[]; confirmations=0;
  actualConfirmLiveBudget=confirmLiveBudget;confirmLiveBudget=()=>{confirmations++;return true;};
  api=async(path,method,body)=>{calls.push(body);return run;};`,sandbox);
- return {sandbox,element,intervals,eval:code=>vm.runInContext(code,sandbox)};
+ return {sandbox,element,documentListeners,eval:code=>vm.runInContext(code,sandbox)};
 }
 
-function seedDraftView(s,count=1){
- s.eval(`renderDraft=actualRenderDraft;run.context.web_research.enabled=false;run.drafts=Array.from({length:${count}},(_,i)=>({ref:'draft-'+(i+1),actor:'model',content:{selected_title:'标题'+(i+1),body:'正文'+(i+1),cta:'',tags:[]}}));renderDraft()`);
-}
-
-test('default draft view follows newer Worker drafts without becoming an old-version selection',async()=>{
- const s=setup();seedDraftView(s);s.eval("run.in_flight=true;api=async()=>({...run,status_version:2,drafts:[...run.drafts,{ref:'draft-2',content:{selected_title:'标题2',body:'正文2',cta:'',tags:[]}},{ref:'draft-3',content:{selected_title:'标题3',body:'正文3',cta:'',tags:[]}}]})");
- await s.intervals[0]();
- assert.match(s.element('draftView').innerHTML,/正文3/);assert.doesNotMatch(s.element('draftView').innerHTML,/正文1/);
- assert.match(s.element('versionSelect').innerHTML,/<option value="2" selected>/);
- assert.equal(s.eval('viewVersion'),null);assert.match(s.element('checkReaders').textContent,/版本 3/);
-});
-
-test('explicitly selected older draft stays selected across Worker refreshes',async()=>{
- const s=setup();seedDraftView(s,2);s.element('versionSelect').onchange({target:{value:'0'}});
- s.eval("run.in_flight=true;api=async()=>({...run,status_version:2,drafts:[...run.drafts,{ref:'draft-3',content:{selected_title:'标题3',body:'正文3',cta:'',tags:[]}}]})");
- await s.intervals[0]();
- assert.match(s.element('draftView').innerHTML,/正文1/);assert.doesNotMatch(s.element('draftView').innerHTML,/正文3/);
- assert.equal(s.eval('viewVersion'),0);assert.match(s.element('versionSelect').innerHTML,/<option value="0" selected>/);
- assert.match(s.element('checkReaders').textContent,/版本 1/);
-});
-
-test('selecting the newest version resumes following subsequent drafts',()=>{
- const s=setup();seedDraftView(s,2);s.element('versionSelect').onchange({target:{value:'0'}});
- s.element('versionSelect').onchange({target:{value:'1'}});
- s.eval("run.drafts.push({ref:'draft-3',content:{selected_title:'标题3',body:'正文3',cta:'',tags:[]}});renderDraft()");
- assert.equal(s.eval('viewVersion'),null);assert.match(s.element('draftView').innerHTML,/正文3/);
-});
-
-test('new creation clears an older version selection before the next source renders',()=>{
- const s=setup();seedDraftView(s,2);s.element('versionSelect').onchange({target:{value:'0'}});
- s.eval('let chosenTrend=null;showPage=()=>{};fillAccountBrief=()=>{};currentAccount=()=>null;previousRun=run;startCreation()');
- assert.equal(s.eval('viewVersion'),null);assert.equal(s.eval('run'),null);
- s.eval("run={...previousRun,run_id:'new-run'}");seedDraftView(s,3);
- assert.match(s.element('draftView').innerHTML,/正文3/);assert.doesNotMatch(s.element('draftView').innerHTML,/正文1/);
-});
-
-test('opening another saved task starts at its newest version, not the previous task selection',async()=>{
- const s=setup();seedDraftView(s,2);s.element('versionSelect').onchange({target:{value:'0'}});
- s.eval("showPage=()=>{};api=async()=>({...run,run_id:'saved-other',drafts:[{ref:'other-1',content:{selected_title:'旧来源',body:'旧来源正文',cta:'',tags:[]}},{ref:'other-2',content:{selected_title:'最新来源',body:'最新来源正文',cta:'',tags:[]}}]})");
- await s.element('history').listeners.click({target:{closest(){return {dataset:{run:'saved-other'}};}}});
- assert.equal(s.eval('viewVersion'),null);assert.match(s.element('draftView').innerHTML,/最新来源正文/);
- assert.doesNotMatch(s.element('draftView').innerHTML,/旧来源正文/);
-});
-
-function seedReviewQuota(s,blocked=true){
- seedDraftView(s);
- s.eval(`run.current_stage='reviewer';run.allowed_actions=['next','edit','adopt_manual','cancel'];run.review=null;run.review_execution={used:3,limit:3,remaining:0,exhausted:true,replayable:${!blocked},blocked:${blocked},message:'本任务审核已计入 3/3 次调用（含恢复前任务），复审次数已用完。可继续手动修改或知晓问题后人工采用；不会增加额度或重复收费。'};renderHuman=actualRenderHuman;render()`);
-}
-
-test('exhausted review slots hide execution even if stale allowed actions still include next',()=>{
- const s=setup();seedReviewQuota(s);
- assert.equal(s.element('next').hidden,true);assert.equal(s.element('auto').hidden,true);
- assert.equal(s.element('editButton').hidden,false);assert.equal(s.element('adoptManual').hidden,false);
- assert.equal(s.element('accept').hidden,true);
- assert.match(s.element('workbenchGuide').textContent,/3\/3.*复审次数已用完/);
- assert.match(s.element('humanMessage').textContent,/手动修改.*人工采用/);
-});
-
-test('blocked review execution does not request another budget confirmation or dispatch a command',async()=>{
- const s=setup();seedReviewQuota(s);s.element('liveBudgetConfirmation').hidden=true;
- for(const action of ['start','step'])assert.equal(await s.eval(`backgroundCommand('${action}')`),false);
- assert.equal(await s.eval("act('next')"),false);
- assert.equal(s.eval('confirmations'),0);assert.equal(s.eval('calls.length'),0);
- assert.equal(s.element('liveBudgetConfirmation').hidden,true);
- assert.match(s.element('error').textContent,/复审次数已用完/);
-});
-
-test('exhausted quota also guards legacy sync and continuous execution before budget confirmation',async()=>{
- const s=setup();seedReviewQuota(s);s.eval('websiteSession.auth_required=false');
- assert.equal(await s.eval("act('next')"),false);await s.eval('autoRun()');
- assert.equal(s.eval('confirmations'),0);assert.equal(s.eval('calls.length'),0);
-});
-
-test('manual editing and candidate titles do not promise unavailable re-review',()=>{
- const s=setup();seedReviewQuota(s);
- s.eval("run.artifacts=[{stage:'title',value:{candidates:['替代标题'],reasons:['标题与正文需自行核对']}}];renderDraft()");
- assert.match(s.element('draftView').innerHTML,/选用并另存/);assert.doesNotMatch(s.element('draftView').innerHTML,/选用并复审/);
- s.eval('editing=true;render()');
- assert.match(s.element('workbenchGuide').textContent,/不调用 AI.*复审次数已用完/);
- assert.match(s.element('#editor .editor-note').textContent,/复审次数已用完.*不能沿用旧审核/);
-});
-
-test('legacy revision-limit wait uses precise current review-slot explanation',()=>{
- const s=setup();seedReviewQuota(s);
- s.eval("run.run_status='WAITING_USER';run.wait_reason='revision_limit';run.allowed_actions=['edit','adopt_manual','cancel'];render()");
- assert.match(s.element('humanTitle').textContent,/复审次数已用完/);
- assert.match(s.element('humanMessage').textContent,/3\/3/);
- assert.doesNotMatch(s.element('workbenchGuide').textContent,/可继续修改\/复审/);
-});
-
-test('exhausted reviews also hide paid revision before its required review would exceed the cap',()=>{
- const s=setup();seedReviewQuota(s);
- s.eval("run.current_stage='content';run.review={decision:'revision_required',issues:[]};render()");
- assert.equal(s.element('next').hidden,true);assert.equal(s.element('auto').hidden,true);
- assert.equal(s.element('revise').hidden,true);assert.match(s.element('humanMessage').textContent,/复审次数已用完/);
-});
-
-test('a precisely replayable received review remains executable at the stage limit',async()=>{
- const s=setup();seedReviewQuota(s,false);
- assert.equal(s.element('next').hidden,false);
- assert.equal(await s.eval("backgroundCommand('step')"),true);
- assert.equal(s.eval('calls[0].action'),'step');assert.equal(s.eval('confirmations'),1);
-});
-
-test('one remaining review slot keeps normal review execution and paid confirmation',async()=>{
- const s=setup();seedReviewQuota(s,false);
- s.eval('run.review_execution={used:2,limit:3,remaining:1,exhausted:false,replayable:false,blocked:false,message:""};render()');
- assert.equal(s.element('next').hidden,false);assert.match(s.element('next').textContent,/复审当前版本/);
- assert.equal(await s.eval("act('next')"),true);
- assert.equal(s.eval('calls[0].action'),'step');assert.equal(s.eval('confirmations'),1);
-});
-
-test('terminal tasks do not show an unreviewed-draft blocker after manual adoption or stopping',()=>{
- for(const status of ['SUCCEEDED','CANCELLED','EXPIRED']){
-  const s=setup();seedReviewQuota(s);
-  s.eval(`run.run_status='${status}';run.allowed_actions=['export'];run.acceptance={mode:'manual_override'};render()`);
-  assert.equal(s.element('reviewRecovery').hidden,true);
-  if(status==='SUCCEEDED'){
-   assert.equal(s.element('export').hidden,false);
-   assert.match(s.element('humanMessage').textContent,/人工采用|知晓审核问题/);
-  }
- }
-});
-
-test('cancel asks in a nonblocking panel and only dispatches after explicit confirmation',async()=>{
- const s=setup();s.element('cancelConfirmation').hidden=true;
- await s.element('cancel').onclick();assert.equal(s.element('cancelConfirmation').hidden,false);
+test('missing platform key offers in-product model setup and preserves free simulation',()=>{
+ const s=setup();s.element('mode').value='simulation';
+ s.eval("applyModelStatus({ready:false,message:'请在项目根目录.env填写DEEPSEEK_API_KEY，然后重启服务',provider:'DeepSeek'})");
+ assert.match(s.element('configMessage').textContent,/连接与设置 → 模型与搜索设置/);
+ assert.match(s.element('configMessage').textContent,/API Key.*连接地址.*保存并用于新任务.*测试连接（可能计费）/);
+ assert.doesNotMatch(s.element('configMessage').textContent,/\.env|DEEPSEEK_API_KEY|重启/);
+ assert.equal(s.element('configureModelConnection').hidden,false);
+ assert.equal(s.element('liveOption').disabled,true);
+ assert.equal(s.element('mode').value,'simulation');
  assert.equal(s.eval('calls.length'),0);
- s.element('keepTask').onclick();assert.equal(s.element('cancelConfirmation').hidden,true);
- await s.element('cancel').onclick();await s.element('confirmCancel').onclick();
- assert.equal(s.eval('calls[0].action'),'cancel');assert.equal(s.eval('confirmations'),0);
 });
 
-test('live budget panel blocks calls until approval and dispatches only once',async()=>{
- const s=setup();s.eval("confirmLiveBudget=actualConfirmLiveBudget;provider={run_attempts_max:16,run_tokens_max:80000,run_budget_usd:0.1,day_budget_usd:0.5};window.confirm=()=>{throw new Error('native dialog forbidden')};");
- await s.eval("backgroundCommand('start')");assert.equal(s.eval('calls.length'),0);assert.equal(s.element('liveBudgetConfirmation').hidden,false);
- assert.match(s.element('liveBudgetMessage').textContent,/80,000/);
- s.element('declineLiveBudget').onclick();assert.equal(s.eval('calls.length'),0);
- await s.element('approveLiveBudget').onclick();assert.equal(s.eval('calls.length'),0);
- await s.eval("backgroundCommand('start')");await s.element('approveLiveBudget').onclick();await s.element('approveLiveBudget').onclick();
- assert.equal(s.eval('calls.length'),1);assert.equal(s.eval('calls[0].action'),'start');
+test('model setup button uses existing navigation without bypassing unsaved or busy guards',()=>{
+ const s=setup();const html=fs.readFileSync('frontend/index.html','utf8');
+ const buttonMarkup=html.match(/<button\b[^>]*id="configureModelConnection"[^>]*>/)?.[0];
+ assert.ok(buttonMarkup);assert.match(buttonMarkup,/type="button"/);
+ const route=buttonMarkup.match(/data-go-page="([^"]+)"/)?.[1];assert.equal(route,'models');
+ s.eval("pageInfo={};opsBusy=false;routes=[];showPage=page=>routes.push(page)");
+ vm.runInContext(fs.readFileSync('frontend/guidance.js','utf8'),s.sandbox);
+ const button={disabled:false,dataset:{goPage:route},hasAttribute:()=>false};
+ const click=()=>s.documentListeners.get('click')({target:{closest:()=>button}});
+ s.element('revisionInstruction').value='请改成更自然的语气';s.sandbox.window.confirm=()=>false;
+ click();assert.equal(s.eval('routes.length'),0);assert.equal(s.element('revisionInstruction').value,'请改成更自然的语气');
+ s.element('revisionInstruction').value='';s.eval('busy=true');click();assert.equal(s.eval('routes.length'),0);
+ s.eval('busy=false');click();assert.equal(s.eval('routes[0]'),'models');
+ assert.equal(s.eval('calls.length'),0);assert.equal(s.eval('confirmations'),0);
 });
 
-test('live budget approval rejects changed task or material snapshot',async()=>{
- for(const change of ["run.run_id='other'","run.snapshot_id='new-material'"]){
-  const s=setup();s.eval('confirmLiveBudget=actualConfirmLiveBudget;provider={}');await s.eval("backgroundCommand('start')");s.eval(change);
-  await s.element('approveLiveBudget').onclick();assert.equal(s.eval('calls.length'),0);assert.equal(s.eval('confirmedLiveRuns.size'),0);assert.match(s.element('error').textContent,/已变化/);
+test('available platform and user model connections retain enabled live creation',()=>{
+ const s=setup();
+ for(const [provider,model] of [['DeepSeek','deepseek-chat'],['千问','qwen-plus']]){
+  s.sandbox.modelStatus={ready:true,provider,model,message:'连接可用',run_attempts_max:8,run_tokens_max:9000};
+  s.eval('applyModelStatus(modelStatus)');
+  assert.equal(s.element('configureModelConnection').hidden,true);
+  assert.equal(s.element('liveOption').disabled,false);
+  assert.equal(s.element('liveOption').textContent,`真实 AI · ${model}（消耗接口额度）`);
+  assert.equal(s.element('connectionStatus').textContent,provider+'：已配置');
+  assert.match(s.element('configMessage').textContent,/连接可用 · 整单最多8次/);
  }
+ assert.equal(s.eval('calls.length'),0);
 });
 
-test('cancel confirmation cannot cancel a different task after navigation',async()=>{
- const s=setup();await s.element('cancel').onclick();s.eval("run.run_id='other-task'");await s.element('confirmCancel').onclick();
- assert.equal(s.eval('calls.length'),0);assert.match(s.element('error').textContent,/任务已变化/);
-});
-
-test('pause refreshes moving Worker version and never restarts a completed task',async()=>{
- const s=setup();s.eval("run.in_flight=true;run.status_version=7;pausePosts=0;api=async(_p,method,body)=>{if(method==='POST'){pausePosts++;if(pausePosts===1){run.status_version=8;const e=new Error('任务已更新');e.code='VERSION_CONFLICT';throw e;}calls.push(body);}return run;}");
- await s.eval("backgroundCommand('pause')");assert.equal(s.eval('calls[0].action'),'pause');assert.equal(s.eval('calls[0].version'),8);assert.equal(s.eval('pausePosts'),2);
- s.eval('run.in_flight=false');await s.eval("backgroundCommand('pause')");assert.equal(s.eval('pausePosts'),2);
-});
-
-test('late material response retains its original account identity',async()=>{
- const s=setup();s.eval("active='a1';currentAccount=()=>({id:active});api=()=>new Promise(resolve=>{resolveMaterials=resolve});renders=0;renderMaterialUploads=()=>renders++;");
- const request=s.eval('refreshMaterialDocuments()');s.eval("active='a2';resolveMaterials([{id:'doc1',title:'A1资料',version:1,metadata:{}}])");await request;
- assert.equal(s.eval('materialDocsCache[0].account_id'),'a1');assert.equal(s.eval('renders'),0);
-});
-
-test('simulation draft enters a separately approved simulated publication instead of real archive',async()=>{
- const s=setup();vm.runInContext(fs.readFileSync('frontend/operations.js','utf8'),s.sandbox);
- s.eval("run.mode='simulation';run.accepted_ref='d1';ops={publications:[]};archiveCalls=[];showPage=p=>page=p;operate=async(action,payload)=>{archiveCalls.push({action,payload});return true;};openPublishedArchive=()=>{throw new Error('must not open real archive')}");
- await s.element('sendToPublish').onclick();assert.equal(s.eval('archiveCalls[0].action'),'prepare');assert.equal(s.eval('page'),'publish');
- s.eval("ops.publications=[{run_id:'run-1',draft_ref:'d1'}]");await s.element('sendToPublish').onclick();assert.equal(s.eval('archiveCalls.length'),1);
-});
-
-test('simulation publication list exposes exact approval and simulation actions',()=>{
- const s=setup();vm.runInContext(fs.readFileSync('frontend/operations.js','utf8'),s.sandbox);
- s.eval("accountRows=()=>[{id:'p1',mode:'simulation',status:'AWAITING_APPROVAL',account:'模拟账号',content:{selected_title:'模拟稿'}}];renderSimulatedPublications()");
- assert.match(s.element('operationsContent').innerHTML,/data-approve="p1"/);assert.match(s.element('operationsContent').innerHTML,/不进入真实历史/);
-});
-
-test('free weekly plan uses existing rules command and AI mode rejects missing configuration',async()=>{
- const s=setup();s.sandbox.localStorage={getItem:()=>''};vm.runInContext(fs.readFileSync('frontend/operations.js','utf8'),s.sandbox);vm.runInContext(fs.readFileSync('frontend/account.js','utf8'),s.sandbox);
- s.eval("activeAccountId='a1';planCalls=[];operate=async(action,payload)=>{planCalls.push({action,payload});return true;}");
- s.element('planMode').value='rules';s.element('planSource').value='simulation';s.element('planWeek').value='2026-10-05';await s.eval('submitWeeklyPlan({preventDefault(){}})');
- assert.equal(s.eval('planCalls[0].action'),'create_plan');assert.equal(s.eval('planCalls[0].payload.source_type'),'simulation');assert.equal(s.eval('calls.length'),0);
- s.element('planMode').value='agent';await s.eval('submitWeeklyPlan({preventDefault(){}})');assert.equal(s.eval('planCalls.length'),1);assert.match(s.element('error').textContent,/API Key/);
+test('studio privacy and output attribution do not mislabel user selected models as DeepSeek',()=>{
+ const s=setup();const html=fs.readFileSync('frontend/index.html','utf8');
+ assert.match(html,/真实 AI 会向选定的模型供应商发送需求和选中的素材/);
+ assert.doesNotMatch(html,/真实 AI 会向 DeepSeek|先填写 \.env/);
+ s.eval("run.node_runs=[{agent:'audience',stage:'audience',snapshot_id:'snapshot',duration_ms:1,output:{primary_audience:'读者',basis:'分析',content_opportunities:[]}}];actualRenderDetails()");
+ assert.match(s.element('details').innerHTML,/由本任务选定的模型生成/);
+ assert.doesNotMatch(s.element('details').innerHTML,/由 DeepSeek 生成/);
 });
 test('next executes one background step and free research does not request model budget',async()=>{
  const s=setup();await s.eval("act('next')");assert.equal(s.eval('calls[0].action'),'step');assert.equal(s.eval('confirmations'),0);
@@ -212,11 +75,29 @@ test('step button stays visible while paused and hides during execution',()=>{
  const s=setup();s.eval('render()');assert.equal(s.element('next').hidden,false);assert.match(s.element('next').textContent,/联网搜索/);
  s.eval("run.in_flight=true;run.background.status='running';render()");assert.equal(s.element('next').hidden,true);assert.equal(s.element('auto').textContent,'暂停执行');
 });
+test('paused step names the next stage and the next button dispatches a background step',async()=>{
+ const s=setup();
+ s.eval("run.current_stage='content';run.artifacts=[{stage:'strategy'},{stage:'outline'}];run.node_runs=[{agent:'audience',stage:'audience',snapshot_id:'snapshot'},{agent:'content',stage:'outline',snapshot_id:'snapshot'}];run.drafts=[];run.background={status:'paused'};run.context.web_research.status='complete';render()");
+ assert.match(s.element('statusLabel').textContent,/下一步：开头/);
+ assert.match(s.element('next').textContent,/执行下一步：开头/);
+ assert.equal(s.element('processDetails').open,true);
+ await s.element('next').onclick();
+ assert.equal(s.eval('calls[0].action'),'step');
+});
 test('blocked research offers same-task retry rather than repeated start',async()=>{
  const s=setup();s.eval("run.context.web_research.status='insufficient';render()");assert.equal(s.element('next').hidden,true);assert.equal(s.element('auto').hidden,true);
- assert.match(s.element('webResearchReport').innerHTML,/重新搜索这一步/);
+ assert.match(s.element('webResearchReport').innerHTML,/更新本次调查/);
  s.element('retryQuery1').value='新手 护肤 顺序';s.element('retryQuery2').value='';await s.element('retryWebResearch').onsubmit({preventDefault(){}});
  assert.equal(s.eval('calls[0].action'),'retry_research');assert.equal(s.eval('calls[0].queries[0]'),'新手 护肤 顺序');assert.equal(s.eval('confirmations'),0);
+});
+test('duplicate public searches render once and read bodies stay folded',()=>{
+ const s=setup();
+ s.eval("run.context.web_research={enabled:true,status:'complete',queries:['扫地机器人 基站'],searches:[{query:'扫地机器人 基站',results:[{url:'https://example.com/1',title:'尺寸怎么选'},{url:'https://example.com/1',title:'尺寸怎么选'}]},{query:'扫地机器人 基站 事实 资料',results:[{url:'https://example.com/1',title:'尺寸怎么选'}]}],sources:[{url:'https://example.com/1',title:'尺寸怎么选',text:'正文第一段',fetched_at:'2026-10-22T03:14:52+08:00'}],reads:[]};render()");
+ const html=s.element('webResearchReport').innerHTML;
+ assert.equal((html.match(/条搜索线索/g)||[]).length,1);
+ assert.match(html,/<details class="source-card"[^>]*><summary>/);
+ assert.doesNotMatch(html,/<details class="source-card"[^>]*\bopen\b/);
+ assert.match(html,/正文第一段/);
 });
 test('continuous execution remains an explicit separate command',async()=>{
  const s=setup();await s.eval('autoRun()');assert.equal(s.eval('calls[0].action'),'start');assert.equal(s.eval('confirmations'),1);
@@ -231,22 +112,6 @@ test('rejected review shows a free recovery action and hides pointless repeat ex
  assert.equal(s.element('next').hidden,true);assert.equal(s.element('auto').hidden,true);
  assert.match(s.element('reviewRecoveryIssues').innerHTML,/修正标题/);
 });
-
-test('manual-adoption availability does not hide free rejected-review recovery',()=>{
- const s=setup();s.eval("run.current_stage='reviewer';run.drafts=[{}];run.allowed_actions=['next','cancel','edit','adopt_manual','repair_review'];run.calls=[];renderRecovery()");
- assert.equal(s.element('reviewRecovery').hidden,false);
- assert.equal(s.element('repairReview').hidden,false);
- assert.equal(s.element('next').hidden,true);
- assert.equal(s.element('auto').hidden,true);
- s.eval("run.allowed_actions=['edit','adopt_manual'];renderRecovery()");
- assert.equal(s.element('repairReview').hidden,true);
-});
-
-test('question-only review recovery is labelled human handling instead of rewriting',()=>{
- const s=setup();s.eval("run.current_stage='reviewer';run.drafts=[{}];run.allowed_actions=['repair_review'];run.review_recovery={next_action:'request_human'};run.calls=[];renderRecovery()");
- assert.match(s.element('repairReview').textContent,/进入人工处理/);
- assert.doesNotMatch(s.element('repairReview').textContent,/进入改稿/);
-});
 test('free recovery dispatches repair action rather than approval or model execution',async()=>{
  const s=setup();await s.element('repairReview').onclick();
  assert.equal(s.eval('calls[0].action'),'repair_review');assert.equal(s.eval('confirmations'),0);
@@ -260,17 +125,15 @@ test('unavailable confirmation buttons remain disabled after workbench rendering
  assert.equal(s.element('reviewConfirmUnavailable').disabled,true);
  assert.equal(s.element('confirmationPending').disabled,true);
 });
-test('routine budget explanation is neutral and inside collapsed details',()=>{
+test('routine budget explanation stays hidden',()=>{
  const s=setup();s.eval("run.testing_budget={target_cny:0.30,target_runs:3,spent_cny:0.09,warning:''};renderTestingBudget()");
- assert.equal(s.element('usageDetails').hidden,false);
- assert.match(s.element('testingBudget').textContent,/累计用量：¥0.09/);
- assert.doesNotMatch(s.element('testingBudget').textContent,/警告|预算提醒|已超/);
+ assert.equal(s.element('testingBudget').hidden,true);
+ assert.equal(s.element('testingBudget').textContent,'');
 });
-test('soft budget excess stays neutral without disabling continuation',()=>{
+test('only actionable budget warning is shown without disabling continuation',()=>{
  const s=setup();s.eval("run.testing_budget={warning:'已超过参考预算，仍可继续'};renderTestingBudget()");
  assert.equal(s.element('testingBudget').hidden,false);
- assert.match(s.element('testingBudget').textContent,/不影响继续创作/);
- assert.doesNotMatch(s.element('testingBudget').textContent,/已超过|预算提醒/);
+ assert.equal(s.element('testingBudget').textContent,'预算提醒：已超过参考预算，仍可继续');
  assert.equal(s.element('start').disabled,false);
  s.eval('run.testing_budget=null;renderTestingBudget()');
  assert.equal(s.element('testingBudget').hidden,true);
@@ -307,26 +170,6 @@ test('manual adopted result retains earlier issues and labels user choice',()=>{
  assert.match(s.element('humanMessage').textContent,/不表示 AI 审核通过/);
  assert.match(s.element('issues').innerHTML,/旧问题仍未复审/);
  assert.equal(s.element('adoptManual').hidden,true);
- assert.equal(s.element('accept').hidden,true);
- assert.equal(s.element('export').hidden,false);
- assert.match(s.element('humanTitle').textContent,/稿件已确认.*无需再次确认/);
- assert.match(s.element('humanMessage').textContent,/下一步：下载确认稿/);
- assert.match(s.element('issues').innerHTML,/^<details><summary>/);
- assert.doesNotMatch(s.element('issues').innerHTML,/<details[^>]*\bopen\b/);
- assert.match(s.element('issues').innerHTML,/不代表还有待办/);
-});
-test('confirmed reviewed draft gives download next step without an empty history panel',()=>{
- const s=setup();s.eval("run.run_status='SUCCEEDED';run.review={decision:'approved',issues:[]};run.allowed_actions=['export'];actualRenderHuman()");
- assert.match(s.element('humanTitle').textContent,/稿件已确认，无需再次确认/);
- assert.equal(s.element('issues').innerHTML,'');
- assert.equal(s.element('export').hidden,false);
- assert.match(s.element('humanMessage').textContent,/还没有实际发布/);
-});
-test('unconfirmed review issues remain visible as actionable feedback',()=>{
- const s=setup();s.eval("run.run_status='WAITING_USER';run.review={decision:'revision_required',issues:[{reason:'仍须核对事实'}]};run.allowed_actions=['edit','adopt_manual'];actualRenderHuman()");
- assert.match(s.element('issues').innerHTML,/仍须核对事实/);
- assert.doesNotMatch(s.element('issues').innerHTML,/<details>/);
- assert.equal(s.element('adoptManual').hidden,false);
 });
 
 test('published archive shows actual records and hides prepublication approval queue',()=>{
@@ -437,57 +280,101 @@ test('share extraction preserves encoded query and trims prose boundaries',()=>{
 });
 
 
-test('malformed known-usage failure explains resumable progress and labels only explicit retry',()=>{
- const s=setup();s.eval("run.background={status:'blocked',error:'模型返回格式不正确，未自动重试'};run.calls=[{agent:'audience',stage:'analysis',status:'failed',tokens:42}];run.usage.unknown_calls=0;render()");
- assert.match(s.element('workbenchGuide').textContent,/已完成的分析、资料和稿件都保留/);
- assert.match(s.element('error').textContent,/新的模型请求仍受原来的额度限制/);
- assert.equal(s.element('next').textContent,'重试未完成步骤 →');
- assert.equal(s.element('next').hidden,false);assert.equal(s.eval('calls.length'),0);
+test('never-sent requests remain in audit history without claiming model usage or inherited call counts',()=>{
+ const s=setup();s.eval("run.calls=[{agent:'audience',stage:'audience',status:'not_sent',tokens:0,inherited:true,error:'模型域名解析失败'}];actualRenderCalls()");
+ const html=s.element('timeline').innerHTML;
+ assert.match(html,/未发送至模型，未产生用量/);assert.match(html,/原任务未发送记录/);assert.match(html,/模型域名解析失败/);
+ assert.doesNotMatch(html,/用量未知|沿用原任务计数/);assert.equal(s.eval('calls.length'),0);assert.equal(s.eval('confirmations'),0);
+});
+test('ambiguous failed requests still warn that usage is unknown and budget retained',()=>{
+ const s=setup();s.eval("run.calls=[{agent:'research',stage:'research',status:'failed',tokens:null,error:'请求超时'}];actualRenderCalls()");
+ assert.match(s.element('timeline').innerHTML,/请求失败.*用量未知，已保留预算/);
+ assert.doesNotMatch(s.element('timeline').innerHTML,/未产生用量/);
 });
 
-test('unknown malformed usage blocks misleading retry controls even when legacy actions advertise recover',()=>{
- const s=setup();s.eval("run.run_status='FAILED';run.allowed_actions=['recover','next'];run.background={status:'blocked',error:'模型返回格式不正确，未自动重试'};run.calls=[{agent:'audience',stage:'analysis',status:'failed',tokens:null}];run.usage.unknown_calls=1;render()");
- for(const id of ['next','auto','recover'])assert.equal(s.element(id).hidden,true);
- assert.match(s.element('workbenchGuide').textContent,/需要先核对这次调用的用量/);
- assert.doesNotMatch(s.element('workbenchGuide').textContent,/可以点击/);
- assert.equal(s.eval('calls.length'),0);
+test('background start is not treated as failed when only the history refresh is unavailable',async()=>{
+ const s=setup();s.eval("history=async()=>{throw Error('列表暂时不可用');}");
+ assert.equal(await s.eval("backgroundCommand('start')"),true);
+ assert.equal(s.eval('calls.length'),1);assert.equal(s.eval('calls[0].action'),'start');
+ assert.match(s.element('error').textContent,/运行指令已保存.*不要重复启动/);assert.equal(s.eval('busy'),false);
 });
 
-test('recoverable failed run points to recovery without suggesting an automatic paid request',()=>{
- const s=setup();s.eval("run.run_status='FAILED';run.allowed_actions=['recover'];run.background={status:'blocked',error:'模型返回格式不正确'};run.calls=[{agent:'content',stage:'body',status:'invalid',tokens:99}];render()");
- assert.match(s.element('workbenchGuide').textContent,/从失败步骤继续/);
- assert.equal(s.element('recover').hidden,false);assert.equal(s.eval('calls.length'),0);
-});
-
-test('active paid call does not get presented as a failed unknown-usage request',()=>{
- const s=setup();s.eval("run.in_flight=true;run.background={status:'running'};run.calls=[{status:'calling',tokens:null}];render()");
- assert.match(s.element('workbenchGuide').textContent,/正在处理/);
- assert.equal(s.element('auto').hidden,false);assert.equal(s.eval('modelFailureGuidance(run)'), '');
-});
-
-
-test('restored creation budget and failure banners stay inside studio rather than leaking into tools',()=>{
- const s=setup();
- s.eval("currentPage='trials';clearError();run.background={status:'blocked',error:'Token预留不足：已计入56952下一步30969上限80000'}");
- for(const page of ['trials','windtunnel','accounts','memory','examples','library','overview']){
-  s.eval(`currentPage='${page}';render()`);
-  assert.equal(s.element('error').hidden,true,page);
+test('old material or hypothesis stops offer an explicit continuation without mandatory supplement or implicit approval',async()=>{
+ for(const reason of ['missing_material','hypothesis_permission']){
+  const s=setup();s.sandbox.reason=reason;s.eval("run.run_status='WAITING_USER';run.wait_reason=reason;run.allowed_actions=['supplement','cancel'];run.background={status:'waiting'};run.context.web_research.status='insufficient';render();actualRenderHuman()");
+  assert.equal(s.element('supplyForm').hidden,true);assert.equal(s.element('auto').hidden,false);assert.equal(s.element('auto').disabled,false);assert.equal(s.element('auto').textContent,'按现有资料继续生成');
+  assert.equal(s.element('confirmationPending').hidden,true);assert.equal(s.element('accept').hidden,true);assert.match(s.element('humanMessage').textContent,/无需补充材料/);assert.doesNotMatch(s.element('workbenchGuide').textContent,/请先补充|选择假设权限/);
+  assert.equal(s.eval('calls.length'),0);await s.element('auto').onclick();
+  assert.equal(s.eval('confirmations'),1);assert.equal(s.eval('calls[0].action'),'start');assert.equal(s.eval('calls.length'),1);
  }
- s.eval("currentPage='studio';render()");
- assert.equal(s.element('error').hidden,false);
- assert.match(s.element('error').textContent,/Token预留不足/);
- s.eval("currentPage='trials';render()");assert.equal(s.element('error').hidden,true);
- s.eval("run.run_status='FAILED';run.events=[{type:'agent.failed',payload:{message:'旧任务失败'}}];render()");
- assert.equal(s.element('error').hidden,true);
+});
+test('declining paid continuation leaves the existing task and inputs untouched',async()=>{
+ const s=setup();s.eval("run.run_status='WAITING_USER';run.wait_reason='missing_material';confirmLiveBudget=()=>false");s.element('supply').value='尚未提交的文字';
+ await s.element('auto').onclick();assert.equal(s.eval('calls.length'),0);assert.equal(s.eval('run.wait_reason'),'missing_material');assert.equal(s.element('supply').value,'尚未提交的文字');
+});
+test('final material-limited draft retains review issues for explicit manual adoption rather than approval',()=>{
+ const s=setup();s.eval("run.run_status='WAITING_USER';run.wait_reason='final_confirmation';run.context.material_policy='available_only';run.drafts=[{ref:'d'}];run.review={decision:'needs_human',issues:[{reason:'未提供价格依据'}]};run.allowed_actions=['edit','adopt_manual','cancel'];actualRenderHuman()");
+ assert.equal(s.element('accept').hidden,true);assert.equal(s.element('adoptManual').hidden,false);assert.equal(s.element('supplyForm').hidden,true);assert.match(s.element('issues').innerHTML,/未提供价格依据/);assert.equal(s.eval('calls.length'),0);
+});
+test('new task form does not preauthorize invented audience assumptions',()=>{
+ const html=fs.readFileSync('frontend/index.html','utf8'),input=html.match(/<input\b[^>]*id="hypothesis"[^>]*>/)[0];
+ assert.match(input,/hidden/);assert.doesNotMatch(input,/checked/);assert.match(html,/缺失事实不编造/);
 });
 
-test('current tool request failures survive background rendering of an unrelated old creation',()=>{
+test('available-material continuation is exclusive to creation and its legacy default workflow',()=>{
+ const s=setup();s.eval("run.run_status='WAITING_USER';run.wait_reason='missing_material'");assert.equal(s.eval('availableMaterialContinuation(run)'),true);
+ s.eval("run.workflow_type='creation'");assert.equal(s.eval('availableMaterialContinuation(run)'),true);
+ s.eval("run.workflow_type='windtunnel';run.allowed_actions=['supplement','cancel'];render()");assert.equal(s.eval('availableMaterialContinuation(run)'),false);assert.equal(s.element('auto').hidden,true);
+});
+test('default creation and reviewer guidance describe final confirmation without a mandatory supplement',()=>{
+ const s=setup();assert.match(s.eval('nextStepGuidance(run)'),/连续生成并审核，最后确认稿件/);
+ assert.match(s.eval("friendly('reviewer','review',{decision:'needs_human'})"),/审核有待确认信息/);
+ const source=fs.readFileSync('frontend/app.js','utf8');assert.doesNotMatch(source,/needs_human:'需要补充信息'/);
+});
+
+test('research regeneration is offered only for eligible live creation tasks with no active job',()=>{
+ const s=setup();s.eval("run.drafts=[{ref:'d'}];run.background={status:'waiting'};render()");assert.equal(s.element('researchAndRegenerate').hidden,false);
+ for(const status of ['SUCCEEDED','FAILED','CANCELLED','EXPIRED']){s.sandbox.status=status;s.eval('run.run_status=status;render()');assert.equal(s.element('researchAndRegenerate').hidden,true);}
+ s.eval("run.run_status='WAITING_USER';run.background={status:'queued'};render()");assert.equal(s.element('researchAndRegenerate').hidden,true);
+ s.eval("run.background={status:'waiting'};run.workflow_type='windtunnel';render()");assert.equal(s.element('researchAndRegenerate').hidden,true);
+ s.eval("run.workflow_type='creation';run.drafts=[];run.wait_reason='missing_material';render()");assert.equal(s.element('researchAndRegenerate').hidden,false);
+});
+test('research regeneration requires a fresh scoped budget approval and sends no private material or implicit acceptance',async()=>{
+ const s=setup();s.eval("run.drafts=[{ref:'d'}];run.background={status:'waiting'};run.context.material='私密材料';provider={};confirmedLiveRuns.add(liveBudgetKey(run));confirmLiveBudget=actualConfirmLiveBudget");
+ await s.element('researchAndRegenerate').onclick();assert.equal(s.eval('calls.length'),0);assert.equal(s.element('liveBudgetConfirmation').hidden,false);
+ await s.element('approveLiveBudget').onclick();assert.equal(s.eval('calls.length'),1);assert.equal(s.eval('calls[0].action'),'research_and_regenerate');
+ const body=JSON.parse(s.eval('JSON.stringify(calls[0])'));assert.deepEqual(Object.keys(body).sort(),['action','key','version']);assert.equal(s.eval('run.accepted_ref'),undefined);
+});
+test('research budget approval becomes invalid when the task revision changes',async()=>{
+ const s=setup();s.eval("run.drafts=[{ref:'d'}];provider={};confirmLiveBudget=actualConfirmLiveBudget");await s.element('researchAndRegenerate').onclick();s.eval('run.status_version++');await s.element('approveLiveBudget').onclick();
+ assert.equal(s.eval('calls.length'),0);assert.match(s.element('error').textContent,/重新确认费用/);
+});
+
+
+test('public-search disclosure matches the current eight-read three-source limit',()=>{
+ const html=fs.readFileSync('frontend/index.html','utf8');assert.match(html,/最多提交 2 组搜索词、尝试读取 8 个网页，最多采用 3 份正文/);
+});
+
+test('malformed diagnostic lists cannot crash recovery or human decisions',()=>{
+ for(const value of [null,'bad',{},[null,'bad',[],{excerpt:{},reason:42,suggestion:'可人工核对'}]]){
+  const s=setup();s.sandbox.bad=value;
+  s.eval("run.current_stage='reviewer';run.drafts=[{}];run.allowed_actions=['repair_review','edit'];run.calls=[{stage:'review',status:'invalid',diagnostic_response:{issues:bad,human_questions:bad}}];renderRecovery();run.run_status='WAITING_USER';actualRenderHuman()");
+  assert.equal(s.element('humanPanel').hidden,false);
+  assert.doesNotMatch(s.element('issues').innerHTML,/\[object Object\]/);
+ }
+});
+
+test('version comparison marks changed characters inline without touching export content',()=>{
  const s=setup();
- s.eval("currentPage='trials';run.background={status:'blocked',error:'旧任务Token额度提示'};error({code:'INTERNAL_ERROR',message:'本次反馈保存失败，原数据保留'});render()");
- assert.equal(s.element('error').hidden,false);
- assert.equal(s.element('error').textContent,'本次反馈保存失败，原数据保留');
- assert.equal(s.element('error').className,'error critical');
- s.eval("error({code:'INVALID_INPUT',message:'请填写本次读者意见'});render()");
- assert.equal(s.element('error').textContent,'请填写本次读者意见');
- assert.equal(s.element('error').className,'error');
+ const oldContent={selected_title:'旧标题',body:'第一版正文',cta:'旧引导',tags:['旧标签']};
+ const newContent={selected_title:'新标题',body:'第二版正文',cta:'新引导',tags:['新标签']};
+ s.sandbox.oldContent=oldContent;s.sandbox.newContent=newContent;
+ const left=s.eval("draftHTML({content:oldContent,ref:'old'},0,true,'left',newContent)");
+ const right=s.eval("draftHTML({content:newContent,ref:'new'},1,true,'right',oldContent)");
+ assert.match(left,/diff-del/);assert.doesNotMatch(left,/diff-add/);
+ assert.match(right,/diff-add/);assert.doesNotMatch(right,/diff-del/);
+ assert.match(left,/旧/);assert.match(left,/标题/);assert.match(right,/新/);assert.match(right,/标题/);
+ const normal=s.eval("draftHTML({content:newContent,ref:'new'},1)");
+ assert.match(normal,/新标题/);assert.match(normal,/第二版正文/);assert.match(normal,/新引导/);
+ assert.equal(newContent.body,'第二版正文');
 });

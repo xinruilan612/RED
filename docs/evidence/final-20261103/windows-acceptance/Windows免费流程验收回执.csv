@@ -1,0 +1,11 @@
+﻿case_id,check,status_PASS_FAIL_NOT_RUN,observed_result,windows_version,release_source_commit,evidence_file
+W01,记录Windows版本与位数,NOT_RUN,,,,
+W02,完整解压并双击一键启动.cmd,NOT_RUN,,,,
+W03,浏览器打开且能创建隔离测试账号,NOT_RUN,,,,
+W04,保持免费模拟模式提交需求,NOT_RUN,,,,
+W05,运行至人工审核且真实模型调用为0,NOT_RUN,,,,
+W06,手工保存版本2且旧审核不能直接确认,NOT_RUN,,,,
+W07,复审后确认准确版本2,NOT_RUN,,,,
+W08,浏览器下载Word且内容对应版本2,NOT_RUN,,,,
+W09,刷新后已确认状态与版本仍保留,NOT_RUN,,,,
+W10,关闭启动器后核对服务退出,NOT_RUN,,,,

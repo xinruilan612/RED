@@ -1,0 +1,8 @@
+{
+  "hashes": {
+    "scores_a.json": "8fd6631d58110c820184e4bfa2c19b626636c59c9df0beb36319fad0a7b03d75",
+    "scores_b.json": "a2f2570b0f137dd1e403d969555bfc05a2525ac855058b8fb08aad99f99ff5ae"
+  },
+  "group_mapping_seen_by_scorers": false,
+  "lock_before_unblinding": true
+}

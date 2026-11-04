@@ -1,8 +1,6 @@
 """DeepSeek text adapter. Secrets never enter Run, HTTP responses or error strings."""
 import json
-import math
 import os
-import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from urllib.error import HTTPError, URLError
@@ -66,117 +64,259 @@ class NoRedirect(HTTPRedirectHandler):
         raise DomainError('PROVIDER_ERROR','模型接口发生重定向，已停止请求')
 
 
-class ProviderOutputError(DomainError):
-    """Safe parse failure carrying observed usage, never raw model output or secrets."""
-    def __init__(self, message, *, tokens=None, metadata=None, diagnostic='content_invalid'):
-        super().__init__('MODEL_OUTPUT_INVALID', message)
-        self.tokens = tokens
-        self.metadata = dict(metadata or {})
-        self.diagnostic = diagnostic
-
-
-def _strict_json(text):
-    def object_pairs(pairs):
-        value = {}
-        for key, item in pairs:
-            if key in value:
-                raise ValueError('duplicate key')
-            value[key] = item
-        return value
-
-    def reject_constant(value):
-        raise ValueError('non-finite number')
-
-    def finite_float(value):
-        number = float(value)
-        if not math.isfinite(number):
-            raise ValueError('non-finite number')
-        return number
-
-    return json.loads(text, object_pairs_hook=object_pairs, parse_constant=reject_constant,
-                      parse_float=finite_float)
-
-
-def _decode_result(body):
-    try:
-        packet = _strict_json(body)
-        if not isinstance(packet, dict):
-            raise ValueError('envelope must be object')
-    except (ValueError, TypeError, RecursionError):
-        raise ProviderOutputError('模型响应无法读取，已保留任务；未自动重试',
-                                  diagnostic='envelope_invalid') from None
-
-    usage = packet.get('usage')
-    usage = usage if isinstance(usage, dict) else {}
-    tokens = usage.get('total_tokens')
-    tokens = tokens if type(tokens) is int and tokens >= 0 else None
-    request_id = packet.get('id')
-    metadata = {'request_id': request_id if isinstance(request_id, str) and
-                re.fullmatch(r'[A-Za-z0-9_.:-]{1,128}', request_id) else None}
-    for key, remote in (('input_tokens', 'prompt_tokens'), ('output_tokens', 'completion_tokens')):
-        n = usage.get(remote)
-        metadata[key] = n if type(n) is int and n >= 0 else None
-
-    def fail(message, diagnostic):
-        raise ProviderOutputError(message, tokens=tokens, metadata=metadata, diagnostic=diagnostic)
-
-    choices = packet.get('choices')
-    if not isinstance(choices, list) or not choices or not isinstance(choices[0], dict):
-        fail('模型响应缺少生成结果，已保留任务；未自动重试', 'envelope_invalid')
-    choice = choices[0]
-    if choice.get('finish_reason') != 'stop':
-        fail('模型输出未完成，已保留任务；未自动重试',
-             'output_truncated' if choice.get('finish_reason') == 'length' else 'output_incomplete')
-    message = choice.get('message')
-    content = message.get('content') if isinstance(message, dict) else None
-    if not isinstance(content, str):
-        fail('模型返回内容无法读取，已保留任务；未自动重试', 'content_invalid')
-    content = content.strip()
-    if not content:
-        fail('模型返回了空内容，已保留任务；未自动重试', 'content_empty')
-    # Remove only a complete outer code fence; never recover a guessed JSON fragment.
-    fenced = re.fullmatch(r'```(?:json)?[ \t]*\r?\n(.*?)\r?\n```', content, re.DOTALL | re.IGNORECASE)
-    if fenced:
-        content = fenced.group(1).strip()
-    try:
-        value = _strict_json(content)
-        if not isinstance(value, dict):
-            raise ValueError('model output must be object')
-    except (ValueError, TypeError, RecursionError):
-        fail('模型返回格式暂时无法读取，已保留任务；未自动重试', 'content_invalid')
-    if tokens is None:
-        fail('模型未返回有效用量，保留预算预留；未自动重试', 'usage_missing')
-    return value, tokens, metadata
-
-
 def decode_response(body):
-    value, tokens, _ = _decode_result(body)
-    return value, tokens
+    try:
+        packet=json.loads(body)
+        choice=packet['choices'][0]
+        require(choice.get('finish_reason')=='stop','MODEL_OUTPUT_INVALID','模型输出不完整，未保存为稿件')
+        value=json.loads(choice['message']['content'])
+        require(isinstance(value,dict),'MODEL_OUTPUT_INVALID','模型未返回 JSON 对象')
+        usage=packet.get('usage',{}); tokens=usage.get('total_tokens')
+        require(type(tokens) is int and tokens>=0,'MODEL_OUTPUT_INVALID','模型未返回有效用量，保留预算预留')
+        return value,tokens
+    except DomainError: raise
+    except (ValueError,KeyError,IndexError,TypeError):
+        raise DomainError('MODEL_OUTPUT_INVALID','模型返回格式不正确，未自动重试') from None
 
 
 class DeepSeek:
+    THINKING_TYPE = 'disabled'
+    MAX_OUTPUT_TOKENS = 3000
     def __init__(self, config): self.config=config
 
     def complete(self, messages):
         value,tokens,_ = self.complete_result(messages)
         return value,tokens
 
-    def complete_result(self, messages):
+    def complete_result(self, messages, max_tokens=None):
         require(self.config.ready,'KEY_REQUIRED','请先填写 .env 的 DEEPSEEK_API_KEY 并重启服务')
+        limit=max_tokens or self.MAX_OUTPUT_TOKENS
         body=json.dumps({'model':self.config.model,'messages':messages,'stream':False,
-                         'thinking':{'type':'disabled'},'max_tokens':3000,
+                         'thinking':{'type':self.THINKING_TYPE},'max_tokens':limit,
                          'response_format':{'type':'json_object'}},ensure_ascii=False).encode()
         request=Request('https://api.deepseek.com/chat/completions',body,
                         {'Content-Type':'application/json','Authorization':'Bearer '+self.config.api_key})
         try:
             with build_opener(NoRedirect()).open(request,timeout=90) as response:
                 raw=response.read(1_000_001)
-                if len(raw) > 1_000_000:
-                    raise ProviderOutputError('模型响应过大，已保留任务；未自动重试',
-                                              diagnostic='response_too_large')
-            return _decode_result(raw)
+                require(len(raw)<=1_000_000,'MODEL_OUTPUT_INVALID','模型响应过大')
+            value,tokens=decode_response(raw)
+            packet=json.loads(raw);usage=packet.get('usage',{})
+            metadata={'request_id':packet.get('id')}
+            for key,remote in (('input_tokens','prompt_tokens'),('output_tokens','completion_tokens')):
+                n=usage.get(remote)
+                metadata[key]=n if type(n) is int and n>=0 else None
+            return value,tokens,metadata
         except HTTPError as e:
             message={401:'API Key 无效，请检查 .env',402:'DeepSeek 余额不足',429:'DeepSeek 请求受限，请稍后新建任务'}.get(e.code,'DeepSeek 暂时无法完成请求')
             raise DomainError('PROVIDER_ERROR',message+'；未自动重试') from None
         except (URLError,TimeoutError,OSError):
             raise DomainError('PROVIDER_ERROR','连接 DeepSeek 失败或超时；用量可能已产生，未自动重试') from None
+
+
+def _provider_error(status, packet, secrets=()):
+    """Keep vendor HTTP/code/message evidence, removing credentials and URLs."""
+    import re
+    descriptions={400:'请求参数或协议不受支持，请核对模型 ID 与接口协议',
+        401:'API Key 鉴权失败',402:'账户余额或额度不足',403:'账号、模型或地区权限不足',
+        404:'接口地址或模型不存在',408:'供应商处理超时',409:'供应商请求冲突',
+        429:'请求受限或额度不足'}
+    detail=packet.get('error',packet) if isinstance(packet,dict) else {}
+    if isinstance(detail,str):detail={'message':detail}
+    if not isinstance(detail,dict):detail={}
+    code=detail.get('code') or detail.get('type')
+    code=str(code) if isinstance(code,(str,int)) and not isinstance(code,bool) else ''
+    message=detail.get('message') or detail.get('msg')
+    message=message if isinstance(message,str) else ''
+    text=' '.join(filter(None,[code,message]))
+    for secret in secrets:
+        if isinstance(secret,str) and secret:text=text.replace(secret,'[密钥已隐藏]')
+    text=re.sub(r'(?i)\b(?:sk|sess|key)-[A-Za-z0-9_.*-]+','[密钥已隐藏]',text)
+    text=re.sub(r'(?i)(?:bearer\s+)[^\s,;]+','Bearer [已隐藏]',text)
+    text=re.sub(r'https?://[^\s<>]+','[供应商链接已隐藏]',text)
+    text=' '.join(text.split())[:400]
+    summary=descriptions.get(status,'供应商暂时不可用' if status>=500 else '供应商返回错误')
+    return DomainError('PROVIDER_ERROR',f'HTTP {status} · {summary}'+(f'；供应商：{text}' if text else '')+'；未自动重试')
+
+
+def connected_request(url,headers,payload):
+    """Pin validated public DNS results to the socket; TLS retains original SNI.
+
+    An existing HTTP proxy is only a tunnel to the validated public IP. TLS
+    authenticates the original hostname before credentials or prompts are sent.
+    No redirects or transparent POST retries are used.
+    """
+    import http.client
+    import socket
+    from urllib.parse import urlsplit
+    parsed=urlsplit(url)
+    secrets=[v.removeprefix('Bearer ') for k,v in headers.items() if k.lower() in ('authorization','x-api-key')]
+    try:
+        from backend.model_dns import resolve_model_addresses
+        from backend.public_dns import configured_proxy, allowed_address
+        require(parsed.scheme=='https' and parsed.hostname and parsed.port in (None,443)
+                and not parsed.username and not parsed.password,
+                'MODEL_REQUEST_NOT_SENT','模型必须使用公网 HTTPS 接口；尚未发送模型请求')
+        addresses=resolve_model_addresses(parsed.hostname)
+        try:proxy=configured_proxy(parsed.hostname)
+        except DomainError:
+            raise DomainError('MODEL_REQUEST_NOT_SENT','模型代理配置不可用；尚未发送模型请求') from None
+        require(addresses and all(allowed_address(row[4][0]) for row in addresses),
+                'MODEL_REQUEST_NOT_SENT','模型地址不是有效公网地址；尚未发送模型请求')
+        conn=(http.client.HTTPConnection(*proxy,timeout=90) if proxy else
+              http.client.HTTPSConnection(parsed.hostname,443,timeout=90))
+        pinned=addresses[0][4][0]
+        if not proxy:
+            conn._create_connection=lambda address,timeout,source_address=None:socket.create_connection((pinned,443),timeout,source_address)
+        try:
+            if proxy:
+                import ssl
+                try:
+                    conn.set_tunnel(pinned,443)
+                    conn.connect()
+                    conn.sock=ssl.create_default_context().wrap_socket(conn.sock,server_hostname=parsed.hostname)
+                    # Never reconnect in plain HTTP if this authenticated tunnel dies.
+                    conn.auto_open=0
+                except (OSError,ValueError,http.client.HTTPException):
+                    raise DomainError('MODEL_REQUEST_NOT_SENT','模型安全代理隧道未建立；尚未发送模型请求') from None
+                headers={**headers,'Host':parsed.hostname}
+            conn.request('POST',parsed.path or '/',json.dumps(payload,ensure_ascii=False).encode(),headers)
+            response=conn.getresponse()
+            if response.status!=200:
+                try:packet=json.loads(response.read(16385))
+                except (ValueError,UnicodeError):packet={}
+                raise _provider_error(response.status,packet,secrets)
+            raw=response.read(1_000_001)
+            require(len(raw)<=1_000_000,'MODEL_OUTPUT_INVALID','模型响应过大')
+            packet=json.loads(raw)
+            require(isinstance(packet,dict),'MODEL_OUTPUT_INVALID','模型服务返回的不是 JSON 响应对象')
+            if packet.get('error'):raise _provider_error(200,packet,secrets)
+            return packet
+        finally:conn.close()
+    except DomainError:raise
+    except (OSError,TimeoutError,ValueError,http.client.HTTPException):
+        raise DomainError('PROVIDER_ERROR','模型连接失败、超时或返回无效数据；用量可能已产生，未自动重试') from None
+
+
+def _json_result(text):
+    """Accept an exact JSON object or one enclosing code fence, never scrape prose."""
+    import re
+    require(isinstance(text,str),'MODEL_OUTPUT_INVALID','模型未返回文字内容')
+    text=text.strip().lstrip('\ufeff')
+    fence=re.fullmatch(r'```(?:json)?\s*\n?(.*?)\n?```',text,flags=re.I|re.S)
+    if fence:text=fence[1].strip()
+    try:value=json.loads(text)
+    except ValueError:raise DomainError('MODEL_OUTPUT_INVALID','模型已响应，但输出不是完整 JSON 对象；请使用能遵循结构化指令的文本模型，或在高级设置启用其支持的 JSON 模式') from None
+    require(isinstance(value,dict),'MODEL_OUTPUT_INVALID','模型必须返回 JSON 对象')
+    return value
+
+
+def _chat_text(content):
+    if isinstance(content,str):return content
+    require(isinstance(content,list),'MODEL_OUTPUT_INVALID','模型未返回文字内容')
+    require(all(isinstance(part,dict) and part.get('type') in ('text','output_text') and isinstance(part.get('text'),str) for part in content),
+            'MODEL_OUTPUT_INVALID','模型返回了不支持的内容类型')
+    return ''.join(part['text'] for part in content)
+
+
+def _openai_usage(usage,input_key,output_key):
+    require(isinstance(usage,dict),'MODEL_OUTPUT_INVALID','模型未返回有效用量，保留预算预留')
+    inp,out=usage.get(input_key),usage.get(output_key)
+    for value in (inp,out):
+        require(value is None or (type(value) is int and value>=0),'MODEL_OUTPUT_INVALID','模型用量报告无效')
+    total=usage.get('total_tokens')
+    if total is None and inp is not None and out is not None:total=inp+out
+    require(type(total) is int and total>=0,'MODEL_OUTPUT_INVALID','模型未返回有效用量，保留预算预留')
+    require(inp is None or out is None or total==inp+out,'MODEL_OUTPUT_INVALID','模型总用量与分项不一致')
+    return total,inp,out
+
+
+def effective_json_mode(item):
+    """Request JSON for the verified Beijing Qwen Plus structured workflow.
+
+    ConnectedModel only accepts JSON objects; it is not a general chat adapter.
+    The automatic exception matches the exact official endpoint/model/protocol,
+    not Qwen-like model names, other regions or custom gateways. Saved connection
+    flags, versions and budgets are never changed. All other routes retain the
+    existing explicit json_mode choice.
+    """
+    return bool(item.get('json_mode')) or (
+        item.get('provider')=='qwen' and item.get('model')=='qwen-plus'
+        and item.get('protocol','openai')=='openai'
+        and item.get('base_url')=='https://dashscope.aliyuncs.com/compatible-mode/v1')
+
+
+class ConnectedModel:
+    """Three explicit text protocols with minimal, model-compatible payloads."""
+    def __init__(self,connection,key):
+        self.connection,self._key=connection,key
+
+    def complete_result(self,messages,max_tokens=3000):
+        import re
+        from backend.model_connections import PROVIDERS,PROTOCOLS,base_url
+        item=self.connection;provider=item['provider']
+        protocol=item.get('protocol') or PROVIDERS[provider]['protocol']
+        require(protocol in PROTOCOLS,'CONFIG_INVALID','模型接口协议无效')
+        url=base_url(item['base_url'],protocol)
+        headers={'Content-Type':'application/json'}
+        if protocol=='responses':
+            headers['Authorization']='Bearer '+self._key
+            payload={'model':item['model'],'input':messages,'stream':False,'store':False,'max_output_tokens':max_tokens}
+            if item.get('json_mode'):payload['text']={'format':{'type':'json_object'}}
+            packet=connected_request(url+'/responses',headers,payload)
+            try:
+                require(packet.get('status')=='completed','MODEL_OUTPUT_INVALID','模型输出未完成，未自动重试')
+                parts=[part for entry in packet['output'] if entry.get('type')=='message' for part in entry.get('content',[])]
+                require(not any(part.get('type')=='refusal' for part in parts),'MODEL_OUTPUT_INVALID','模型拒绝了本次生成，未自动重试')
+                value=_json_result(''.join(part['text'] for part in parts if part.get('type')=='output_text'))
+                tokens,inp,out=_openai_usage(packet.get('usage'),'input_tokens','output_tokens')
+                meta={'request_id':packet.get('id'),'input_tokens':inp,'output_tokens':out}
+            except DomainError:raise
+            except (ValueError,KeyError,TypeError,AttributeError):raise DomainError('MODEL_OUTPUT_INVALID','Responses 返回格式或用量无效，未自动重试') from None
+        elif protocol=='anthropic':
+            headers.update({'x-api-key':self._key,'anthropic-version':'2023-06-01'})
+            payload={'model':item['model'],'max_tokens':max_tokens,'stream':False,
+                     'system':'\n'.join(m['content'] for m in messages if m['role']=='system'),
+                     'messages':[m for m in messages if m['role']!='system']}
+            packet=connected_request(url+'/messages',headers,payload)
+            try:
+                require(packet.get('stop_reason') in ('end_turn','stop_sequence'),'MODEL_OUTPUT_INVALID','模型输出不完整')
+                text=''.join(x['text'] for x in packet['content'] if x.get('type')=='text')
+                value=_json_result(text);usage=packet['usage']
+                usage_parts=[usage['input_tokens'],usage['output_tokens'],usage.get('cache_creation_input_tokens',0),usage.get('cache_read_input_tokens',0)]
+                require(all(type(n) is int and n>=0 for n in usage_parts),'MODEL_OUTPUT_INVALID','模型用量报告无效')
+                tokens=sum(usage_parts)
+                meta={'request_id':packet.get('id'),'input_tokens':sum(usage_parts)-usage['output_tokens'],'output_tokens':usage['output_tokens']}
+            except DomainError:raise
+            except (ValueError,KeyError,TypeError,AttributeError):raise DomainError('MODEL_OUTPUT_INVALID','模型返回格式或用量无效，未自动重试') from None
+        else:
+            headers['Authorization']='Bearer '+self._key
+            payload={'model':item['model'],'messages':messages,'stream':False}
+            if effective_json_mode(item):payload['response_format']={'type':'json_object'}
+            modern=provider=='openai' or bool(re.match(r'^(?:gpt-[5-9](?:[.-]|$)|o[134](?:-|$))',item['model'].split('/')[-1],re.I))
+            payload['max_completion_tokens' if modern else 'max_tokens']=max_tokens
+            # DashScope's original Qwen3 hybrid models require non-thinking mode
+            # for synchronous calls. Never send this vendor flag to a gateway.
+            from urllib.parse import urlsplit
+            hostname=urlsplit(url).hostname
+            official_qwen=hostname in ('dashscope.aliyuncs.com','dashscope-intl.aliyuncs.com','dashscope-us.aliyuncs.com')
+            hybrid_qwen=bool(re.match(r'^qwen3-\d+b(?:-|$)',item['model'],re.I)) and not re.search(r'(?:thinking|instruct)',item['model'],re.I)
+            if official_qwen and hybrid_qwen:payload['enable_thinking']=False
+            # The platform DeepSeek adapter also disables reasoning for the
+            # structured three-role workflow. Without it the same model can spend
+            # the whole output budget on reasoning and return a truncated object.
+            # Scope the vendor flag to the official host; never guess a gateway.
+            if hostname=='api.deepseek.com':payload['thinking']={'type':'disabled'}
+            packet=connected_request(url+'/chat/completions',headers,payload)
+            try:
+                choice=packet['choices'][0];message=choice['message']
+                require(choice.get('finish_reason')=='stop','MODEL_OUTPUT_INVALID','模型输出不完整，未保存为稿件')
+                require(not message.get('refusal'),'MODEL_OUTPUT_INVALID','模型拒绝了本次生成，未自动重试')
+                text=_chat_text(message.get('content'))
+                if provider=='minimax':text=re.sub(r'^\s*<think>.*?</think>\s*','',text,count=1,flags=re.S)
+                value=_json_result(text)
+                tokens,inp,out=_openai_usage(packet.get('usage'),'prompt_tokens','completion_tokens')
+                meta={'request_id':packet.get('id'),'input_tokens':inp,'output_tokens':out}
+            except DomainError:raise
+            except (ValueError,KeyError,IndexError,TypeError,AttributeError):raise DomainError('MODEL_OUTPUT_INVALID','Chat Completions 返回格式或用量无效，未自动重试') from None
+        return value,tokens,meta

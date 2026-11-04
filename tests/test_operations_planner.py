@@ -8,7 +8,7 @@ from backend.accounts import PROFILE_FIELDS
 from backend.contracts import DomainError
 from backend.execution import Executor
 from backend.operations import Operations
-from backend.operations_planner import OperationsPlanner, build_snapshot, validate_plan
+from backend.operations_planner import OperationsPlanner, build_snapshot, prompt_for, validate_plan
 from backend.provider import Config
 from backend.store import Store
 
@@ -69,6 +69,15 @@ class OperationsPlannerTests(unittest.TestCase):
         with self.store.connect() as db:
             self.assertEqual(db.execute("SELECT COUNT(*) FROM live_calls WHERE stage='operations_plan'").fetchone()[0],1)
             self.assertEqual(db.execute("SELECT outcome FROM model_audit WHERE stage='operations_plan'").fetchone()[0],'validated')
+
+    def test_prompt_states_the_format_and_basis_ref_rules_the_validator_enforces(self):
+        snapshot=build_snapshot(self.ops.read(self.owner),self.account['id'],'manual')
+        system=prompt_for(snapshot,'2026-10-19','manual')[0]['content']
+        # A real DeepSeek plan used one format for all three tasks and failed
+        # validation; the prompt must state the rule the validator applies.
+        self.assertIn('至少两条必须使用不同的 format',system)
+        self.assertIn('profile:goal',system)
+        self.assertNotIn('"profile.goal"',system)
 
     def test_snapshot_uses_only_selected_account_and_keeps_missing_metrics_missing(self):
         state=self.ops.read(self.owner)

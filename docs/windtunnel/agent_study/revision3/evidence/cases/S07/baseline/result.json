@@ -1,0 +1,76 @@
+{
+  "sample_id": "S07",
+  "method": "baseline",
+  "participant_type": "codex_proxy",
+  "revision": "v3",
+  "source_url": "https://docs.python.org/3.12/tutorial/inputoutput.html#saving-structured-data-with-json",
+  "original_sha256": "31d7a8468f532da0abe60437c3b621135a6f9396bfd88fb4e62977a382e9fa29",
+  "material_sha256": "31d7a8468f532da0abe60437c3b621135a6f9396bfd88fb4e62977a382e9fa29",
+  "outcome": "completed",
+  "error": null,
+  "automatic_adoption": true,
+  "human_author": false,
+  "issues": [
+    {
+      "explanation": "The manuscript does not cover the saving-then-restoring round trip for x=[1,'simple','list'] that the reading goal requires; it only shows json.dumps(x) and separately json.dump/load. A beginner cannot see how the same x is written to f and then restored as x. This is a completeness gap against the stated tutorial purpose.",
+      "evidence": "Draft gives >>> json.dumps(x) result '[1, \"simple\", \"list\"]' and later json.dump(x, f) / x = json.load(f), but never connects them for the specific x."
+    },
+    {
+      "explanation": "The opening is about strings/numbers, and the JSON definition arrives before the concrete example, so the term 'serializing' is defined after the task's key example. Minor order issue; the material supports keeping the existing official ordering, so no change is forced.",
+      "evidence": "'this process is called serializing. Reconstructing ... is called deserializing.' appears before the x example."
+    },
+    {
+      "explanation": "The note mentions encoding='utf-8' for text files, but the preceding load() line also says f may be a binary file. In Python 3, binary files do not take an encoding argument, so a beginner may be confused about whether the encoding note applies to binary files. The material itself says this, but it is ambiguous for the tutorial's stated level.",
+      "evidence": "'if f is a binary file or text file object which has been opened for reading' immediately followed by 'Use encoding=\"utf-8\" when opening JSON file as a text file'."
+    },
+    {
+      "explanation": "The pickle warning is present in the source material, but the draft does not explicitly say pickle should not replace JSON for untrusted data, nor explicitly state that JSON cannot serialize arbitrary class instances without extra effort beyond saying 'requires a bit of extra effort.' The reading task asks for both limits, so the manuscript should make these constraints clearer.",
+      "evidence": "'deserializing pickle data coming from an untrusted source can execute arbitrary code' and 'serializing arbitrary class instances in JSON requires a bit of extra effort.'"
+    }
+  ],
+  "run_id": "2ba672bf-2a54-41bc-a7f7-ca298ae3dd70",
+  "wall_seconds": 5.266,
+  "final_sha256": "9f8c78e79c478b1062b4eb07a8ace4ccd60acdcf2336bb9dce9801726979c16e",
+  "changed": true,
+  "calls": [
+    {
+      "stage": "wt_read",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "input_tokens": 1618,
+      "output_tokens": 1097,
+      "total_tokens": 2715,
+      "outcome": "validated",
+      "error": null,
+      "response": {
+        "issues": [
+          {
+            "explanation": "The manuscript does not cover the saving-then-restoring round trip for x=[1,'simple','list'] that the reading goal requires; it only shows json.dumps(x) and separately json.dump/load. A beginner cannot see how the same x is written to f and then restored as x. This is a completeness gap against the stated tutorial purpose.",
+            "evidence": "Draft gives >>> json.dumps(x) result '[1, \"simple\", \"list\"]' and later json.dump(x, f) / x = json.load(f), but never connects them for the specific x."
+          },
+          {
+            "explanation": "The opening is about strings/numbers, and the JSON definition arrives before the concrete example, so the term 'serializing' is defined after the task's key example. Minor order issue; the material supports keeping the existing official ordering, so no change is forced.",
+            "evidence": "'this process is called serializing. Reconstructing ... is called deserializing.' appears before the x example."
+          },
+          {
+            "explanation": "The note mentions encoding='utf-8' for text files, but the preceding load() line also says f may be a binary file. In Python 3, binary files do not take an encoding argument, so a beginner may be confused about whether the encoding note applies to binary files. The material itself says this, but it is ambiguous for the tutorial's stated level.",
+            "evidence": "'if f is a binary file or text file object which has been opened for reading' immediately followed by 'Use encoding=\"utf-8\" when opening JSON file as a text file'."
+          },
+          {
+            "explanation": "The pickle warning is present in the source material, but the draft does not explicitly say pickle should not replace JSON for untrusted data, nor explicitly state that JSON cannot serialize arbitrary class instances without extra effort beyond saying 'requires a bit of extra effort.' The reading task asks for both limits, so the manuscript should make these constraints clearer.",
+            "evidence": "'deserializing pickle data coming from an untrusted source can execute arbitrary code' and 'serializing arbitrary class instances in JSON requires a bit of extra effort.'"
+          }
+        ],
+        "revised_text": "7.2.2. Saving structured data with json\n\nStrings can easily be written to and read from a file.  Numbers take a bit more\neffort, since the read() method only returns strings, which will have to\nbe passed to a function like int(), which takes a string like '123'\nand returns its numeric value 123.  When you want to save more complex data\ntypes like nested lists and dictionaries, parsing and serializing by hand\nbecomes complicated.\n\nRather than having users constantly writing and debugging code to save\ncomplicated data types to files, Python allows you to use the popular data\ninterchange format called JSON (JavaScript Object Notation).  The standard module called json can take Python\ndata hierarchies, and convert them to string representations; this process is\ncalled serializing.  Reconstructing the data from the string representation\nis called deserializing.  Between serializing and deserializing, the\nstring representing the object may have been stored in a file or data, or\nsent over a network connection to some distant machine.\n\nNote\n\nThe JSON format is commonly used by modern applications to allow for data\nexchange.  Many programmers are already familiar with it, which makes\nit a good choice for interoperability.\n\nIf you have an object x, you can view its JSON string representation with a\nsimple line of code:\n\n>>> import json\n>>> x = [1, 'simple', 'list']\n>>> json.dumps(x)\n'[1, \"simple\", \"list\"]'\n\nAnother variant of the dumps() function, called dump(),\nsimply serializes the object to a text file.  So if f is a\ntext file object opened for writing, we can do this:\n\njson.dump(x, f)\n\nTo decode the object again, if f is a binary file or\ntext file object which has been opened for reading:\n\nx = json.load(f)\n\nNote\n\nJSON files must be encoded in UTF-8. Use encoding=\"utf-8\" when opening\nJSON file as a text file for both of reading and writing.\n\nThis simple serialization technique can handle lists and dictionaries, but\nserializing arbitrary class instances in JSON requires a bit of extra effort.\nThe reference for the json module contains an explanation of this.  In other\nwords, JSON does not directly serialize arbitrary class instances; you need\nextra work for them.\n\nSee also\n\npickle - the pickle module\n\nContrary to JSON, pickle is a protocol which allows\nthe serialization of arbitrarily complex Python objects.  As such, it is\nspecific to Python and cannot be used to communicate with applications\nwritten in other languages.  It is also insecure by default:\ndeserializing pickle data coming from an untrusted source can execute\narbitrary code, if the data was crafted by a skilled attacker.  Therefore,\ndo not casually replace JSON with pickle for untrusted data."
+      }
+    }
+  ],
+  "budget": {
+    "cap_cny": 5.0,
+    "charged_upper_cny": 0.750384,
+    "reserved_unknown_cny": 0.04281,
+    "committed_upper_cny": 0.793194,
+    "calls": 68,
+    "unknown_calls": 1
+  }
+}

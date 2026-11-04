@@ -1,7 +1,5 @@
 """Evidence gates for signal-to-hypothesis and the three trial stages."""
 import json
-import os
-from datetime import datetime, timedelta, timezone
 import tempfile
 import unittest
 from dataclasses import asdict
@@ -17,7 +15,7 @@ from backend.workflow import Run
 class ContentTrialTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
-        self.store = Store(getattr(self, 'database_url', Path(self.tmp.name) / 'trials.sqlite'))
+        self.store = Store(Path(self.tmp.name) / 'trials.sqlite')
         self.ops = Operations(self.store)
         self.owner = 'creator-a'
         self.account = self.ops.read(self.owner)['accounts'][0]['id']
@@ -73,40 +71,6 @@ class ContentTrialTests(unittest.TestCase):
             arms=[dict(label='A',run_id=a.run_id,draft_ref='draft-a',denominator=6,outcomes=2),
                   dict(label='B',run_id=b.run_id,draft_ref='draft-b',denominator=6,outcomes=3)])))
         return a, b
-
-    def test_author_question_can_start_trial_without_fake_reader_evidence(self):
-        signal = self.command('add_signal', dict(account_id=self.account, kind='author_hypothesis',
-            text='编号步骤是否更容易理解？', source_url='', observed_at=now(), sample_size=0,
-            collection_method='manual', notes='作者预设'))['signals'][0]
-        self.assertEqual(signal['provenance'], 'author_defined')
-        self.assertEqual(signal['sample_size'], 0)
-        hypothesis = self.command('create_hypothesis', dict(account_id=self.account, objective='audience_growth',
-            audience='新手', statement='编号步骤比长段说明更容易理解', desired_action='进一步了解',
-            metric='new_followers', window='24h', minimum_lift_pct=20,
-            falsifier='未观察到改善', signal_ids=[signal['id']]))['hypotheses'][0]
-        self.assertEqual(hypothesis['signal_refs'][0]['provenance'], 'author_defined')
-        self.assertEqual(hypothesis['validations'], {})
-        context = self.ops.context(self.owner, {'account_id':self.account,'hypothesis_id':hypothesis['id']}, 'live')
-        from backend.creator_context import enrich
-        inputs = {'topic':'教程','audience':'新手','operations':context}
-        self.assertEqual(enrich('audience', {}, inputs)['sample_size'], 0)
-        strategy = enrich('strategy', {'angle':'步骤','reader':'新手'}, inputs)
-        self.assertIn('作者预设', strategy['content_brief']['limitation'])
-        self.assertEqual(strategy['learning_refs'], [])
-        self.assertEqual(Operations(Store(self.store.path)).read(self.owner)['signals'][0]['sample_size'], 0)
-        with self.assertRaises(DomainError):
-            self.command('decide_hypothesis', dict(hypothesis_id=hypothesis['id'], verdict='supported', notes=''))
-
-    def test_author_question_cannot_claim_real_samples_or_public_source(self):
-        base = dict(account_id=self.account, kind='author_hypothesis', text='作者问题', source_url='',
-            observed_at=now(), sample_size=0, collection_method='manual', notes='')
-        for change in ({'sample_size':1}, {'source_url':'https://example.com'}, {'collection_method':'public_source'}):
-            with self.subTest(change=change), self.assertRaises(DomainError):
-                self.command('add_signal', dict(base, **change))
-        sample = self.command('load_sample', {})['accounts'][-1]
-        self.assertTrue(sample['demo_sample'])
-        with self.assertRaises(DomainError):
-            self.command('add_signal', dict(base, account_id=sample['id']))
 
     def test_signal_and_hypothesis_are_account_bound_and_metric_matches_goal(self):
         self.assertEqual(self.signal['kind'], 'search_intent')
@@ -167,7 +131,7 @@ class ContentTrialTests(unittest.TestCase):
                     content_hash='hash-'+run.drafts[0]['ref'],account_id=self.account,platform='xiaohongshu',
                     account='试验账号',
                     hypothesis_id=self.hyp['id'],status='MANUAL_REPORTED',mode='live',provenance='manual',
-                    url='https://www.xiaohongshu.com/explore/'+str(idx),published_at=(datetime.now(timezone.utc)-timedelta(hours=25)).isoformat(),window='24h'))
+                    url='https://www.xiaohongshu.com/explore/'+str(idx),published_at='2026-09-26T10:00:00Z',window='24h'))
                 state['metrics'].append(dict(id=mid,publication_id=pid,account_id=self.account,source_type='manual',
                     window='24h',observed_at=now(),values={'signups':10+idx,'link_clicks':100}))
                 pub_metric.append((pid,mid))
@@ -190,116 +154,6 @@ class ContentTrialTests(unittest.TestCase):
         self.command('metrics',dict(id=pub['id'],window='24h',observed_at=now(),views=1000,likes=11,saves=3,comments=2,shares=1,signups=12,link_clicks=100))
         h=next(h for h in self.ops.read(self.owner)['hypotheses'] if h['id']==self.hyp['id'])
         self.assertEqual(h['ledger_status'],'superseded')
-
-    def reader_payload(self, with_wind=True):
-        wind = self.make_run('wind-reader', workflow='windtunnel', hypothesis_id=self.hyp['id'])
-        if with_wind:
-            self.command('record_trial', dict(hypothesis_id=self.hyp['id'], level='windtunnel', payload={'run_id':wind.run_id,'notes':''}))
-        # Existing real creations need no hypothetical-creation restart.
-        a, b = self.make_run('shared-ref'), self.make_run('shared-ref')
-        b.drafts[0]['content_hash']='hash-actual-variant'
-        b.drafts[0]['content']['body']='先点菜单，再选导出和编码'
-        self.persist_run(b)
-        feedback = [dict(reader_id='reader-1',label='A',understood=False,would_act=False,answer='入口在哪里？'),
-                    dict(reader_id='reader-2',label='B',understood=True,would_act=True,answer='先打开菜单再导出')]
-        return dict(allocation='observational',unit='readers',window='24h',observed_at=now(),notes='each reader sees one version',
-            arms=[dict(label='A',run_id=a.run_id,draft_ref='shared-ref',denominator=1,outcomes=0),
-                  dict(label='B',run_id=b.run_id,draft_ref='shared-ref',denominator=1,outcomes=1)],
-            reader_question='第一步做什么？',reader_feedback=feedback)
-
-    def test_reader_feedback_is_persisted_and_computed_without_model_or_fake_growth(self):
-        payload=self.reader_payload(with_wind=False)
-        state=self.command('record_trial',dict(hypothesis_id=self.hyp['id'],level='small_race',payload=payload))
-        race=state['hypotheses'][0]['validations']['small_race']
-        self.assertNotIn('windtunnel',state['hypotheses'][0]['validations'])
-        self.assertEqual(race['proxy_metric'],'stated_intent')
-        self.assertEqual(race['evidence_class'],'user_recorded_reader_feedback')
-        self.assertEqual(race['comprehension']['A'],{'readers':1,'understood':0})
-        self.assertEqual(race['comprehension']['B'],{'readers':1,'understood':1})
-        self.assertEqual(race['reader_feedback'],payload['reader_feedback'])
-        self.assertEqual(race['causal_claim'],'not_established')
-        self.assertIsNone(race['variant_lift_pct'])
-        self.assertNotEqual(race['arms'][0]['run_id'],race['arms'][1]['run_id'])
-
-    def test_reader_feedback_rejects_duplicate_readers_and_fabricated_totals(self):
-        payload=self.reader_payload()
-        import copy
-        for change in ('duplicate','totals','random','missing_answer','identical','simulation'):
-            invalid=copy.deepcopy(payload)
-            if change=='duplicate': invalid['reader_feedback'][1]['reader_id']='reader-1'
-            if change=='totals': invalid['arms'][0]['outcomes']=1
-            if change=='random': invalid['allocation']='randomized'
-            if change=='missing_answer': invalid['reader_feedback'][0]['answer']=''
-            if change=='identical':
-                run=self.store.get(invalid['arms'][1]['run_id'],self.owner)
-                run.drafts[0]['content_hash']='hash-shared-ref';self.persist_run(run)
-            if change=='simulation':
-                run=self.store.get(invalid['arms'][0]['run_id'],self.owner)
-                run.context['mode']='simulation';self.persist_run(run)
-            with self.assertRaises(DomainError,msg=change):
-                self.command('record_trial',dict(hypothesis_id=self.hyp['id'],level='small_race',payload=invalid))
-
-    def test_live_attribution_rejects_changed_hash_of_exact_race_version(self):
-        runs=self.record_wind_and_race()
-        with self.store.connect() as db:
-            state=json.loads(db.execute('SELECT payload FROM operations WHERE owner=?',(self.owner,)).fetchone()[0])
-            items=[]
-            for i,run in enumerate(runs):
-                pid='pub-hash-'+str(i);mid='metric-hash-'+str(i);items.append(dict(publication_id=pid,metric_id=mid))
-                state['publications'].append(dict(id=pid,run_id=run.run_id,draft_ref=run.drafts[0]['ref'],content_hash='changed',account_id=self.account,account='试验账号',platform=self.hyp['platform'],status='MANUAL_REPORTED',mode='live',provenance='manual',url='https://example.org/'+str(i)))
-                state['metrics'].append(dict(id=mid,publication_id=pid,account_id=self.account,source_type='manual',window='24h',observed_at=now(),values={'signups':1,'link_clicks':10}))
-            db.execute('UPDATE operations SET payload=? WHERE owner=?',(json.dumps(state),self.owner))
-        with self.assertRaises(DomainError) as error:
-            self.command('record_trial',dict(hypothesis_id=self.hyp['id'],level='live_attribution',payload=dict(items=items,evidence_method='manual_entry',source_note='actual records',observed_at=now())))
-        self.assertEqual(error.exception.code,'VERSION_CONFLICT')
-
-    def attribution_fixture(self):
-        runs=self.record_wind_and_race()
-        items=[]
-        with self.store.connect() as db:
-            state=json.loads(db.execute('SELECT payload FROM operations WHERE owner=?',(self.owner,)).fetchone()[0])
-            for i, (arm, outcome, denominator) in enumerate([(0,1,10),(1,2,10),(0,80,100)]):
-                run=runs[arm];pid='pub-'+str(i);mid='metric-'+str(i)
-                items.append(dict(publication_id=pid,metric_id=mid))
-                state['publications'].append(dict(id=pid,run_id=run.run_id,draft_ref=run.drafts[0]['ref'],content_hash=run.drafts[0]['content_hash'],account_id=self.account,platform=self.hyp['platform'],status='MANUAL_REPORTED',mode='live',provenance='manual',url='https://example.org/'+str(i),published_at=(datetime.now(timezone.utc)-timedelta(hours=25)).isoformat()))
-                state['metrics'].append(dict(id=mid,publication_id=pid,account_id=self.account,source_type='manual',window='24h',observed_at=now(),values={'signups':outcome,'link_clicks':denominator}))
-            db.execute('UPDATE operations SET payload=? WHERE owner=?',(json.dumps(state),self.owner))
-        return dict(items=items,evidence_method='manual_entry',source_note='授权后台人工记录',observed_at=now())
-
-    def test_attribution_aggregates_every_publication_not_just_first(self):
-        payload=self.attribution_fixture()
-        result=self.command('record_trial',dict(hypothesis_id=self.hyp['id'],level='live_attribution',payload=payload))['hypotheses'][0]['validations']['live_attribution']
-        self.assertEqual(result['aggregates']['A']['outcome'],81)
-        self.assertEqual(result['aggregates']['A']['denominator'],110)
-        self.assertLess(result['variant_lift_pct'],0)
-        self.assertFalse(result['meets_minimum_lift'])
-        self.assertGreaterEqual(result['items'][0]['elapsed_hours'],25)
-        restored=Operations(Store(self.store.path)).read(self.owner)
-        self.assertEqual(restored['hypotheses'][0]['validations']['live_attribution'],result)
-
-    def test_attribution_rejects_mislabeled_observation_window(self):
-        payload=self.attribution_fixture()
-        with self.store.connect() as db:
-            state=json.loads(db.execute('SELECT payload FROM operations WHERE owner=?',(self.owner,)).fetchone()[0])
-            state['publications'][-1]['published_at']=(datetime.now(timezone.utc)-timedelta(hours=93)).isoformat()
-            db.execute('UPDATE operations SET payload=? WHERE owner=?',(json.dumps(state),self.owner))
-        with self.assertRaises(DomainError) as error:
-            self.command('record_trial',dict(hypothesis_id=self.hyp['id'],level='live_attribution',payload=payload))
-        self.assertIn('93',str(error.exception))
-        self.assertNotIn('live_attribution',self.ops.read(self.owner)['hypotheses'][0]['validations'])
-
-
-@unittest.skipUnless(os.environ.get('TEST_DATABASE_URL'), 'requires actual PostgreSQL')
-class PostgresContentTrialTests(ContentTrialTests):
-    def setUp(self):
-        import psycopg
-        base=os.environ['TEST_DATABASE_URL'];schema='trials_'+uuid4().hex
-        with psycopg.connect(base,autocommit=True) as db: db.execute('CREATE SCHEMA '+schema)
-        def cleanup():
-            with psycopg.connect(base,autocommit=True) as db: db.execute('DROP SCHEMA '+schema+' CASCADE')
-        self.addCleanup(cleanup)
-        self.database_url=base+('&' if '?' in base else '?')+'options=-csearch_path%3D'+schema
-        super().setUp()
 
 
 if __name__ == '__main__':

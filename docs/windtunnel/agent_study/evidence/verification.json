@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-07",
+  "python_full_suite": {
+    "passed": 411,
+    "skipped": 0,
+    "real_postgresql": true,
+    "log": "python-tests.txt"
+  },
+  "python_supplement_suite": {
+    "passed": 66,
+    "skipped": 0,
+    "new_evidence_integrity_tests": 5,
+    "log": "supplement-tests.txt"
+  },
+  "distinct_python_tests_verified": 416,
+  "frontend_tests": {
+    "passed": 29,
+    "skipped": 0,
+    "log": "frontend-tests.txt"
+  },
+  "frontend_syntax_checks": {
+    "passed": 8,
+    "files": [
+      "app",
+      "operations",
+      "knowledge",
+      "account",
+      "account_profile",
+      "auth",
+      "trials",
+      "windtunnel"
+    ]
+  },
+  "role_cards_sync_consistency": "covered by full suite",
+  "paid_model_calls_are_separate": true,
+  "privacy": "no private balances, credentials, runtime databases or cookies in evidence"
+}

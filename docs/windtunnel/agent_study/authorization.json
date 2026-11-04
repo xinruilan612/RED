@@ -1,0 +1,14 @@
+{
+  "date": "2026-10-07",
+  "source": "explicit user instruction in this chat",
+  "maximum_deepseek_api_budget_cny": 5,
+  "model": "deepseek-flash",
+  "reader_type": "six Codex subagents, not project agents and not humans",
+  "authorized_text": "5元以内。你去测试。关于找6位读者盲评，你就用你的子agent去测，注意是你的子agent不是我项目里的agent",
+  "scope": "isolated tutorial experiment only; no social publishing, no production configuration changes",
+  "pricing_source": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing/",
+  "peak_input_cny_per_million": 2,
+  "peak_output_cny_per_million": 8,
+  "unknown_usage_policy": "retain reservation and block every subsequent paid call",
+  "human_readers": 0
+}
