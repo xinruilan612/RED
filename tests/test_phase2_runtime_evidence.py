@@ -101,7 +101,8 @@ class RuntimeEvidenceTests(unittest.TestCase):
             with self.subTest(stage=stage):
                 self.assertEqual({s['source_id'] for s in payload['retrieved_references']}, expected)
                 self.assertTrue(all(s['version'] == 2 and s['url'] and s['case_ref']['observed_at'] for s in payload['retrieved_references']))
-                self.assertNotIn('web_research', payload)
+                self.assertEqual(payload['web_research']['status'], 'not_requested')
+                self.assertEqual(payload['web_research']['reads'], [])
         self.assertEqual(run.review['claim_map'][0]['source_id'], 'user-material')
         calls = self.service.executor.public(run)['calls']
         self.assertEqual(len(calls), 8)
@@ -165,7 +166,8 @@ class RuntimeEvidenceTests(unittest.TestCase):
                 self.assertEqual(payload['retrieved_references'], [])
                 self.assertEqual({s['document_id'] for s in payload['materials']}, {selected['id']})
                 self.assertTrue(all(s['text'] == selected['chunks'][0]['text'] for s in payload['materials']))
-                self.assertNotIn('web_research', payload)
+                self.assertEqual(payload['web_research']['status'], 'not_requested')
+                self.assertEqual(payload['web_research']['reads'], [])
         self.assertTrue(set(self.approved['document_ids']).isdisjoint({s['document_id'] for s in self.run_value().context['evidence']}))
 
     def test_runtime_adapter_keeps_source_location_and_original_hash(self):

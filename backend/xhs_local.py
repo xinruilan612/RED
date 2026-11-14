@@ -1,6 +1,7 @@
 """Bounded read-only xiaohongshu-mcp client. Never expose cookies or write tools."""
 import json
 import http.client
+import os
 import queue
 import socket
 import threading
@@ -53,10 +54,13 @@ REQUEST_TIMEOUT_SECONDS=65
 
 
 class LocalXHS:
-    def __init__(self, port=18061, token_file='runtime/xhs-local/control-token'):
+    def __init__(self, port=18061, token_file=None):
         require(type(port) is int and 1024<=port<=65535,'INVALID_INPUT','本机连接器端口无效')
         self.base='http://127.0.0.1:'+str(port)
-        self.token_file=Path(token_file)
+        # The connector token lives beside the connector, not beside the process
+        # working directory. An explicit env path wins so a source checkout and an
+        # extracted bundle can point at the same running connector.
+        self.token_file=Path(token_file or os.environ.get('YOUJI_XHS_TOKEN_FILE') or 'runtime/xhs-local/control-token')
         self.opener=urllib.request.build_opener(urllib.request.ProxyHandler({}),NoRedirect())
 
     def read_response(self, req):
@@ -117,6 +121,8 @@ class LocalXHS:
         require(path in allowed,'FORBIDDEN','同步器只允许身份、本人笔记和详情读取')
         require(path!='/api/v1/login/qrcode' or data is None,'FORBIDDEN','登录二维码仅允许固定 GET 请求')
         try:
+            require(self.token_file.is_file(),'XHS_CONNECTOR_NOT_CONFIGURED',
+                    '未找到本机连接器访问令牌；请确认连接器已启动，并用 YOUJI_XHS_TOKEN_FILE 指向它的 control-token 文件')
             token=self.token_file.read_text(encoding='utf-8').strip()
             req=urllib.request.Request(self.base+path,data=None if data is None else json.dumps(data).encode(),
                     headers={'Authorization':'Bearer '+token,'Content-Type':'application/json'})

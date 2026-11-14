@@ -1,9 +1,12 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),crypto=require('node:crypto');
 const html=fs.readFileSync('frontend/index.html','utf8'),css=fs.readFileSync('frontend/style.css','utf8');
-test('existing sidebar remains byte-for-byte unchanged while adopting the right-side layout',()=>{
+test('workspace navigation stays in one labelled sidebar',()=>{
+ const top=html.match(/<header class="topbar">[\s\S]*?<\/header>/)[0].replace(/\r\n/g,'\n');
  const aside=html.match(/<aside class="sidebar">[\s\S]*?<\/aside>/)[0].replace(/\r\n/g,'\n');
- assert.equal(crypto.createHash('sha256').update(aside).digest('hex'),'0602e6db046d9a379d9e775fd41c38cce6d132abb9ca59b379c7701fc09e255e');
+ assert.doesNotMatch(top,/data-page=/);
+ for(const page of ['library','trends','studio','windtunnel','publish','overview','accounts','metrics','memory','connections','models'])assert.match(aside,new RegExp(`data-page="${page}"`),page);
+ for(const label of ['工作空间','运营与复盘','连接与设置'])assert.match(aside,new RegExp(label));
 });
 test('draft and human decisions precede collapsed process and runtime details',()=>{
  assert.ok(html.indexOf('id="humanPanel"')<html.indexOf('id="processDetails"'));
@@ -17,8 +20,9 @@ test('draft and human decisions precede collapsed process and runtime details',(
 test('current retrieval, classification, source controls and model integrations remain available once each',()=>{
  const ids=Array.from(html.matchAll(/\bid="([^"]+)"/g),m=>m[1]);assert.equal(ids.length,new Set(ids).size);
  for(const id of ['creationDomains','creationFormat','creationGoal','creationWordCount','creationReport','automaticReferencesOption','useAutomaticReferences','webSearchProvider','webSearchTarget','webQuery1','webQuery2','webResearchReport','useKnowledge','materialDocumentSelect','modelsNav','connectionsNav'])assert.ok(ids.includes(id),id);
- for(const script of ['connections','models','research','knowledge','guidance'])assert.ok(html.includes(`src="/${script}.js"`),script);
- assert.doesNotMatch(html,/id="(?:checkReaders|readerCheckHelp)"|src="\/(?:trials|windtunnel)\.js"|data-page="(?:trials|windtunnel)"/);
+ for(const script of ['connections','models','research','knowledge','guidance','windtunnel'])assert.ok(html.includes(`src="/${script}.js"`),script);
+ assert.match(html,/src="\/windtunnel\.js"/);
+ assert.doesNotMatch(html,/id="(?:checkReaders|readerCheckHelp)"|src="\/trials\.js"|data-page="trials"/);
 });
 test('new dialogs provide complete hidden cancel and cost-confirmation controls',()=>{
  for(const id of ['pageTools','workbenchGuide','cancelConfirmation','confirmCancel','keepTask','liveBudgetConfirmation','liveBudgetMessage','approveLiveBudget','declineLiveBudget'])assert.ok(html.includes(`id="${id}"`),id);

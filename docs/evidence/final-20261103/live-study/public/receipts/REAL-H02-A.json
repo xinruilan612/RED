@@ -1,0 +1,2497 @@
+{
+  "snapshot_id": "40456cd0-2956-4be3-85e8-98c17e62fa2b",
+  "run_id": "975cd0aa-11ad-444f-9b91-acd385950cf2",
+  "schema_version": 2,
+  "run_status": "RUNNING",
+  "current_stage": "content",
+  "wait_reason": null,
+  "status_version": 12,
+  "iteration": 0,
+  "supplements": 0,
+  "context": {
+    "topic": "宜家BILLY加高书架选前尺寸与固定提醒",
+    "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+    "tone": "清楚自然克制",
+    "material": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象是货号895.452.91的白色BILLY加高组合，含加高件。\nF2：组合宽80厘米、深28厘米、高237厘米，不是202厘米版本。\nF3：页面列明每块搁板最大承重30公斤；这不是整个柜体可任意加总的承重声明。\nF4：官方要求安全固定产品，采用合适螺丝和螺栓；不确定应咨询专业人士，并在柜顶与天花板之间预留固定操作空间。\n【完整限制】材料没有具体墙体类型、适用紧固件型号、顶部最小间距数值或作者安装实测，不可替读者编一个通用螺栓方案或精确预留厘米数。柜顶和天花板的操作空间要求不能省略；不能把包装高度或普通202厘米版本的数据混入。价格、库存及本次用户现场条件均未核验。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+    "scenario": "standard",
+    "allow_hypothesis": false,
+    "algorithm_options": {
+      "enabled": false,
+      "ask_questions": false
+    },
+    "web_research": {
+      "enabled": false,
+      "queries": [],
+      "provider": "bing",
+      "targets": [
+        "web"
+      ],
+      "status": "pending"
+    },
+    "mode": "live",
+    "material_policy": "available_only",
+    "material_policy_version": "available-only-v1",
+    "model_policy": {
+      "version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "routes": {
+        "audience": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "research": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "strategy": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "outline": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "hook": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "title": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "body": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "revise": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "review": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        }
+      },
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1"
+    },
+    "operations": {
+      "platform": "xiaohongshu",
+      "account": "我的账号",
+      "account_id": "[已隐去]",
+      "hypothesis_id": null,
+      "profile": {
+        "id": "5285e961-e866-5533-b51e-87cd6014586e",
+        "name": "我的账号",
+        "platform": "xiaohongshu",
+        "aliases": [
+          "我的账号"
+        ],
+        "revision": 1,
+        "profile": {
+          "positioning": "",
+          "audience": "",
+          "tone": "",
+          "pillars": "",
+          "goal": "",
+          "resources": "",
+          "banned": "",
+          "weekly_frequency": 3
+        },
+        "revisions": []
+      },
+      "trend": null,
+      "memories": [],
+      "active_hypothesis": null,
+      "experiment_memory": [],
+      "history": [],
+      "metrics": [],
+      "competitors": [],
+      "preferences": []
+    },
+    "knowledge_selection": {
+      "enabled": false,
+      "automatic_references": true
+    },
+    "creation_classification": {
+      "domains": [
+        "furniture"
+      ],
+      "channel": "xiaohongshu",
+      "format": "note",
+      "word_count": 300,
+      "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+      "origin": "user",
+      "ambiguities": []
+    },
+    "comment_feedback": {
+      "enabled": false,
+      "note_ids": [],
+      "notes": [],
+      "samples": []
+    },
+    "creation_retrieval": {
+      "engine": "filtered-bm25-zh-bigram-v1",
+      "reranker": "bm25-zh-bigram-v1",
+      "classification": {
+        "domains": [
+          "furniture"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "word_count": 300,
+        "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+        "origin": "user",
+        "ambiguities": []
+      },
+      "groups": {
+        "methods": [],
+        "examples": [
+          {
+            "source_id": "kb:f218e725-66dd-415c-962b-aaa4df6ba98e",
+            "document_id": "b8ff7148-6b21-452c-b337-6836e0e315d0",
+            "version": 1,
+            "page": 1,
+            "offset": 0,
+            "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是抽屉分区。\n\n整理抽屉分区时，先保留可核对的信息，再决定文章顺序。\n\n材料中列出三个字段，分别是名称、位置和手工标签。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。",
+            "title": "虚构选购结构参考-REAL-H02",
+            "url": "",
+            "source_type": "text",
+            "filename": "虚构选购结构参考-REAL-H02.txt",
+            "location_type": "page",
+            "evidence_role": "expression_reference",
+            "content_kind": "text",
+            "source_scope": "current_account",
+            "body_kind": "text",
+            "classification": {
+              "domains": [
+                "furniture"
+              ],
+              "channel": "xiaohongshu",
+              "format": "note",
+              "material_type": "example",
+              "origin": "user"
+            },
+            "case_ref": null,
+            "score": 1.349146,
+            "semantic_score": null,
+            "retrieval_mode": "bm25",
+            "topic_coverage": 0.0,
+            "material_type": "example",
+            "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+          },
+          {
+            "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+            "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+            "version": 1,
+            "page": 1,
+            "offset": 0,
+            "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是边桌摆放。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+            "title": "虚构选购结构参考-REAL-H01",
+            "url": "",
+            "source_type": "text",
+            "filename": "虚构选购结构参考-REAL-H01.txt",
+            "location_type": "page",
+            "evidence_role": "expression_reference",
+            "content_kind": "text",
+            "source_scope": "current_account",
+            "body_kind": "text",
+            "classification": {
+              "domains": [
+                "furniture"
+              ],
+              "channel": "xiaohongshu",
+              "format": "note",
+              "material_type": "example",
+              "origin": "user"
+            },
+            "case_ref": null,
+            "score": 1.210829,
+            "semantic_score": null,
+            "retrieval_mode": "bm25",
+            "topic_coverage": 0.0,
+            "material_type": "example",
+            "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+          }
+        ],
+        "facts": []
+      },
+      "sources": [
+        {
+          "source_id": "kb:f218e725-66dd-415c-962b-aaa4df6ba98e",
+          "document_id": "b8ff7148-6b21-452c-b337-6836e0e315d0",
+          "version": 1,
+          "page": 1,
+          "offset": 0,
+          "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是抽屉分区。\n\n整理抽屉分区时，先保留可核对的信息，再决定文章顺序。\n\n材料中列出三个字段，分别是名称、位置和手工标签。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。",
+          "title": "虚构选购结构参考-REAL-H02",
+          "url": "",
+          "source_type": "text",
+          "filename": "虚构选购结构参考-REAL-H02.txt",
+          "location_type": "page",
+          "evidence_role": "expression_reference",
+          "content_kind": "text",
+          "source_scope": "current_account",
+          "body_kind": "text",
+          "classification": {
+            "domains": [
+              "furniture"
+            ],
+            "channel": "xiaohongshu",
+            "format": "note",
+            "material_type": "example",
+            "origin": "user"
+          },
+          "case_ref": null,
+          "score": 1.349146,
+          "semantic_score": null,
+          "retrieval_mode": "bm25",
+          "topic_coverage": 0.0,
+          "material_type": "example",
+          "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+        },
+        {
+          "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+          "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+          "version": 1,
+          "page": 1,
+          "offset": 0,
+          "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是边桌摆放。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+          "title": "虚构选购结构参考-REAL-H01",
+          "url": "",
+          "source_type": "text",
+          "filename": "虚构选购结构参考-REAL-H01.txt",
+          "location_type": "page",
+          "evidence_role": "expression_reference",
+          "content_kind": "text",
+          "source_scope": "current_account",
+          "body_kind": "text",
+          "classification": {
+            "domains": [
+              "furniture"
+            ],
+            "channel": "xiaohongshu",
+            "format": "note",
+            "material_type": "example",
+            "origin": "user"
+          },
+          "case_ref": null,
+          "score": 1.210829,
+          "semantic_score": null,
+          "retrieval_mode": "bm25",
+          "topic_coverage": 0.0,
+          "material_type": "example",
+          "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+        }
+      ],
+      "filters": {
+        "methods": {
+          "owner": "[已隐去]",
+          "account_id": "[已隐去]",
+          "material_type": "method",
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "allow_general": true,
+          "document_ids": null,
+          "enabled": true,
+          "candidate_count": 0,
+          "vector_query": "图文笔记 原创写作 开篇 节奏 结构 表达 行动引导",
+          "retrieval_mode": "bm25",
+          "vector_candidate_count": 0,
+          "lexical_candidate_count": 0
+        },
+        "examples": {
+          "owner": "[已隐去]",
+          "account_id": "[已隐去]",
+          "material_type": "example",
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "allow_general": false,
+          "document_ids": null,
+          "enabled": true,
+          "candidate_count": 2,
+          "vector_query": "家具 图文笔记 开篇 结构 表达",
+          "retrieval_mode": "bm25",
+          "vector_candidate_count": 0,
+          "lexical_candidate_count": 2
+        },
+        "facts": {
+          "owner": "[已隐去]",
+          "account_id": "[已隐去]",
+          "material_type": "fact",
+          "domains": [
+            "furniture"
+          ],
+          "channel": null,
+          "format": null,
+          "allow_general": false,
+          "document_ids": null,
+          "enabled": false,
+          "candidate_count": 0,
+          "vector_query": "宜家BILLY加高书架选前尺寸与固定提醒",
+          "retrieval_mode": "disabled",
+          "vector_candidate_count": 0,
+          "lexical_candidate_count": 0
+        }
+      },
+      "gaps": [
+        {
+          "code": "VECTOR_UNAVAILABLE",
+          "detail": "本地语义检索已关闭，使用 BM25",
+          "fallback": "bm25"
+        },
+        {
+          "code": "NO_MATCHING_METHODS",
+          "group": "methods",
+          "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+        }
+      ],
+      "insufficient": true,
+      "context_chars": 377,
+      "limits": {
+        "limits": {
+          "methods": 2,
+          "examples": 3,
+          "facts": 4
+        },
+        "total_chars": 5200,
+        "chunk_chars": 700
+      },
+      "embedding_note": "本地语义检索已关闭，使用 BM25；缺失或不可用向量组已降级为限定范围 BM25；不是语义向量结果"
+    },
+    "retrieval": {
+      "engine": "filtered-bm25-zh-bigram-v1",
+      "reranker": "bm25-zh-bigram-v1",
+      "classification": {
+        "domains": [
+          "furniture"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "word_count": 300,
+        "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+        "origin": "user",
+        "ambiguities": []
+      },
+      "groups": {
+        "methods": [],
+        "examples": [
+          {
+            "source_id": "kb:f218e725-66dd-415c-962b-aaa4df6ba98e",
+            "document_id": "b8ff7148-6b21-452c-b337-6836e0e315d0",
+            "version": 1,
+            "page": 1,
+            "offset": 0,
+            "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是抽屉分区。\n\n整理抽屉分区时，先保留可核对的信息，再决定文章顺序。\n\n材料中列出三个字段，分别是名称、位置和手工标签。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。",
+            "title": "虚构选购结构参考-REAL-H02",
+            "url": "",
+            "source_type": "text",
+            "filename": "虚构选购结构参考-REAL-H02.txt",
+            "location_type": "page",
+            "evidence_role": "expression_reference",
+            "content_kind": "text",
+            "source_scope": "current_account",
+            "body_kind": "text",
+            "classification": {
+              "domains": [
+                "furniture"
+              ],
+              "channel": "xiaohongshu",
+              "format": "note",
+              "material_type": "example",
+              "origin": "user"
+            },
+            "case_ref": null,
+            "score": 1.349146,
+            "semantic_score": null,
+            "retrieval_mode": "bm25",
+            "topic_coverage": 0.0,
+            "material_type": "example",
+            "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+          },
+          {
+            "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+            "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+            "version": 1,
+            "page": 1,
+            "offset": 0,
+            "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是边桌摆放。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+            "title": "虚构选购结构参考-REAL-H01",
+            "url": "",
+            "source_type": "text",
+            "filename": "虚构选购结构参考-REAL-H01.txt",
+            "location_type": "page",
+            "evidence_role": "expression_reference",
+            "content_kind": "text",
+            "source_scope": "current_account",
+            "body_kind": "text",
+            "classification": {
+              "domains": [
+                "furniture"
+              ],
+              "channel": "xiaohongshu",
+              "format": "note",
+              "material_type": "example",
+              "origin": "user"
+            },
+            "case_ref": null,
+            "score": 1.210829,
+            "semantic_score": null,
+            "retrieval_mode": "bm25",
+            "topic_coverage": 0.0,
+            "material_type": "example",
+            "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+          }
+        ],
+        "facts": []
+      },
+      "sources": [
+        {
+          "source_id": "kb:f218e725-66dd-415c-962b-aaa4df6ba98e",
+          "document_id": "b8ff7148-6b21-452c-b337-6836e0e315d0",
+          "version": 1,
+          "page": 1,
+          "offset": 0,
+          "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是抽屉分区。\n\n整理抽屉分区时，先保留可核对的信息，再决定文章顺序。\n\n材料中列出三个字段，分别是名称、位置和手工标签。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。",
+          "title": "虚构选购结构参考-REAL-H02",
+          "url": "",
+          "source_type": "text",
+          "filename": "虚构选购结构参考-REAL-H02.txt",
+          "location_type": "page",
+          "evidence_role": "expression_reference",
+          "content_kind": "text",
+          "source_scope": "current_account",
+          "body_kind": "text",
+          "classification": {
+            "domains": [
+              "furniture"
+            ],
+            "channel": "xiaohongshu",
+            "format": "note",
+            "material_type": "example",
+            "origin": "user"
+          },
+          "case_ref": null,
+          "score": 1.349146,
+          "semantic_score": null,
+          "retrieval_mode": "bm25",
+          "topic_coverage": 0.0,
+          "material_type": "example",
+          "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+        },
+        {
+          "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+          "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+          "version": 1,
+          "page": 1,
+          "offset": 0,
+          "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是边桌摆放。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+          "title": "虚构选购结构参考-REAL-H01",
+          "url": "",
+          "source_type": "text",
+          "filename": "虚构选购结构参考-REAL-H01.txt",
+          "location_type": "page",
+          "evidence_role": "expression_reference",
+          "content_kind": "text",
+          "source_scope": "current_account",
+          "body_kind": "text",
+          "classification": {
+            "domains": [
+              "furniture"
+            ],
+            "channel": "xiaohongshu",
+            "format": "note",
+            "material_type": "example",
+            "origin": "user"
+          },
+          "case_ref": null,
+          "score": 1.210829,
+          "semantic_score": null,
+          "retrieval_mode": "bm25",
+          "topic_coverage": 0.0,
+          "material_type": "example",
+          "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+        }
+      ],
+      "filters": {
+        "methods": {
+          "owner": "[已隐去]",
+          "account_id": "[已隐去]",
+          "material_type": "method",
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "allow_general": true,
+          "document_ids": null,
+          "enabled": true,
+          "candidate_count": 0,
+          "vector_query": "图文笔记 原创写作 开篇 节奏 结构 表达 行动引导",
+          "retrieval_mode": "bm25",
+          "vector_candidate_count": 0,
+          "lexical_candidate_count": 0
+        },
+        "examples": {
+          "owner": "[已隐去]",
+          "account_id": "[已隐去]",
+          "material_type": "example",
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "allow_general": false,
+          "document_ids": null,
+          "enabled": true,
+          "candidate_count": 2,
+          "vector_query": "家具 图文笔记 开篇 结构 表达",
+          "retrieval_mode": "bm25",
+          "vector_candidate_count": 0,
+          "lexical_candidate_count": 2
+        },
+        "facts": {
+          "owner": "[已隐去]",
+          "account_id": "[已隐去]",
+          "material_type": "fact",
+          "domains": [
+            "furniture"
+          ],
+          "channel": null,
+          "format": null,
+          "allow_general": false,
+          "document_ids": null,
+          "enabled": false,
+          "candidate_count": 0,
+          "vector_query": "宜家BILLY加高书架选前尺寸与固定提醒",
+          "retrieval_mode": "disabled",
+          "vector_candidate_count": 0,
+          "lexical_candidate_count": 0
+        }
+      },
+      "gaps": [
+        {
+          "code": "VECTOR_UNAVAILABLE",
+          "detail": "本地语义检索已关闭，使用 BM25",
+          "fallback": "bm25"
+        },
+        {
+          "code": "NO_MATCHING_METHODS",
+          "group": "methods",
+          "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+        }
+      ],
+      "insufficient": true,
+      "context_chars": 377,
+      "limits": {
+        "limits": {
+          "methods": 2,
+          "examples": 3,
+          "facts": 4
+        },
+        "total_chars": 5200,
+        "chunk_chars": 700
+      },
+      "embedding_note": "本地语义检索已关闭，使用 BM25；缺失或不可用向量组已降级为限定范围 BM25；不是语义向量结果"
+    },
+    "evidence": [
+      {
+        "source_id": "kb:f218e725-66dd-415c-962b-aaa4df6ba98e",
+        "document_id": "b8ff7148-6b21-452c-b337-6836e0e315d0",
+        "version": 1,
+        "page": 1,
+        "offset": 0,
+        "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是抽屉分区。\n\n整理抽屉分区时，先保留可核对的信息，再决定文章顺序。\n\n材料中列出三个字段，分别是名称、位置和手工标签。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。",
+        "title": "虚构选购结构参考-REAL-H02",
+        "url": "",
+        "source_type": "text",
+        "filename": "虚构选购结构参考-REAL-H02.txt",
+        "location_type": "page",
+        "evidence_role": "expression_reference",
+        "content_kind": "text",
+        "source_scope": "current_account",
+        "body_kind": "text",
+        "classification": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example",
+          "origin": "user"
+        },
+        "case_ref": null,
+        "score": 1.349146,
+        "semantic_score": null,
+        "retrieval_mode": "bm25",
+        "topic_coverage": 0.0,
+        "material_type": "example",
+        "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+      },
+      {
+        "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+        "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+        "version": 1,
+        "page": 1,
+        "offset": 0,
+        "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是边桌摆放。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+        "title": "虚构选购结构参考-REAL-H01",
+        "url": "",
+        "source_type": "text",
+        "filename": "虚构选购结构参考-REAL-H01.txt",
+        "location_type": "page",
+        "evidence_role": "expression_reference",
+        "content_kind": "text",
+        "source_scope": "current_account",
+        "body_kind": "text",
+        "classification": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example",
+          "origin": "user"
+        },
+        "case_ref": null,
+        "score": 1.210829,
+        "semantic_score": null,
+        "retrieval_mode": "bm25",
+        "topic_coverage": 0.0,
+        "material_type": "example",
+        "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+      }
+    ],
+    "runtime_execution": {
+      "mode": "automatic"
+    }
+  },
+  "artifacts": [
+    {
+      "stage": "strategy",
+      "value": {
+        "angle": "聚焦选前必核的3个硬参数：型号、尺寸、固定前提",
+        "reader": "正比价下单的宜家BILLY加高书架新手，怕买错/装不稳",
+        "promise": "只列货号895.452.91对应的真实尺寸（237cm）、单层承重（30kg）、必须上墙+预留顶部操作空间这三项确定信息",
+        "tone": "清楚自然克制",
+        "assumptions": [
+          "读者未查过官方页面",
+          "读者可能混淆202cm与237cm版本",
+          "读者易忽略固定是强制安全要求"
+        ],
+        "candidate_angles": [
+          "选前必核三参数清单",
+          "加高版避坑三事实"
+        ],
+        "cta": "收藏前请确认货号和墙面条件",
+        "why_account": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：借鉴‘信息多但缺比较线索’开篇逻辑，改写为‘选前必核’结构；kb:f218e725-66dd-415c-962b-aaa4df6ba98e：采用‘已知/待确认’分栏思维，本题仅呈现已知项，不虚构待确认内容",
+        "content_brief": {
+          "account_id": "[已隐去]",
+          "profile_revision": 1,
+          "goal": "先验证内容是否对目标受众有用",
+          "core_viewpoint": "聚焦选前必核的3个硬参数：型号、尺寸、固定前提",
+          "audience": "正比价下单的宜家BILLY加高书架新手，怕买错/装不稳",
+          "content_type": "图文笔记",
+          "hook_options": [
+            "选前必核三参数清单",
+            "加高版避坑三事实"
+          ],
+          "evidence_scope": "引用用户素材与检索原文；历史表现与竞品观察不能证明正文事实",
+          "cta": "收藏前请确认货号和墙面条件",
+          "banned": "",
+          "publishing_window": "由用户安排；暂无经过验证的最佳发布时间",
+          "recommendation_reason": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：借鉴‘信息多但缺比较线索’开篇逻辑，改写为‘选前必核’结构；kb:f218e725-66dd-415c-962b-aaa4df6ba98e：采用‘已知/待确认’分栏思维，本题仅呈现已知项，不虚构待确认内容"
+        },
+        "learning_refs": [],
+        "next_experiments": []
+      },
+      "snapshot_id": "40456cd0-2956-4be3-85e8-98c17e62fa2b"
+    },
+    {
+      "stage": "outline",
+      "value": [
+        "明确货号895.452.91对应237cm加高版，非常见202cm款",
+        "单层搁板承重30kg，非整柜可叠加承重",
+        "必须上墙固定，且柜顶需预留操作空间"
+      ],
+      "snapshot_id": "40456cd0-2956-4be3-85e8-98c17e62fa2b"
+    }
+  ],
+  "node_runs": [
+    {
+      "id": "57063073-199a-4a60-aed0-1d743cc8020b",
+      "agent": "research",
+      "stage": "research",
+      "mode": "live",
+      "snapshot_id": "40456cd0-2956-4be3-85e8-98c17e62fa2b",
+      "input": {
+        "brief": {
+          "topic": "宜家BILLY加高书架选前尺寸与固定提醒",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "tone": "清楚自然克制",
+          "allow_hypothesis": false
+        },
+        "materials": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象是货号895.452.91的白色BILLY加高组合，含加高件。\nF2：组合宽80厘米、深28厘米、高237厘米，不是202厘米版本。\nF3：页面列明每块搁板最大承重30公斤；这不是整个柜体可任意加总的承重声明。\nF4：官方要求安全固定产品，采用合适螺丝和螺栓；不确定应咨询专业人士，并在柜顶与天花板之间预留固定操作空间。\n【完整限制】材料没有具体墙体类型、适用紧固件型号、顶部最小间距数值或作者安装实测，不可替读者编一个通用螺栓方案或精确预留厘米数。柜顶和天花板的操作空间要求不能省略；不能把包装高度或普通202厘米版本的数据混入。价格、库存及本次用户现场条件均未核验。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          }
+        ],
+        "current_date": "2026-11-03",
+        "date_timezone": "Asia/Shanghai",
+        "retrieved_references": [
+          {
+            "source_id": "kb:f218e725-66dd-415c-962b-aaa4df6ba98e",
+            "title": "虚构选购结构参考-REAL-H02",
+            "url": "",
+            "document_id": "b8ff7148-6b21-452c-b337-6836e0e315d0",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          },
+          {
+            "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+            "title": "虚构选购结构参考-REAL-H01",
+            "url": "",
+            "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          }
+        ],
+        "creation_classification": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "creation_retrieval": {
+          "methods": [],
+          "examples": [
+            {
+              "source_id": "kb:f218e725-66dd-415c-962b-aaa4df6ba98e",
+              "source_type": "text",
+              "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是抽屉分区。\n\n整理抽屉分区时，先保留可核对的信息，再决定文章顺序。\n\n材料中列出三个字段，分别是名称、位置和手工标签。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-H02",
+              "url": "",
+              "document_id": "b8ff7148-6b21-452c-b337-6836e0e315d0",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "furniture"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            },
+            {
+              "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+              "source_type": "text",
+              "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是边桌摆放。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-H01",
+              "url": "",
+              "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "furniture"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            }
+          ],
+          "facts": [
+            {
+              "source_id": "user-material"
+            }
+          ],
+          "gaps": [
+            {
+              "code": "VECTOR_UNAVAILABLE",
+              "detail": "本地语义检索已关闭，使用 BM25",
+              "fallback": "bm25"
+            },
+            {
+              "code": "NO_MATCHING_METHODS",
+              "group": "methods",
+              "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+            }
+          ]
+        },
+        "web_research": {
+          "status": "not_requested",
+          "reads": [],
+          "limitation": "本任务没有实际执行联网调查，不能自称已查询官网或媒体。"
+        },
+        "material_policy": "available_only",
+        "material_policy_version": "available-only-v1",
+        "operations": {
+          "platform": "xiaohongshu",
+          "account": "我的账号",
+          "account_id": "[已隐去]",
+          "hypothesis_id": null,
+          "profile": {
+            "id": "5285e961-e866-5533-b51e-87cd6014586e",
+            "name": "我的账号",
+            "platform": "xiaohongshu",
+            "aliases": [
+              "我的账号"
+            ],
+            "revision": 1,
+            "profile": {
+              "positioning": "",
+              "audience": "",
+              "tone": "",
+              "pillars": "",
+              "goal": "",
+              "resources": "",
+              "banned": "",
+              "weekly_frequency": 3
+            },
+            "revisions": []
+          },
+          "trend": null,
+          "memories": [],
+          "active_hypothesis": null,
+          "experiment_memory": [],
+          "history": [],
+          "metrics": [],
+          "competitors": [],
+          "preferences": []
+        }
+      },
+      "output": {
+        "core_gap": false,
+        "gaps": [],
+        "facts": [
+          {
+            "source_id": "user-material",
+            "quote": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象是货号895.452.91的白色BILLY加高组合，含加高件。\nF2：组合宽80厘米、深28厘米、高237厘米，不是202厘米版本。\nF3：页面列明每块搁板最大承重30公斤；这不是整个柜体可任意加总的承重声明。\nF4：官方要求安全固定产品，采用合适螺丝和螺栓；不确定应咨询专业人士，并在柜顶与天花板之间预留固定操作空间。\n【完整限制】材料没有具体墙体类型、适用紧固件型号、顶部最小间距数值或作者安装实测，不可替读者编一个通用螺栓方案或精确预留厘米数。柜顶和天花板的操作空间要求不能省略；不能把包装高度或普通202厘米版本的数据混入。价格、库存及本次用户现场条件均未核验。"
+          }
+        ],
+        "prohibited_claims": [
+          "kb:f218e725-66dd-415c-962b-aaa4df6ba98e：仅借鉴‘先分已知/待确认’结构与‘买前问小问题’开篇句式；不可移植虚构场景中的抽屉/边桌内容、效果结论或手工标签等非本题事实",
+          "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：仅借鉴‘信息多但缺比较线索’表述逻辑与清单分栏思路；不可移植连接选项、兼容性结论或收藏引导话术"
+        ],
+        "sources": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象是货号895.452.91的白色BILLY加高组合，含加高件。\nF2：组合宽80厘米、深28厘米、高237厘米，不是202厘米版本。\nF3：页面列明每块搁板最大承重30公斤；这不是整个柜体可任意加总的承重声明。\nF4：官方要求安全固定产品，采用合适螺丝和螺栓；不确定应咨询专业人士，并在柜顶与天花板之间预留固定操作空间。\n【完整限制】材料没有具体墙体类型、适用紧固件型号、顶部最小间距数值或作者安装实测，不可替读者编一个通用螺栓方案或精确预留厘米数。柜顶和天花板的操作空间要求不能省略；不能把包装高度或普通202厘米版本的数据混入。价格、库存及本次用户现场条件均未核验。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          },
+          {
+            "source_id": "kb:f218e725-66dd-415c-962b-aaa4df6ba98e",
+            "source_type": "text",
+            "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是抽屉分区。\n\n整理抽屉分区时，先保留可核对的信息，再决定文章顺序。\n\n材料中列出三个字段，分别是名称、位置和手工标签。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。",
+            "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+            "page": 1,
+            "title": "虚构选购结构参考-REAL-H02",
+            "url": "",
+            "document_id": "b8ff7148-6b21-452c-b337-6836e0e315d0",
+            "version": 1,
+            "location_type": "page",
+            "offset": 0,
+            "evidence_role": "expression_reference",
+            "content_kind": "text",
+            "source_scope": "current_account",
+            "case_ref": null,
+            "material_type": "example",
+            "classification": {
+              "domains": [
+                "furniture"
+              ],
+              "channel": "xiaohongshu",
+              "format": "note",
+              "material_type": "example",
+              "origin": "user"
+            }
+          },
+          {
+            "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+            "source_type": "text",
+            "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是边桌摆放。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+            "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+            "page": 1,
+            "title": "虚构选购结构参考-REAL-H01",
+            "url": "",
+            "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+            "version": 1,
+            "location_type": "page",
+            "offset": 0,
+            "evidence_role": "expression_reference",
+            "content_kind": "text",
+            "source_scope": "current_account",
+            "case_ref": null,
+            "material_type": "example",
+            "classification": {
+              "domains": [
+                "furniture"
+              ],
+              "channel": "xiaohongshu",
+              "format": "note",
+              "material_type": "example",
+              "origin": "user"
+            }
+          }
+        ],
+        "scope": "分析用户素材与检索到的原文快照；引用逐字校验，事实未独立核实",
+        "topic_card": {
+          "topic": "宜家BILLY加高书架选前尺寸与固定提醒",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "why_now": "自主选题，暂无可核验的时效依据",
+          "evidence": [],
+          "account_fit": "账号定位尚待补充",
+          "risk": [
+            "kb:f218e725-66dd-415c-962b-aaa4df6ba98e：仅借鉴‘先分已知/待确认’结构与‘买前问小问题’开篇句式；不可移植虚构场景中的抽屉/边桌内容、效果结论或手工标签等非本题事实",
+            "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：仅借鉴‘信息多但缺比较线索’表述逻辑与清单分栏思路；不可移植连接选项、兼容性结论或收藏引导话术"
+          ],
+          "content_angles": [
+            "结合真实场景解释问题",
+            "整理可验证的尝试步骤"
+          ],
+          "limitation": "选题卡基于用户线索；没有自动抓取、热度统计或时效核实。"
+        }
+      },
+      "duration_ms": 13138,
+      "model_calls": 1,
+      "tokens": 4091,
+      "cost": null,
+      "call_id": "581b2131-92a4-4b46-889e-6bd7871bc8d7",
+      "tools": [
+        "knowledge_snapshot"
+      ],
+      "memory": "读取本任务的账号与证据快照"
+    },
+    {
+      "id": "3781a3d3-e5be-404a-8892-8797b322ca0e",
+      "agent": "audience",
+      "stage": "audience",
+      "mode": "live",
+      "snapshot_id": "40456cd0-2956-4be3-85e8-98c17e62fa2b",
+      "input": {
+        "brief": {
+          "topic": "宜家BILLY加高书架选前尺寸与固定提醒",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "tone": "清楚自然克制",
+          "allow_hypothesis": false
+        },
+        "materials": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象是货号895.452.91的白色BILLY加高组合，含加高件。\nF2：组合宽80厘米、深28厘米、高237厘米，不是202厘米版本。\nF3：页面列明每块搁板最大承重30公斤；这不是整个柜体可任意加总的承重声明。\nF4：官方要求安全固定产品，采用合适螺丝和螺栓；不确定应咨询专业人士，并在柜顶与天花板之间预留固定操作空间。\n【完整限制】材料没有具体墙体类型、适用紧固件型号、顶部最小间距数值或作者安装实测，不可替读者编一个通用螺栓方案或精确预留厘米数。柜顶和天花板的操作空间要求不能省略；不能把包装高度或普通202厘米版本的数据混入。价格、库存及本次用户现场条件均未核验。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          }
+        ],
+        "current_date": "2026-11-03",
+        "date_timezone": "Asia/Shanghai",
+        "retrieved_references": [
+          {
+            "source_id": "kb:f218e725-66dd-415c-962b-aaa4df6ba98e",
+            "title": "虚构选购结构参考-REAL-H02",
+            "url": "",
+            "document_id": "b8ff7148-6b21-452c-b337-6836e0e315d0",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          },
+          {
+            "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+            "title": "虚构选购结构参考-REAL-H01",
+            "url": "",
+            "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          }
+        ],
+        "creation_classification": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "creation_retrieval": {
+          "methods": [],
+          "examples": [
+            {
+              "source_id": "kb:f218e725-66dd-415c-962b-aaa4df6ba98e",
+              "source_type": "text",
+              "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是抽屉分区。\n\n整理抽屉分区时，先保留可核对的信息，再决定文章顺序。\n\n材料中列出三个字段，分别是名称、位置和手工标签。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-H02",
+              "url": "",
+              "document_id": "b8ff7148-6b21-452c-b337-6836e0e315d0",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "furniture"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            },
+            {
+              "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+              "source_type": "text",
+              "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是边桌摆放。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-H01",
+              "url": "",
+              "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "furniture"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            }
+          ],
+          "facts": [
+            {
+              "source_id": "user-material"
+            }
+          ],
+          "gaps": [
+            {
+              "code": "VECTOR_UNAVAILABLE",
+              "detail": "本地语义检索已关闭，使用 BM25",
+              "fallback": "bm25"
+            },
+            {
+              "code": "NO_MATCHING_METHODS",
+              "group": "methods",
+              "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+            }
+          ]
+        },
+        "web_research": {
+          "status": "not_requested",
+          "reads": [],
+          "limitation": "本任务没有实际执行联网调查，不能自称已查询官网或媒体。"
+        },
+        "material_policy": "available_only",
+        "material_policy_version": "available-only-v1",
+        "operations": {
+          "platform": "xiaohongshu",
+          "account": "我的账号",
+          "account_id": "[已隐去]",
+          "hypothesis_id": null,
+          "profile": {
+            "id": "5285e961-e866-5533-b51e-87cd6014586e",
+            "name": "我的账号",
+            "platform": "xiaohongshu",
+            "aliases": [
+              "我的账号"
+            ],
+            "revision": 1,
+            "profile": {
+              "positioning": "",
+              "audience": "",
+              "tone": "",
+              "pillars": "",
+              "goal": "",
+              "resources": "",
+              "banned": "",
+              "weekly_frequency": 3
+            },
+            "revisions": []
+          },
+          "trend": null,
+          "memories": [],
+          "active_hypothesis": null,
+          "experiment_memory": [],
+          "history": [],
+          "metrics": [],
+          "competitors": [],
+          "preferences": []
+        }
+      },
+      "output": {
+        "primary_audience": "小红书上关注家居选购、正考虑入手宜家BILLY加高书架的普通用户及中小创作者",
+        "basis": "kb:f218e725-66dd-415c-962b-aaa4df6ba98e：借鉴其‘先分已知/待确认’结构与克制开篇语气；不移植虚构场景或抽屉分区逻辑，仅复用信息分栏思路",
+        "pain_points": [
+          "查不到加高版确切尺寸怕买错",
+          "担心承重被夸大影响安全",
+          "忽略固定要求导致安装隐患"
+        ],
+        "content_opportunities": [
+          "明确标出货号895.452.91对应尺寸237cm（非202cm）",
+          "强调单层搁板30kg≠整柜可叠加承重",
+          "点出柜顶需预留操作空间，且必须上墙固定"
+        ],
+        "observations": [],
+        "sample_size": 0,
+        "confidence": "low",
+        "status": "needs_data",
+        "account_context": {
+          "account_id": "[已隐去]",
+          "profile_revision": 1
+        },
+        "history_refs": [],
+        "competitor_observations": [],
+        "evidence_limit": "历史仅为描述性记录；偏好与传播效果分开，竞品观察未经独立核验。"
+      },
+      "duration_ms": 19793,
+      "model_calls": 1,
+      "tokens": 3743,
+      "cost": null,
+      "call_id": "3c1bf709-1882-45e4-b2d3-ccc994d2dfef",
+      "tools": [
+        "knowledge_snapshot"
+      ],
+      "memory": "读取本任务的账号与证据快照"
+    },
+    {
+      "id": "a42a840c-eedb-4ff3-b899-b8263a21f3e0",
+      "agent": "content",
+      "stage": "strategy",
+      "mode": "live",
+      "snapshot_id": "40456cd0-2956-4be3-85e8-98c17e62fa2b",
+      "input": {
+        "brief": {
+          "topic": "宜家BILLY加高书架选前尺寸与固定提醒",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "tone": "清楚自然克制",
+          "allow_hypothesis": false
+        },
+        "materials": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象是货号895.452.91的白色BILLY加高组合，含加高件。\nF2：组合宽80厘米、深28厘米、高237厘米，不是202厘米版本。\nF3：页面列明每块搁板最大承重30公斤；这不是整个柜体可任意加总的承重声明。\nF4：官方要求安全固定产品，采用合适螺丝和螺栓；不确定应咨询专业人士，并在柜顶与天花板之间预留固定操作空间。\n【完整限制】材料没有具体墙体类型、适用紧固件型号、顶部最小间距数值或作者安装实测，不可替读者编一个通用螺栓方案或精确预留厘米数。柜顶和天花板的操作空间要求不能省略；不能把包装高度或普通202厘米版本的数据混入。价格、库存及本次用户现场条件均未核验。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          }
+        ],
+        "current_date": "2026-11-03",
+        "date_timezone": "Asia/Shanghai",
+        "retrieved_references": [
+          {
+            "source_id": "kb:f218e725-66dd-415c-962b-aaa4df6ba98e",
+            "title": "虚构选购结构参考-REAL-H02",
+            "url": "",
+            "document_id": "b8ff7148-6b21-452c-b337-6836e0e315d0",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          },
+          {
+            "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+            "title": "虚构选购结构参考-REAL-H01",
+            "url": "",
+            "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          }
+        ],
+        "creation_classification": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "creation_retrieval": {
+          "methods": [],
+          "examples": [
+            {
+              "source_id": "kb:f218e725-66dd-415c-962b-aaa4df6ba98e",
+              "source_type": "text",
+              "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是抽屉分区。\n\n整理抽屉分区时，先保留可核对的信息，再决定文章顺序。\n\n材料中列出三个字段，分别是名称、位置和手工标签。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-H02",
+              "url": "",
+              "document_id": "b8ff7148-6b21-452c-b337-6836e0e315d0",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "furniture"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            },
+            {
+              "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+              "source_type": "text",
+              "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是边桌摆放。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-H01",
+              "url": "",
+              "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "furniture"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            }
+          ],
+          "facts": [
+            {
+              "source_id": "user-material"
+            }
+          ],
+          "gaps": [
+            {
+              "code": "VECTOR_UNAVAILABLE",
+              "detail": "本地语义检索已关闭，使用 BM25",
+              "fallback": "bm25"
+            },
+            {
+              "code": "NO_MATCHING_METHODS",
+              "group": "methods",
+              "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+            }
+          ]
+        },
+        "web_research": {
+          "status": "not_requested",
+          "reads": [],
+          "limitation": "本任务没有实际执行联网调查，不能自称已查询官网或媒体。"
+        },
+        "branches": {
+          "audience": {
+            "data": {
+              "primary_audience": "小红书上关注家居选购、正考虑入手宜家BILLY加高书架的普通用户及中小创作者",
+              "sample_size": 0,
+              "confidence": "low",
+              "status": "needs_data",
+              "pain_points": [
+                "查不到加高版确切尺寸怕买错",
+                "担心承重被夸大影响安全",
+                "忽略固定要求导致安装隐患"
+              ],
+              "content_opportunities": [
+                "明确标出货号895.452.91对应尺寸237cm（非202cm）",
+                "强调单层搁板30kg≠整柜可叠加承重",
+                "点出柜顶需预留操作空间，且必须上墙固定"
+              ]
+            }
+          },
+          "research": {
+            "data": {
+              "core_gap": false,
+              "gaps": [],
+              "prohibited_claims": [
+                "kb:f218e725-66dd-415c-962b-aaa4df6ba98e：仅借鉴‘先分已知/待确认’结构与‘买前问小问题’开篇句式；不可移植虚构场景中的抽屉/边桌内容、效果结论或手工标签等非本题事实",
+                "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：仅借鉴‘信息多但缺比较线索’表述逻辑与清单分栏思路；不可移植连接选项、兼容性结论或收藏引导话术"
+              ]
+            }
+          }
+        },
+        "upstream": {},
+        "material_policy": "available_only",
+        "material_policy_version": "available-only-v1",
+        "operations": {
+          "platform": "xiaohongshu",
+          "account": "我的账号",
+          "account_id": "[已隐去]",
+          "hypothesis_id": null,
+          "profile": {
+            "id": "5285e961-e866-5533-b51e-87cd6014586e",
+            "name": "我的账号",
+            "platform": "xiaohongshu",
+            "aliases": [
+              "我的账号"
+            ],
+            "revision": 1,
+            "profile": {
+              "positioning": "",
+              "audience": "",
+              "tone": "",
+              "pillars": "",
+              "goal": "",
+              "resources": "",
+              "banned": "",
+              "weekly_frequency": 3
+            },
+            "revisions": []
+          },
+          "trend": null,
+          "memories": [],
+          "active_hypothesis": null,
+          "experiment_memory": [],
+          "history": [],
+          "metrics": [],
+          "competitors": [],
+          "preferences": []
+        }
+      },
+      "output": {
+        "angle": "聚焦选前必核的3个硬参数：型号、尺寸、固定前提",
+        "reader": "正比价下单的宜家BILLY加高书架新手，怕买错/装不稳",
+        "promise": "只列货号895.452.91对应的真实尺寸（237cm）、单层承重（30kg）、必须上墙+预留顶部操作空间这三项确定信息",
+        "tone": "清楚自然克制",
+        "assumptions": [
+          "读者未查过官方页面",
+          "读者可能混淆202cm与237cm版本",
+          "读者易忽略固定是强制安全要求"
+        ],
+        "candidate_angles": [
+          "选前必核三参数清单",
+          "加高版避坑三事实"
+        ],
+        "cta": "收藏前请确认货号和墙面条件",
+        "why_account": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：借鉴‘信息多但缺比较线索’开篇逻辑，改写为‘选前必核’结构；kb:f218e725-66dd-415c-962b-aaa4df6ba98e：采用‘已知/待确认’分栏思维，本题仅呈现已知项，不虚构待确认内容",
+        "content_brief": {
+          "account_id": "[已隐去]",
+          "profile_revision": 1,
+          "goal": "先验证内容是否对目标受众有用",
+          "core_viewpoint": "聚焦选前必核的3个硬参数：型号、尺寸、固定前提",
+          "audience": "正比价下单的宜家BILLY加高书架新手，怕买错/装不稳",
+          "content_type": "图文笔记",
+          "hook_options": [
+            "选前必核三参数清单",
+            "加高版避坑三事实"
+          ],
+          "evidence_scope": "引用用户素材与检索原文；历史表现与竞品观察不能证明正文事实",
+          "cta": "收藏前请确认货号和墙面条件",
+          "banned": "",
+          "publishing_window": "由用户安排；暂无经过验证的最佳发布时间",
+          "recommendation_reason": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：借鉴‘信息多但缺比较线索’开篇逻辑，改写为‘选前必核’结构；kb:f218e725-66dd-415c-962b-aaa4df6ba98e：采用‘已知/待确认’分栏思维，本题仅呈现已知项，不虚构待确认内容"
+        },
+        "learning_refs": [],
+        "next_experiments": []
+      },
+      "duration_ms": 8969,
+      "model_calls": 1,
+      "tokens": 4161,
+      "cost": null,
+      "call_id": "71357993-bc30-4ff4-9f19-2bd48913305b",
+      "tools": [
+        "knowledge_snapshot"
+      ],
+      "memory": "读取本任务的账号与证据快照"
+    },
+    {
+      "id": "02a1fdd7-7c58-4e00-bc96-124a98d0db7f",
+      "agent": "content",
+      "stage": "outline",
+      "mode": "live",
+      "snapshot_id": "40456cd0-2956-4be3-85e8-98c17e62fa2b",
+      "input": {
+        "brief": {
+          "topic": "宜家BILLY加高书架选前尺寸与固定提醒",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "tone": "清楚自然克制",
+          "allow_hypothesis": false
+        },
+        "materials": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象是货号895.452.91的白色BILLY加高组合，含加高件。\nF2：组合宽80厘米、深28厘米、高237厘米，不是202厘米版本。\nF3：页面列明每块搁板最大承重30公斤；这不是整个柜体可任意加总的承重声明。\nF4：官方要求安全固定产品，采用合适螺丝和螺栓；不确定应咨询专业人士，并在柜顶与天花板之间预留固定操作空间。\n【完整限制】材料没有具体墙体类型、适用紧固件型号、顶部最小间距数值或作者安装实测，不可替读者编一个通用螺栓方案或精确预留厘米数。柜顶和天花板的操作空间要求不能省略；不能把包装高度或普通202厘米版本的数据混入。价格、库存及本次用户现场条件均未核验。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          }
+        ],
+        "current_date": "2026-11-03",
+        "date_timezone": "Asia/Shanghai",
+        "retrieved_references": [
+          {
+            "source_id": "kb:f218e725-66dd-415c-962b-aaa4df6ba98e",
+            "title": "虚构选购结构参考-REAL-H02",
+            "url": "",
+            "document_id": "b8ff7148-6b21-452c-b337-6836e0e315d0",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          },
+          {
+            "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+            "title": "虚构选购结构参考-REAL-H01",
+            "url": "",
+            "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          }
+        ],
+        "creation_classification": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "creation_retrieval": {
+          "methods": [],
+          "examples": [
+            {
+              "source_id": "kb:f218e725-66dd-415c-962b-aaa4df6ba98e",
+              "source_type": "text",
+              "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是抽屉分区。\n\n整理抽屉分区时，先保留可核对的信息，再决定文章顺序。\n\n材料中列出三个字段，分别是名称、位置和手工标签。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-H02",
+              "url": "",
+              "document_id": "b8ff7148-6b21-452c-b337-6836e0e315d0",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "furniture"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            },
+            {
+              "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+              "source_type": "text",
+              "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是边桌摆放。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-H01",
+              "url": "",
+              "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "furniture"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            }
+          ],
+          "facts": [
+            {
+              "source_id": "user-material"
+            }
+          ],
+          "gaps": [
+            {
+              "code": "VECTOR_UNAVAILABLE",
+              "detail": "本地语义检索已关闭，使用 BM25",
+              "fallback": "bm25"
+            },
+            {
+              "code": "NO_MATCHING_METHODS",
+              "group": "methods",
+              "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+            }
+          ]
+        },
+        "web_research": {
+          "status": "not_requested",
+          "reads": [],
+          "limitation": "本任务没有实际执行联网调查，不能自称已查询官网或媒体。"
+        },
+        "branches": {
+          "audience": {
+            "data": {
+              "primary_audience": "小红书上关注家居选购、正考虑入手宜家BILLY加高书架的普通用户及中小创作者",
+              "sample_size": 0,
+              "confidence": "low",
+              "status": "needs_data",
+              "pain_points": [
+                "查不到加高版确切尺寸怕买错",
+                "担心承重被夸大影响安全",
+                "忽略固定要求导致安装隐患"
+              ],
+              "content_opportunities": [
+                "明确标出货号895.452.91对应尺寸237cm（非202cm）",
+                "强调单层搁板30kg≠整柜可叠加承重",
+                "点出柜顶需预留操作空间，且必须上墙固定"
+              ]
+            }
+          },
+          "research": {
+            "data": {
+              "core_gap": false,
+              "gaps": [],
+              "prohibited_claims": [
+                "kb:f218e725-66dd-415c-962b-aaa4df6ba98e：仅借鉴‘先分已知/待确认’结构与‘买前问小问题’开篇句式；不可移植虚构场景中的抽屉/边桌内容、效果结论或手工标签等非本题事实",
+                "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：仅借鉴‘信息多但缺比较线索’表述逻辑与清单分栏思路；不可移植连接选项、兼容性结论或收藏引导话术"
+              ]
+            }
+          }
+        },
+        "upstream": {
+          "strategy": {
+            "angle": "聚焦选前必核的3个硬参数：型号、尺寸、固定前提",
+            "reader": "正比价下单的宜家BILLY加高书架新手，怕买错/装不稳",
+            "promise": "只列货号895.452.91对应的真实尺寸（237cm）、单层承重（30kg）、必须上墙+预留顶部操作空间这三项确定信息",
+            "tone": "清楚自然克制",
+            "assumptions": [
+              "读者未查过官方页面",
+              "读者可能混淆202cm与237cm版本",
+              "读者易忽略固定是强制安全要求"
+            ],
+            "cta": "收藏前请确认货号和墙面条件"
+          }
+        },
+        "material_policy": "available_only",
+        "material_policy_version": "available-only-v1",
+        "operations": {
+          "platform": "xiaohongshu",
+          "account": "我的账号",
+          "account_id": "[已隐去]",
+          "hypothesis_id": null,
+          "profile": {
+            "id": "5285e961-e866-5533-b51e-87cd6014586e",
+            "name": "我的账号",
+            "platform": "xiaohongshu",
+            "aliases": [
+              "我的账号"
+            ],
+            "revision": 1,
+            "profile": {
+              "positioning": "",
+              "audience": "",
+              "tone": "",
+              "pillars": "",
+              "goal": "",
+              "resources": "",
+              "banned": "",
+              "weekly_frequency": 3
+            },
+            "revisions": []
+          },
+          "trend": null,
+          "memories": [],
+          "active_hypothesis": null,
+          "experiment_memory": [],
+          "history": [],
+          "metrics": [],
+          "competitors": [],
+          "preferences": []
+        }
+      },
+      "output": [
+        "明确货号895.452.91对应237cm加高版，非常见202cm款",
+        "单层搁板承重30kg，非整柜可叠加承重",
+        "必须上墙固定，且柜顶需预留操作空间"
+      ],
+      "duration_ms": 4394,
+      "model_calls": 1,
+      "tokens": 4174,
+      "cost": null,
+      "call_id": "6e763722-ee73-43d4-8199-4e873d2f8cf5",
+      "tools": [
+        "knowledge_snapshot"
+      ],
+      "memory": "读取本任务的账号与证据快照"
+    }
+  ],
+  "reviews": [],
+  "branches": {
+    "research": {
+      "snapshot_id": "40456cd0-2956-4be3-85e8-98c17e62fa2b",
+      "data": {
+        "core_gap": false,
+        "gaps": [],
+        "facts": [
+          {
+            "source_id": "user-material",
+            "quote": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象是货号895.452.91的白色BILLY加高组合，含加高件。\nF2：组合宽80厘米、深28厘米、高237厘米，不是202厘米版本。\nF3：页面列明每块搁板最大承重30公斤；这不是整个柜体可任意加总的承重声明。\nF4：官方要求安全固定产品，采用合适螺丝和螺栓；不确定应咨询专业人士，并在柜顶与天花板之间预留固定操作空间。\n【完整限制】材料没有具体墙体类型、适用紧固件型号、顶部最小间距数值或作者安装实测，不可替读者编一个通用螺栓方案或精确预留厘米数。柜顶和天花板的操作空间要求不能省略；不能把包装高度或普通202厘米版本的数据混入。价格、库存及本次用户现场条件均未核验。"
+          }
+        ],
+        "prohibited_claims": [
+          "kb:f218e725-66dd-415c-962b-aaa4df6ba98e：仅借鉴‘先分已知/待确认’结构与‘买前问小问题’开篇句式；不可移植虚构场景中的抽屉/边桌内容、效果结论或手工标签等非本题事实",
+          "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：仅借鉴‘信息多但缺比较线索’表述逻辑与清单分栏思路；不可移植连接选项、兼容性结论或收藏引导话术"
+        ],
+        "sources": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象是货号895.452.91的白色BILLY加高组合，含加高件。\nF2：组合宽80厘米、深28厘米、高237厘米，不是202厘米版本。\nF3：页面列明每块搁板最大承重30公斤；这不是整个柜体可任意加总的承重声明。\nF4：官方要求安全固定产品，采用合适螺丝和螺栓；不确定应咨询专业人士，并在柜顶与天花板之间预留固定操作空间。\n【完整限制】材料没有具体墙体类型、适用紧固件型号、顶部最小间距数值或作者安装实测，不可替读者编一个通用螺栓方案或精确预留厘米数。柜顶和天花板的操作空间要求不能省略；不能把包装高度或普通202厘米版本的数据混入。价格、库存及本次用户现场条件均未核验。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          },
+          {
+            "source_id": "kb:f218e725-66dd-415c-962b-aaa4df6ba98e",
+            "source_type": "text",
+            "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是抽屉分区。\n\n整理抽屉分区时，先保留可核对的信息，再决定文章顺序。\n\n材料中列出三个字段，分别是名称、位置和手工标签。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。",
+            "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+            "page": 1,
+            "title": "虚构选购结构参考-REAL-H02",
+            "url": "",
+            "document_id": "b8ff7148-6b21-452c-b337-6836e0e315d0",
+            "version": 1,
+            "location_type": "page",
+            "offset": 0,
+            "evidence_role": "expression_reference",
+            "content_kind": "text",
+            "source_scope": "current_account",
+            "case_ref": null,
+            "material_type": "example",
+            "classification": {
+              "domains": [
+                "furniture"
+              ],
+              "channel": "xiaohongshu",
+              "format": "note",
+              "material_type": "example",
+              "origin": "user"
+            }
+          },
+          {
+            "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+            "source_type": "text",
+            "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是边桌摆放。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+            "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+            "page": 1,
+            "title": "虚构选购结构参考-REAL-H01",
+            "url": "",
+            "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+            "version": 1,
+            "location_type": "page",
+            "offset": 0,
+            "evidence_role": "expression_reference",
+            "content_kind": "text",
+            "source_scope": "current_account",
+            "case_ref": null,
+            "material_type": "example",
+            "classification": {
+              "domains": [
+                "furniture"
+              ],
+              "channel": "xiaohongshu",
+              "format": "note",
+              "material_type": "example",
+              "origin": "user"
+            }
+          }
+        ],
+        "scope": "分析用户素材与检索到的原文快照；引用逐字校验，事实未独立核实",
+        "topic_card": {
+          "topic": "宜家BILLY加高书架选前尺寸与固定提醒",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "why_now": "自主选题，暂无可核验的时效依据",
+          "evidence": [],
+          "account_fit": "账号定位尚待补充",
+          "risk": [
+            "kb:f218e725-66dd-415c-962b-aaa4df6ba98e：仅借鉴‘先分已知/待确认’结构与‘买前问小问题’开篇句式；不可移植虚构场景中的抽屉/边桌内容、效果结论或手工标签等非本题事实",
+            "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：仅借鉴‘信息多但缺比较线索’表述逻辑与清单分栏思路；不可移植连接选项、兼容性结论或收藏引导话术"
+          ],
+          "content_angles": [
+            "结合真实场景解释问题",
+            "整理可验证的尝试步骤"
+          ],
+          "limitation": "选题卡基于用户线索；没有自动抓取、热度统计或时效核实。"
+        }
+      }
+    },
+    "audience": {
+      "snapshot_id": "40456cd0-2956-4be3-85e8-98c17e62fa2b",
+      "data": {
+        "primary_audience": "小红书上关注家居选购、正考虑入手宜家BILLY加高书架的普通用户及中小创作者",
+        "basis": "kb:f218e725-66dd-415c-962b-aaa4df6ba98e：借鉴其‘先分已知/待确认’结构与克制开篇语气；不移植虚构场景或抽屉分区逻辑，仅复用信息分栏思路",
+        "pain_points": [
+          "查不到加高版确切尺寸怕买错",
+          "担心承重被夸大影响安全",
+          "忽略固定要求导致安装隐患"
+        ],
+        "content_opportunities": [
+          "明确标出货号895.452.91对应尺寸237cm（非202cm）",
+          "强调单层搁板30kg≠整柜可叠加承重",
+          "点出柜顶需预留操作空间，且必须上墙固定"
+        ],
+        "observations": [],
+        "sample_size": 0,
+        "confidence": "low",
+        "status": "needs_data",
+        "account_context": {
+          "account_id": "[已隐去]",
+          "profile_revision": 1
+        },
+        "history_refs": [],
+        "competitor_observations": [],
+        "evidence_limit": "历史仅为描述性记录；偏好与传播效果分开，竞品观察未经独立核验。"
+      }
+    }
+  },
+  "branch_errors": {},
+  "drafts": [],
+  "review": null,
+  "prior_review": null,
+  "accepted_ref": null,
+  "acceptance": null,
+  "events": [
+    {
+      "schema_version": 2,
+      "event_id": "b94c42f3-0dfb-4024-96e1-8883f713c5c3",
+      "run_id": "975cd0aa-11ad-444f-9b91-acd385950cf2",
+      "seq": 1,
+      "occurred_at": "2026-11-03T01:40:45.021351+00:00",
+      "type": "run.queued",
+      "payload": {}
+    },
+    {
+      "schema_version": 2,
+      "event_id": "e12dd4c0-e800-42a7-868c-03cd285f1ccf",
+      "run_id": "975cd0aa-11ad-444f-9b91-acd385950cf2",
+      "seq": 2,
+      "occurred_at": "2026-11-03T01:40:45.041143+00:00",
+      "type": "workflow.transition",
+      "payload": {
+        "run_status": "RUNNING",
+        "wait_reason": null
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "def1944b-2f03-4041-9780-79fe4aa6003c",
+      "run_id": "975cd0aa-11ad-444f-9b91-acd385950cf2",
+      "seq": 3,
+      "occurred_at": "2026-11-03T01:40:45.041148+00:00",
+      "type": "run.started",
+      "payload": {}
+    },
+    {
+      "schema_version": 2,
+      "event_id": "51df007a-15c6-4d4c-9a99-14b505281a37",
+      "run_id": "975cd0aa-11ad-444f-9b91-acd385950cf2",
+      "seq": 4,
+      "occurred_at": "2026-11-03T01:40:45.042253+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "audience",
+        "stage": "audience",
+        "node_key": "2ab9cb6679e9f208c2de293d4165659a4c992aab7c4a823be0d4184a27e7a158",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "42bed814-5c38-4916-861c-6da925c9a45f",
+      "run_id": "975cd0aa-11ad-444f-9b91-acd385950cf2",
+      "seq": 5,
+      "occurred_at": "2026-11-03T01:40:45.043554+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "research",
+        "stage": "research",
+        "node_key": "8415f1fd732557178b0f12ee3afbfdd674d0d211cc52ac3df5c76f54e07013e3",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "6fcb3926-d48e-4caa-bd5c-e5461dc22b15",
+      "run_id": "975cd0aa-11ad-444f-9b91-acd385950cf2",
+      "seq": 6,
+      "occurred_at": "2026-11-03T01:40:58.183244+00:00",
+      "type": "agent.completed",
+      "payload": {
+        "agent": "research",
+        "stage": "research",
+        "mode": "live",
+        "node_ref": "57063073-199a-4a60-aed0-1d743cc8020b"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "0ac6ef6e-834a-4083-822e-d8381ae7c4b6",
+      "run_id": "975cd0aa-11ad-444f-9b91-acd385950cf2",
+      "seq": 7,
+      "occurred_at": "2026-11-03T01:40:58.183276+00:00",
+      "type": "branch.completed",
+      "payload": {
+        "agent": "research"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "bc116193-12ac-41cc-a498-bfe3f5899e73",
+      "run_id": "975cd0aa-11ad-444f-9b91-acd385950cf2",
+      "seq": 8,
+      "occurred_at": "2026-11-03T01:41:04.836677+00:00",
+      "type": "agent.completed",
+      "payload": {
+        "agent": "audience",
+        "stage": "audience",
+        "mode": "live",
+        "node_ref": "3781a3d3-e5be-404a-8892-8797b322ca0e"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "503a61a0-c3c2-445e-9b23-88f1479fc5ce",
+      "run_id": "975cd0aa-11ad-444f-9b91-acd385950cf2",
+      "seq": 9,
+      "occurred_at": "2026-11-03T01:41:04.836702+00:00",
+      "type": "branch.completed",
+      "payload": {
+        "agent": "audience"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "86cff244-df98-4bc9-8ee2-2a8270082697",
+      "run_id": "975cd0aa-11ad-444f-9b91-acd385950cf2",
+      "seq": 10,
+      "occurred_at": "2026-11-03T01:41:04.840585+00:00",
+      "type": "join.completed",
+      "payload": {}
+    },
+    {
+      "schema_version": 2,
+      "event_id": "f0811c02-6ee6-4a29-b162-6649c63607fa",
+      "run_id": "975cd0aa-11ad-444f-9b91-acd385950cf2",
+      "seq": 11,
+      "occurred_at": "2026-11-03T01:41:04.845595+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "content",
+        "stage": "strategy",
+        "node_key": "58cba2a136a68ab173dbc17e7a327ace6234253d91e40ff3fefef47edd1c3900",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "ead81f9f-421a-4cc5-865e-6dbe7ae14d7c",
+      "run_id": "975cd0aa-11ad-444f-9b91-acd385950cf2",
+      "seq": 12,
+      "occurred_at": "2026-11-03T01:41:13.818094+00:00",
+      "type": "agent.completed",
+      "payload": {
+        "agent": "content",
+        "stage": "strategy",
+        "mode": "live",
+        "node_ref": "a42a840c-eedb-4ff3-b899-b8263a21f3e0"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "8b86ca9e-8562-41b6-bf56-ca80c464161e",
+      "run_id": "975cd0aa-11ad-444f-9b91-acd385950cf2",
+      "seq": 13,
+      "occurred_at": "2026-11-03T01:41:13.818120+00:00",
+      "type": "artifact.created",
+      "payload": {
+        "stage": "strategy",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "da3bb25b-9603-43c5-be88-32f405504358",
+      "run_id": "975cd0aa-11ad-444f-9b91-acd385950cf2",
+      "seq": 14,
+      "occurred_at": "2026-11-03T01:41:13.824865+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "content",
+        "stage": "outline",
+        "node_key": "470b6368eaed9c997f070c1ba7277e807fe37831448cafdbfc23e9618edd5117",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "bcf52460-562a-4628-89b4-22987484306a",
+      "run_id": "975cd0aa-11ad-444f-9b91-acd385950cf2",
+      "seq": 15,
+      "occurred_at": "2026-11-03T01:41:18.221727+00:00",
+      "type": "agent.completed",
+      "payload": {
+        "agent": "content",
+        "stage": "outline",
+        "mode": "live",
+        "node_ref": "02a1fdd7-7c58-4e00-bc96-124a98d0db7f"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "92442178-fcee-4fe5-b3c2-b4da99000adb",
+      "run_id": "975cd0aa-11ad-444f-9b91-acd385950cf2",
+      "seq": 16,
+      "occurred_at": "2026-11-03T01:41:18.221748+00:00",
+      "type": "artifact.created",
+      "payload": {
+        "stage": "outline",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "fbd2cba3-d3d9-4228-b70d-7461c7ae7f34",
+      "run_id": "975cd0aa-11ad-444f-9b91-acd385950cf2",
+      "seq": 17,
+      "occurred_at": "2026-11-03T01:41:18.228097+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "content",
+        "stage": "hook",
+        "node_key": "cb09a3444de6041ecdda63d40bbaba85c8010b852fbe496d4e147b0e8984657f",
+        "mode": "live"
+      }
+    }
+  ],
+  "workflow_type": "creation",
+  "windtunnel": {},
+  "allowed_actions": [
+    "next",
+    "cancel"
+  ],
+  "mode": "live",
+  "usage": {
+    "model_calls": 5,
+    "tokens": 16169,
+    "unknown_calls": 1,
+    "cost": null,
+    "cost_upper_estimate_usd": 0.04147,
+    "currency": "USD"
+  },
+  "model_policy": {
+    "version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+    "routes": {
+      "audience": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "research": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "strategy": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "outline": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "hook": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "title": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "body": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "revise": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "review": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      }
+    },
+    "prompt_version": "four-role-v1.1-optin-comments-user-revision1"
+  },
+  "in_flight": false,
+  "calls": [
+    {
+      "id": "581b2131-92a4-4b46-889e-6bd7871bc8d7",
+      "agent": "research",
+      "stage": "research",
+      "reserved_tokens": 18143,
+      "tokens": 4091,
+      "status": "validated",
+      "error": null,
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1",
+      "input_hash": "eb6e7edb040eeed7635d649f2fe54d6a6905fb0dcd95631ca3b9eacebb9fa9b7",
+      "snapshot_id": "40456cd0-2956-4be3-85e8-98c17e62fa2b",
+      "duration_ms": 13134,
+      "request_id": "chatcmpl-1a589f77-8e07-980f-b898-6a64aa736e26",
+      "input_tokens": 3649,
+      "output_tokens": 442,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "d53fcc347e12db43f1be3ba29028a99ae8168557ab1574429695d30b3a4abfd3"
+        },
+        {
+          "source_id": "kb:f218e725-66dd-415c-962b-aaa4df6ba98e",
+          "document_id": "b8ff7148-6b21-452c-b337-6836e0e315d0",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "3006ca5de34ccc79dbcb0ea084575581f78fd578619107b326fb2e98db808922"
+        },
+        {
+          "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+          "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "bba1083e73b19acb5bc033aaf443b82039db31b2c3254c81c15219952c210018"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false
+    },
+    {
+      "id": "3c1bf709-1882-45e4-b2d3-ccc994d2dfef",
+      "agent": "audience",
+      "stage": "audience",
+      "reserved_tokens": 17702,
+      "tokens": 3743,
+      "status": "validated",
+      "error": null,
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1",
+      "input_hash": "e69b8a3c329ba138d1f5d08779aaee657407f18cc23c9f4276f778192110e19a",
+      "snapshot_id": "40456cd0-2956-4be3-85e8-98c17e62fa2b",
+      "duration_ms": 19786,
+      "request_id": "chatcmpl-73afae0f-1aa2-9852-9192-7c1edaf545f7",
+      "input_tokens": 3537,
+      "output_tokens": 206,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "d53fcc347e12db43f1be3ba29028a99ae8168557ab1574429695d30b3a4abfd3"
+        },
+        {
+          "source_id": "kb:f218e725-66dd-415c-962b-aaa4df6ba98e",
+          "document_id": "b8ff7148-6b21-452c-b337-6836e0e315d0",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "3006ca5de34ccc79dbcb0ea084575581f78fd578619107b326fb2e98db808922"
+        },
+        {
+          "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+          "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "bba1083e73b19acb5bc033aaf443b82039db31b2c3254c81c15219952c210018"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false
+    },
+    {
+      "id": "71357993-bc30-4ff4-9f19-2bd48913305b",
+      "agent": "content",
+      "stage": "strategy",
+      "reserved_tokens": 21780,
+      "tokens": 4161,
+      "status": "validated",
+      "error": null,
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1",
+      "input_hash": "c95eb31233ab32a2a84ace194615ba5228889e9367d54fb8c94f4ebf71144e2e",
+      "snapshot_id": "40456cd0-2956-4be3-85e8-98c17e62fa2b",
+      "duration_ms": 8963,
+      "request_id": "chatcmpl-35374060-20ae-99b0-b8c2-84240e72dba8",
+      "input_tokens": 3875,
+      "output_tokens": 286,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "d53fcc347e12db43f1be3ba29028a99ae8168557ab1574429695d30b3a4abfd3"
+        },
+        {
+          "source_id": "kb:f218e725-66dd-415c-962b-aaa4df6ba98e",
+          "document_id": "b8ff7148-6b21-452c-b337-6836e0e315d0",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "3006ca5de34ccc79dbcb0ea084575581f78fd578619107b326fb2e98db808922"
+        },
+        {
+          "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+          "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "bba1083e73b19acb5bc033aaf443b82039db31b2c3254c81c15219952c210018"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false
+    },
+    {
+      "id": "6e763722-ee73-43d4-8199-4e873d2f8cf5",
+      "agent": "content",
+      "stage": "outline",
+      "reserved_tokens": 19872,
+      "tokens": 4174,
+      "status": "validated",
+      "error": null,
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1",
+      "input_hash": "91db79bbb507478d11e9da99ada231be9bb9bca2d296a27dab50a35e898639c7",
+      "snapshot_id": "40456cd0-2956-4be3-85e8-98c17e62fa2b",
+      "duration_ms": 4387,
+      "request_id": "chatcmpl-f3bd93b8-1365-92b0-bafd-7433ac459174",
+      "input_tokens": 4110,
+      "output_tokens": 64,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "d53fcc347e12db43f1be3ba29028a99ae8168557ab1574429695d30b3a4abfd3"
+        },
+        {
+          "source_id": "kb:f218e725-66dd-415c-962b-aaa4df6ba98e",
+          "document_id": "b8ff7148-6b21-452c-b337-6836e0e315d0",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "3006ca5de34ccc79dbcb0ea084575581f78fd578619107b326fb2e98db808922"
+        },
+        {
+          "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+          "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "bba1083e73b19acb5bc033aaf443b82039db31b2c3254c81c15219952c210018"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false
+    },
+    {
+      "id": "b020475e-93aa-4236-927b-6e531512b1f3",
+      "agent": "content",
+      "stage": "hook",
+      "reserved_tokens": 20117,
+      "tokens": null,
+      "status": "failed",
+      "error": "模型连接失败、超时或返回无效数据；用量可能已产生，未自动重试",
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1",
+      "input_hash": "2c78660aa9989e68560bde122fb362b854efd2aa8928117672c4969258d910f7",
+      "snapshot_id": "40456cd0-2956-4be3-85e8-98c17e62fa2b",
+      "duration_ms": 3654,
+      "request_id": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "d53fcc347e12db43f1be3ba29028a99ae8168557ab1574429695d30b3a4abfd3"
+        },
+        {
+          "source_id": "kb:f218e725-66dd-415c-962b-aaa4df6ba98e",
+          "document_id": "b8ff7148-6b21-452c-b337-6836e0e315d0",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "3006ca5de34ccc79dbcb0ea084575581f78fd578619107b326fb2e98db808922"
+        },
+        {
+          "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+          "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "bba1083e73b19acb5bc033aaf443b82039db31b2c3254c81c15219952c210018"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false
+    }
+  ],
+  "testing_budget": null,
+  "background": {
+    "status": "blocked",
+    "error": "模型连接失败、超时或返回无效数据；用量可能已产生，未自动重试",
+    "attempts": 1,
+    "updated": 1793670081.8930922,
+    "active_seconds": 30.02056629100116,
+    "completed_nodes": 4,
+    "worker_online": true
+  },
+  "review_recovery": {
+    "available": false
+  }
+}

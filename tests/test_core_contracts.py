@@ -5,6 +5,7 @@ from backend.store import Store
 from backend.migrations import upgrade, MIGRATIONS
 from backend.schemas import Command, JobCommand, parse
 from backend.contracts import DomainError
+from backend.demo import require_title_length, validate_edit
 
 
 class CoreContractTests(unittest.TestCase):
@@ -38,3 +39,11 @@ class CoreContractTests(unittest.TestCase):
         for change in ({'version':True},{'version':'0'},{'owner':'other'},{'key':''},{'action':'publish'}):
             with self.assertRaises(DomainError): parse(Command,{**valid,**change})
         self.assertEqual(parse(JobCommand,dict(action='start',version=0,key='start'))['action'],'start')
+
+    def test_xiaohongshu_title_is_limited_to_20_characters(self):
+        content=dict(selected_title='一'*20,body='正文',cta='',tags=[])
+        self.assertEqual(validate_edit(content,'xiaohongshu')['selected_title'],'一'*20)
+        with self.assertRaises(DomainError):validate_edit({**content,'selected_title':'一'*21},'xiaohongshu')
+        self.assertEqual(validate_edit({**content,'selected_title':'一'*21},'douyin')['selected_title'],'一'*21)
+        with self.assertRaises(DomainError):require_title_length('一'*21,'xiaohongshu')
+        require_title_length('一'*20,'xiaohongshu')

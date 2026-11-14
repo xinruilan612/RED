@@ -1,0 +1,907 @@
+{
+  "schema": "youji-blind-assignment/1",
+  "seed": 20261102,
+  "warning": "仅协调人持有；不要交给盲评人；A-E配置映射由实验运行记录冻结。",
+  "items": [
+    {
+      "article_id": "BLIND-001",
+      "task_id": "D01",
+      "display_order_within_task": 1,
+      "private_arm": "C",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-002",
+      "task_id": "D01",
+      "display_order_within_task": 2,
+      "private_arm": "D",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-003",
+      "task_id": "D01",
+      "display_order_within_task": 3,
+      "private_arm": "B",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-004",
+      "task_id": "D01",
+      "display_order_within_task": 4,
+      "private_arm": "A",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-005",
+      "task_id": "D01",
+      "display_order_within_task": 5,
+      "private_arm": "E",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-006",
+      "task_id": "H01",
+      "display_order_within_task": 1,
+      "private_arm": "B",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-007",
+      "task_id": "H01",
+      "display_order_within_task": 2,
+      "private_arm": "C",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-008",
+      "task_id": "H01",
+      "display_order_within_task": 3,
+      "private_arm": "E",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-009",
+      "task_id": "H01",
+      "display_order_within_task": 4,
+      "private_arm": "D",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-010",
+      "task_id": "H01",
+      "display_order_within_task": 5,
+      "private_arm": "A",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-011",
+      "task_id": "D02",
+      "display_order_within_task": 1,
+      "private_arm": "B",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-012",
+      "task_id": "D02",
+      "display_order_within_task": 2,
+      "private_arm": "C",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-013",
+      "task_id": "D02",
+      "display_order_within_task": 3,
+      "private_arm": "A",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-014",
+      "task_id": "D02",
+      "display_order_within_task": 4,
+      "private_arm": "E",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-015",
+      "task_id": "D02",
+      "display_order_within_task": 5,
+      "private_arm": "D",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-016",
+      "task_id": "D03",
+      "display_order_within_task": 1,
+      "private_arm": "A",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-017",
+      "task_id": "D03",
+      "display_order_within_task": 2,
+      "private_arm": "B",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-018",
+      "task_id": "D03",
+      "display_order_within_task": 3,
+      "private_arm": "C",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-019",
+      "task_id": "D03",
+      "display_order_within_task": 4,
+      "private_arm": "D",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-020",
+      "task_id": "D03",
+      "display_order_within_task": 5,
+      "private_arm": "E",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-021",
+      "task_id": "D04",
+      "display_order_within_task": 1,
+      "private_arm": "B",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-022",
+      "task_id": "D04",
+      "display_order_within_task": 2,
+      "private_arm": "D",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-023",
+      "task_id": "D04",
+      "display_order_within_task": 3,
+      "private_arm": "A",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-024",
+      "task_id": "D04",
+      "display_order_within_task": 4,
+      "private_arm": "C",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-025",
+      "task_id": "D04",
+      "display_order_within_task": 5,
+      "private_arm": "E",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-026",
+      "task_id": "D05",
+      "display_order_within_task": 1,
+      "private_arm": "B",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-027",
+      "task_id": "D05",
+      "display_order_within_task": 2,
+      "private_arm": "D",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-028",
+      "task_id": "D05",
+      "display_order_within_task": 3,
+      "private_arm": "C",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-029",
+      "task_id": "D05",
+      "display_order_within_task": 4,
+      "private_arm": "E",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-030",
+      "task_id": "D05",
+      "display_order_within_task": 5,
+      "private_arm": "A",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-031",
+      "task_id": "D06",
+      "display_order_within_task": 1,
+      "private_arm": "C",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-032",
+      "task_id": "D06",
+      "display_order_within_task": 2,
+      "private_arm": "B",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-033",
+      "task_id": "D06",
+      "display_order_within_task": 3,
+      "private_arm": "D",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-034",
+      "task_id": "D06",
+      "display_order_within_task": 4,
+      "private_arm": "A",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-035",
+      "task_id": "D06",
+      "display_order_within_task": 5,
+      "private_arm": "E",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-036",
+      "task_id": "D07",
+      "display_order_within_task": 1,
+      "private_arm": "E",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-037",
+      "task_id": "D07",
+      "display_order_within_task": 2,
+      "private_arm": "D",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-038",
+      "task_id": "D07",
+      "display_order_within_task": 3,
+      "private_arm": "B",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-039",
+      "task_id": "D07",
+      "display_order_within_task": 4,
+      "private_arm": "A",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-040",
+      "task_id": "D07",
+      "display_order_within_task": 5,
+      "private_arm": "C",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-041",
+      "task_id": "H02",
+      "display_order_within_task": 1,
+      "private_arm": "D",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-042",
+      "task_id": "H02",
+      "display_order_within_task": 2,
+      "private_arm": "C",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-043",
+      "task_id": "H02",
+      "display_order_within_task": 3,
+      "private_arm": "E",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-044",
+      "task_id": "H02",
+      "display_order_within_task": 4,
+      "private_arm": "A",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-045",
+      "task_id": "H02",
+      "display_order_within_task": 5,
+      "private_arm": "B",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-046",
+      "task_id": "H03",
+      "display_order_within_task": 1,
+      "private_arm": "B",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-047",
+      "task_id": "H03",
+      "display_order_within_task": 2,
+      "private_arm": "E",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-048",
+      "task_id": "H03",
+      "display_order_within_task": 3,
+      "private_arm": "D",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-049",
+      "task_id": "H03",
+      "display_order_within_task": 4,
+      "private_arm": "C",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-050",
+      "task_id": "H03",
+      "display_order_within_task": 5,
+      "private_arm": "A",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-051",
+      "task_id": "H04",
+      "display_order_within_task": 1,
+      "private_arm": "D",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-052",
+      "task_id": "H04",
+      "display_order_within_task": 2,
+      "private_arm": "B",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-053",
+      "task_id": "H04",
+      "display_order_within_task": 3,
+      "private_arm": "A",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-054",
+      "task_id": "H04",
+      "display_order_within_task": 4,
+      "private_arm": "E",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-055",
+      "task_id": "H04",
+      "display_order_within_task": 5,
+      "private_arm": "C",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-056",
+      "task_id": "H05",
+      "display_order_within_task": 1,
+      "private_arm": "C",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-057",
+      "task_id": "H05",
+      "display_order_within_task": 2,
+      "private_arm": "B",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-058",
+      "task_id": "H05",
+      "display_order_within_task": 3,
+      "private_arm": "E",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-059",
+      "task_id": "H05",
+      "display_order_within_task": 4,
+      "private_arm": "D",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-060",
+      "task_id": "H05",
+      "display_order_within_task": 5,
+      "private_arm": "A",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-061",
+      "task_id": "H06",
+      "display_order_within_task": 1,
+      "private_arm": "E",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-062",
+      "task_id": "H06",
+      "display_order_within_task": 2,
+      "private_arm": "B",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-063",
+      "task_id": "H06",
+      "display_order_within_task": 3,
+      "private_arm": "A",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-064",
+      "task_id": "H06",
+      "display_order_within_task": 4,
+      "private_arm": "D",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-065",
+      "task_id": "H06",
+      "display_order_within_task": 5,
+      "private_arm": "C",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-066",
+      "task_id": "H07",
+      "display_order_within_task": 1,
+      "private_arm": "E",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-067",
+      "task_id": "H07",
+      "display_order_within_task": 2,
+      "private_arm": "C",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-068",
+      "task_id": "H07",
+      "display_order_within_task": 3,
+      "private_arm": "D",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-069",
+      "task_id": "H07",
+      "display_order_within_task": 4,
+      "private_arm": "B",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-070",
+      "task_id": "H07",
+      "display_order_within_task": 5,
+      "private_arm": "A",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-071",
+      "task_id": "S01",
+      "display_order_within_task": 1,
+      "private_arm": "D",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-072",
+      "task_id": "S01",
+      "display_order_within_task": 2,
+      "private_arm": "B",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-073",
+      "task_id": "S01",
+      "display_order_within_task": 3,
+      "private_arm": "A",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-074",
+      "task_id": "S01",
+      "display_order_within_task": 4,
+      "private_arm": "E",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-075",
+      "task_id": "S01",
+      "display_order_within_task": 5,
+      "private_arm": "C",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-076",
+      "task_id": "S02",
+      "display_order_within_task": 1,
+      "private_arm": "E",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-077",
+      "task_id": "S02",
+      "display_order_within_task": 2,
+      "private_arm": "B",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-078",
+      "task_id": "S02",
+      "display_order_within_task": 3,
+      "private_arm": "D",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-079",
+      "task_id": "S02",
+      "display_order_within_task": 4,
+      "private_arm": "A",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-080",
+      "task_id": "S02",
+      "display_order_within_task": 5,
+      "private_arm": "C",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-081",
+      "task_id": "S03",
+      "display_order_within_task": 1,
+      "private_arm": "A",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-082",
+      "task_id": "S03",
+      "display_order_within_task": 2,
+      "private_arm": "D",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-083",
+      "task_id": "S03",
+      "display_order_within_task": 3,
+      "private_arm": "E",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-084",
+      "task_id": "S03",
+      "display_order_within_task": 4,
+      "private_arm": "C",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-085",
+      "task_id": "S03",
+      "display_order_within_task": 5,
+      "private_arm": "B",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-086",
+      "task_id": "S04",
+      "display_order_within_task": 1,
+      "private_arm": "B",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-087",
+      "task_id": "S04",
+      "display_order_within_task": 2,
+      "private_arm": "C",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-088",
+      "task_id": "S04",
+      "display_order_within_task": 3,
+      "private_arm": "A",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-089",
+      "task_id": "S04",
+      "display_order_within_task": 4,
+      "private_arm": "D",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-090",
+      "task_id": "S04",
+      "display_order_within_task": 5,
+      "private_arm": "E",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-091",
+      "task_id": "S05",
+      "display_order_within_task": 1,
+      "private_arm": "D",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-092",
+      "task_id": "S05",
+      "display_order_within_task": 2,
+      "private_arm": "C",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-093",
+      "task_id": "S05",
+      "display_order_within_task": 3,
+      "private_arm": "E",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-094",
+      "task_id": "S05",
+      "display_order_within_task": 4,
+      "private_arm": "B",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-095",
+      "task_id": "S05",
+      "display_order_within_task": 5,
+      "private_arm": "A",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-096",
+      "task_id": "S06",
+      "display_order_within_task": 1,
+      "private_arm": "E",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-097",
+      "task_id": "S06",
+      "display_order_within_task": 2,
+      "private_arm": "A",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-098",
+      "task_id": "S06",
+      "display_order_within_task": 3,
+      "private_arm": "D",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-099",
+      "task_id": "S06",
+      "display_order_within_task": 4,
+      "private_arm": "C",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    },
+    {
+      "article_id": "BLIND-100",
+      "task_id": "S06",
+      "display_order_within_task": 5,
+      "private_arm": "B",
+      "output_path": null,
+      "output_sha256": null,
+      "generation_status": "not_generated"
+    }
+  ]
+}

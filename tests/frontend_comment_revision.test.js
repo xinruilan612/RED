@@ -134,3 +134,90 @@ test('feedback report shows traceable selected notes but not raw comment text',(
  assert.match(s.element('commentFeedbackSummary').innerHTML,/笔记 ID：n/);assert.doesNotMatch(s.element('commentFeedbackSummary').innerHTML,/RAW_PRIVATE_CONTACT/);
  assert.match(s.element('revisionConversationHistory').innerHTML,/&lt;script&gt;/);
 });
+
+test('saved revision stays successful when refreshing history fails and does not invite a duplicate submission',async()=>{
+ const s=setup();s.element('revisionInstruction').value='把内容写短';
+ s.eval("history=async()=>{throw Error('读取列表失败');}");
+ await s.element('revisionRequestForm').onsubmit({preventDefault(){}});
+ assert.equal(s.element('revisionInstruction').value,'');assert.equal(s.eval('revisionCommand'),null);
+ assert.equal(s.eval("calls.filter(c=>c.method==='POST').length"),1);
+ assert.equal(s.element('error').hidden,false);assert.match(s.element('error').textContent,/操作已保存.*无需重复提交/);
+ assert.match(s.element('toast').textContent,/改稿要求已保存/);
+});
+test('saved edit remains successful even if the auxiliary account refresh fails',async()=>{
+ const s=setup();s.eval("api=async(path,method,body)=>{calls.push({path,method,body});if(path==='/api/operations')throw Error('读取账号失败');return run;}");
+ assert.equal(await s.eval("act('edit',{body:'修改后的正文'})"),true);
+ assert.equal(s.eval("calls.filter(c=>c.method==='POST').length"),1);
+ assert.match(s.element('error').textContent,/操作已保存.*无需重复提交/);
+});
+test('history switching blocks competing requests until the chosen task finishes loading',async()=>{
+ const s=setup();let resolve;const paths=[];s.sandbox.showPage=()=>{};
+ s.sandbox.api=path=>{paths.push(path);return new Promise(r=>resolve=r);};
+ const click=id=>s.element('history').listeners.click({target:{closest:()=>({dataset:{run:id}})}});
+ const pending=click('chosen');assert.equal(s.eval('busy'),true);await click('later');assert.deepEqual(paths,['/api/runs/chosen']);
+ const chosen=s.eval('({...run,run_id:"chosen"})');resolve(chosen);await pending;
+ assert.equal(s.eval('run.run_id'),'chosen');assert.equal(s.eval('busy'),false);
+});
+test('failed history read unlocks navigation and preserves the current task for retry',async()=>{
+ const s=setup();s.sandbox.showPage=()=>{};s.sandbox.api=async()=>{throw Error('暂时无法读取任务');};
+ await s.element('history').listeners.click({target:{closest:()=>({dataset:{run:'other'}})}});
+ assert.equal(s.eval('busy'),false);assert.equal(s.eval('run.run_id'),'r');assert.match(s.element('error').textContent,/暂时无法读取任务/);
+});
+
+test('revision history reflects the result draft review and final confirmation',()=>{
+ const s=setup();s.eval("run.drafts.push({ref:'new',snapshot_id:'s',content_hash:'new-hash'});run.context.revision_requests=[{instruction:'写短',draft_ref:'d',result_draft_ref:'new',status:'applied'}];run.review={draft_ref:'new',snapshot_id:'s',content_hash:'new-hash',decision:'approved'};renderFeedbackAndRevision()");
+ assert.match(s.element('revisionConversationHistory').innerHTML,/复审通过，等待你确认/);assert.doesNotMatch(s.element('revisionConversationHistory').innerHTML,/仍需完整复审/);
+ s.eval("run.run_status='SUCCEEDED';run.accepted_ref='new';renderFeedbackAndRevision()");assert.match(s.element('revisionConversationHistory').innerHTML,/已由你确认/);
+ s.eval("run.acceptance={mode:'manual_override'};renderFeedbackAndRevision()");assert.match(s.element('revisionConversationHistory').innerHTML,/人工采用（不表示 AI 审核通过）/);
+});
+test('revision history never borrows review or acceptance from another draft or input snapshot',()=>{
+ const s=setup();s.eval("run.drafts.push({ref:'new',snapshot_id:'s',content_hash:'new-hash'});run.context.revision_requests=[{instruction:'写短',draft_ref:'d',result_draft_ref:'new',status:'applied'}];run.accepted_ref='d'");
+ for(const review of [{draft_ref:'d',snapshot_id:'s',decision:'approved'},{draft_ref:'new',snapshot_id:'old',decision:'approved'},{draft_ref:'new',snapshot_id:'s',content_hash:'wrong-hash',decision:'approved'}]){
+  s.sandbox.candidateReview=review;s.eval('run.review=candidateReview;renderFeedbackAndRevision()');assert.match(s.element('revisionConversationHistory').innerHTML,/仍需完整复审/);
+ }
+});
+test('revision history shows the latest matching review decision including stored historical reviews',()=>{
+ const s=setup();s.eval("run.drafts.push({ref:'new',snapshot_id:'s',content_hash:'new-hash'});run.context.revision_requests=[{instruction:'写短',draft_ref:'d',result_draft_ref:'new',status:'applied'}];run.reviews=[{draft_ref:'new',snapshot_id:'s',decision:'approved'}];run.review={draft_ref:'new',snapshot_id:'s',decision:'revision_required'};renderFeedbackAndRevision()");
+ assert.match(s.element('revisionConversationHistory').innerHTML,/复审发现问题/);
+ s.eval("run.review.decision='needs_human';renderFeedbackAndRevision()");assert.match(s.element('revisionConversationHistory').innerHTML,/待确认信息/);
+ s.eval('run.review=null;renderFeedbackAndRevision()');assert.match(s.element('revisionConversationHistory').innerHTML,/复审通过/);
+});
+
+test('live creation defaults to topic-only public queries while explicit offline choice persists',async()=>{
+ const s=setup();s.element('topic').value='木质椅子保养';s.element('material').value='私密客户材料不得发送';s.element('mode').value='live';s.element('mode').onchange();
+ assert.equal(s.element('useWebResearch').checked,true);assert.equal(s.element('webResearchFields').hidden,false);assert.equal(s.element('webQuery1').value,'木质椅子保养');assert.equal(s.element('webQuery2').value,'');
+ await s.element('briefForm').listeners.submit({preventDefault(){},submitter:{disabled:false}});
+ const payload=s.eval('calls[0].body');assert.equal(payload.web_research.enabled,true);assert.equal(payload.web_research.provider,'bing');assert.equal(payload.web_research.queries.length,1);assert.ok(payload.web_research.queries.every(q=>!q.includes('私密客户')));
+ s.element('useWebResearch').checked=false;s.element('useWebResearch').onchange();s.element('mode').value='simulation';s.element('mode').onchange();s.element('mode').value='live';s.element('mode').onchange();assert.equal(s.element('useWebResearch').checked,false);
+ await s.element('briefForm').listeners.submit({preventDefault(){},submitter:{disabled:false}});assert.equal(s.eval('calls.at(-1).body.web_research.enabled'),false);
+});
+test('simulation never searches and manually edited public queries survive topic changes',()=>{
+ const s=setup();s.element('topic').value='旧主题';s.element('mode').value='live';s.element('mode').onchange();s.element('webQuery1').value='用户确认的公开词';s.element('webQuery1').listeners.input();
+ s.element('topic').value='新主题';s.element('topic').listeners.input();assert.equal(s.element('webQuery1').value,'用户确认的公开词');assert.equal(s.element('webQuery2').value,'');
+ s.element('mode').value='simulation';s.element('mode').onchange();assert.equal(s.element('useWebResearch').checked,false);assert.equal(s.element('webResearchFields').hidden,true);
+});
+
+test('knowledge with no document selection omits IDs for automatic retrieval while explicit IDs narrow it',async()=>{
+ const s=setup();s.element('useKnowledge').checked=true;
+ await s.element('briefForm').listeners.submit({preventDefault(){},submitter:{disabled:false}});
+ let body=s.eval('calls.at(-1).body');assert.equal(body.knowledge.enabled,true);assert.equal(Object.hasOwn(body.knowledge,'document_ids'),false);
+ s.element('materialDocumentSelect').selectedOptions=[{value:'doc1'}];
+ await s.element('briefForm').listeners.submit({preventDefault(){},submitter:{disabled:false}});
+ body=s.eval('calls.at(-1).body');assert.deepEqual(Array.from(body.knowledge.document_ids),['doc1']);
+ s.element('useKnowledge').checked=false;
+ await s.element('briefForm').listeners.submit({preventDefault(){},submitter:{disabled:false}});
+ body=s.eval('calls.at(-1).body');assert.equal(body.knowledge.enabled,false);assert.equal(Object.hasOwn(body.knowledge,'document_ids'),false);
+});
+test('local mode sends knowledge preferences and missing account disables retrieval',async()=>{
+ const s=setup();s.sandbox.websiteSession.auth_required=false;s.element('useKnowledge').checked=true;s.element('useAutomaticReferences').checked=true;
+ await s.element('briefForm').listeners.submit({preventDefault(){},submitter:{disabled:false}});
+ let body=s.eval('calls.at(-1).body');assert.equal(body.knowledge.enabled,true);assert.equal(body.knowledge.automatic_references,true);assert.equal(Object.hasOwn(body.knowledge,'document_ids'),false);
+ s.sandbox.accountId=null;
+ await s.element('briefForm').listeners.submit({preventDefault(){},submitter:{disabled:false}});
+ body=s.eval('calls.at(-1).body');assert.equal(body.knowledge.enabled,false);assert.equal(body.knowledge.automatic_references,false);
+});
+test('creation provider defaults to enabled Baidu without searching and preserves manual choice',async()=>{
+ const s=setup();s.element('webSearchProvider').value='bing';s.sandbox.api=async(path,method)=>{assert.equal(path,'/api/search/settings');assert.equal(method,undefined);return {providers:[{id:'bing',can_attempt:true},{id:'baidu',can_attempt:true},{id:'wikipedia',can_attempt:true}]};};
+ await s.eval('refreshWorkbenchSearchProviders()');assert.equal(s.element('webSearchProvider').value,'baidu');
+ s.element('webSearchProvider').value='wikipedia';s.element('webSearchProvider').onchange();await s.eval('refreshWorkbenchSearchProviders()');assert.equal(s.element('webSearchProvider').value,'wikipedia');
+});

@@ -101,6 +101,13 @@ CREATE TABLE xhs_sync_rounds (
  id TEXT PRIMARY KEY,owner TEXT NOT NULL,account_id TEXT NOT NULL,
  observed_at DOUBLE PRECISION NOT NULL,payload TEXT NOT NULL);
 CREATE INDEX xhs_sync_rounds_scope ON xhs_sync_rounds(owner,account_id,observed_at);
+'''), (9, '''
+CREATE TABLE product_image_previews (
+ owner TEXT NOT NULL,id TEXT NOT NULL,account_id TEXT NOT NULL,
+ fingerprint TEXT NOT NULL,state TEXT NOT NULL,response TEXT,document_id TEXT,
+ filename TEXT NOT NULL,image_base64 TEXT NOT NULL,created DOUBLE PRECISION NOT NULL,
+ PRIMARY KEY(owner,id));
+CREATE INDEX product_image_scope ON product_image_previews(owner,account_id,created);
 '''))
 
 

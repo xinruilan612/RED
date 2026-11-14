@@ -11,11 +11,11 @@ async function connectionAction(action){
 function connectionOverview(data){
  const records=data.local_records||{},latest=records.latest_metric;
  const fields=(data.fields||[]).filter(f=>['views','likes','saves','comments','shares'].includes(f.key)&&latest?.values?.[f.key]!==null&&latest?.values?.[f.key]!==undefined);
- return `<section class="panel"><h2>${esc(data.account_name)} · ${data.connection_status==='not_connected'?'尚未连接平台':esc(data.connection_status)}</h2><p>${esc(data.reason)}</p><p class="helper">最近自动同步：${data.last_sync_at?esc(dateText(data.last_sync_at)):'尚未发生'} · 实时能力：${data.realtime_verified?'已验证':'未验证'}</p><p>${esc(data.goal)}</p></section><section class="panel"><h2>本账号已有数据</h2><p>人工归档作品 ${esc(records.publication_count??0)} 条 · 人工指标快照 ${esc(records.metric_snapshot_count??0)} 份</p><p class="helper">${esc(records.limitation)}</p>${latest?`<h3>最近一份人工指标</h3><p>${connectionLink(latest.publication_url,latest.publication_title||latest.publication_id||'未命名作品')}</p><p class="helper">作品 ID：${esc(latest.publication_id||'未知')}</p><p class="helper">${esc(dateText(latest.observed_at))} · ${esc(latest.window)} · 平台尚未核实，非账号合计</p><div class="table-scroll"><table class="metric-table"><thead><tr><th>指标</th><th>记录值</th></tr></thead><tbody>${fields.map(f=>`<tr><td>${esc(f.label)}</td><td>${latest.values[f.key]===null||latest.values[f.key]===undefined?'未记录':esc(latest.values[f.key])}</td></tr>`).join('')}</tbody></table></div>`:'<p>尚无人工指标快照，可以在“数据复盘”录入已有数据。</p>'}</section><section class="panel"><h2>连接依据与下一步</h2><p>获取适用个人账号的授权渠道并完成实测后，才启用自动同步。当前没有收集密码或 Cookie 的连接入口。</p><ul>${(data.admission_requirements||[]).map(t=>`<li>${esc(t)}</li>`).join('')}</ul>${(data.sources||[]).map(s=>`<p>${connectionLink(s.url,s.title)}<br><span class="helper">${esc(s.finding)} · 核对日期 ${esc(s.reviewed_on)}</span></p>`).join('')}</section>`;
+ return `<section class="panel"><h2>${esc(data.account_name)} · ${data.connection_status==='not_connected'?'尚未连接平台':esc(data.connection_status)}</h2><p>${esc(data.reason)}</p><p class="helper">最近自动同步：${data.last_sync_at?esc(dateText(data.last_sync_at)):'尚未发生'} · 实时能力：${data.realtime_verified?'已验证':'未验证'}</p><p>${esc(data.goal)}</p></section><section class="panel"><h2>本账号已有数据</h2><p>人工归档作品 ${esc(records.publication_count??0)} 条 · 人工指标快照 ${esc(records.metric_snapshot_count??0)} 份</p><p class="helper">${esc(records.limitation)}</p>${latest?`<h3>最近一份人工指标</h3><p>${connectionLink(latest.publication_url,latest.publication_title||latest.publication_id||'未命名作品')}</p><p class="helper">作品 ID：${esc(latest.publication_id||'未知')}</p><p class="helper">${esc(dateText(latest.observed_at))} · ${esc(latest.window)} · 平台尚未核实，非账号合计</p><div class="table-scroll"><table class="metric-table"><thead><tr><th>指标</th><th>记录值</th></tr></thead><tbody>${fields.map(f=>`<tr><td>${esc(f.label)}</td><td>${latest.values[f.key]===null||latest.values[f.key]===undefined?'未记录':esc(latest.values[f.key])}</td></tr>`).join('')}</tbody></table></div>`:'<p>尚无人工指标快照，可以在“数据复盘”录入已有数据。</p>'}</section><section class="panel"><h2>连接依据与下一步</h2><p>获取适用个人账号的授权渠道并完成实测后，才启用自动同步。当前没有收集密码或 Cookie 的连接入口。</p><ul>${(data.admission_requirements||[]).map(t=>`<li>${esc(t)}</li>`).join('')}</ul>${(data.sources||[]).map(s=>`<p>${connectionLink(s.url,s.title)}<br><span class="helper">${esc(s.finding)} · 核对日期 ${esc(s.reviewed_on)}</span></p>`).join('')}</section><section class="panel"><h2>连接小红书</h2><p>本机连接器已就绪时，可在此扫码登录；登录成功后核对账号身份并完成绑定。未启动连接器或登录失效时会给出可操作提示。</p><div class="buttons"><button id="startSyncLogin" class="secondary">扫码登录小红书</button></div><div id="syncLoginQRCode"></div></section>`;
 }
 async function renderConnections(){
  const token=++connectionLoad,identity=activeAccountId;$('operationsContent').innerHTML='<section class="panel"><p>正在读取账号数据状态…</p></section>';
- try{const [data,sync]=await Promise.all([api('/api/social/connection?account_id='+encodeURIComponent(identity)),api('/api/social/sync?account_id='+encodeURIComponent(identity))]);if(token!==connectionLoad||currentPage!=='connections'||identity!==activeAccountId)return;const notes=[];if(token!==connectionLoad||currentPage!=='connections'||identity!==activeAccountId)return;$('operationsContent').innerHTML=sync.bound?syncOverview(sync,notes):connectionOverview(data);document.querySelectorAll('[data-note-comments]').forEach(b=>b.onclick=()=>loadSyncComments(identity,b.dataset.noteComments,b,token));document.querySelectorAll('[data-import-note]').forEach(b=>b.onclick=()=>importSyncCase(identity,b.dataset.importNote));document.querySelectorAll('[data-sync-action]').forEach(b=>b.onclick=()=>connectionAction(async()=>{await api('/api/social/sync/control','POST',{account_id:identity,action:b.dataset.syncAction});await renderConnections();}));if($('reconnectSync'))$('reconnectSync').onclick=()=>reconnectSync(identity,token);if($('refreshSyncStatus'))$('refreshSyncStatus').onclick=()=>renderConnections();}
+ try{const [data,sync]=await Promise.all([api('/api/social/connection?account_id='+encodeURIComponent(identity)),api('/api/social/sync?account_id='+encodeURIComponent(identity))]);if(token!==connectionLoad||currentPage!=='connections'||identity!==activeAccountId)return;const notes=[];if(token!==connectionLoad||currentPage!=='connections'||identity!==activeAccountId)return;$('operationsContent').innerHTML=sync.bound?syncOverview(sync,notes):connectionOverview(data);document.querySelectorAll('[data-note-comments]').forEach(b=>b.onclick=()=>loadSyncComments(identity,b.dataset.noteComments,b,token));document.querySelectorAll('[data-import-note]').forEach(b=>b.onclick=()=>importSyncCase(identity,b.dataset.importNote));document.querySelectorAll('[data-sync-action]').forEach(b=>b.onclick=()=>connectionAction(async()=>{await api('/api/social/sync/control','POST',{account_id:identity,action:b.dataset.syncAction});await renderConnections();}));if($('reconnectSync'))$('reconnectSync').onclick=()=>reconnectSync(identity,token,true);if($('startSyncLogin'))$('startSyncLogin').onclick=()=>reconnectSync(identity,token,false);if($('refreshSyncStatus'))$('refreshSyncStatus').onclick=()=>renderConnections();}
  catch(e){if(token===connectionLoad&&currentPage==='connections'&&identity===activeAccountId){$('operationsContent').innerHTML='<section class="panel"><p>账号数据状态读取失败，请重试。</p></section>';error(e);}}
 }
 
@@ -61,15 +61,33 @@ async function importSyncCase(account,note){
  });
 }
 
-async function reconnectSync(account,token){
+async function reconnectSync(account,token,bound=true){
  await connectionAction(async()=>{
   const data=await api('/api/social/sync/login','POST',{account_id:account});
   if(token!==connectionLoad||currentPage!=='connections'||account!==activeAccountId)return;
   await renderConnections();
   if(currentPage!=='connections'||account!==activeAccountId)return;
   const target=$('syncLoginQRCode');
-  if(data.is_logged_in){target.innerHTML='<p>本机连接器已登录。点击“恢复自动同步”后将重新核对绑定账号身份；不同账号不会写入。</p>';return;}
+  if(data.is_logged_in){
+   if(bound){target.innerHTML='<p>本机连接器已登录。点击“恢复自动同步”后将重新核对绑定账号身份；不同账号不会写入。</p>';return;}
+   target.innerHTML='<p>本机连接器已登录。点击下方按钮核对账号身份并完成绑定；不同账号不会写入。</p><div class="buttons"><button id="finishSyncBind" class="primary">完成连接</button></div>';
+   if($('finishSyncBind'))$('finishSyncBind').onclick=()=>bindSync(account,token);
+   return;
+  }
   if(typeof data.img!=='string'||!data.img.startsWith('data:image/png;base64,')||data.img.length>750000)throw new Error('二维码图片格式无效');
-  target.innerHTML=`<p>自动同步已暂停，请用原绑定的小红书账号扫码。有效期：${esc(data.timeout)}。扫码完成后点击“恢复自动同步”，系统会再次核对账号。</p><img src="${esc(data.img)}" alt="小红书重新登录二维码" width="240">`;
+  const hint=bound
+   ?`自动同步已暂停，请用原绑定的小红书账号扫码。有效期：${esc(data.timeout)}。扫码完成后点击“恢复自动同步”，系统会再次核对账号。`
+   :`请用本人的小红书账号扫码。有效期：${esc(data.timeout)}。扫码完成后点击“完成连接”，系统会核对账号身份后才写入。`;
+  target.innerHTML=`<p>${hint}</p><img src="${esc(data.img)}" alt="小红书重新登录二维码" width="240">${bound?'':'<div class="buttons"><button id="finishSyncBind" class="primary">我已扫码，完成连接</button></div>'}`;
+  if(!bound&&$('finishSyncBind'))$('finishSyncBind').onclick=()=>bindSync(account,token);
+ });
+}
+
+async function bindSync(account,token){
+ await connectionAction(async()=>{
+  await api('/api/social/sync/bind','POST',{account_id:account});
+  if(token!==connectionLoad||currentPage!=='connections'||account!==activeAccountId)return;
+  await renderConnections();
+  toast('小红书账号已完成绑定');
  });
 }

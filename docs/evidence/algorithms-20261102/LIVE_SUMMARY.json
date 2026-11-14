@@ -1,0 +1,75 @@
+{
+  "data_scope": "一个虚构产品任务家族，多次开发配置验收；不是独立多领域质量实验",
+  "authorized_cny": 5,
+  "calls": 48,
+  "tokens": 200708,
+  "cost_upper_cny": 1.605664,
+  "unknown_calls": 0,
+  "provider": "qwen",
+  "model": "qwen-plus",
+  "estimate_rate_cny_per_million_total_tokens": 8,
+  "cases": [
+    {
+      "case": "baseline",
+      "run_id": "b7d77573-be90-4b8a-9682-2ebbb736b5b6",
+      "calls": 8,
+      "tokens": 26098,
+      "status": "WAITING_USER",
+      "review": "needs_human",
+      "questions_status": null,
+      "planning_coverage": null
+    },
+    {
+      "case": "all_algorithms",
+      "run_id": "022c0e8b-5947-4cbf-baea-5d475e443fc3",
+      "calls": 8,
+      "tokens": 30138,
+      "status": "WAITING_USER",
+      "review": "needs_human",
+      "questions_status": null,
+      "planning_coverage": 0.2857142857142857
+    },
+    {
+      "case": "structure_and_questions",
+      "run_id": "70a2cc50-9d83-4111-8899-d224d9740ff2",
+      "calls": 10,
+      "tokens": 49151,
+      "status": "WAITING_USER",
+      "review": "needs_human",
+      "questions_status": "skipped",
+      "planning_coverage": 0.7272727272727273
+    },
+    {
+      "case": "final_validation",
+      "run_id": "7009164a-1daa-44f8-b156-5550830a4932",
+      "calls": 8,
+      "tokens": 37839,
+      "status": "WAITING_USER",
+      "review": "needs_human",
+      "questions_status": "skipped",
+      "planning_coverage": 0.7272727272727273
+    },
+    {
+      "case": "release_validation",
+      "run_id": "65565365-2bde-4c46-a3f7-7365c9d5637f",
+      "calls": 8,
+      "tokens": 36871,
+      "status": "WAITING_USER",
+      "review": "needs_human",
+      "questions_status": "skipped",
+      "planning_coverage": 0.5
+    }
+  ],
+  "failed_attempts": 1,
+  "production_user_confirmed": false,
+  "posted": false,
+  "backend_tests": {
+    "total": 1256,
+    "passed": 1252,
+    "skipped": 4
+  },
+  "frontend_tests": {
+    "total": 284,
+    "passed": 284
+  }
+}

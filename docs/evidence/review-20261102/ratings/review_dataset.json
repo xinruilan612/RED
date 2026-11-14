@@ -1,0 +1,110 @@
+{
+  "schema": "youji-human-reviews/1",
+  "updated_on": "2026-11-03",
+  "status": "contains_observed_human_self_review",
+  "records": [
+    {
+      "record_id": "review:a9f18d62d71b:P0003",
+      "reviewer_id": "developer-self",
+      "reviewer_role": "developer",
+      "evaluation_type": "human_self_review",
+      "is_human_rating": true,
+      "independent_of_development": false,
+      "included_in_dataset": true,
+      "task_id": "D01",
+      "article_id": "P0003",
+      "material_type": "fictional_controlled_task",
+      "scores": {
+        "completeness": 4,
+        "factuality": 3,
+        "coherence": 3,
+        "naturalness": 3,
+        "usefulness": 3
+      },
+      "notes": "",
+      "source_csv_sha256": "a9f18d62d71be0a81c64fa5cc64c23be40348b406efcbe7fe90ccf9638d1da00",
+      "received_on": "2026-11-03"
+    },
+    {
+      "record_id": "review:a9f18d62d71b:P0004",
+      "reviewer_id": "developer-self",
+      "reviewer_role": "developer",
+      "evaluation_type": "human_self_review",
+      "is_human_rating": true,
+      "independent_of_development": false,
+      "included_in_dataset": true,
+      "task_id": "D01",
+      "article_id": "P0004",
+      "material_type": "fictional_controlled_task",
+      "scores": {
+        "completeness": 4,
+        "factuality": 3,
+        "coherence": 4,
+        "naturalness": 4,
+        "usefulness": 4
+      },
+      "notes": "",
+      "source_csv_sha256": "a9f18d62d71be0a81c64fa5cc64c23be40348b406efcbe7fe90ccf9638d1da00",
+      "received_on": "2026-11-03"
+    },
+    {
+      "record_id": "review:a9f18d62d71b:P0002",
+      "reviewer_id": "developer-self",
+      "reviewer_role": "developer",
+      "evaluation_type": "human_self_review",
+      "is_human_rating": true,
+      "independent_of_development": false,
+      "included_in_dataset": true,
+      "task_id": "D01",
+      "article_id": "P0002",
+      "material_type": "fictional_controlled_task",
+      "scores": {
+        "completeness": 4,
+        "factuality": 4,
+        "coherence": 4,
+        "naturalness": 5,
+        "usefulness": 4
+      },
+      "notes": "",
+      "source_csv_sha256": "a9f18d62d71be0a81c64fa5cc64c23be40348b406efcbe7fe90ccf9638d1da00",
+      "received_on": "2026-11-03"
+    },
+    {
+      "record_id": "review:a9f18d62d71b:P0001",
+      "reviewer_id": "developer-self",
+      "reviewer_role": "developer",
+      "evaluation_type": "human_self_review",
+      "is_human_rating": true,
+      "independent_of_development": false,
+      "included_in_dataset": true,
+      "task_id": "D01",
+      "article_id": "P0001",
+      "material_type": "fictional_controlled_task",
+      "scores": {
+        "completeness": 4,
+        "factuality": 4,
+        "coherence": 4,
+        "naturalness": 4,
+        "usefulness": 4
+      },
+      "notes": "",
+      "source_csv_sha256": "a9f18d62d71be0a81c64fa5cc64c23be40348b406efcbe7fe90ccf9638d1da00",
+      "received_on": "2026-11-03"
+    }
+  ],
+  "summary": {
+    "human_reviewers": 1,
+    "developer_reviewers": 1,
+    "independent_reviewers": 0,
+    "tasks": 1,
+    "articles_rated": 4,
+    "rating_records": 4,
+    "score_cells": 20,
+    "missing_score_cells": 0,
+    "notes_provided": 0,
+    "overall_equal_weight_mean": 3.8,
+    "independent_review_mean": null,
+    "algorithm_effect": null
+  },
+  "analysis_policy": "Retain developer self-review as observed human data; report separately from independent raters. Four articles from one fictional task are not four independent tasks. Missing notes do not invalidate numerical scores."
+}

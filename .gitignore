@@ -10,3 +10,12 @@ __pycache__/
 runtime/
 node_modules/
 .next/
+
+# Local state and publication scratch files
+data/
+tmp/
+*.sqlite
+*.sqlite3
+*.db
+*-wal
+*-shm

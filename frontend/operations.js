@@ -1,16 +1,18 @@
 'use strict';
 let ops=null,chosenTrend=null,opsBusy=false,currentPage='overview',platformFilter='all',keyword='';
 const platformNames={xiaohongshu:'小红书',douyin:'抖音'};
+// 经验要攒到多少篇同类作品才值得一起比。写死在前端，方便以后调；后端比较规则不变。
+const MEMORY_TARGET=10;
 const pubStates={AWAITING_APPROVAL:'待发布确认',APPROVED:'待执行',SIMULATED:'已演练 · 未真实发布',MANUAL_REPORTED:'已发布 · 人工记录'};
 const memoryStates={proposed:'待你决定',accepted:'已接受',rejected:'已拒绝',revoked:'已撤销',superseded:'指标已修正 · 经验失效'};
 const pageInfo={overview:['THIS WEEK / 00','把每周运营，连成长期积累。','目标、创作和复盘，都围绕当前账号展开。'],accounts:['ACCOUNT / PROFILE','认识你的账号，也记住每一次选择。','定位档案、历史作品与表达偏好，持续保存在同一个账号里。'],trends:['DISCOVER / 01','找到下一个值得写的选题。','从趋势线索出发，让每一次创作都有依据。'],studio:['CREATE / 02','把好选题，变成好内容。','受众洞察、素材研究、创作与审核，协作过程始终可见。'],publish:['ARCHIVE / 03','发布之后，把作品留在这里。','在小红书或抖音发布后，记录实际内容、作品链接和时间，持续积累自己的作品档案。'],metrics:['MEASURE / 04','看看内容带来了什么。','保留数据来源与观察窗口，缺失数据不记为零。'],memory:['LEARN / 05','让下一次创作，更有依据。','从历史表现提取实验建议，由你决定哪些经验值得保留。']};
 const dateText=value=>value?new Date(value).toLocaleString('zh-CN',{hour12:false}):'固定示例 · 无采集时间';
 const badge=(text,kind='')=>`<span class="pill ${kind}">${esc(text)}</span>`;
-const empty=(title,body)=>`<div class="empty-state"><span class="empty-symbol">↗</span><h2>${esc(title)}</h2><p>${esc(body)}</p></div>`;
+const empty=(title,body)=>`<div class="empty-state"><img class="empty-art" src="/mascot-dog.png" alt=""><h2>${esc(title)}</h2><p>${esc(body)}</p></div>`;
 function showPage(page){
- if(page==='trials'||page==='windtunnel')page='studio';
+ if(page==='trials')page='studio';
  if(!pageInfo[page])page='studio';
- currentPage=page;location.hash=page;
+ currentPage=page;location.hash=page;if(page==='studio'&&typeof refreshWorkbenchSearchProviders==='function')refreshWorkbenchSearchProviders();
  $('studioView').hidden=page!=='studio';$('operationsView').hidden=page==='studio';
  [$('pageEyebrow').textContent,$('pageTitle').textContent,$('pageDescription').textContent]=pageInfo[page];
  document.querySelectorAll('[data-page]').forEach(b=>{const active=b.dataset.page===page;b.classList.toggle('active',active);b.setAttribute('aria-current',active?'page':'false');if(active){const group=b.closest?.('details');if(group)group.open=true;}});
@@ -37,6 +39,7 @@ function renderOperations(){
  if(currentPage==='publish')renderPublications();
  if(currentPage==='metrics')renderMetrics();
  if(currentPage==='memory')renderMemory();
+ if(currentPage==='windtunnel'&&typeof renderWindtunnel==='function')renderWindtunnel();
 }
 function stat(label,value,note){return `<div><span>${esc(label)}</span><b>${esc(value)}</b><small>${esc(note)}</small></div>`;}
 function renderTrends(){
@@ -105,15 +108,22 @@ function latestMetrics(){const map=new Map();for(const m of accountRows('metrics
 function renderMemory(){
  const memories=accountRows('memories');
  const cards=memories.map(m=>`<article class="panel memory-card"><div class="card-top"><div>${badge(platformNames[m.platform])} ${badge(m.source_type==='simulation'?'演示经验':'用户数据经验','amber')}</div>${badge(memoryStates[m.status],'neutral')}</div><h2>${esc(m.observation.split('；')[0])}</h2><p class="memory-advice">${esc(m.text)}</p><p class="muted">${esc(m.account)} · ${m.window} · ${m.sample_size} 篇样本</p><p class="helper">${esc(m.limitation)}</p><details><summary>查看证据与使用范围</summary><p class="readable">${esc(m.observation)}</p><p>指标快照 ${esc(m.metric_id.slice(0,8))} · 发布记录 ${esc(m.publication_id.slice(0,8))}</p><p>仅用于同平台、同账号的${m.source_type==='simulation'?'模拟':'真实 AI'}创作。修正指标后，相关经验会自动失效。</p></details><div class="buttons">${m.status==='proposed'?`<button class="primary" data-memory="${m.id}" data-status="accepted">接受为下次实验建议</button><button class="quiet" data-memory="${m.id}" data-status="rejected">暂不采用</button>`:m.status==='accepted'?`<button class="quiet" data-memory="${m.id}" data-status="revoked">撤销此经验</button>`:''}</div></article>`).join('');
- $('operationsContent').innerHTML=`<div class="ops-hero memory-hero"><div><span class="eyebrow">有证据才积累，不强行得出结论</span><h2>经验有来源，也可以撤销。</h2><p>记录实际表现 → 分析 → 你接受建议 → 下次同账号复用。</p></div>${badge(memories.filter(m=>m.status==='accepted').length+' 条已接受经验')}</div><div class="memory-list">${cards||empty('目前没有可采用的经验',memoryNextStep())+'<button class="secondary" data-go-page="metrics">查看数据复盘与下一步 →</button>'}</div>`;
+ $('operationsContent').innerHTML=`<div class="ops-hero memory-hero"><div><span class="eyebrow">有证据才积累，不强行得出结论</span><h2>经验有来源，也可以撤销。</h2><p>记录实际表现 → 攒够同类作品 → 对比好差 → 你决定要不要留下这条经验。</p><p class="readable">${esc(memoryProgress())}</p></div>${badge(memories.filter(m=>m.status==='accepted').length+' 条已接受经验')}</div><div class="memory-list">${cards||empty('目前没有可采用的经验',memoryNextStep())+'<button class="secondary" data-go-page="metrics">查看数据复盘与下一步 →</button>'}</div>`;
+}
+function memoryTarget(){return MEMORY_TARGET;}
+function memoryProgress(){
+ const counted=new Set(accountRows('metrics').map(m=>m.publication_id)).size;
+ if(counted>=MEMORY_TARGET)return `已记录 ${counted} 篇，够 ${MEMORY_TARGET} 篇了，可以按表现分成两组，看差在栏目、标题、发布时机还是形式上。`;
+ return `已记录 ${counted} 篇 / ${MEMORY_TARGET} 篇。补录历史作品的指标也会计入；没指标的作品进不了对比。`;
 }
 function memoryNextStep(){
  const reports=accountRows('analyses').filter(a=>a.status!=='superseded');
- if(!reports.length)return '还没有分析记录。先在“作品与复盘”保存一次指标，再点“分析这条记录”。';
- if(reports.every(a=>a.status==='insufficient'))return '已保存分析，但观察窗口或可比样本不足，因此没有生成经验。按复盘提示补足 24 小时、72 小时或 7 天观察；不要填造缺失数据。';
- return '已有复盘，但尚无满足证据条件的候选经验。查看复盘的限制与下一次建议；不会强行生成经验。';
+ const counted=new Set(accountRows('metrics').map(m=>m.publication_id)).size;
+ if(!reports.length)return `这条作品的指标已经保存。经验不是一条就能得出的：等同类作品攒到 ${MEMORY_TARGET} 篇，放到一起比才有意义。`;
+ if(reports.every(a=>a.status==='insufficient'))return `目前记录了 ${counted} 篇。到 ${MEMORY_TARGET} 篇时，系统会对比表现好和差的那些，看差在栏目、标题长度、发布时机还是形式上。`;
+ return '已经有对比记录，但样本还不够稳，先不写成经验。';
 }
-document.querySelector('.workspace-nav').onclick=e=>{const b=e.target.closest('[data-page]');if(b&&!busy&&dirtyGuard()){auto=false;showPage(b.dataset.page);}};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-page]');if(b&&!b.disabled&&!busy&&dirtyGuard()){auto=false;showPage(b.dataset.page);}});
 $('clearTrend').onclick=()=>{chosenTrend=null;$('selectedTrend').hidden=true;$('clearTrend').hidden=true;};
 $('targetPlatform').onchange=()=>{if(chosenTrend&&chosenTrend.platform!==$('targetPlatform').value)$('clearTrend').click();};
 $('sendToPublish').onclick=async()=>{try{if(!ops)ops=await api('/api/operations');showPage('publish');await openPublishedArchive(run.run_id);}catch(e){error(e);}};

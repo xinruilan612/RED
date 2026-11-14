@@ -2,9 +2,9 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const app=fs.readFileSync('frontend/app.js','utf8'),knowledge=fs.readFileSync('frontend/knowledge.js','utf8');
 function setup(){
- const fields={},sandbox={$:id=>fields[id],esc:v=>String(v??'').replace(/</g,'&lt;').replace(/>/g,'&gt;'),URL,api:async()=>({domains:{beauty:{label:'美妆'},photography:{label:'摄影'},digital:{label:'数码'}}})};
+ const fields={},sandbox={Event,$:id=>fields[id],esc:v=>String(v??'').replace(/</g,'&lt;').replace(/>/g,'&gt;'),URL,api:async()=>({domains:{beauty:{label:'美妆'},photography:{label:'摄影'},digital:{label:'数码'}}})};
  vm.createContext(sandbox);
- vm.runInContext(app.slice(app.indexOf('async function creationRequest('),app.indexOf('function renderDraft(')),sandbox);
+ vm.runInContext(app.slice(app.indexOf('function domainFieldError('),app.indexOf('function renderDraft(')),sandbox);
  vm.runInContext(knowledge.slice(knowledge.indexOf('async function documentClassificationRequest(')),sandbox);
  return {fields,sandbox,eval:code=>vm.runInContext(code,sandbox)};
 }
@@ -55,4 +55,73 @@ test('a classification request cannot post after account changes during taxonomy
 });
 test('run heading uses actual content form instead of always claiming a note',()=>{
  const line=app.split('\n').find(l=>l.includes("$('runSummary').textContent="));assert.match(line,/creation_classification\?\.format/);assert.match(line,/video_script:'短视频口播'/);assert.match(line,/product_detail:'商品详情'/);
+});
+
+function pickerFixture(s,id,value=''){
+ const attrs={},statusAttrs={},details={tagName:'DETAILS',open:false,parentElement:null};
+ const status={textContent:'',setAttribute(k,v){statusAttrs[k]=v;},removeAttribute(k){delete statusAttrs[k];}};
+ const retry={},host={dataset:{},parentElement:details,boxes:[],status:null,focused:false,
+  set innerHTML(html){this.html=html;this.status=html.includes('data-domain-status')?status:null;this.boxes=[...html.matchAll(/<input type="checkbox" value="([^"]+)" ([^>]*)>/g)].map(m=>({value:m[1],checked:m[2].includes('checked'),disabled:false}));},
+  get innerHTML(){return this.html;},querySelector(sel){return sel==='[data-domain-status]'?this.status:retry;},querySelectorAll(){return this.boxes;},
+  setAttribute(k,v){attrs[k]=v;},removeAttribute(k){delete attrs[k];},focus(){this.focused=true;}};
+ const input={value,events:[],dispatchEvent(e){this.events.push(e.type);}};
+ s.fields[id]=input;s.fields[id+'Picker']=host;return {host,input,status,retry,details,attrs,statusAttrs};
+}
+test('invalid domains identify the field and preserve input while opening its correction control',async()=>{
+ const s=setup(),p=pickerFixture(s,'creationDomains','护肤');await s.eval("mountDomainPicker('creationDomains')");
+ await assert.rejects(s.eval('creationRequest()'),e=>e.field==='creationDomains'&&/护肤/.test(e.message)&&/重新选择/.test(e.message));
+ assert.equal(p.input.value,'护肤');assert.equal(p.details.open,true);assert.equal(p.host.focused,true);assert.equal(p.attrs['aria-invalid'],'true');assert.equal(p.statusAttrs.role,'alert');
+});
+test('nine distinct domains fail before lookup and explain how many selections to remove',async()=>{
+ const s=setup();s.fields.creationDomains={value:Array.from({length:9},(_,i)=>'domain'+i).join(',')};let calls=0;s.sandbox.api=async()=>{calls++;throw Error('should not lookup');};
+ await assert.rejects(s.eval('creationRequest()'),e=>e.field==='creationDomains'&&/9/.test(e.message)&&/取消 1 个/.test(e.message));assert.equal(calls,0);
+});
+test('empty domain rules allow automatic facts and generic methods but require scoped examples and explicit facts',async()=>{
+ const s=setup();s.fields.documentMaterialType={value:'fact'};assert.equal(await s.eval('documentClassificationRequest()'),undefined);
+ s.fields.documentChannel={value:'xiaohongshu'};await assert.rejects(s.eval('documentClassificationRequest()'),e=>e.field==='documentDomains'&&/通用/.test(e.message));
+ delete s.fields.documentChannel;s.fields.documentMaterialType.value='method';assert.deepEqual(JSON.parse(JSON.stringify(await s.eval('documentClassificationRequest()'))),{material_type:'method'});
+ s.fields.documentMaterialType.value='example';await assert.rejects(s.eval('documentClassificationRequest()'),e=>e.field==='documentDomains'&&/至少勾选 1 个/.test(e.message));
+ s.fields.documentMaterialType.value='fact';await assert.rejects(s.eval("documentClassificationRequest('document',true)"),e=>e.field==='documentDomains'&&/至少勾选 1 个/.test(e.message));
+});
+test('invalid classification never posts and keeps submit available for a corrected retry',async()=>{
+ const s=setup(),calls=[],errors=[];Object.assign(s.sandbox,{classificationEdit:1,activeAccountId:'a',currentPage:'library',error:e=>errors.push(e),api:async(...args)=>{calls.push(args);return {domains:{beauty:{label:'美妆'}}};}});
+ Object.assign(s.fields,{classificationDomains:{value:'护肤'},classificationMaterialType:{value:'example'}});s.sandbox.event={preventDefault(){},submitter:{disabled:false}};s.sandbox.doc={id:'d',version:1};
+ await s.eval("saveDocumentClassification(event,doc,'a',1)");assert.equal(calls.some(c=>c[1]==='POST'),false);assert.equal(errors.length,1);assert.equal(errors[0].field,'classificationDomains');assert.match(errors[0].message,/护肤/);assert.equal(s.sandbox.event.submitter.disabled,false);assert.equal(s.fields.classificationDomains.value,'护肤');
+});
+test('picker disables a ninth choice at the limit and restores choices after deselection',async()=>{
+ const s=setup(),p=pickerFixture(s,'creationDomains');s.sandbox.api=async()=>({domains:Object.fromEntries(Array.from({length:10},(_,i)=>['d'+i,{label:'领域'+i}]))});await s.eval("mountDomainPicker('creationDomains')");
+ for(const box of p.host.boxes.slice(0,8)){box.checked=true;p.host.onchange();}
+ assert.equal(p.host.boxes[8].disabled,true);assert.equal(p.host.boxes[0].disabled,false);assert.match(p.status.textContent,/8\/8.*取消/);
+ p.host.boxes[0].checked=false;p.host.onchange();assert.equal(p.host.boxes[8].disabled,false);assert.match(p.status.textContent,/7\/8/);assert.equal(p.input.value.split(',').length,7);assert.equal(p.input.events.length,9);
+});
+test('failed taxonomy load retains selections and can retry in place',async()=>{
+ const s=setup(),p=pickerFixture(s,'creationDomains','beauty');s.sandbox.api=async()=>{throw Error('offline');};await s.eval("mountDomainPicker('creationDomains')");assert.match(p.host.innerHTML,/加载失败.*重新加载选项/);assert.equal(p.input.value,'beauty');
+ await assert.rejects(s.eval('creationRequest()'),e=>e.field==='creationDomains'&&/暂时无法核对/.test(e.message));
+ s.sandbox.api=async()=>({domains:{beauty:{label:'美妆'}}});await p.retry.onclick();assert.equal(p.host.boxes[0].checked,true);assert.equal(p.input.value,'beauty');assert.deepEqual(JSON.parse(JSON.stringify(await s.eval('creationRequest()'))),{channel:'xiaohongshu',domains:['beauty']});
+});
+test('unavailable historic domain remains rejected until user explicitly selects a replacement',async()=>{
+ const s=setup(),p=pickerFixture(s,'creationDomains','retired');await s.eval("mountDomainPicker('creationDomains')");assert.equal(p.input.value,'retired');assert.match(p.status.textContent,/retired.*重新勾选/);await assert.rejects(s.eval('creationRequest()'),e=>e.field==='creationDomains');
+ p.host.boxes[0].checked=true;p.host.onchange();assert.equal(p.input.value,'beauty');assert.equal(p.attrs['aria-invalid'],undefined);assert.deepEqual(JSON.parse(JSON.stringify(await s.eval('creationRequest()'))),{channel:'xiaohongshu',domains:['beauty']});
+});
+
+test('correcting a domain clears its own global error and resets error ownership',async()=>{
+ const s=setup(),p=pickerFixture(s,'creationDomains','retired');s.fields.error={hidden:true};
+ s.eval(app.slice(app.indexOf('let errorSource='),app.indexOf('function toast(')));
+ await s.eval("mountDomainPicker('creationDomains')");
+ await s.eval('creationRequest().catch(e=>error(e))');
+ assert.equal(s.fields.error.hidden,false);assert.equal(s.eval('errorField'),'creationDomains');assert.match(s.fields.error.textContent,/retired/);
+ p.host.boxes[0].checked=true;p.host.onchange();
+ assert.equal(s.fields.error.hidden,true);assert.equal(s.eval('errorField'),null);assert.equal(s.eval('errorSource'),null);assert.equal(p.attrs['aria-invalid'],undefined);
+ assert.deepEqual(JSON.parse(JSON.stringify(await s.eval('creationRequest()'))),{channel:'xiaohongshu',domains:['beauty']});
+});
+test('changing a domain does not hide a different field or unrelated request error',async()=>{
+ const s=setup(),p=pickerFixture(s,'creationDomains');s.fields.error={hidden:true};
+ s.eval(app.slice(app.indexOf('let errorSource='),app.indexOf('function toast(')));
+ await s.eval("mountDomainPicker('creationDomains')");
+ s.eval("error(Object.assign(new Error('请补充资料标题'),{field:'documentTitle'}))");
+ p.host.boxes[0].checked=true;p.host.onchange();
+ assert.equal(s.fields.error.hidden,false);assert.equal(s.fields.error.textContent,'请补充资料标题');assert.equal(s.eval('errorField'),'documentTitle');
+ s.eval("error(new Error('服务暂时无法连接'))");assert.equal(s.eval('errorField'),null);
+ p.host.boxes[0].checked=false;p.host.onchange();
+ assert.equal(s.fields.error.hidden,false);assert.equal(s.fields.error.textContent,'服务暂时无法连接');assert.equal(s.eval('errorSource'),'request');
 });

@@ -19,6 +19,11 @@ from test_live_provider import FixtureModel
 
 class ConnectionTests(unittest.TestCase):
     def setUp(self):
+        # These transport fixtures exercise the direct path, independently of
+        # the host's configured system proxy. Proxy behavior has its own tests.
+        for target in ('backend.model_dns.configured_proxy','backend.public_dns.configured_proxy'):
+            proxy_patch=patch(target,return_value=None)
+            proxy_patch.start();self.addCleanup(proxy_patch.stop)
         self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
         self.store=Store(Path(self.temp.name)/'test.sqlite')
         self.service=Service(self.store,Config())
@@ -62,9 +67,25 @@ class ConnectionTests(unittest.TestCase):
         self.models.select('alice',{'connection_id':None})
         self.assertIsNone(self.models.route('alice'))
 
+    def test_label_only_edit_keeps_frozen_task_but_execution_edits_invalidate_it(self):
+        item=self.save();self.models.select('alice',{'connection_id':item['id']})
+        old=self.models.route('alice')
+        editable={'id':item['id'],'version':item['version'],'provider':item['provider'],
+                  'model':item['model'],'label':'通义千问'}
+        renamed=self.models.save('alice',editable)
+        self.assertEqual(renamed['version'],2)
+        self.assertIsInstance(self.models.adapter(old,'alice'),ConnectedModel)
+        editable.update(version=2,label='工作模型')
+        self.models.save('alice',editable)
+        self.assertIsInstance(self.models.adapter(old,'alice'),ConnectedModel)
+        editable.update(version=3,rate_usd_per_million=3)
+        self.models.save('alice',editable)
+        with self.assertRaises(DomainError) as error:self.models.adapter(old,'alice')
+        self.assertEqual(error.exception.code,'CONFIG_INVALID')
+
     def test_full_creation_uses_byok_without_platform_key_and_snapshot_survives_restart(self):
         item=self.save();self.models.select('alice',{'connection_id':item['id']})
-        result=self.service.create('alice',dict(topic='课程资料整理',audience='大学生',tone='清晰',material='我用文件夹整理课程笔记。',mode='live'))
+        result=self.service.create('alice',dict(topic='课程资料整理',audience='大学生',tone='清晰',material='我用文件夹整理课程笔记。',mode='live',web_research={'enabled':False,'queries':[]}))
         run=self.store.get(result['run_id'],'alice');fixture=FixtureModel()
         service=Service(self.store,Config())
         service.models.vault=CredentialVault(self.store,environ={})
@@ -192,7 +213,7 @@ class PostgresConnectionTests(unittest.TestCase):
                 store=Store(target);service=Service(store,Config())
                 item=service.models.save('owner',dict(provider='qwen',model='fixture-qwen',api_key='fake-api-key',rate_usd_per_million=2,run_budget_usd=1,day_budget_usd=5))
                 service.models.select('owner',{'connection_id':item['id']})
-                output=service.create('owner',dict(topic='资料整理',audience='大学生',tone='清晰',material='我用文件夹整理课程笔记。',mode='live'))
+                output=service.create('owner',dict(topic='资料整理',audience='大学生',tone='清晰',material='我用文件夹整理课程笔记。',mode='live',web_research={'enabled':False,'queries':[]}))
                 run=store.get(output['run_id'],'owner')
                 service.background('owner',run.run_id,dict(action='start',version=run.status_version,key=str(uuid4())))
                 restarted=Service(Store(target),Config());fixture=FixtureModel()

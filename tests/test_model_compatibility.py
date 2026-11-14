@@ -97,6 +97,16 @@ class ModelCompatibilityTests(unittest.TestCase):
                 self.assertEqual('enable_thinking' in request.call_args.args[2],expected)
                 if expected:self.assertIs(request.call_args.args[2]['enable_thinking'],False)
 
+    def test_deepseek_reasoning_is_disabled_only_on_the_official_endpoint(self):
+        for provider,url,expected in [('deepseek','https://api.deepseek.com',True),
+                                      ('custom','https://gateway.example.com/v1',False)]:
+            item=self.save(provider=provider,model='deepseek-flash',base_url=url)
+            with self.subTest(url=url),patch('backend.provider.connected_request',return_value=self.response('openai')) as request:
+                ConnectedModel(item,'test-key').complete_result([{'role':'system','content':'JSON only'},{'role':'user','content':'test'}])
+                payload=request.call_args.args[2]
+                if expected:self.assertEqual(payload['thinking'],{'type':'disabled'})
+                else:self.assertNotIn('thinking',payload)
+
     def test_content_parts_and_reported_split_usage_are_supported(self):
         packet=self.response('openai',usage={'prompt_tokens':7,'completion_tokens':3})
         packet['choices'][0]['message']['content']=[{'type':'text','text':'{"ok":'},{'type':'text','text':'true}'}]
@@ -126,3 +136,13 @@ class ModelCompatibilityTests(unittest.TestCase):
         self.assertEqual(self.models.public('alice')['connections'][0]['test_status'],'failed')
         with self.store.connect() as db:
             self.assertEqual(db.execute('SELECT tokens,reserved,status FROM model_connection_tests').fetchone(),(None,512,'failed'))
+
+    def test_probe_proven_unsent_releases_only_its_usage_reservation(self):
+        item=self.save()
+        with patch('backend.provider.ConnectedModel.complete_result',side_effect=DomainError('MODEL_REQUEST_NOT_SENT','DNS stopped before transport')):
+            with self.assertRaises(DomainError) as failure:
+                self.models.test('alice',item['id'],{'version':1,'acknowledge_cost':True})
+        self.assertEqual(failure.exception.code,'MODEL_REQUEST_NOT_SENT')
+        self.assertEqual(self.models.public('alice')['connections'][0]['test_status'],'failed')
+        with self.store.connect() as db:
+            self.assertEqual(db.execute('SELECT tokens,reserved,status FROM model_connection_tests').fetchone(),(0,512,'failed'))

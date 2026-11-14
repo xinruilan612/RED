@@ -1,0 +1,196 @@
+{
+  "schema": "youji-evaluation-results/1",
+  "gold_set_hash": "d3e0afc7d669cb2203200dc6751fe09ae9d1f22e0edee26a0f46d1942d90ec9a",
+  "origin": "http://127.0.0.1:8890",
+  "budget_authorized_usd": 0.5,
+  "account_id": "d6130df6-e7db-4e06-9d42-a68aa29f0ada",
+  "records": [
+    {
+      "arm": "A",
+      "item_id": "G01",
+      "status": "failed",
+      "retrieval_mode": "none",
+      "detail": "模型安全代理隧道未建立；尚未发送模型请求",
+      "score": {
+        "chars": 0,
+        "fact_support": {
+          "total": 0,
+          "supported": 0,
+          "rate": null,
+          "evidence": []
+        },
+        "forbidden": {
+          "hits": [],
+          "any_hit": false,
+          "patterns": 5
+        },
+        "coverage": {
+          "total": 4,
+          "covered": 0,
+          "rate": 0.0,
+          "evidence": [
+            {
+              "point": "色号陶土玫瑰",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "净含量3克",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "包装透明方管",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "斜面刷头",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "B",
+      "item_id": "G01",
+      "status": "no_draft",
+      "run_id": "b0c422ac-d7f7-4460-a156-e792dbff5cd4",
+      "run_status": "RUNNING",
+      "draft": {},
+      "retrieval_mode": "disabled",
+      "calls": 2,
+      "references": [],
+      "score": {
+        "chars": 0,
+        "fact_support": {
+          "total": 0,
+          "supported": 0,
+          "rate": null,
+          "evidence": []
+        },
+        "forbidden": {
+          "hits": [],
+          "any_hit": false,
+          "patterns": 5
+        },
+        "coverage": {
+          "total": 4,
+          "covered": 0,
+          "rate": 0.0,
+          "evidence": [
+            {
+              "point": "色号陶土玫瑰",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "净含量3克",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "包装透明方管",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "斜面刷头",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "C",
+      "item_id": "G01",
+      "status": "failed",
+      "detail": "409 {\"error\":{\"code\":\"RUN_ALREADY_ACTIVE\",\"message\":\"已有活跃任务\"}}",
+      "score": {
+        "chars": 0,
+        "fact_support": {
+          "total": 0,
+          "supported": 0,
+          "rate": null,
+          "evidence": []
+        },
+        "forbidden": {
+          "hits": [],
+          "any_hit": false,
+          "patterns": 5
+        },
+        "coverage": {
+          "total": 4,
+          "covered": 0,
+          "rate": 0.0,
+          "evidence": [
+            {
+              "point": "色号陶土玫瑰",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "净含量3克",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "包装透明方管",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "斜面刷头",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "notes": [
+    "真实模型调用；A 组为单次直写，直接在默认模型连接上执行、不经运行账本，其费用按 token 估算并记入 arm_a_spent_usd"
+  ],
+  "arm_a_spent_usd": 0.0,
+  "cost_estimate_usd": 0.002734,
+  "summary": {
+    "A": {
+      "n": 1,
+      "fact_support_rate": null,
+      "expected_point_coverage": 0.0,
+      "forbidden_hit_rate": 0.0,
+      "mean_body_chars": 0.0
+    },
+    "B": {
+      "n": 1,
+      "fact_support_rate": null,
+      "expected_point_coverage": 0.0,
+      "forbidden_hit_rate": 0.0,
+      "mean_body_chars": 0.0
+    },
+    "C": {
+      "n": 1,
+      "fact_support_rate": null,
+      "expected_point_coverage": 0.0,
+      "forbidden_hit_rate": 0.0,
+      "mean_body_chars": 0.0
+    }
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "scope": "固定旧v2稿与原审核的新版有限规则离线回放；按已发现的失败开发，非独立质量评价或新模型生成。未改原稿。",
+  "model_calls": 0,
+  "new_drafts": 0,
+  "guard_sha256": "89c7042d010c694e1b2a42ffd0a2c35036b09a92f0bc7608b95c59de7c14fb26",
+  "cases": [
+    {
+      "case_id": "REAL-D01-A",
+      "frozen_receipt_sha256": "8825e4b55a2383736e6f5504e2d49e292435f8f15b76fc84c4ddefdbd609de6f",
+      "old_decision": "needs_human",
+      "replayed_decision": "needs_human",
+      "added_findings": []
+    },
+    {
+      "case_id": "REAL-D01-E",
+      "frozen_receipt_sha256": "f34cb0f59986f2bfc022f66e969a28a0260752085356142bea5d20c2f942031d",
+      "old_decision": "needs_human",
+      "replayed_decision": "needs_human",
+      "added_findings": [
+        {
+          "location": "body",
+          "excerpt": "可直连2024款Mac mini M4版背面——三个雷雳4端口，专为M4版本配置（M4 Pro才用雷雳5）。",
+          "reason": "直接连接属于新增使用结论，现有引用没有对应的明确记录；接口、尺寸或品牌介绍不能替代该体验或适用性依据。",
+          "issue_id": "fact-grounding-9897f24422810f53",
+          "severity": "major",
+          "state": "open",
+          "suggestion": "用本次实际取得且匹配对象、条件与时间的来源核对该句并补齐引用；无法支持时删除或缩小该主张，体验须有真实记录。"
+        },
+        {
+          "location": "body",
+          "excerpt": "正面则有两个USB 3协议的USB-C口和一个耳机孔，不支持视频输出或充电。",
+          "reason": "视频功能限制属于新增使用结论，现有引用没有对应的明确记录；接口、尺寸或品牌介绍不能替代该体验或适用性依据。",
+          "issue_id": "fact-grounding-a3e361fcc4ebff21",
+          "severity": "major",
+          "state": "open",
+          "suggestion": "用本次实际取得且匹配对象、条件与时间的来源核对该句并补齐引用；无法支持时删除或缩小该主张，体验须有真实记录。"
+        }
+      ]
+    },
+    {
+      "case_id": "REAL-D02-A",
+      "frozen_receipt_sha256": "9c32fa8f5d2e97848c27fd4b19580c5719d1efe8954b02282092373f7cd8f929",
+      "old_decision": "approved",
+      "replayed_decision": "needs_human",
+      "added_findings": [
+        {
+          "location": "body",
+          "excerpt": "选罗技M650前，先确认你的手型和设备系统——官方明确按手型分款，连接方式与平台支持虽广，但关键参数未公开。",
+          "reason": "公开范围属于新增使用结论，现有引用没有对应的明确记录；接口、尺寸或品牌介绍不能替代该体验或适用性依据。",
+          "issue_id": "fact-grounding-785e6b007634523a",
+          "severity": "major",
+          "state": "open",
+          "suggestion": "用本次实际取得且匹配对象、条件与时间的来源核对该句并补齐引用；无法支持时删除或缩小该主张，体验须有真实记录。"
+        },
+        {
+          "location": "body",
+          "excerpt": "⚠️ 注意：电池寿命、DPI、机身尺寸等参数本次未公开；FAQ标题不构成答案；无亲测效果或静音承诺。",
+          "reason": "公开范围属于新增使用结论，现有引用没有对应的明确记录；接口、尺寸或品牌介绍不能替代该体验或适用性依据。",
+          "issue_id": "fact-grounding-f4874c42ac6ebbb1",
+          "severity": "major",
+          "state": "open",
+          "suggestion": "用本次实际取得且匹配对象、条件与时间的来源核对该句并补齐引用；无法支持时删除或缩小该主张，体验须有真实记录。"
+        }
+      ]
+    },
+    {
+      "case_id": "REAL-D02-E",
+      "frozen_receipt_sha256": "83a6dee7d85ce5a1cb91544c5fa7e77af5e4c226d77546f640dc19b0d8faa594",
+      "old_decision": "approved",
+      "replayed_decision": "needs_human",
+      "added_findings": [
+        {
+          "location": "tags",
+          "excerpt": "多设备切换",
+          "reason": "多设备切换属于新增使用结论，现有引用没有对应的明确记录；接口、尺寸或品牌介绍不能替代该体验或适用性依据。",
+          "issue_id": "fact-grounding-12a1145c15f011b4",
+          "severity": "major",
+          "state": "open",
+          "suggestion": "用本次实际取得且匹配对象、条件与时间的来源核对该句并补齐引用；无法支持时删除或缩小该主张，体验须有真实记录。"
+        }
+      ]
+    },
+    {
+      "case_id": "REAL-H01-A",
+      "frozen_receipt_sha256": "82f9067f165ce1ea6d8650d9a78783bb02113ee33ac8f4b34cc4a614c36521ad",
+      "old_decision": "needs_human",
+      "replayed_decision": "needs_human",
+      "added_findings": []
+    },
+    {
+      "case_id": "REAL-H01-E",
+      "frozen_receipt_sha256": "926d17dd28cdd8b9448b05cbdd1c00e9af533609bae7c61ddc7583f13fb7c04d",
+      "old_decision": "needs_human",
+      "replayed_decision": "needs_human",
+      "added_findings": [
+        {
+          "location": "body",
+          "excerpt": "宜家LACK白色边桌（货号104.499.09），尺寸55×55×45cm（长×宽×高），放床边或沙发侧不占地；桌面最大承重10公斤——放笔记本+充电器+水杯完全够用，但不可坐、不可站。",
+          "reason": "需求满足属于新增使用结论，现有引用没有对应的明确记录；接口、尺寸或品牌介绍不能替代该体验或适用性依据。",
+          "issue_id": "fact-grounding-12f8e00503b4a5d8",
+          "severity": "major",
+          "state": "open",
+          "suggestion": "用本次实际取得且匹配对象、条件与时间的来源核对该句并补齐引用；无法支持时删除或缩小该主张，体验须有真实记录。"
+        },
+        {
+          "location": "cta",
+          "excerpt": "收到货立刻量桌面、称常用物、拧紧所有螺丝",
+          "reason": "紧固范围属于新增使用结论，现有引用没有对应的明确记录；接口、尺寸或品牌介绍不能替代该体验或适用性依据。",
+          "issue_id": "fact-grounding-87fc444a6d4c6731",
+          "severity": "major",
+          "state": "open",
+          "suggestion": "用本次实际取得且匹配对象、条件与时间的来源核对该句并补齐引用；无法支持时删除或缩小该主张，体验须有真实记录。"
+        }
+      ]
+    }
+  ]
+}

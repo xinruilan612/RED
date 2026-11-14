@@ -277,20 +277,22 @@ class ResearchConfirmationTests(unittest.TestCase):
         self.assertEqual(self.kb.retrieve(self.owner, self.account, '白衬衫护理')['sources'], [])
         approved = jobs.confirm(self.owner, job['id'], {'candidate_ids': [pending['candidates'][0]['id']], 'key': 'approve-web'})
         run = self.create_run()
-        self.assertEqual(run['context']['creation_retrieval']['groups']['examples'], [])
-        self.assertEqual(run['context']['evidence'], [])  # Unknown channel/form never enters as a fact.
-        self.assertIn('NO_MATCHING_EXAMPLES',[g['code'] for g in run['context']['creation_retrieval']['gaps']])
+        groups=run['context']['creation_retrieval']['groups']
+        self.assertEqual({s['document_id'] for s in groups['examples']},set(approved['document_ids']))
+        self.assertEqual(groups['facts'],[])  # A generic web reference never becomes product fact evidence.
         doc = self.kb.get(self.owner, self.account, approved['document_ids'][0])
         self.assertTrue(doc['metadata']['research_case']['provenance']['human_confirmed'])
-        # Explicit classification can admit the approved web reference for this target.
-        self.kb.save(self.owner,{'account_id':self.account,'document_id':doc['id'],'expected_version':doc['version'],
-            'title':doc['title'],'text':doc['chunks'][0]['text'],
-            'classification':{'domains':['apparel'],'channel':'xiaohongshu','format':'note','material_type':'example'}},
-            source_type='research_case',source_url=doc['source_url'],metadata=doc['metadata'])
-        self.store.command(run['run_id'],self.owner,run['status_version'],str(uuid4()),'cancel',{})
-        rerun=self.create_run()
-        self.assertEqual({s['document_id'] for s in rerun['context']['creation_retrieval']['groups']['examples']},set(approved['document_ids']))
-        self.assertEqual(rerun['context']['creation_retrieval']['groups']['facts'],[])
+        self.assertEqual(doc['metadata']['classification']['channel'],'any')
+        self.assertEqual(doc['metadata']['classification']['format'],'any')
+        snapshot=self.store.get(run['run_id'],self.owner)
+        snapshot.drafts=[{'content':{'selected_title':'白衬衫护理','body':'白衬衫使用冷水洗涤。','cta':'分享护理方式','tags':[]}}]
+        for stage in ('audience','research','strategy','outline','hook','title','body','review'):
+            with self.subTest(stage=stage):
+                messages,data=messages_for(snapshot,stage)
+                self.assertEqual([doc['id']],[s['document_id'] for s in data['creation_retrieval']['examples']])
+                self.assertEqual(doc['chunks'][0]['text'],data['creation_retrieval']['examples'][0]['text'])
+                self.assertFalse(any(s.get('document_id')==doc['id'] for s in data['materials']))
+                self.assertIn('不复制独特句子',messages[0]['content'])
 
     def test_cancellation_between_selection_and_save_blocks_late_ingestion(self):
         job = self.research();original_save = self.jobs.cases.save

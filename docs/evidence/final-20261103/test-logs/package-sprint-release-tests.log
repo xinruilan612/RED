@@ -1,0 +1,11 @@
+test_build_compares_all_source_bytes_evidence_and_original_runtime (test_package_sprint_release.SprintReleaseTests.test_build_compares_all_source_bytes_evidence_and_original_runtime) ... ok
+test_defaults_and_custom_names_are_consistent_and_validated (test_package_sprint_release.SprintReleaseTests.test_defaults_and_custom_names_are_consistent_and_validated) ... ok
+test_dirty_source_or_evidence_symlink_is_refused (test_package_sprint_release.SprintReleaseTests.test_dirty_source_or_evidence_symlink_is_refused) ... ok
+test_legacy_evidence_subfolders_remain_supported_without_expanded_packages (test_package_sprint_release.SprintReleaseTests.test_legacy_evidence_subfolders_remain_supported_without_expanded_packages) ... ok
+test_output_inside_source_is_refused (test_package_sprint_release.SprintReleaseTests.test_output_inside_source_is_refused) ... ok
+test_repeated_build_does_not_nest_old_archives_manifests_or_expanded_source (test_package_sprint_release.SprintReleaseTests.test_repeated_build_does_not_nest_old_archives_manifests_or_expanded_source) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.360s
+
+OK

@@ -15,7 +15,7 @@ test('source capability uses attempt permission, not legacy ready or configurati
  await s.run("loadRagCapabilities('a',0)");
  assert.equal(s.element('ragProvider').value,'bing');assert.equal(s.element('ragSearchButton').disabled,false);
  assert.equal(s.element('ragProvider').options[0].disabled,true);assert.equal(s.element('ragProvider').options[2].disabled,true);
- assert.match(s.element('ragProvider').options[1].textContent,/尚未核验/);
+ assert.equal(s.element('ragProvider').options[1].textContent,'通用网页');assert.equal(s.element('ragCapabilityNote').hidden,true);
 });
 test('late capability response cannot overwrite another account',async()=>{
  const s=setup();s.element('ragProvider').value='keep';s.ctx.activeAccountId='other';
@@ -33,4 +33,10 @@ test('JD scope is submitted without pretending a native shopping API',async()=>{
  s.run("bindRagSearch('a',0)");await s.element('ragSearchForm').onsubmit({preventDefault(){},submitter:{disabled:false}});
  assert.equal(s.calls.find(c=>c[1]==='POST')[2].targets[0],'jd');
  assert.match(s.run('ragSearchPanel()'),/不是商城专用接口/);
+});
+test('configured Baidu is default while explicit alternative survives settings refresh',async()=>{
+ const s=setup();s.element('ragProvider').value='bing';s.element('ragProvider').options=['bing','baidu','wikipedia'].map(value=>({value}));s.element('ragProvider').onchange=()=>{};
+ s.ctx.api=async()=>({providers:[{id:'bing',can_attempt:true},{id:'baidu',can_attempt:true},{id:'wikipedia',can_attempt:true}]});
+ await s.run("loadRagCapabilities('a',0)");assert.equal(s.element('ragProvider').value,'baidu');assert.doesNotMatch(s.run('ragSearchPanel()'),/<option value="xhs_local"/);
+ s.element('ragProvider').value='wikipedia';s.run("ragViewState.set('a',{providerExplicit:true})");await s.run("loadRagCapabilities('a',0)");assert.equal(s.element('ragProvider').value,'wikipedia');assert.equal(s.calls.length,0);
 });

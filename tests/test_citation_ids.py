@@ -3,6 +3,7 @@ import copy
 import unittest
 from backend.citation_ids import repair
 
+
 class CitationIdTests(unittest.TestCase):
     def test_hyphen_only_unique_exact_quote_and_raw_preserved(self):
         raw={'observations':[{'source_id':'kb:abc-def123','quote':'确切原文','interpretation':'观察'}]}
@@ -29,12 +30,21 @@ class CitationIdTests(unittest.TestCase):
         for stage,raw in [('review',{'claim_map':[{'source_id':'kb:abc-def','quote':'原文'}]}),('audience',{'observations':[None,{}]}),('research',None)]:
             self.assertEqual(repair(stage,raw,[{'source_id':'kb:abcdef','text':'原文'}]),(raw,[]))
 
-    def test_review_only_trims_outer_whitespace_of_exact_bound_quote(self):
+    def test_review_normalizes_layout_but_never_wording(self):
         raw={'decision':'revision_required','claim_map':[{'source_id':'s','quote':' 逐字原文\n','excerpt':'当前稿件'}]}
         fixed,changes=repair('review',raw,[{'source_id':'s','text':'逐字原文'}])
         self.assertEqual(fixed['decision'],'revision_required')
         self.assertEqual(fixed['claim_map'][0]['quote'],'逐字原文')
         self.assertEqual(raw['claim_map'][0]['quote'],' 逐字原文\n')
         self.assertEqual(changes[0]['reason'],'quote_outer_whitespace')
+        # A line break or space between the same characters is layout, not wording,
+        # and must not fail an otherwise valid review.
         raw['claim_map'][0]['quote']='逐 字原文'
-        self.assertEqual(repair('review',raw,[{'source_id':'s','text':'逐字原文'}]),(raw,[]))
+        fixed,changes=repair('review',raw,[{'source_id':'s','text':'逐字原文'}])
+        self.assertEqual(fixed['claim_map'][0]['quote'],'逐字原文')
+        self.assertEqual(changes[0]['reason'],'quote_layout_normalized')
+        # Changing a character is wording: review still refuses to repair it.
+        raw['claim_map'][0]['quote']='逐句原文'
+        fixed,changes=repair('review',raw,[{'source_id':'s','text':'逐字原文'}])
+        self.assertEqual(fixed['claim_map'][0]['quote'],'逐句原文')
+        self.assertEqual(changes,[])

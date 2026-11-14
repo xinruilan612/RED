@@ -1,0 +1,1559 @@
+{
+  "schema": "youji-structure-annotation-corpus/1",
+  "frozen_on": "2026-11-02",
+  "sample_count": 30,
+  "counts": {
+    "digital": 10,
+    "home": 10,
+    "study": 10
+  },
+  "boundaries": [
+    "全部为自编受控文章，不能称为30篇真实授权文章。",
+    "设计时包含多种组织顺序，但生成意图不是人工金标；不得据此计算人工识别准确率。",
+    "测试词面与规则可能同源，构造样本指标不能替代真实文章泛化评价。"
+  ],
+  "items": [
+    {
+      "id": "STR-D01",
+      "category": "digital",
+      "domain": "digital",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-D01.txt",
+      "text_sha256": "fb652e90ac9bdec1920c7b93b1eec53dd16213d85a30b01cf42fef3ffeafa34b",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-D01-p1",
+          "start": 0,
+          "end": 20,
+          "unit": "unicode_codepoint",
+          "text": "买之前，先问自己真正要解决哪一个小问题。"
+        },
+        {
+          "segment_id": "STR-D01-p2",
+          "start": 22,
+          "end": 46,
+          "unit": "unicode_codepoint",
+          "text": "真正的困扰是信息很多，却没有一条清楚的比较线索。"
+        },
+        {
+          "segment_id": "STR-D01-p3",
+          "start": 48,
+          "end": 70,
+          "unit": "unicode_codepoint",
+          "text": "下面的例子来自虚构场景，讨论范围是桌面连接。"
+        },
+        {
+          "segment_id": "STR-D01-p4",
+          "start": 72,
+          "end": 95,
+          "unit": "unicode_codepoint",
+          "text": "给定清单只记录两种连接选项，不包含兼容性结论。"
+        },
+        {
+          "segment_id": "STR-D01-p5",
+          "start": 97,
+          "end": 122,
+          "unit": "unicode_codepoint",
+          "text": "先把资料分成已知和待确认两栏，再为每一栏安排说明。"
+        },
+        {
+          "segment_id": "STR-D01-p6",
+          "start": 124,
+          "end": 149,
+          "unit": "unicode_codepoint",
+          "text": "需要注意，资料没有给出效果测试，不能补写体验结论。"
+        },
+        {
+          "segment_id": "STR-D01-p7",
+          "start": 151,
+          "end": 170,
+          "unit": "unicode_codepoint",
+          "text": "收藏前先核对这份清单是否适合你的场景。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-D02",
+      "category": "digital",
+      "domain": "photography",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-D02.txt",
+      "text_sha256": "4d64b377259382d744531c4d814dae5c3716b7865f0edaaa8c334935d41b4641",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-D02-p1",
+          "start": 0,
+          "end": 24,
+          "unit": "unicode_codepoint",
+          "text": "真正的困扰是信息很多，却没有一条清楚的比较线索。"
+        },
+        {
+          "segment_id": "STR-D02-p2",
+          "start": 26,
+          "end": 48,
+          "unit": "unicode_codepoint",
+          "text": "下面的例子来自虚构场景，讨论范围是器材收纳。"
+        },
+        {
+          "segment_id": "STR-D02-p3",
+          "start": 50,
+          "end": 76,
+          "unit": "unicode_codepoint",
+          "text": "整理器材收纳时，先保留可核对的信息，再决定文章顺序。"
+        },
+        {
+          "segment_id": "STR-D02-p4",
+          "start": 78,
+          "end": 102,
+          "unit": "unicode_codepoint",
+          "text": "材料中列出三个字段，分别是名称、位置和手工标签。"
+        },
+        {
+          "segment_id": "STR-D02-p5",
+          "start": 104,
+          "end": 129,
+          "unit": "unicode_codepoint",
+          "text": "需要注意，资料没有给出效果测试，不能补写体验结论。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-D03",
+      "category": "digital",
+      "domain": "digital",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-D03.txt",
+      "text_sha256": "ffafe2ab283a691738182f7f6191ef66afd0aee75d8ab79f7865410627c580b0",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-D03-p1",
+          "start": 0,
+          "end": 22,
+          "unit": "unicode_codepoint",
+          "text": "下面的例子来自虚构场景，讨论范围是接口核对。"
+        },
+        {
+          "segment_id": "STR-D03-p2",
+          "start": 24,
+          "end": 44,
+          "unit": "unicode_codepoint",
+          "text": "先别急着下结论，把桌上的现有条件列出来。"
+        },
+        {
+          "segment_id": "STR-D03-p3",
+          "start": 46,
+          "end": 70,
+          "unit": "unicode_codepoint",
+          "text": "材料中列出三个字段，分别是名称、位置和手工标签。"
+        },
+        {
+          "segment_id": "STR-D03-p4",
+          "start": 72,
+          "end": 97,
+          "unit": "unicode_codepoint",
+          "text": "需要注意，资料没有给出效果测试，不能补写体验结论。"
+        },
+        {
+          "segment_id": "STR-D03-p5",
+          "start": 99,
+          "end": 118,
+          "unit": "unicode_codepoint",
+          "text": "收藏前先核对这份清单是否适合你的场景。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-D04",
+      "category": "digital",
+      "domain": "digital",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-D04.txt",
+      "text_sha256": "4d5fe97e2687012393cd25e9e836f90634ac8158cb1fa745082991d26f04021f",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-D04-p1",
+          "start": 0,
+          "end": 20,
+          "unit": "unicode_codepoint",
+          "text": "先别急着下结论，把桌上的现有条件列出来。"
+        },
+        {
+          "segment_id": "STR-D04-p2",
+          "start": 22,
+          "end": 46,
+          "unit": "unicode_codepoint",
+          "text": "材料中列出三个字段，分别是名称、位置和手工标签。"
+        },
+        {
+          "segment_id": "STR-D04-p3",
+          "start": 48,
+          "end": 75,
+          "unit": "unicode_codepoint",
+          "text": "操作时先列出自己的条件，然后逐项对照材料里的已知字段。"
+        },
+        {
+          "segment_id": "STR-D04-p4",
+          "start": 77,
+          "end": 96,
+          "unit": "unicode_codepoint",
+          "text": "收藏前先核对这份清单是否适合你的场景。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-D05",
+      "category": "digital",
+      "domain": "digital",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-D05.txt",
+      "text_sha256": "96459dc3aaef4061bdb0c08e77f22125432c96d2e5b5488164254988c778b01e",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-D05-p1",
+          "start": 0,
+          "end": 24,
+          "unit": "unicode_codepoint",
+          "text": "你可能想要一个直接答案，但决定还缺少自己的需求。"
+        },
+        {
+          "segment_id": "STR-D05-p2",
+          "start": 26,
+          "end": 55,
+          "unit": "unicode_codepoint",
+          "text": "虚构规格页登记型号X15，尺寸为15厘米，未提供其他测试。"
+        },
+        {
+          "segment_id": "STR-D05-p3",
+          "start": 57,
+          "end": 87,
+          "unit": "unicode_codepoint",
+          "text": "把选择拆成三个步骤：确认目标、核对资料、记录仍然未知的地方。"
+        },
+        {
+          "segment_id": "STR-D05-p4",
+          "start": 89,
+          "end": 109,
+          "unit": "unicode_codepoint",
+          "text": "不要把参考人物的个人记录移植到当前任务。"
+        },
+        {
+          "segment_id": "STR-D05-p5",
+          "start": 111,
+          "end": 128,
+          "unit": "unicode_codepoint",
+          "text": "愿意的话，留下最想确认的一项条件。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-D06",
+      "category": "digital",
+      "domain": "digital",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-D06.txt",
+      "text_sha256": "eb97e41d626c06c0c15214eb28a99fba0d1f95d52164acbde4dd1b773120dd2e",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-D06-p1",
+          "start": 0,
+          "end": 20,
+          "unit": "unicode_codepoint",
+          "text": "买之前，先问自己真正要解决哪一个小问题。"
+        },
+        {
+          "segment_id": "STR-D06-p2",
+          "start": 22,
+          "end": 46,
+          "unit": "unicode_codepoint",
+          "text": "真正的困扰是信息很多，却没有一条清楚的比较线索。"
+        },
+        {
+          "segment_id": "STR-D06-p3",
+          "start": 48,
+          "end": 70,
+          "unit": "unicode_codepoint",
+          "text": "下面的例子来自虚构场景，讨论范围是充电配件。"
+        },
+        {
+          "segment_id": "STR-D06-p4",
+          "start": 72,
+          "end": 95,
+          "unit": "unicode_codepoint",
+          "text": "给定清单只记录两种连接选项，不包含兼容性结论。"
+        },
+        {
+          "segment_id": "STR-D06-p5",
+          "start": 97,
+          "end": 122,
+          "unit": "unicode_codepoint",
+          "text": "先把资料分成已知和待确认两栏，再为每一栏安排说明。"
+        },
+        {
+          "segment_id": "STR-D06-p6",
+          "start": 124,
+          "end": 149,
+          "unit": "unicode_codepoint",
+          "text": "需要注意，资料没有给出效果测试，不能补写体验结论。"
+        },
+        {
+          "segment_id": "STR-D06-p7",
+          "start": 151,
+          "end": 170,
+          "unit": "unicode_codepoint",
+          "text": "收藏前先核对这份清单是否适合你的场景。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-D07",
+      "category": "digital",
+      "domain": "digital",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-D07.txt",
+      "text_sha256": "b0091b44a3d9059dceda956551ef683bfd422f1a0fe90e28766a3ed72d19f521",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-D07-p1",
+          "start": 0,
+          "end": 24,
+          "unit": "unicode_codepoint",
+          "text": "真正的困扰是信息很多，却没有一条清楚的比较线索。"
+        },
+        {
+          "segment_id": "STR-D07-p2",
+          "start": 26,
+          "end": 48,
+          "unit": "unicode_codepoint",
+          "text": "下面的例子来自虚构场景，讨论范围是灯具摆放。"
+        },
+        {
+          "segment_id": "STR-D07-p3",
+          "start": 50,
+          "end": 76,
+          "unit": "unicode_codepoint",
+          "text": "整理灯具摆放时，先保留可核对的信息，再决定文章顺序。"
+        },
+        {
+          "segment_id": "STR-D07-p4",
+          "start": 78,
+          "end": 102,
+          "unit": "unicode_codepoint",
+          "text": "材料中列出三个字段，分别是名称、位置和手工标签。"
+        },
+        {
+          "segment_id": "STR-D07-p5",
+          "start": 104,
+          "end": 129,
+          "unit": "unicode_codepoint",
+          "text": "需要注意，资料没有给出效果测试，不能补写体验结论。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-D08",
+      "category": "digital",
+      "domain": "digital",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-D08.txt",
+      "text_sha256": "923a913102220c317c7537e4bc32fd247751b2eda4bcbc0b3d9da741ba5facc1",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-D08-p1",
+          "start": 0,
+          "end": 22,
+          "unit": "unicode_codepoint",
+          "text": "下面的例子来自虚构场景，讨论范围是鼠标尺寸。"
+        },
+        {
+          "segment_id": "STR-D08-p2",
+          "start": 24,
+          "end": 44,
+          "unit": "unicode_codepoint",
+          "text": "先别急着下结论，把桌上的现有条件列出来。"
+        },
+        {
+          "segment_id": "STR-D08-p3",
+          "start": 46,
+          "end": 70,
+          "unit": "unicode_codepoint",
+          "text": "材料中列出三个字段，分别是名称、位置和手工标签。"
+        },
+        {
+          "segment_id": "STR-D08-p4",
+          "start": 72,
+          "end": 97,
+          "unit": "unicode_codepoint",
+          "text": "需要注意，资料没有给出效果测试，不能补写体验结论。"
+        },
+        {
+          "segment_id": "STR-D08-p5",
+          "start": 99,
+          "end": 118,
+          "unit": "unicode_codepoint",
+          "text": "收藏前先核对这份清单是否适合你的场景。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-D09",
+      "category": "digital",
+      "domain": "digital",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-D09.txt",
+      "text_sha256": "4d5fe97e2687012393cd25e9e836f90634ac8158cb1fa745082991d26f04021f",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-D09-p1",
+          "start": 0,
+          "end": 20,
+          "unit": "unicode_codepoint",
+          "text": "先别急着下结论，把桌上的现有条件列出来。"
+        },
+        {
+          "segment_id": "STR-D09-p2",
+          "start": 22,
+          "end": 46,
+          "unit": "unicode_codepoint",
+          "text": "材料中列出三个字段，分别是名称、位置和手工标签。"
+        },
+        {
+          "segment_id": "STR-D09-p3",
+          "start": 48,
+          "end": 75,
+          "unit": "unicode_codepoint",
+          "text": "操作时先列出自己的条件，然后逐项对照材料里的已知字段。"
+        },
+        {
+          "segment_id": "STR-D09-p4",
+          "start": 77,
+          "end": 96,
+          "unit": "unicode_codepoint",
+          "text": "收藏前先核对这份清单是否适合你的场景。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-D10",
+      "category": "digital",
+      "domain": "digital",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-D10.txt",
+      "text_sha256": "a35b3f1e787d86cd60c9cd18f902a4390b6973b5761a3faacb91d0cb770ef377",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-D10-p1",
+          "start": 0,
+          "end": 24,
+          "unit": "unicode_codepoint",
+          "text": "你可能想要一个直接答案，但决定还缺少自己的需求。"
+        },
+        {
+          "segment_id": "STR-D10-p2",
+          "start": 26,
+          "end": 55,
+          "unit": "unicode_codepoint",
+          "text": "虚构规格页登记型号X20，尺寸为20厘米，未提供其他测试。"
+        },
+        {
+          "segment_id": "STR-D10-p3",
+          "start": 57,
+          "end": 87,
+          "unit": "unicode_codepoint",
+          "text": "把选择拆成三个步骤：确认目标、核对资料、记录仍然未知的地方。"
+        },
+        {
+          "segment_id": "STR-D10-p4",
+          "start": 89,
+          "end": 109,
+          "unit": "unicode_codepoint",
+          "text": "不要把参考人物的个人记录移植到当前任务。"
+        },
+        {
+          "segment_id": "STR-D10-p5",
+          "start": 111,
+          "end": 128,
+          "unit": "unicode_codepoint",
+          "text": "愿意的话，留下最想确认的一项条件。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-H01",
+      "category": "home",
+      "domain": "furniture",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-H01.txt",
+      "text_sha256": "8118c210204fbfe716ba444a64a616f9f7429d2fd31dfd6e7b53424b439ae79e",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-H01-p1",
+          "start": 0,
+          "end": 20,
+          "unit": "unicode_codepoint",
+          "text": "买之前，先问自己真正要解决哪一个小问题。"
+        },
+        {
+          "segment_id": "STR-H01-p2",
+          "start": 22,
+          "end": 46,
+          "unit": "unicode_codepoint",
+          "text": "真正的困扰是信息很多，却没有一条清楚的比较线索。"
+        },
+        {
+          "segment_id": "STR-H01-p3",
+          "start": 48,
+          "end": 70,
+          "unit": "unicode_codepoint",
+          "text": "下面的例子来自虚构场景，讨论范围是边桌摆放。"
+        },
+        {
+          "segment_id": "STR-H01-p4",
+          "start": 72,
+          "end": 95,
+          "unit": "unicode_codepoint",
+          "text": "给定清单只记录两种连接选项，不包含兼容性结论。"
+        },
+        {
+          "segment_id": "STR-H01-p5",
+          "start": 97,
+          "end": 122,
+          "unit": "unicode_codepoint",
+          "text": "先把资料分成已知和待确认两栏，再为每一栏安排说明。"
+        },
+        {
+          "segment_id": "STR-H01-p6",
+          "start": 124,
+          "end": 149,
+          "unit": "unicode_codepoint",
+          "text": "需要注意，资料没有给出效果测试，不能补写体验结论。"
+        },
+        {
+          "segment_id": "STR-H01-p7",
+          "start": 151,
+          "end": 170,
+          "unit": "unicode_codepoint",
+          "text": "收藏前先核对这份清单是否适合你的场景。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-H02",
+      "category": "home",
+      "domain": "furniture",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-H02.txt",
+      "text_sha256": "db138b37bdfeb21e43bc69af3f5c0887422ea0573e210af06147b0aaa806a23e",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-H02-p1",
+          "start": 0,
+          "end": 24,
+          "unit": "unicode_codepoint",
+          "text": "真正的困扰是信息很多，却没有一条清楚的比较线索。"
+        },
+        {
+          "segment_id": "STR-H02-p2",
+          "start": 26,
+          "end": 48,
+          "unit": "unicode_codepoint",
+          "text": "下面的例子来自虚构场景，讨论范围是抽屉分区。"
+        },
+        {
+          "segment_id": "STR-H02-p3",
+          "start": 50,
+          "end": 76,
+          "unit": "unicode_codepoint",
+          "text": "整理抽屉分区时，先保留可核对的信息，再决定文章顺序。"
+        },
+        {
+          "segment_id": "STR-H02-p4",
+          "start": 78,
+          "end": 102,
+          "unit": "unicode_codepoint",
+          "text": "材料中列出三个字段，分别是名称、位置和手工标签。"
+        },
+        {
+          "segment_id": "STR-H02-p5",
+          "start": 104,
+          "end": 129,
+          "unit": "unicode_codepoint",
+          "text": "需要注意，资料没有给出效果测试，不能补写体验结论。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-H03",
+      "category": "home",
+      "domain": "furniture",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-H03.txt",
+      "text_sha256": "8857cb3a40cf680fee5cdc1bc0a4b5335459198284bf1f6e29b021e293b6dcf6",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-H03-p1",
+          "start": 0,
+          "end": 22,
+          "unit": "unicode_codepoint",
+          "text": "下面的例子来自虚构场景，讨论范围是柜体尺寸。"
+        },
+        {
+          "segment_id": "STR-H03-p2",
+          "start": 24,
+          "end": 44,
+          "unit": "unicode_codepoint",
+          "text": "先别急着下结论，把桌上的现有条件列出来。"
+        },
+        {
+          "segment_id": "STR-H03-p3",
+          "start": 46,
+          "end": 70,
+          "unit": "unicode_codepoint",
+          "text": "材料中列出三个字段，分别是名称、位置和手工标签。"
+        },
+        {
+          "segment_id": "STR-H03-p4",
+          "start": 72,
+          "end": 97,
+          "unit": "unicode_codepoint",
+          "text": "需要注意，资料没有给出效果测试，不能补写体验结论。"
+        },
+        {
+          "segment_id": "STR-H03-p5",
+          "start": 99,
+          "end": 118,
+          "unit": "unicode_codepoint",
+          "text": "收藏前先核对这份清单是否适合你的场景。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-H04",
+      "category": "home",
+      "domain": "furniture",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-H04.txt",
+      "text_sha256": "4d5fe97e2687012393cd25e9e836f90634ac8158cb1fa745082991d26f04021f",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-H04-p1",
+          "start": 0,
+          "end": 20,
+          "unit": "unicode_codepoint",
+          "text": "先别急着下结论，把桌上的现有条件列出来。"
+        },
+        {
+          "segment_id": "STR-H04-p2",
+          "start": 22,
+          "end": 46,
+          "unit": "unicode_codepoint",
+          "text": "材料中列出三个字段，分别是名称、位置和手工标签。"
+        },
+        {
+          "segment_id": "STR-H04-p3",
+          "start": 48,
+          "end": 75,
+          "unit": "unicode_codepoint",
+          "text": "操作时先列出自己的条件，然后逐项对照材料里的已知字段。"
+        },
+        {
+          "segment_id": "STR-H04-p4",
+          "start": 77,
+          "end": 96,
+          "unit": "unicode_codepoint",
+          "text": "收藏前先核对这份清单是否适合你的场景。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-H05",
+      "category": "home",
+      "domain": "furniture",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-H05.txt",
+      "text_sha256": "96459dc3aaef4061bdb0c08e77f22125432c96d2e5b5488164254988c778b01e",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-H05-p1",
+          "start": 0,
+          "end": 24,
+          "unit": "unicode_codepoint",
+          "text": "你可能想要一个直接答案，但决定还缺少自己的需求。"
+        },
+        {
+          "segment_id": "STR-H05-p2",
+          "start": 26,
+          "end": 55,
+          "unit": "unicode_codepoint",
+          "text": "虚构规格页登记型号X15，尺寸为15厘米，未提供其他测试。"
+        },
+        {
+          "segment_id": "STR-H05-p3",
+          "start": 57,
+          "end": 87,
+          "unit": "unicode_codepoint",
+          "text": "把选择拆成三个步骤：确认目标、核对资料、记录仍然未知的地方。"
+        },
+        {
+          "segment_id": "STR-H05-p4",
+          "start": 89,
+          "end": 109,
+          "unit": "unicode_codepoint",
+          "text": "不要把参考人物的个人记录移植到当前任务。"
+        },
+        {
+          "segment_id": "STR-H05-p5",
+          "start": 111,
+          "end": 128,
+          "unit": "unicode_codepoint",
+          "text": "愿意的话，留下最想确认的一项条件。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-H06",
+      "category": "home",
+      "domain": "furniture",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-H06.txt",
+      "text_sha256": "51dfcdd1555a8fb979a349ed88f9ef4a425d2e59d844be10de59e8ce2e1a68c3",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-H06-p1",
+          "start": 0,
+          "end": 20,
+          "unit": "unicode_codepoint",
+          "text": "买之前，先问自己真正要解决哪一个小问题。"
+        },
+        {
+          "segment_id": "STR-H06-p2",
+          "start": 22,
+          "end": 46,
+          "unit": "unicode_codepoint",
+          "text": "真正的困扰是信息很多，却没有一条清楚的比较线索。"
+        },
+        {
+          "segment_id": "STR-H06-p3",
+          "start": 48,
+          "end": 70,
+          "unit": "unicode_codepoint",
+          "text": "下面的例子来自虚构场景，讨论范围是衣架收纳。"
+        },
+        {
+          "segment_id": "STR-H06-p4",
+          "start": 72,
+          "end": 95,
+          "unit": "unicode_codepoint",
+          "text": "给定清单只记录两种连接选项，不包含兼容性结论。"
+        },
+        {
+          "segment_id": "STR-H06-p5",
+          "start": 97,
+          "end": 122,
+          "unit": "unicode_codepoint",
+          "text": "先把资料分成已知和待确认两栏，再为每一栏安排说明。"
+        },
+        {
+          "segment_id": "STR-H06-p6",
+          "start": 124,
+          "end": 149,
+          "unit": "unicode_codepoint",
+          "text": "需要注意，资料没有给出效果测试，不能补写体验结论。"
+        },
+        {
+          "segment_id": "STR-H06-p7",
+          "start": 151,
+          "end": 170,
+          "unit": "unicode_codepoint",
+          "text": "收藏前先核对这份清单是否适合你的场景。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-H07",
+      "category": "home",
+      "domain": "furniture",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-H07.txt",
+      "text_sha256": "5650d2e1c621fb758bbaff05e122b09ae0ed88f5a5dca880495a1d4141cfa4e6",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-H07-p1",
+          "start": 0,
+          "end": 24,
+          "unit": "unicode_codepoint",
+          "text": "真正的困扰是信息很多，却没有一条清楚的比较线索。"
+        },
+        {
+          "segment_id": "STR-H07-p2",
+          "start": 26,
+          "end": 48,
+          "unit": "unicode_codepoint",
+          "text": "下面的例子来自虚构场景，讨论范围是靠垫外套。"
+        },
+        {
+          "segment_id": "STR-H07-p3",
+          "start": 50,
+          "end": 76,
+          "unit": "unicode_codepoint",
+          "text": "整理靠垫外套时，先保留可核对的信息，再决定文章顺序。"
+        },
+        {
+          "segment_id": "STR-H07-p4",
+          "start": 78,
+          "end": 102,
+          "unit": "unicode_codepoint",
+          "text": "材料中列出三个字段，分别是名称、位置和手工标签。"
+        },
+        {
+          "segment_id": "STR-H07-p5",
+          "start": 104,
+          "end": 129,
+          "unit": "unicode_codepoint",
+          "text": "需要注意，资料没有给出效果测试，不能补写体验结论。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-H08",
+      "category": "home",
+      "domain": "furniture",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-H08.txt",
+      "text_sha256": "16c1b4e20337ca21d05d16864c2f76e9589148bb14bd4bf241cee2d2633c1e1b",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-H08-p1",
+          "start": 0,
+          "end": 22,
+          "unit": "unicode_codepoint",
+          "text": "下面的例子来自虚构场景，讨论范围是玄关整理。"
+        },
+        {
+          "segment_id": "STR-H08-p2",
+          "start": 24,
+          "end": 44,
+          "unit": "unicode_codepoint",
+          "text": "先别急着下结论，把桌上的现有条件列出来。"
+        },
+        {
+          "segment_id": "STR-H08-p3",
+          "start": 46,
+          "end": 70,
+          "unit": "unicode_codepoint",
+          "text": "材料中列出三个字段，分别是名称、位置和手工标签。"
+        },
+        {
+          "segment_id": "STR-H08-p4",
+          "start": 72,
+          "end": 97,
+          "unit": "unicode_codepoint",
+          "text": "需要注意，资料没有给出效果测试，不能补写体验结论。"
+        },
+        {
+          "segment_id": "STR-H08-p5",
+          "start": 99,
+          "end": 118,
+          "unit": "unicode_codepoint",
+          "text": "收藏前先核对这份清单是否适合你的场景。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-H09",
+      "category": "home",
+      "domain": "furniture",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-H09.txt",
+      "text_sha256": "4d5fe97e2687012393cd25e9e836f90634ac8158cb1fa745082991d26f04021f",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-H09-p1",
+          "start": 0,
+          "end": 20,
+          "unit": "unicode_codepoint",
+          "text": "先别急着下结论，把桌上的现有条件列出来。"
+        },
+        {
+          "segment_id": "STR-H09-p2",
+          "start": 22,
+          "end": 46,
+          "unit": "unicode_codepoint",
+          "text": "材料中列出三个字段，分别是名称、位置和手工标签。"
+        },
+        {
+          "segment_id": "STR-H09-p3",
+          "start": 48,
+          "end": 75,
+          "unit": "unicode_codepoint",
+          "text": "操作时先列出自己的条件，然后逐项对照材料里的已知字段。"
+        },
+        {
+          "segment_id": "STR-H09-p4",
+          "start": 77,
+          "end": 96,
+          "unit": "unicode_codepoint",
+          "text": "收藏前先核对这份清单是否适合你的场景。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-H10",
+      "category": "home",
+      "domain": "furniture",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-H10.txt",
+      "text_sha256": "a35b3f1e787d86cd60c9cd18f902a4390b6973b5761a3faacb91d0cb770ef377",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-H10-p1",
+          "start": 0,
+          "end": 24,
+          "unit": "unicode_codepoint",
+          "text": "你可能想要一个直接答案，但决定还缺少自己的需求。"
+        },
+        {
+          "segment_id": "STR-H10-p2",
+          "start": 26,
+          "end": 55,
+          "unit": "unicode_codepoint",
+          "text": "虚构规格页登记型号X20，尺寸为20厘米，未提供其他测试。"
+        },
+        {
+          "segment_id": "STR-H10-p3",
+          "start": 57,
+          "end": 87,
+          "unit": "unicode_codepoint",
+          "text": "把选择拆成三个步骤：确认目标、核对资料、记录仍然未知的地方。"
+        },
+        {
+          "segment_id": "STR-H10-p4",
+          "start": 89,
+          "end": 109,
+          "unit": "unicode_codepoint",
+          "text": "不要把参考人物的个人记录移植到当前任务。"
+        },
+        {
+          "segment_id": "STR-H10-p5",
+          "start": 111,
+          "end": 128,
+          "unit": "unicode_codepoint",
+          "text": "愿意的话，留下最想确认的一项条件。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-S01",
+      "category": "study",
+      "domain": "general",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-S01.txt",
+      "text_sha256": "031da1cb410946e6339087121cb3954c42b249cdb988008ee55a29f84fe21923",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-S01-p1",
+          "start": 0,
+          "end": 20,
+          "unit": "unicode_codepoint",
+          "text": "买之前，先问自己真正要解决哪一个小问题。"
+        },
+        {
+          "segment_id": "STR-S01-p2",
+          "start": 22,
+          "end": 46,
+          "unit": "unicode_codepoint",
+          "text": "真正的困扰是信息很多，却没有一条清楚的比较线索。"
+        },
+        {
+          "segment_id": "STR-S01-p3",
+          "start": 48,
+          "end": 71,
+          "unit": "unicode_codepoint",
+          "text": "下面的例子来自虚构场景，讨论范围是任务卡整理。"
+        },
+        {
+          "segment_id": "STR-S01-p4",
+          "start": 73,
+          "end": 96,
+          "unit": "unicode_codepoint",
+          "text": "给定清单只记录两种连接选项，不包含兼容性结论。"
+        },
+        {
+          "segment_id": "STR-S01-p5",
+          "start": 98,
+          "end": 123,
+          "unit": "unicode_codepoint",
+          "text": "先把资料分成已知和待确认两栏，再为每一栏安排说明。"
+        },
+        {
+          "segment_id": "STR-S01-p6",
+          "start": 125,
+          "end": 150,
+          "unit": "unicode_codepoint",
+          "text": "需要注意，资料没有给出效果测试，不能补写体验结论。"
+        },
+        {
+          "segment_id": "STR-S01-p7",
+          "start": 152,
+          "end": 171,
+          "unit": "unicode_codepoint",
+          "text": "收藏前先核对这份清单是否适合你的场景。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-S02",
+      "category": "study",
+      "domain": "general",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-S02.txt",
+      "text_sha256": "7e9076f102efdbd493cb721a6a44a5265d8c4c7afb76f0a52d9501237ebcf5c1",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-S02-p1",
+          "start": 0,
+          "end": 24,
+          "unit": "unicode_codepoint",
+          "text": "真正的困扰是信息很多，却没有一条清楚的比较线索。"
+        },
+        {
+          "segment_id": "STR-S02-p2",
+          "start": 26,
+          "end": 47,
+          "unit": "unicode_codepoint",
+          "text": "下面的例子来自虚构场景，讨论范围是周计划。"
+        },
+        {
+          "segment_id": "STR-S02-p3",
+          "start": 49,
+          "end": 74,
+          "unit": "unicode_codepoint",
+          "text": "整理周计划时，先保留可核对的信息，再决定文章顺序。"
+        },
+        {
+          "segment_id": "STR-S02-p4",
+          "start": 76,
+          "end": 100,
+          "unit": "unicode_codepoint",
+          "text": "材料中列出三个字段，分别是名称、位置和手工标签。"
+        },
+        {
+          "segment_id": "STR-S02-p5",
+          "start": 102,
+          "end": 127,
+          "unit": "unicode_codepoint",
+          "text": "需要注意，资料没有给出效果测试，不能补写体验结论。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-S03",
+      "category": "study",
+      "domain": "general",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-S03.txt",
+      "text_sha256": "ddcf80b70984d357e939d9b124ebda68f0c55171b33443dc7f10eb87654b047d",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-S03-p1",
+          "start": 0,
+          "end": 22,
+          "unit": "unicode_codepoint",
+          "text": "下面的例子来自虚构场景，讨论范围是卡片复习。"
+        },
+        {
+          "segment_id": "STR-S03-p2",
+          "start": 24,
+          "end": 44,
+          "unit": "unicode_codepoint",
+          "text": "先别急着下结论，把桌上的现有条件列出来。"
+        },
+        {
+          "segment_id": "STR-S03-p3",
+          "start": 46,
+          "end": 70,
+          "unit": "unicode_codepoint",
+          "text": "材料中列出三个字段，分别是名称、位置和手工标签。"
+        },
+        {
+          "segment_id": "STR-S03-p4",
+          "start": 72,
+          "end": 97,
+          "unit": "unicode_codepoint",
+          "text": "需要注意，资料没有给出效果测试，不能补写体验结论。"
+        },
+        {
+          "segment_id": "STR-S03-p5",
+          "start": 99,
+          "end": 118,
+          "unit": "unicode_codepoint",
+          "text": "收藏前先核对这份清单是否适合你的场景。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-S04",
+      "category": "study",
+      "domain": "general",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-S04.txt",
+      "text_sha256": "4d5fe97e2687012393cd25e9e836f90634ac8158cb1fa745082991d26f04021f",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-S04-p1",
+          "start": 0,
+          "end": 20,
+          "unit": "unicode_codepoint",
+          "text": "先别急着下结论，把桌上的现有条件列出来。"
+        },
+        {
+          "segment_id": "STR-S04-p2",
+          "start": 22,
+          "end": 46,
+          "unit": "unicode_codepoint",
+          "text": "材料中列出三个字段，分别是名称、位置和手工标签。"
+        },
+        {
+          "segment_id": "STR-S04-p3",
+          "start": 48,
+          "end": 75,
+          "unit": "unicode_codepoint",
+          "text": "操作时先列出自己的条件，然后逐项对照材料里的已知字段。"
+        },
+        {
+          "segment_id": "STR-S04-p4",
+          "start": 77,
+          "end": 96,
+          "unit": "unicode_codepoint",
+          "text": "收藏前先核对这份清单是否适合你的场景。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-S05",
+      "category": "study",
+      "domain": "general",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-S05.txt",
+      "text_sha256": "96459dc3aaef4061bdb0c08e77f22125432c96d2e5b5488164254988c778b01e",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-S05-p1",
+          "start": 0,
+          "end": 24,
+          "unit": "unicode_codepoint",
+          "text": "你可能想要一个直接答案，但决定还缺少自己的需求。"
+        },
+        {
+          "segment_id": "STR-S05-p2",
+          "start": 26,
+          "end": 55,
+          "unit": "unicode_codepoint",
+          "text": "虚构规格页登记型号X15，尺寸为15厘米，未提供其他测试。"
+        },
+        {
+          "segment_id": "STR-S05-p3",
+          "start": 57,
+          "end": 87,
+          "unit": "unicode_codepoint",
+          "text": "把选择拆成三个步骤：确认目标、核对资料、记录仍然未知的地方。"
+        },
+        {
+          "segment_id": "STR-S05-p4",
+          "start": 89,
+          "end": 109,
+          "unit": "unicode_codepoint",
+          "text": "不要把参考人物的个人记录移植到当前任务。"
+        },
+        {
+          "segment_id": "STR-S05-p5",
+          "start": 111,
+          "end": 128,
+          "unit": "unicode_codepoint",
+          "text": "愿意的话，留下最想确认的一项条件。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-S06",
+      "category": "study",
+      "domain": "general",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-S06.txt",
+      "text_sha256": "23dd17de72d88f298c51ef0962d67a91351dcc4dcd9b08309fb181d05987c3da",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-S06-p1",
+          "start": 0,
+          "end": 20,
+          "unit": "unicode_codepoint",
+          "text": "买之前，先问自己真正要解决哪一个小问题。"
+        },
+        {
+          "segment_id": "STR-S06-p2",
+          "start": 22,
+          "end": 46,
+          "unit": "unicode_codepoint",
+          "text": "真正的困扰是信息很多，却没有一条清楚的比较线索。"
+        },
+        {
+          "segment_id": "STR-S06-p3",
+          "start": 48,
+          "end": 70,
+          "unit": "unicode_codepoint",
+          "text": "下面的例子来自虚构场景，讨论范围是前台计时。"
+        },
+        {
+          "segment_id": "STR-S06-p4",
+          "start": 72,
+          "end": 95,
+          "unit": "unicode_codepoint",
+          "text": "给定清单只记录两种连接选项，不包含兼容性结论。"
+        },
+        {
+          "segment_id": "STR-S06-p5",
+          "start": 97,
+          "end": 122,
+          "unit": "unicode_codepoint",
+          "text": "先把资料分成已知和待确认两栏，再为每一栏安排说明。"
+        },
+        {
+          "segment_id": "STR-S06-p6",
+          "start": 124,
+          "end": 149,
+          "unit": "unicode_codepoint",
+          "text": "需要注意，资料没有给出效果测试，不能补写体验结论。"
+        },
+        {
+          "segment_id": "STR-S06-p7",
+          "start": 151,
+          "end": 170,
+          "unit": "unicode_codepoint",
+          "text": "收藏前先核对这份清单是否适合你的场景。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-S07",
+      "category": "study",
+      "domain": "general",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-S07.txt",
+      "text_sha256": "9bfe3dbce6c35b5c7b27340dda488d1dda043d53a093d05763cf126e16e52e01",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-S07-p1",
+          "start": 0,
+          "end": 24,
+          "unit": "unicode_codepoint",
+          "text": "真正的困扰是信息很多，却没有一条清楚的比较线索。"
+        },
+        {
+          "segment_id": "STR-S07-p2",
+          "start": 26,
+          "end": 50,
+          "unit": "unicode_codepoint",
+          "text": "下面的例子来自虚构场景，讨论范围是学习资料归档。"
+        },
+        {
+          "segment_id": "STR-S07-p3",
+          "start": 52,
+          "end": 80,
+          "unit": "unicode_codepoint",
+          "text": "整理学习资料归档时，先保留可核对的信息，再决定文章顺序。"
+        },
+        {
+          "segment_id": "STR-S07-p4",
+          "start": 82,
+          "end": 106,
+          "unit": "unicode_codepoint",
+          "text": "材料中列出三个字段，分别是名称、位置和手工标签。"
+        },
+        {
+          "segment_id": "STR-S07-p5",
+          "start": 108,
+          "end": 133,
+          "unit": "unicode_codepoint",
+          "text": "需要注意，资料没有给出效果测试，不能补写体验结论。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-S08",
+      "category": "study",
+      "domain": "general",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-S08.txt",
+      "text_sha256": "e02eb9012e12dd54e1218335320d6761c0486f78a07695da4b0d13ef467d10c9",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-S08-p1",
+          "start": 0,
+          "end": 24,
+          "unit": "unicode_codepoint",
+          "text": "下面的例子来自虚构场景，讨论范围是课程问题清单。"
+        },
+        {
+          "segment_id": "STR-S08-p2",
+          "start": 26,
+          "end": 46,
+          "unit": "unicode_codepoint",
+          "text": "先别急着下结论，把桌上的现有条件列出来。"
+        },
+        {
+          "segment_id": "STR-S08-p3",
+          "start": 48,
+          "end": 72,
+          "unit": "unicode_codepoint",
+          "text": "材料中列出三个字段，分别是名称、位置和手工标签。"
+        },
+        {
+          "segment_id": "STR-S08-p4",
+          "start": 74,
+          "end": 99,
+          "unit": "unicode_codepoint",
+          "text": "需要注意，资料没有给出效果测试，不能补写体验结论。"
+        },
+        {
+          "segment_id": "STR-S08-p5",
+          "start": 101,
+          "end": 120,
+          "unit": "unicode_codepoint",
+          "text": "收藏前先核对这份清单是否适合你的场景。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-S09",
+      "category": "study",
+      "domain": "general",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-S09.txt",
+      "text_sha256": "4d5fe97e2687012393cd25e9e836f90634ac8158cb1fa745082991d26f04021f",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-S09-p1",
+          "start": 0,
+          "end": 20,
+          "unit": "unicode_codepoint",
+          "text": "先别急着下结论，把桌上的现有条件列出来。"
+        },
+        {
+          "segment_id": "STR-S09-p2",
+          "start": 22,
+          "end": 46,
+          "unit": "unicode_codepoint",
+          "text": "材料中列出三个字段，分别是名称、位置和手工标签。"
+        },
+        {
+          "segment_id": "STR-S09-p3",
+          "start": 48,
+          "end": 75,
+          "unit": "unicode_codepoint",
+          "text": "操作时先列出自己的条件，然后逐项对照材料里的已知字段。"
+        },
+        {
+          "segment_id": "STR-S09-p4",
+          "start": 77,
+          "end": 96,
+          "unit": "unicode_codepoint",
+          "text": "收藏前先核对这份清单是否适合你的场景。"
+        }
+      ],
+      "gold_labels": null
+    },
+    {
+      "id": "STR-S10",
+      "category": "study",
+      "domain": "general",
+      "channel": "xiaohongshu",
+      "format": "note",
+      "text_path": "structure_texts/STR-S10.txt",
+      "text_sha256": "a35b3f1e787d86cd60c9cd18f902a4390b6973b5761a3faacb91d0cb770ef377",
+      "source_kind": "new_fictional_controlled_fixture",
+      "authorization_scope": "本项目自编虚构样本，仅作受控标注；不冒充真实公开文章或真实作者经历",
+      "label_status": "unlabeled_pending_two_independent_humans",
+      "paragraphs": [
+        {
+          "segment_id": "STR-S10-p1",
+          "start": 0,
+          "end": 24,
+          "unit": "unicode_codepoint",
+          "text": "你可能想要一个直接答案，但决定还缺少自己的需求。"
+        },
+        {
+          "segment_id": "STR-S10-p2",
+          "start": 26,
+          "end": 55,
+          "unit": "unicode_codepoint",
+          "text": "虚构规格页登记型号X20，尺寸为20厘米，未提供其他测试。"
+        },
+        {
+          "segment_id": "STR-S10-p3",
+          "start": 57,
+          "end": 87,
+          "unit": "unicode_codepoint",
+          "text": "把选择拆成三个步骤：确认目标、核对资料、记录仍然未知的地方。"
+        },
+        {
+          "segment_id": "STR-S10-p4",
+          "start": 89,
+          "end": 109,
+          "unit": "unicode_codepoint",
+          "text": "不要把参考人物的个人记录移植到当前任务。"
+        },
+        {
+          "segment_id": "STR-S10-p5",
+          "start": 111,
+          "end": 128,
+          "unit": "unicode_codepoint",
+          "text": "愿意的话，留下最想确认的一项条件。"
+        }
+      ],
+      "gold_labels": null
+    }
+  ]
+}

@@ -32,9 +32,12 @@ class SubmissionDocumentsTests(unittest.TestCase):
 
     def test_required_sections_and_implementation_limits(self):
         proposal = (DOCS / '01_技术方案.md').read_text()
-        for section in ('一 产品概述与定位', '二 技术架构与创新', '三 功能设计与实现',
-                        '四 开发测试与部署', '五 应用价值与展望', '六 附录与依据'):
-            self.assertIn(section, proposal)
+        # Typography may use an ideographic comma; assert actual H2 sections,
+        # not an obsolete literal spelling or a mention in an appendix.
+        for number, title in (('一', '产品概述与定位'), ('二', '技术架构与创新'),
+                              ('三', '功能设计与实现'), ('四', '开发测试与部署'),
+                              ('五', '应用价值与展望'), ('六', '附录与依据')):
+            self.assertRegex(proposal, rf'(?m)^##\s+{number}[、\s]+{title}\s*$')
         contract = json.loads((ROOT / 'docs/design/design_contract.json').read_text())
         algorithm = (DOCS / '03_核心算法说明.md').read_text()
         self.assertIn(f"租约为{contract['runtime_extension']['lease_s']}秒", algorithm)
@@ -46,11 +49,17 @@ class SubmissionDocumentsTests(unittest.TestCase):
 
     def test_identity_privacy_and_source_paths(self):
         paths = sorted(DOCS.glob('[0-9][0-9]_*.md'))
-        self.assertEqual(len(paths), 6)
+        # The original eight sources remain required; optional condensed and
+        # 30-page editions are checked too rather than rejected by a fixed count.
+        required = {'00_提交清单与待填项.md', '01_技术方案.md', '02_软件说明书.md',
+                    '03_核心算法说明.md', '04_测试报告.md', '05_功能演示录制脚本.md',
+                    '06_佐证材料.md', '07_视频逐句提词稿.md'}
+        self.assertTrue(required <= {path.name for path in paths})
         for path in paths:
             text = path.read_text()
             self.assertIn('47191919', text)
             self.assertNotIn('/Users/', text)
+            self.assertNotRegex(text, r'(?:学校|校名|指导教师)\s*[:：]\s*[^\s|`，。；]+')
             self.assertNotRegex(text, r'(?:sk-[A-Za-z0-9]{20,}|Bearer\s+[A-Za-z0-9]{20,})')
             for relative in re.findall(r'\b(?:backend|frontend|docs|tests)/[A-Za-z0-9_./-]+\.(?:py|md|json|js)', text):
                 self.assertTrue((ROOT / relative).is_file(), relative)
@@ -59,9 +68,15 @@ class SubmissionDocumentsTests(unittest.TestCase):
         guide = (DOCS / '00_提交清单与待填项.md').read_text()
         brief = guide.split('作品简介：', 1)[1].split('\n', 1)[0]
         self.assertLessEqual(len(brief), 300)
+        name = guide.split('作品名称：', 1)[1].split('。', 1)[0]
+        self.assertTrue(name.strip())
+        self.assertLessEqual(len(name), 20)
         for boundary in ('没有单列作品上传截止日', '未取得模板原文件',
-                         '脚本不能替代视频', '本包未制作答辩幻灯片', '目前未填写公网地址'):
+                         '脚本不能替代视频', '目前未填写公网地址'):
             self.assertIn(boundary, guide)
+        self.assertRegex(guide, r'已生成\s+[1-9]\d*\s*页\s*PPT')
+        for limit in ('方案PDF不超过10MB', '3至5分钟', '300MB以内', '答辩材料提交PDF'):
+            self.assertIn(limit, guide)
         self.assertIn('notice/notice-2/4815.html', guide)
 
 

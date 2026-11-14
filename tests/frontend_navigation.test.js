@@ -12,27 +12,33 @@ function setup(){
  vm.runInContext("pageInfo.library=['资料','资料','资料'];pageInfo.connections=['连接','连接','连接'];pageInfo.models=['设置','设置','设置'];",sandbox);
  return {element,buttons,sandbox,show:page=>vm.runInContext(`showPage(${JSON.stringify(page)})`,sandbox),page:()=>vm.runInContext('currentPage',sandbox)};
 }
-test('retired experimentation pages and their assets are absent from main entry',()=>{
- assert.doesNotMatch(html,/data-page="(?:trials|windtunnel)"|(?:src|href)="\/(?:trials|windtunnel)\.(?:js|css)"/);
- assert.doesNotMatch(operations,/renderTrials\s*\(|renderWindtunnel\s*\(/);
+test('retired trials page is absent while the content wind tunnel keeps its own entry',()=>{
+ assert.doesNotMatch(html,/data-page="trials"|(?:src|href)="\/trials\.(?:js|css)"/);
+ assert.match(html,/data-page="windtunnel"/);
+ assert.match(html,/(?:src|href)="\/windtunnel\.(?:js|css)"/);
+ assert.doesNotMatch(operations,/renderTrials\s*\(/);
+ assert.match(operations,/renderWindtunnel\s*\(/);
 });
-test('secondary navigation and recent creations are initially collapsed, primary creation path remains visible',()=>{
- for(const id of ['navOperations','navSettings','recentCreations']){const tag=html.match(new RegExp('<details\\b[^>]*\\bid="'+id+'"[^>]*>'));assert.ok(tag,id);assert.doesNotMatch(tag[0],/\bopen(?:\s|=|>)/);}
- for(const page of ['library','trends','studio','publish'])assert.match(html,new RegExp('data-page="'+page+'"'));
- const ops=html.match(/<details\b[^>]*id="navOperations"[^>]*>([\s\S]*?)<\/details>/)[1];
- for(const page of ['overview','accounts','metrics','memory'])assert.match(ops,new RegExp('data-page="'+page+'"'));
- const settings=html.match(/<details\b[^>]*id="navSettings"[^>]*>([\s\S]*?)<\/details>/)[1];
- for(const page of ['connections','models'])assert.match(settings,new RegExp('data-page="'+page+'"'));
- assert.match(html,/<details\b[^>]*id="recentCreations"[^>]*>[\s\S]*?id="history"[\s\S]*?<\/details>/);
+test('all workspace routes stay in the labelled sidebar',()=>{
+ const top=html.match(/<header class="topbar">[\s\S]*?<\/header>/)[0];
+ assert.doesNotMatch(top,/data-page=/);
+ const aside=html.match(/<aside class="sidebar">[\s\S]*?<\/aside>/)[0];
+ for(const page of ['library','trends','studio','windtunnel','publish','overview','accounts','metrics','memory','connections','models'])assert.match(aside,new RegExp('data-page="'+page+'"'),page);
+ for(const label of ['工作空间','运营与复盘','连接与设置'])assert.match(aside,new RegExp(label));
+ assert.match(aside,/<details\b[^>]*id="recentCreations"[^>]*>[\s\S]*?id="history"[\s\S]*?<\/details>/);
 });
 test('retired hash routes fall back to the creation workbench',()=>{
- for(const page of ['trials','windtunnel']){const s=setup();s.show(page);assert.equal(s.page(),'studio');assert.equal(s.sandbox.location.hash,'studio');assert.equal(s.element('studioView').hidden,false);assert.equal(s.element('operationsView').hidden,true);assert.equal(s.buttons.find(b=>b.dataset.page==='studio').attributes['aria-current'],'page');}
+ for(const page of ['trials']){const s=setup();s.show(page);assert.equal(s.page(),'studio');assert.equal(s.sandbox.location.hash,'studio');assert.equal(s.element('studioView').hidden,false);assert.equal(s.element('operationsView').hidden,true);assert.equal(s.buttons.find(b=>b.dataset.page==='studio').attributes['aria-current'],'page');}
 });
-test('selecting a secondary destination opens its group and highlights only the active entry',()=>{
- for(const [page,group]of [['accounts','navOperations'],['metrics','navOperations'],['connections','navSettings'],['models','navSettings']]){const s=setup();s.show(page);assert.equal(s.page(),page);assert.equal(s.element(group).open,true);assert.equal(s.element('studioView').hidden,true);assert.deepEqual(s.buttons.filter(b=>b.active).map(b=>b.dataset.page),[page]);}
+test('selecting a secondary destination highlights only the active entry',()=>{
+ for(const page of ['accounts','metrics','connections','models']){const s=setup();s.show(page);assert.equal(s.page(),page);assert.equal(s.element('studioView').hidden,true);assert.equal(s.element('operationsView').hidden,false);assert.deepEqual(s.buttons.filter(b=>b.active).map(b=>b.dataset.page),[page]);}
 });
-test('primary navigation does not force open collapsed secondary groups',()=>{
- const s=setup();s.show('studio');for(const id of ['navOperations','navSettings','recentCreations'])assert.equal(s.element(id).open,false);
+test('primary navigation keeps the creation workbench instead of the operations surface',()=>{
+ const s=setup();s.show('studio');assert.equal(s.element('studioView').hidden,false);assert.equal(s.element('operationsView').hidden,true);
+});
+test('top-bar and sidebar routes share one delegated navigation handler',()=>{
+ assert.match(operations,/document\.addEventListener\('click',e=>\{const b=e\.target\.closest\('\[data-page\]'\)/);
+ assert.doesNotMatch(operations,/querySelector\('\.workspace-nav'\)\.onclick/);
 });
 
 test('login boot works after retired navigation is removed',()=>{

@@ -60,9 +60,88 @@ class StyleLibraryTests(unittest.TestCase):
                          source_type='research_case',source_url='https://www.xiaohongshu.com/explore/note-1',metadata=metadata)
 
     def create(self, **extra):
-        data={'mode':'live','topic':'白衬衫面料护理','audience':'白衬衫学生读者','tone':'清楚','material':'纯棉面料白衬衫使用冷水清洗。',
+        data={'mode':'live','web_research':{'enabled':False,'queries':[]},'topic':'白衬衫面料护理','audience':'白衬衫学生读者','tone':'清楚','material':'纯棉面料白衬衫使用冷水清洗。',
               'scenario':'standard','allow_hypothesis':True,'operations':{'account_id':self.account,'platform':'xiaohongshu','account':'我的账号'}}
         data.update(extra);return self.service.create(self.owner,data)
+
+    def incomplete_style_review(self, *, invalid_quote=False, invalid_excerpt=False):
+        from backend.worker import Worker
+        self.model=StyleModel();self.service=Service(self.store,Config('fixture-key'),self.model)
+        self.service.knowledge=self.kb
+        self.save();self.save()
+        base=self.model.complete
+        def incomplete(messages):
+            value,tokens=base(messages)
+            if self.model.inputs[-1][0]=='review':
+                value['limitations']=['仅核对 user-material 中的事实。']
+                value['checks'][-2]['result']='pass'
+                value['claim_map']=[{'source_id':'user-material',
+                    'quote':'不存在的来源原文' if invalid_quote else '纯棉面料白衬衫使用冷水清洗。',
+                    'excerpt':'稿件没有这句话' if invalid_excerpt else '完整正文'}]
+            return value,tokens
+        self.model.complete=incomplete
+        run_id=self.create()['run_id'];run=self.store.get(run_id,self.owner)
+        self.service.background(self.owner,run_id,dict(action='start',version=run.status_version,key=str(uuid4())))
+        # Reproduce a persisted review failure from the older worker so this
+        # fixture exercises explicit free recovery of existing tasks.
+        with patch('backend.review_recovery.conservative_review',side_effect=DomainError('MODEL_OUTPUT_INVALID','旧版本审核阻断')):
+            Worker(self.service).once()
+        run=self.store.get(run_id,self.owner)
+        self.assertEqual(run.current_stage,'reviewer');self.assertIsNone(run.review)
+        # The current worker rolls handoff failures back before marking audit
+        # state. Explicitly reproduce the older persisted invalid audit in this
+        # isolated fixture database, keeping its settled raw response untouched.
+        with self.store.connect() as db:
+            row=db.execute(f"SELECT id,response_json,actual FROM live_calls WHERE run_id=? AND stage='review' ORDER BY {self.store.order_column} DESC LIMIT 1",(run_id,)).fetchone()
+            self.assertIsNotNone(row);self.assertIsNotNone(row[1]);self.assertIsNotNone(row[2])
+            db.execute("UPDATE live_calls SET state='invalid' WHERE id=?",(row[0],))
+            db.execute("UPDATE model_audit SET outcome='invalid' WHERE call_id=?",(row[0],))
+        return run
+
+    def test_missing_style_metadata_recovers_only_for_human_without_invented_comparison(self):
+        for invalid_quote in (False,True):
+            with self.subTest(invalid_quote=invalid_quote):
+                run=self.incomplete_style_review(invalid_quote=invalid_quote)
+                before=self.service.view(run);calls=len(self.model.inputs)
+                with self.store.connect() as db:
+                    audit_before=[tuple(row) for row in db.execute('SELECT * FROM live_calls WHERE run_id=?',(run.run_id,))]
+                    cache_before=[tuple(row) for row in db.execute('SELECT * FROM model_audit WHERE run_id=?',(run.run_id,))]
+                self.assertTrue(before['review_recovery']['available'])
+                result=self.service.action(self.owner,run.run_id,dict(action='repair_review',payload={},version=run.status_version,key=str(uuid4())))
+                self.assertEqual(result['run_status'],'WAITING_USER')
+                self.assertEqual(result['review']['decision'],'needs_human')
+                self.assertEqual(result['review']['next_action'],'request_human')
+                self.assertEqual(next(c['result'] for c in result['review']['checks'] if c['name']=='originality_risk'),'unknown')
+                self.assertNotIn('accept',result['allowed_actions'])
+                self.assertEqual(result['usage'],before['usage']);self.assertEqual(result['calls'],before['calls'])
+                self.assertEqual(len(self.model.inputs),calls)
+                notes='；'.join(result['review']['limitations'])
+                for reference in run.context['creation_retrieval']['groups']['examples']:
+                    self.assertIn(reference['source_id'],notes)
+                self.assertIn('未证明模型采用',notes);self.assertTrue(result['review']['human_questions'])
+                self.assertEqual(len(result['review']['claim_map']),0)
+                self.assertTrue(any(i['severity']=='major' and i['state']=='open' for i in result['review']['issues']))
+                self.assertEqual(result['background']['status'],'waiting');self.assertIsNone(result['background']['error'])
+                with self.store.connect() as db:
+                    self.assertEqual([tuple(row) for row in db.execute('SELECT * FROM live_calls WHERE run_id=?',(run.run_id,))],audit_before)
+                    self.assertEqual([tuple(row) for row in db.execute('SELECT * FROM model_audit WHERE run_id=?',(run.run_id,))],cache_before)
+                current=self.store.get(run.run_id,self.owner)
+                self.store.command(run.run_id,self.owner,current.status_version,str(uuid4()),'cancel',{})
+
+    def test_missing_style_metadata_with_mismatched_draft_excerpt_requires_human(self):
+        for invalid_quote in (False,True):
+            with self.subTest(invalid_quote=invalid_quote):
+                run=self.incomplete_style_review(invalid_quote=invalid_quote,invalid_excerpt=True)
+                self.assertTrue(self.service.view(run)['review_recovery']['available'])
+                calls=len(self.model.inputs)
+                result=self.service.action(self.owner,run.run_id,dict(action='repair_review',payload={},version=run.status_version,key=str(uuid4())))
+                self.assertEqual(result['review']['decision'],'needs_human')
+                self.assertEqual(result['review']['claim_map'],[])
+                self.assertIn('模型未能定位陈述',result['review']['issues'][-1]['excerpt'])
+                self.assertNotIn('accept',result['allowed_actions'])
+                self.assertEqual(len(self.model.inputs),calls)
+                current=self.store.get(run.run_id,self.owner)
+                self.store.command(run.run_id,self.owner,current.status_version,str(uuid4()),'cancel',{})
 
     def test_style_is_automatic_without_manual_selection_and_snapshot_is_frozen(self):
         doc=self.save()

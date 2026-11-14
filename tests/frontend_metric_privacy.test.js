@@ -24,3 +24,20 @@ test('saving manual observation sends absent metrics as null and keeps real zero
  await s.element('metricForm').onsubmit({preventDefault(){}});
  const [action,payload]=s.calls[0];assert.equal(action,'metrics');assert.equal(payload.id,'note-one');assert.equal(payload.likes,0);assert.equal(payload.views,null);assert.equal(payload.saves,null);assert.equal(payload.comments,null);assert.equal(payload.shares,null);assert.equal(payload.observed_at,'2026-10-02T10:00:00.000Z');assert.equal('impressions' in payload,false);
 });
+
+test('analysis card reports recorded data and patience instead of an insufficient verdict',()=>{
+ const s=setup();s.sandbox.json=value=>JSON.stringify(value);
+ const html=s.eval("analysisHTML({status:'insufficient',source_type:'manual',publication_id:'note-one',window:'24h',elapsed_hours:20.68,observations:['每千次阅读的收藏为 27.027'],hypotheses:['先按现有记录观察'],experiment:'先补齐同账号、同形式的记录',flags:['观察时间偏早','还没有 3 篇可比作品'],comparisons:{saves:{current:27.027,baseline:null,sample_size:0}},velocity:null,limitations:[],metric_refs:['metric-one'],excluded:[],execution:{}})");
+ assert.match(html,/已记录 · 待积累/);
+ assert.match(html,/先存着/);
+ assert.match(html,/等同类作品攒到 10 篇/);
+ assert.match(html,/还没有可比样本/);
+ assert.doesNotMatch(html,/>数据不足</);
+ assert.match(html,/这次没有进入比较的原因/);
+});
+
+test('metrics page shows the same recording progress as the memory page',()=>{
+ const s=setup();s.sandbox.memoryProgress=()=>'已记录 1 篇 / 10 篇。';
+ s.eval('renderMetrics()');
+ assert.match(s.element('operationsContent').innerHTML,/已记录 1 篇 \/ 10 篇/);
+});

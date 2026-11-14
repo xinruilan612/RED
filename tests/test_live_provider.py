@@ -82,7 +82,7 @@ class LiveTests(unittest.TestCase):
         self.step();self.assertEqual(self.run.wait_reason,'final_confirmation')
         self.assertEqual(self.run.review['previous_issue_results'],[{'issue_id':'i1','result':'resolved'}])
 
-    def test_three_rejected_outputs_fail_without_fourth_generation(self):
+    def test_three_rejected_outputs_wait_for_human_without_fourth_generation(self):
         base=self.model.complete
         def reject(messages):
             value,tokens=base(messages)
@@ -94,7 +94,8 @@ class LiveTests(unittest.TestCase):
             return value,tokens
         self.model.complete=reject
         for _ in range(11):self.step()
-        self.assertEqual(self.run.run_status,'FAILED')
+        self.assertEqual(self.run.run_status,'WAITING_USER')
+        self.assertEqual(self.run.wait_reason,'revision_limit')
         self.assertEqual(self.model.calls.count('body')+self.model.calls.count('revise'),3)
         self.assertEqual(self.model.calls.count('review'),3)
         self.assertEqual(len(self.run.drafts),3)
@@ -238,9 +239,36 @@ class LiveTests(unittest.TestCase):
         with self.store.connect() as db:db.execute("UPDATE live_calls SET actual=NULL WHERE stage='outline'")
         with self.assertRaises(DomainError):self.executor.recover(self.run.run_id,'me',self.run.status_version)
 
-    def test_forged_quotes_and_wrong_title_blocked(self):
+    def test_bounded_unknown_recovery_retains_charge_and_refuses_same_request_replay(self):
+        def fail(messages):raise OSError('transport interrupted')
+        self.model.complete=fail
+        self.step();parent=self.run
+        ledger=self.executor.public(parent)
+        self.run=self.executor.recover(parent.run_id,'me',parent.status_version)
+        self.assertEqual(self.executor.public(self.run)['usage'],ledger['usage'])
+        self.assertEqual(self.executor.public(self.run)['calls'][0]['reserved_tokens'],ledger['calls'][0]['reserved_tokens'])
+        from backend.workflow import digest
+        self.run.snapshot_id=parent.snapshot_id
+        # Direct reuse of the original unresolved input remains forbidden.
+        with self.store.connect() as db:
+            audit=db.execute('SELECT input_hash FROM model_audit WHERE run_id=?',(parent.run_id,)).fetchone()[0]
+        calls=self.executor.calls
+        policy=parent.context.get('model_policy') or calls.router.policy()
+        messages=[{'role':'user','content':'same request'}]
+        input_hash=digest({'messages':messages,'snapshot':parent.snapshot_id,'route':policy['routes']['audience']})
+        with self.store.connect() as db:db.execute('UPDATE model_audit SET input_hash=? WHERE run_id=?',(input_hash,parent.run_id))
+        for reuse in (True,False):
+            with self.subTest(reuse=reuse),self.assertRaises(DomainError) as caught:
+                calls.invoke(self.run,'audience','audience',messages,lambda db:None,reuse=reuse)
+            self.assertEqual(caught.exception.code,'USAGE_UNKNOWN')
+        self.assertEqual(self.executor.public(parent)['usage'],ledger['usage'])
+
+    def test_forged_quote_is_dropped_never_cited_and_wrong_title_blocked(self):
+        # A quote that is not in the source is never promoted to a fact; it is
+        # dropped and the research branch reports a core gap instead of citing it.
         value=schema('research');value['facts']=[{'source_id':'user-material','quote':'不存在的事实'}]
-        with self.assertRaises(DomainError):normalize(self.run,'research',value)
+        result=normalize(self.run,'research',value)
+        self.assertEqual(result['facts'],[]);self.assertTrue(result['core_gap']);self.assertTrue(result['gaps'])
         self.assertEqual(material_records(self.run.context)[0]['source_type'],'text')
         self.assertIsNone(material_records(self.run.context)[0]['page'])
         value=schema('title');value['selected']='不在候选中'

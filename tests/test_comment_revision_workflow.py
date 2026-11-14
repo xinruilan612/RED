@@ -41,7 +41,7 @@ class CommentRevisionTests(unittest.TestCase):
         self.sync=XHSSync(self.store,lambda port:self.fake);self.sync.bind(self.owner,self.account);self.sync.once()
     def tearDown(self):self.tmp.cleanup()
     def create(self, feedback=None):
-        data={'mode':'live','topic':'产品使用问题','audience':'读者','tone':'清楚','material':'产品容量30ml。',
+        data={'mode':'live','web_research':{'enabled':False,'queries':[]},'topic':'产品使用问题','audience':'读者','tone':'清楚','material':'产品容量30ml。',
               'knowledge':{'enabled':False,'automatic_references':False},
               'operations':{'account_id':self.account,'platform':'xiaohongshu'}}
         if feedback is not None:data['comment_feedback']=feedback
@@ -142,6 +142,50 @@ class CommentRevisionTests(unittest.TestCase):
         with self.assertRaises(DomainError):self.service.action(self.owner,self.run_id,self.revision_command('第三次'))
         self.assertNotIn('request_revision',self.service.view(self.current())['allowed_actions'])
 
+    def revision_fact(self, owner=None, account=None):
+        return self.service.knowledge.save(owner or self.owner,{
+            'account_id':account or self.account,'title':'产品使用问题尺寸',
+            'text':'产品使用问题：基站宽450毫米，深450毫米，高450毫米。',
+            'classification':{'domains':['general'],'channel':'any','format':'any','material_type':'fact'}})
+
+    def test_revision_freezes_new_facts_preserves_old_draft_and_usage(self):
+        self.create();run=self.run_worker();old=copy.deepcopy(run.drafts);snapshot=run.snapshot_id
+        fact=self.revision_fact();command=self.revision_command()
+        command['payload']['document_ids']=[fact['id']]
+        # The task's inferred general domain admits this matching general fact.
+        result=self.service.action(self.owner,self.run_id,command)
+        revised=self.current()
+        self.assertNotEqual(revised.snapshot_id,snapshot)
+        self.assertEqual(revised.drafts,old)
+        self.assertEqual(revised.context['revision_source_history'][0]['snapshot_id'],snapshot)
+        self.assertEqual(revised.context['pending_revision']['snapshot_id'],revised.snapshot_id)
+        with patch.object(self.service.knowledge,'grouped_retrieve',side_effect=AssertionError('must not reretrieve')):
+            repeated=self.service.action(self.owner,self.run_id,command)
+        self.assertEqual(result['status_version'],repeated['status_version'])
+        _,inputs=messages_for(revised,'revise')
+        self.assertTrue(any('450毫米' in s['text'] for s in inputs['materials']))
+        self.assertEqual(len(self.model.calls),8)
+        run=self.run_worker()
+        self.assertEqual(run.drafts[0],old[0])
+        self.assertEqual(run.drafts[-1]['snapshot_id'],run.snapshot_id)
+        self.assertEqual(len(self.model.calls),10)
+
+    def test_revision_rejects_foreign_or_changed_documents_without_mutation(self):
+        self.create();run=self.run_worker();before=copy.deepcopy(run)
+        other_account=Operations(self.store).read('other')['accounts'][0]['id']
+        foreign=self.revision_fact('other',other_account)
+        command=self.revision_command();command['payload']['document_ids']=[foreign['id']]
+        with self.assertRaises(DomainError):self.service.action(self.owner,self.run_id,command)
+        fact=self.revision_fact();command['payload']['document_ids']=[fact['id']]
+        original=self.service.knowledge.grouped_retrieve
+        def change(*args,**kwargs):
+            value=original(*args,**kwargs)
+            with self.store.connect() as db:db.execute("UPDATE knowledge_documents SET status='deleted' WHERE id=?",(fact['id'],))
+            return value
+        with patch.object(self.service.knowledge,'grouped_retrieve',side_effect=change),self.assertRaises(DomainError):
+            self.service.action(self.owner,self.run_id,command)
+        self.assertEqual(self.current(),before)
+
     def test_cancel_discards_pending_revision_execution(self):
         self.create();self.run_worker();self.service.action(self.owner,self.run_id,self.revision_command())
         run=self.current();self.service.action(self.owner,self.run_id,{'action':'cancel','version':run.status_version,'key':str(uuid4()),'payload':{}})
@@ -175,6 +219,11 @@ class CommentRevisionTests(unittest.TestCase):
                 value.update(core_gap=True,gaps=['需要补充使用步骤'])
             return value,tokens
         self.model.complete=missing_once;self.create({'enabled':True,'note_ids':['n']})
+        # Supplement remains supported for frozen legacy tasks.
+        from dataclasses import asdict
+        with self.store.connect() as db:
+            legacy=self.store._get(db,self.run_id,self.owner);legacy.context.pop('material_policy',None)
+            db.execute('UPDATE runs SET payload=? WHERE id=?',(json.dumps(asdict(legacy)),self.run_id))
         run=self.run_worker();self.assertEqual(run.wait_reason,'missing_material');old=copy.deepcopy(run.context['comment_feedback'])
         with patch('backend.comment_feedback.freeze',side_effect=AssertionError('must not resample')):
             self.service.action(self.owner,self.run_id,{'action':'supplement','version':run.status_version,'key':str(uuid4()),'payload':{'material':'产品容量30ml。使用步骤：打开瓶盖。','allow_hypothesis':True}})
@@ -202,7 +251,7 @@ class CommentRevisionTests(unittest.TestCase):
             def post(url,data):return client.post(url,json=data,headers={'Origin':'http://testserver','X-CSRF-Token':csrf})
             response=post('/api/auth/register',{'username':'revision_http','password':'Test-long-password'})
             self.assertEqual(response.status_code,200,response.text);csrf=response.json()['csrf']
-            data=post('/api/runs',{'topic':'产品资料','audience':'读者','tone':'清楚','material':'容量30ml。','mode':'live','knowledge':{'enabled':False,'automatic_references':False},'comment_feedback':{'enabled':False}}).json()
+            data=post('/api/runs',{'topic':'产品资料','audience':'读者','tone':'清楚','material':'容量30ml。','mode':'live','web_research':{'enabled':False,'queries':[]},'knowledge':{'enabled':False,'automatic_references':False},'comment_feedback':{'enabled':False}}).json()
             path='/api/runs/'+data['run_id']
             self.assertEqual(post(path+'/background',{'action':'start','version':data['status_version'],'key':str(uuid4())}).status_code,202)
             Worker(app.state.service).once();data=client.get(path).json();draft=data['drafts'][-1]

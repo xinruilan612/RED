@@ -15,7 +15,9 @@ class TeacherPackageTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
-        self.root = Path(self.temp.name)
+        # Resolve once: macOS temp paths live under /var -> /private/var, and the
+        # packaging entry points return resolved paths.
+        self.root = Path(self.temp.name).resolve()
         self.repo = self.root / 'source'
         self.repo.mkdir()
         self.site = self.root / 'site-packages'

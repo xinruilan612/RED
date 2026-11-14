@@ -1,0 +1,273 @@
+{
+  "schema": "youji-evaluation-results/1",
+  "gold_set_hash": "d3e0afc7d669cb2203200dc6751fe09ae9d1f22e0edee26a0f46d1942d90ec9a",
+  "origin": "http://127.0.0.1:8890",
+  "budget_authorized_usd": 0.5,
+  "account_id": "d6130df6-e7db-4e06-9d42-a68aa29f0ada",
+  "records": [
+    {
+      "arm": "A",
+      "item_id": "G01",
+      "status": "done",
+      "retrieval_mode": "none",
+      "draft": {
+        "selected_title": "陶土玫瑰色+透明方管｜雾桃B01唇釉长这样",
+        "body": "选唇釉时，你更在意颜色第一眼的氛围感，还是上手时的取用体验？\n\n雾桃B01唇釉色号名为「陶土玫瑰」——名字里有泥土的温厚，也有玫瑰的柔调，不偏橘、不偏粉，是介于暖调与中性之间的存在。\n\n净含量3克，装在一支透明方管里。能看清膏体颜色，也方便观察余量。\n\n刷头是斜面设计，边缘贴合唇线，蘸取时能控制用量，涂抹时可兼顾轮廓与填充。\n\n没有复杂参数，只有颜色名、容量、管身和刷型这四个可见信息。",
+        "cta": "你倾向先看色名想象效果，还是先看包装确认质感？",
+        "tags": [
+          "唇釉",
+          "雾桃B01",
+          "陶土玫瑰",
+          "彩妆包装",
+          "口红选择"
+        ]
+      },
+      "calls": 1,
+      "references": [],
+      "arm_a_tokens": 587,
+      "cost_usd": 0.000671,
+      "arm_a_request_id": "chatcmpl-50df89a7-b7ea-9f42-b205-91434098c4d7",
+      "score": {
+        "chars": 194,
+        "fact_support": {
+          "total": 4,
+          "supported": 0,
+          "rate": 0.0,
+          "evidence": [
+            {
+              "sentence": "陶土玫瑰色+透明方管｜雾桃B01唇釉长这样",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "雾桃B01唇釉色号名为「陶土玫瑰」——名字里有泥土的温厚，也有玫瑰的柔调，不偏橘、不偏粉，是介于暖调与中性之间的存在",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "净含量3克，装在一支透明方管里",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "雾桃B01",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            }
+          ]
+        },
+        "forbidden": {
+          "hits": [],
+          "any_hit": false,
+          "patterns": 5
+        },
+        "coverage": {
+          "total": 4,
+          "covered": 4,
+          "rate": 1.0,
+          "evidence": [
+            {
+              "point": "色号陶土玫瑰",
+              "best_overlap": 0.8,
+              "sentence": "雾桃B01唇釉色号名为「陶土玫瑰」——名字里有泥土的温厚，也有玫瑰的柔调，不偏橘、不偏粉，是介于暖调与中性之间的存在",
+              "covered": true
+            },
+            {
+              "point": "净含量3克",
+              "best_overlap": 1.0,
+              "sentence": "净含量3克，装在一支透明方管里",
+              "covered": true
+            },
+            {
+              "point": "包装透明方管",
+              "best_overlap": 0.6,
+              "sentence": "陶土玫瑰色+透明方管｜雾桃B01唇釉长这样",
+              "covered": true
+            },
+            {
+              "point": "斜面刷头",
+              "best_overlap": 0.666667,
+              "sentence": "刷头是斜面设计，边缘贴合唇线，蘸取时能控制用量，涂抹时可兼顾轮廓与填充",
+              "covered": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "B",
+      "item_id": "G01",
+      "status": "WAITING_USER",
+      "run_id": "f592264d-f191-48a9-bc5e-e2d1cfccbc63",
+      "draft": {
+        "selected_title": "雾桃B01唇釉规格说明（依据你提供的资料）",
+        "body": "本次介绍严格依据你提供的材料，未额外查证或推测。材料中仅出现产品名称‘雾桃B01唇釉’，未列出色号名称、数量、色系分类，也未描述包装材质、尺寸、开合方式或视觉设计。所有规格参数均暂未提供。如你掌握该产品的官方色号表、包装实拍图或参数页，欢迎留言补充，我们将据此更新说明。",
+        "cta": "欢迎留言补充官方色号或包装图",
+        "tags": [
+          "雾桃B01",
+          "唇釉",
+          "规格核对",
+          "信息待补充",
+          "小红书笔记"
+        ]
+      },
+      "retrieval_mode": "disabled",
+      "calls": 8,
+      "references": [],
+      "score": {
+        "chars": 135,
+        "fact_support": {
+          "total": 3,
+          "supported": 0,
+          "rate": 0.0,
+          "evidence": [
+            {
+              "sentence": "雾桃B01唇釉规格说明（依据你提供的资料）",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "材料中仅出现产品名称‘雾桃B01唇釉’，未列出色号名称、数量、色系分类，也未描述包装材质、尺寸、开合方式或视觉设计",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "雾桃B01",
+              "best_overlap": 0.0,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            }
+          ]
+        },
+        "forbidden": {
+          "hits": [],
+          "any_hit": false,
+          "patterns": 5
+        },
+        "coverage": {
+          "total": 4,
+          "covered": 0,
+          "rate": 0.0,
+          "evidence": [
+            {
+              "point": "色号陶土玫瑰",
+              "best_overlap": 0.2,
+              "sentence": "材料中仅出现产品名称‘雾桃B01唇釉’，未列出色号名称、数量、色系分类，也未描述包装材质、尺寸、开合方式或视觉设计",
+              "covered": false
+            },
+            {
+              "point": "净含量3克",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "包装透明方管",
+              "best_overlap": 0.2,
+              "sentence": "材料中仅出现产品名称‘雾桃B01唇釉’，未列出色号名称、数量、色系分类，也未描述包装材质、尺寸、开合方式或视觉设计",
+              "covered": false
+            },
+            {
+              "point": "斜面刷头",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "C",
+      "item_id": "G01",
+      "status": "skipped",
+      "detail": "预算上限已达，未发出请求",
+      "score": {
+        "chars": 0,
+        "fact_support": {
+          "total": 0,
+          "supported": 0,
+          "rate": null,
+          "evidence": []
+        },
+        "forbidden": {
+          "hits": [],
+          "any_hit": false,
+          "patterns": 5
+        },
+        "coverage": {
+          "total": 4,
+          "covered": 0,
+          "rate": 0.0,
+          "evidence": [
+            {
+              "point": "色号陶土玫瑰",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "净含量3克",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "包装透明方管",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "斜面刷头",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "notes": [
+    "真实模型调用；A 组为单次直写，直接在默认模型连接上执行、不经运行账本，其费用按 token 估算并记入 arm_a_spent_usd"
+  ],
+  "arm_a_spent_usd": 0.000671,
+  "cost_estimate_usd": 0.7269264411040001,
+  "summary": {
+    "A": {
+      "n": 1,
+      "fact_support_rate": 0.0,
+      "expected_point_coverage": 1.0,
+      "forbidden_hit_rate": 0.0,
+      "mean_body_chars": 194.0
+    },
+    "B": {
+      "n": 1,
+      "fact_support_rate": 0.0,
+      "expected_point_coverage": 0.0,
+      "forbidden_hit_rate": 0.0,
+      "mean_body_chars": 135.0
+    },
+    "C": {
+      "n": 1,
+      "fact_support_rate": null,
+      "expected_point_coverage": 0.0,
+      "forbidden_hit_rate": 0.0,
+      "mean_body_chars": 0.0
+    }
+  }
+}

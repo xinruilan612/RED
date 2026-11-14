@@ -1,0 +1,190 @@
+{
+  "schema_version": 1,
+  "research_date": "2026-11-03",
+  "population_focus": "中国小红书上以图文介绍自己经营商品或服务的个体商家及小团队",
+  "core_sources": [
+    "P01",
+    "P02",
+    "P03",
+    "P04",
+    "P05"
+  ],
+  "auxiliary_sources": [
+    "P06"
+  ],
+  "research_method": "public web search and source reading; no paid requests or outreach",
+  "hash_notice": "SHA256仅针对逐源短摘录，不伪装整网页下载或官方PDF校验。定位使用网页章节或实际已读PDF页码。",
+  "sources": [
+    {
+      "id": "P01",
+      "title": "小红书做电商，先铺了55万件清仓商品",
+      "publisher": "电商在线《电商》杂志社官方澎湃号",
+      "author": "王崭",
+      "url": "https://m.thepaper.cn/newsDetail_forward_23071630",
+      "published_at": "2023-05-13 09:02",
+      "observation_period": "采访截至2023年5月，含商家2021—2022年开店经历",
+      "evidence_type": "original_interview_hosted_on_media_account",
+      "scope": "原报道采访花仔（彩妆商家）、念念、柚子、梅子等；没有披露完整受访样本数、抽样框或代表性",
+      "locator": "“55万件清仓商品”段落中花仔受访内容；“一个笔记，2万元利润”段落后的模仿与同质化观察",
+      "excerpt": "对内容要求挺高的，需要额外的精力去做",
+      "supports": "存在投入精力生产商品内容及模仿同质化的个案困难",
+      "limitations": [
+        "历史个案，不等同2026平台规则或总体分布",
+        "澎湃号为机构发布空间，不代表澎湃新闻编辑部调查",
+        "不采用爆款利润、课程售卖者承诺、平台转化率作项目效果"
+      ],
+      "access": "full_article_read",
+      "retrieved_on": "2026-11-03",
+      "excerpt_sha256": "74914665940014d5f04b04ab62bb82cf3a8967ef92684f89d7d660e5f8b553c0",
+      "hash_scope": "exact quoted UTF-8 excerpt only, not full HTML/PDF"
+    },
+    {
+      "id": "P02",
+      "title": "小红书上的蓝V困境：一边是4亿流量，一边是难测的规则",
+      "publisher": "南方周末，南方网转载",
+      "author": "梁婷",
+      "url": "https://news.southcn.com/node_64549305f1/dac40bdde1.shtml",
+      "original_publisher_url": "https://static.nfnews.com/content/202605/13/c12425097.html",
+      "published_at": "2026-05-13 18:26",
+      "observation_period": "文中2026年1—4月经营/申诉经历；另回溯2025年",
+      "evidence_type": "journalist_original_interviews",
+      "scope": "报道明确采访7位因加蓝V出现问题的用户，为目的性选择的遇困样本，不是所有商家随机样本",
+      "locator": "“流量地租”末段阿拼对内容制作投入的陈述；“17次申诉”中阿拼经营文玩及第三方检查经历；受访样本数量见“客服体系失灵”段",
+      "excerpt": "必须要投入时间精力去做",
+      "supports": "卖自有店铺商品的商家承担内容制作与规则理解成本，第三方检查不能保证平台放行",
+      "limitations": [
+        "目的性选择、受访者自述，无全平台问题发生率",
+        "含强资质行业，其行业困难不能直接外推普通商品",
+        "内容写作工具不能修复平台处罚、客服、投流机制或承诺增收"
+      ],
+      "access": "full_article_read",
+      "retrieved_on": "2026-11-03",
+      "excerpt_sha256": "94cc7413b97229b2ccdd276f0d9bebcc9dd148510851f88748467e6081f83eed",
+      "hash_scope": "exact quoted UTF-8 excerpt only, not full HTML/PDF"
+    },
+    {
+      "id": "P03",
+      "title": "市场监管总局办公厅关于印发《推动平台企业赋能个体工商户发展行动方案》的通知",
+      "publisher": "国家市场监督管理总局",
+      "url": "https://www.samr.gov.cn/zw/zfxxgk/fdzdgknr/djzcj/art/2026/art_883d1cc87d874411aa6330ed2f3f0e7a.html",
+      "published_at": "2026-07-20 09:25",
+      "document_signed_at": "2026-07-09",
+      "observation_period": "政策目标截至2027年底；不是调查样本",
+      "evidence_type": "government_primary_policy",
+      "scope": "平台企业与平台内个体工商户，覆盖平台经营而非仅小红书",
+      "locator": "（五）支持地方特色产业发展；（六）增强合规经营能力；（八）丰富数字化服务供给",
+      "excerpt": "轻量化、低成本数字化运营工具",
+      "supports": "政策明确关注营销能力、素材制作和低成本数字工具供给，目标用户有政策支持背景",
+      "limitations": [
+        "政策需求不等于已测用户规模、付费意愿或有迹获政府推荐",
+        "未给出不会写稿商家占比，不可补造比例",
+        "产品素材制作范围大于纯文稿写作"
+      ],
+      "access": "full_policy_read",
+      "retrieved_on": "2026-11-03",
+      "excerpt_sha256": "a29e1e642cb927d9bbe6fa50f06cdc17f39ab804a17a37653da4180e2a6016f1",
+      "hash_scope": "exact quoted UTF-8 excerpt only, not full HTML/PDF"
+    },
+    {
+      "id": "P04",
+      "title": "聚焦摆拍、编造、仿冒、低俗、炒作等突出问题 “清朗”专项行动严处一批短视频账号",
+      "publisher": "网信中国微信公众号，新华网刊载",
+      "url": "https://www.news.cn/politics/20250717/a2b1acefc0d64a1d8371b82751045516/c.html",
+      "published_at": "2025-07-17 10:19:32",
+      "observation_period": "当期专项行动第二批典型案例",
+      "evidence_type": "regulator_primary_case_notice",
+      "scope": "多平台典型违规案例，包括小红书；不是正常商家经营抽样调查",
+      "locator": "第3项“编造虚假人设，虚夸经历资历引流营销”；第6项“使用夸张不实标题文案”",
+      "excerpt": "与内容不符的夸张标题文案",
+      "supports": "营销内容需要约束标题承诺、经历与事实，不能将虚构营销作为增长手段",
+      "limitations": [
+        "执法典型案例不能推算普通创作者违规率",
+        "通报涉及短视频及提供短视频功能的平台，不能等同全部图文商业规则",
+        "有迹的引用与结构门控不能证明法定合规或免责"
+      ],
+      "access": "full_notice_read",
+      "retrieved_on": "2026-11-03",
+      "excerpt_sha256": "39c24943a65f89d36fd889f0616f5d3be7196601c390d74f82533b3aa1d1cdfd",
+      "hash_scope": "exact quoted UTF-8 excerpt only, not full HTML/PDF"
+    },
+    {
+      "id": "P05",
+      "title": "第57次《中国互联网络发展状况统计报告》",
+      "publisher": "中国互联网络信息中心（CNNIC）",
+      "url": "https://www3.cnnic.cn/n4/2026/0304/c88-11549.html",
+      "official_pdf_url": "https://www.cnnic.net.cn/NMediaFile/2026/0304/MAIN1772588317069TUXN3827X8.pdf",
+      "accessed_pdf_url": "https://pdf.dfcfw.com/pdf/H3_AP202603101820433901_1.pdf",
+      "published_at": "2026-02-05",
+      "document_imprint": "2026年2月",
+      "observation_period": "截至2025年12月",
+      "evidence_type": "primary_survey_report_third_party_pdf_mirror",
+      "scope": "中国内地31省区市6周岁及以上电话覆盖居民，采用固定电话/手机双抽样框；有效受访n未在本轮所读方法页披露",
+      "locator": "纸面第29页网络购物，镜像PDF第36页（零基35）；纸面第65—66页调查方法，镜像PDF第72—73页（零基71—72）",
+      "pdf_pages_one_based": [
+        36,
+        72,
+        73
+      ],
+      "excerpt": "我国网络购物用户规模达9.37亿人",
+      "statistics": [
+        {
+          "metric": "网络购物用户规模",
+          "value": 9.37,
+          "unit": "亿人",
+          "as_of": "2025-12",
+          "denominator": "中国内地网民整体，报告定义过去半年使用互联网的6周岁及以上居民",
+          "share": 83.2,
+          "share_unit": "%",
+          "precision": "保留报告公布值，不用四舍五入后规模自行重算百分比"
+        }
+      ],
+      "supports": "数字消费具有广泛用户基础，仅用于背景规模",
+      "limitations": [
+        "不是小红书月活、不是商家数、不是写作工具付费市场",
+        "不能证明多少商家不会写、商家愿为有迹付费或有迹带来转化",
+        "官网PDF本轮超时，实际阅读CNNIC原报告第三方镜像；未比对官方PDF字节一致性"
+      ],
+      "access": "official_metadata_search_extract_and_full_mirrored_report_read",
+      "retrieved_on": "2026-11-03",
+      "excerpt_sha256": "b4f28b93babac809d4f1cf5b0f277a3af101f4a6f5092e54926b47db29a8b84c",
+      "hash_scope": "exact quoted UTF-8 excerpt only, not full HTML/PDF"
+    },
+    {
+      "id": "P06",
+      "title": "【变更】专业号认证规则规范",
+      "publisher": "小红书聚光帮助中心",
+      "url": "https://ad.xiaohongshu.com/next_help/docs/195c5fe505c71b4b0335a2fe0d61d8e0",
+      "published_at": null,
+      "updated_at": "2026-08-02",
+      "observation_period": "页面所述资质调整执行时间2026-06-30",
+      "evidence_type": "platform_primary_rule_search_index_extract",
+      "scope": "申请企业专业号认证、年审、认证信息修改的企业与个体工商户等主体",
+      "locator": "搜索索引可读“更新时间”“适用对象”“重要说明”及“调整背景”段，直接打开JS页无可读正文",
+      "excerpt": "以平台最新公告及内容为准",
+      "supports": "主体资质和平台规则随时变化，产品需版本与人工复核边界",
+      "limitations": [
+        "本轮只取得搜索引擎索引中的官方原文摘录，未完整读取动态页面",
+        "不用于给法律判断或证明现行规则每一细节",
+        "核心痛点判断不依赖本条"
+      ],
+      "access": "search_index_excerpt_only_not_full_page",
+      "retrieved_on": "2026-11-03",
+      "excerpt_sha256": "7e7423217a60273fc9920365ed24c9b6c68bb94be748f217604993cc3109edb7",
+      "hash_scope": "exact quoted UTF-8 excerpt only, not full HTML/PDF"
+    }
+  ],
+  "excluded_search_hits": [
+    {
+      "url": "https://ec.xiaohongshu.com/",
+      "reason": "官网搜索摘要可见经营指导，但直接页面无可读正文且缺发布日期，不作为核心痛点证据"
+    },
+    {
+      "url": "https://www.jiemian.com/article/10281797.html",
+      "reason": "天下网商2023报道有商家访谈，但与P01/P02重叠，本包不再增加第三篇媒体来凑数量"
+    },
+    {
+      "url": "https://aigc.idigital.com.cn/djyanbao/",
+      "reason": "疑似小红书时尚商家手册镜像本轮完整PDF访问失败，不以文件名认定官方版本"
+    }
+  ]
+}

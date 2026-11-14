@@ -1,0 +1,59 @@
+{
+  "schema": "youji-evaluation-results/1",
+  "gold_set_hash": "d3e0afc7d669cb2203200dc6751fe09ae9d1f22e0edee26a0f46d1942d90ec9a",
+  "origin": "http://127.0.0.1:8890",
+  "budget_authorized_usd": 3.0,
+  "account_id": "d6130df6-e7db-4e06-9d42-a68aa29f0ada",
+  "records": [
+    {
+      "arm": "A",
+      "item_id": "G01",
+      "status": "done",
+      "retrieval_mode": "none",
+      "draft": {
+        "selected_title": "陶土玫瑰色+透明方管｜雾桃B01唇釉长这样",
+        "body": "选唇釉时，你更在意颜色第一眼的质感，还是上手后的包装体验？\n\n雾桃B01唇釉目前推出一个色号：陶土玫瑰。\n它属于低饱和暖调玫瑰色系，带微棕调，不偏橘也不偏紫。\n\n净含量为3克，容量适中，适合日常补涂与携带。\n\n包装采用透明方管设计，能直观看到余量；管身简洁，无多余装饰。\n\n刷头为斜面切型，边缘贴合唇线，涂抹时可兼顾精准与延展。\n\n没有复杂参数，只有基础结构——颜色、容量、容器、刷头。",
+        "cta": "你倾向先看色号再决定，还是更关注包装和刷头细节？",
+        "tags": [
+          "唇釉推荐",
+          "雾桃B01",
+          "陶土玫瑰",
+          "彩妆包装",
+          "唇部彩妆"
+        ]
+      },
+      "calls": 1,
+      "references": [],
+      "arm_a_tokens": 586,
+      "cost_usd": 0.00067,
+      "arm_a_request_id": "chatcmpl-91a41460-3259-95ae-b3e7-eef3024484e9"
+    },
+    {
+      "arm": "A",
+      "item_id": "G02",
+      "status": "done",
+      "retrieval_mode": "none",
+      "draft": {
+        "selected_title": "轻行P02三脚架：装得进包的便携选择？",
+        "body": "出门前，你是不是也先看三脚架能不能塞进背包？\n\n✅ 重量：1.2千克 —— 单手拎走不费力\n✅ 收纳长度：40厘米 —— 大多数双肩包侧袋或主仓都能容纳\n✅ 最大展开高度：150厘米 —— 满足常规站立拍摄视角\n✅ 随附配件：含一个便携袋 —— 收纳、取用、保护一步到位\n\n没有额外支架、云台或快装板，本体即所见配置。\n\n段落按「携带→展开→配件」逻辑排列，对应你实际打包时的检查顺序。",
+        "cta": "出发前，顺手核对这四点：能装进包吗？拎着累吗？升到需要的高度了吗？袋子带上了吗？",
+        "tags": [
+          "摄影器材",
+          "三脚架推荐",
+          "便携装备",
+          "轻行P02"
+        ]
+      },
+      "calls": 1,
+      "references": [],
+      "arm_a_tokens": 584,
+      "cost_usd": 0.000667,
+      "arm_a_request_id": "chatcmpl-06cf1fd4-d018-9ca6-96d8-87e36b8fc120"
+    }
+  ],
+  "notes": [
+    "真实模型调用；A 组为单次直写，直接在默认模型连接上执行、不经运行账本，其费用按 token 估算并记入 arm_a_spent_usd"
+  ],
+  "arm_a_spent_usd": 0.001337,
+  "cost_estimate_usd": 0.001337
+}

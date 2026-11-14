@@ -181,6 +181,18 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
         auth.throttle('xhs-login:'+user['owner'],3,300)
         return XHSSync(store).reconnect(user['owner'],data['account_id'])
 
+    @app.post('/api/social/sync/bind')
+    def bind_social_sync(data: dict,user=Depends(logged)):
+        """Bind the local connector session after the user has logged in.
+
+        Split from /login so a fresh install can scan the QR first; identity
+        verification inside bind() requires that logged-in session.
+        """
+        from backend.xhs_sync import XHSSync
+        require(set(data)=={'account_id'},'INVALID_INPUT','绑定字段无效')
+        auth.throttle('xhs-bind:'+user['owner'],10,300)
+        return XHSSync(store).bind(user['owner'],data['account_id'])
+
     @app.post('/api/social/sync/import-case')
     def import_social_sync_case(data: dict,user=Depends(logged)):
         from backend.xhs_case_import import XHSCaseImport
@@ -275,6 +287,12 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
         from backend.research_jobs import ResearchJobs
         return ResearchJobs(store).confirm(user['owner'],job_id,data)
 
+    @app.post('/api/research/jobs/{job_id}/retry-reads')
+    def retry_research_reads(job_id: str,data: dict,user=Depends(logged)):
+        from backend.research_jobs import ResearchJobs
+        require(not data,'INVALID_INPUT','重读操作无需额外参数')
+        return ResearchJobs(store).retry_reads(user['owner'],job_id)
+
     @app.post('/api/research/jobs/{job_id}/cancel')
     def cancel_research(job_id: str,data: dict,user=Depends(logged)):
         from backend.research_jobs import ResearchJobs
@@ -294,6 +312,24 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
 
     @app.get('/api/knowledge')
     def documents(account_id: str,user=Depends(logged)): return service.knowledge.list(user['owner'],account_id)
+
+    @app.post('/api/product-images/preview')
+    def preview_product_image(data: dict,user=Depends(logged)):
+        from backend.product_images import ProductImages
+        auth.throttle('product-image:'+user['owner'],20,3600)
+        return ProductImages(service).preview(user['owner'],data)
+
+    @app.post('/api/product-images/{identity}/confirm')
+    def confirm_product_image(identity: str,data: dict,user=Depends(logged)):
+        from backend.product_images import ProductImages
+        result=ProductImages(service).confirm(user['owner'],identity,data)
+        return {'id':result['id'],'title':result['title'],'version':result['version']}
+
+    @app.get('/api/product-images/{identity}/original')
+    def original_product_image(identity: str,user=Depends(logged)):
+        from backend.product_images import ProductImages
+        return Response(ProductImages(service).original(user['owner'],identity),media_type='application/octet-stream',
+                        headers={'Content-Disposition':'attachment; filename="product-image"','Cache-Control':'no-store'})
 
     @app.post('/api/knowledge')
     def save_document(data: dict,user=Depends(logged)):
@@ -395,8 +431,16 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
     def background(run_id: str,data: dict,user=Depends(logged)):
         return service.background(user['owner'],run_id,data)
 
+    @app.delete('/api/runs/{run_id}')
+    def delete_run(run_id: str,user=Depends(logged)):
+        return service.delete_run(user['owner'],run_id)
+
     @app.get('/api/runs/{run_id}/export')
-    def export(run_id: str,user=Depends(logged)):
+    def export(run_id: str,format: str='md',user=Depends(logged)):
+        require(format in ('md','docx'),'INVALID_INPUT','请选择 Word 或 Markdown 导出格式')
+        if format=='docx':
+            from backend.draft_docx import MIME
+            return Response(service.export_docx(user['owner'],run_id),media_type=MIME,headers={'Content-Disposition':'attachment; filename="youji-draft.docx"'})
         return Response(service.export(user['owner'],run_id),media_type='text/markdown',headers={'Content-Disposition':'attachment; filename="youji-draft.md"'})
 
     @app.get('/')
@@ -404,11 +448,11 @@ def create_app(store=None, config=None, origin=None, invite=None, client=None):
 
     @app.get('/{asset}')
     def asset(asset: str):
-        require(asset in ('style.css','app.js','operations.js','account.js','account_profile.js','auth.js','knowledge.js','windtunnel.js','windtunnel.css','trials.js','trials.css','connections.js','models.js','research.js','guidance.js'),'RESOURCE_NOT_FOUND','页面不存在')
+        require(asset in ('style.css','app.js','operations.js','account.js','account_profile.js','auth.js','knowledge.js','product_images.js','windtunnel.js','windtunnel.css','theme.css','mascot-space.png','mascot-dog.png','shape-hemisphere.png','shape-torus.png','trials.js','trials.css','connections.js','models.js','research.js','guidance.js'),'RESOURCE_NOT_FOUND','页面不存在')
         require((FRONTEND/asset).is_file(),'RESOURCE_NOT_FOUND','页面不存在')
         # Do not inherit OS/Windows registry MIME associations: nosniff browsers
         # refuse JavaScript served as text/plain even when the file is valid.
-        return FileResponse(FRONTEND/asset, media_type='text/javascript' if asset.endswith('.js') else 'text/css')
+        return FileResponse(FRONTEND/asset, media_type='text/javascript' if asset.endswith('.js') else 'text/css' if asset.endswith('.css') else 'image/png')
 
     return app
 

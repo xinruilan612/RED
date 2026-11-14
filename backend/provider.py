@@ -88,10 +88,11 @@ class DeepSeek:
         value,tokens,_ = self.complete_result(messages)
         return value,tokens
 
-    def complete_result(self, messages):
+    def complete_result(self, messages, max_tokens=None):
         require(self.config.ready,'KEY_REQUIRED','请先填写 .env 的 DEEPSEEK_API_KEY 并重启服务')
+        limit=max_tokens or self.MAX_OUTPUT_TOKENS
         body=json.dumps({'model':self.config.model,'messages':messages,'stream':False,
-                         'thinking':{'type':self.THINKING_TYPE},'max_tokens':self.MAX_OUTPUT_TOKENS,
+                         'thinking':{'type':self.THINKING_TYPE},'max_tokens':limit,
                          'response_format':{'type':'json_object'}},ensure_ascii=False).encode()
         request=Request('https://api.deepseek.com/chat/completions',body,
                         {'Content-Type':'application/json','Authorization':'Bearer '+self.config.api_key})
@@ -141,21 +142,44 @@ def _provider_error(status, packet, secrets=()):
 def connected_request(url,headers,payload):
     """Pin validated public DNS results to the socket; TLS retains original SNI.
 
-    No environment proxy, redirect or transparent request retries are used.
+    An existing HTTP proxy is only a tunnel to the validated public IP. TLS
+    authenticates the original hostname before credentials or prompts are sent.
+    No redirects or transparent POST retries are used.
     """
     import http.client
-    import ipaddress
     import socket
     from urllib.parse import urlsplit
     parsed=urlsplit(url)
     secrets=[v.removeprefix('Bearer ') for k,v in headers.items() if k.lower() in ('authorization','x-api-key')]
     try:
-        addresses=socket.getaddrinfo(parsed.hostname,443,type=socket.SOCK_STREAM)
-        require(addresses and all(ipaddress.ip_address(a[4][0]).is_global for a in addresses),'PROVIDER_ERROR','模型地址解析到非公网网络，已停止')
-        conn=http.client.HTTPSConnection(parsed.hostname,443,timeout=90)
+        from backend.model_dns import resolve_model_addresses
+        from backend.public_dns import configured_proxy, allowed_address
+        require(parsed.scheme=='https' and parsed.hostname and parsed.port in (None,443)
+                and not parsed.username and not parsed.password,
+                'MODEL_REQUEST_NOT_SENT','模型必须使用公网 HTTPS 接口；尚未发送模型请求')
+        addresses=resolve_model_addresses(parsed.hostname)
+        try:proxy=configured_proxy(parsed.hostname)
+        except DomainError:
+            raise DomainError('MODEL_REQUEST_NOT_SENT','模型代理配置不可用；尚未发送模型请求') from None
+        require(addresses and all(allowed_address(row[4][0]) for row in addresses),
+                'MODEL_REQUEST_NOT_SENT','模型地址不是有效公网地址；尚未发送模型请求')
+        conn=(http.client.HTTPConnection(*proxy,timeout=90) if proxy else
+              http.client.HTTPSConnection(parsed.hostname,443,timeout=90))
         pinned=addresses[0][4][0]
-        conn._create_connection=lambda address,timeout,source_address=None:socket.create_connection((pinned,443),timeout,source_address)
+        if not proxy:
+            conn._create_connection=lambda address,timeout,source_address=None:socket.create_connection((pinned,443),timeout,source_address)
         try:
+            if proxy:
+                import ssl
+                try:
+                    conn.set_tunnel(pinned,443)
+                    conn.connect()
+                    conn.sock=ssl.create_default_context().wrap_socket(conn.sock,server_hostname=parsed.hostname)
+                    # Never reconnect in plain HTTP if this authenticated tunnel dies.
+                    conn.auto_open=0
+                except (OSError,ValueError,http.client.HTTPException):
+                    raise DomainError('MODEL_REQUEST_NOT_SENT','模型安全代理隧道未建立；尚未发送模型请求') from None
+                headers={**headers,'Host':parsed.hostname}
             conn.request('POST',parsed.path or '/',json.dumps(payload,ensure_ascii=False).encode(),headers)
             response=conn.getresponse()
             if response.status!=200:
@@ -207,6 +231,21 @@ def _openai_usage(usage,input_key,output_key):
     return total,inp,out
 
 
+def effective_json_mode(item):
+    """Request JSON for the verified Beijing Qwen Plus structured workflow.
+
+    ConnectedModel only accepts JSON objects; it is not a general chat adapter.
+    The automatic exception matches the exact official endpoint/model/protocol,
+    not Qwen-like model names, other regions or custom gateways. Saved connection
+    flags, versions and budgets are never changed. All other routes retain the
+    existing explicit json_mode choice.
+    """
+    return bool(item.get('json_mode')) or (
+        item.get('provider')=='qwen' and item.get('model')=='qwen-plus'
+        and item.get('protocol','openai')=='openai'
+        and item.get('base_url')=='https://dashscope.aliyuncs.com/compatible-mode/v1')
+
+
 class ConnectedModel:
     """Three explicit text protocols with minimal, model-compatible payloads."""
     def __init__(self,connection,key):
@@ -253,15 +292,21 @@ class ConnectedModel:
         else:
             headers['Authorization']='Bearer '+self._key
             payload={'model':item['model'],'messages':messages,'stream':False}
-            if item.get('json_mode'):payload['response_format']={'type':'json_object'}
+            if effective_json_mode(item):payload['response_format']={'type':'json_object'}
             modern=provider=='openai' or bool(re.match(r'^(?:gpt-[5-9](?:[.-]|$)|o[134](?:-|$))',item['model'].split('/')[-1],re.I))
             payload['max_completion_tokens' if modern else 'max_tokens']=max_tokens
             # DashScope's original Qwen3 hybrid models require non-thinking mode
             # for synchronous calls. Never send this vendor flag to a gateway.
             from urllib.parse import urlsplit
-            official_qwen=urlsplit(url).hostname in ('dashscope.aliyuncs.com','dashscope-intl.aliyuncs.com','dashscope-us.aliyuncs.com')
+            hostname=urlsplit(url).hostname
+            official_qwen=hostname in ('dashscope.aliyuncs.com','dashscope-intl.aliyuncs.com','dashscope-us.aliyuncs.com')
             hybrid_qwen=bool(re.match(r'^qwen3-\d+b(?:-|$)',item['model'],re.I)) and not re.search(r'(?:thinking|instruct)',item['model'],re.I)
             if official_qwen and hybrid_qwen:payload['enable_thinking']=False
+            # The platform DeepSeek adapter also disables reasoning for the
+            # structured three-role workflow. Without it the same model can spend
+            # the whole output budget on reasoning and return a truncated object.
+            # Scope the vendor flag to the official host; never guess a gateway.
+            if hostname=='api.deepseek.com':payload['thinking']={'type':'disabled'}
             packet=connected_request(url+'/chat/completions',headers,payload)
             try:
                 choice=packet['choices'][0];message=choice['message']

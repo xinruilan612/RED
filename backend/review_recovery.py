@@ -7,8 +7,50 @@ from datetime import datetime
 from uuid import uuid4
 
 from backend.contracts import DomainError, require
-from backend.live import draft_text, material_records, normalize, review_gates, verify_quotes
+from backend.live import draft_text, normalize, retrieved_references, review_gates, schema
 from backend.workflow import Run, digest
+
+
+def conservative_review(run, raw, error):
+    """Build a system handoff, never pretend an invalid response was a review.
+
+    The caller must first prove settlement and binding to the current snapshot
+    and draft. No persistence, model calls, raw response edits or text inference
+    happen here. Even non-object responses can hand the existing draft to a human.
+    """
+    require(run.workflow_type=='creation' and run.drafts,
+            'INVALID_TRANSITION','没有可交给人工核对的创作稿件')
+    reason=str(error).strip()[:1000] or '模型审核结果格式或证据校验未通过'
+    clean=schema('review')
+    clean.update(decision='needs_human',next_action='request_human',claim_map=[],
+        checks=[{**check,'result':'unknown','basis':'已收到的模型审核未通过校验；本项没有可接受的审核结论，需人工检查。'}
+                for check in clean['checks']],
+        limitations=['系统保守交接：已收到的审核未通过校验（'+reason+'）。原始响应保留在调用审计；此报告不代表模型已完成审核。',
+                     '无效审核中的引用与定位未作为有效证据采用；系统没有补写或近似匹配来源、稿件文字。'],
+        human_questions=['请逐项核对当前稿件与实际来源、原创性及既有问题；补充资料或保存修改后重新审核。'])
+    # Existing issues remain unresolved by default; this is a conservative state
+    # carryover, explicitly not a fabricated claim about the model's re-review.
+    prior=(run.prior_review or {}).get('issues',[])
+    clean['issues']=[{**copy.deepcopy(issue),'state':'open'} for issue in prior]
+    clean['previous_issue_results']=[{'issue_id':issue['issue_id'],'result':'unresolved'} for issue in prior]
+    if prior:clean['limitations'].append('既有问题由系统保守保留为未解决；模型未提供可靠的逐项复核结果。')
+    research=run.branches.get('research')
+    data=research.get('data') if isinstance(research,dict) else None
+    if not isinstance(data,dict) or type(data.get('core_gap')) is not bool:
+        clean['limitations'].append('当前稿件没有可靠的研究分支结果，资料缺口状态未知；人工保留或恢复稿件不表示事实已核验。')
+    clean['issues'].append({'issue_id':'review-handoff-'+str(uuid4()),'severity':'major','state':'open','location':'body',
+        'excerpt':'模型未能提供有效审核结论（请对照完整稿件）','reason':reason,
+        'suggestion':'请人工核对完整稿件；本条没有有效的模型稿件定位，不表示正文某一具体句已被核实。'})
+    claims=raw.get('claim_map') if isinstance(raw,dict) else None
+    if isinstance(claims,list) and any(isinstance(item,dict) and
+            (not isinstance(item.get('excerpt'),str) or not item['excerpt'].strip() or
+             item['excerpt'] not in draft_text(run.drafts[-1]['content'])) for item in claims):
+        clean['issues'][-1]['excerpt']='模型未能定位陈述（请对照完整稿件）'
+        clean['limitations'].append('部分模型摘录未在当前稿件中原样找到；原始摘录仅保留于调用审计，不冒充有效的稿件定位。')
+    ids=[source['source_id'] for source in retrieved_references(run.context)]
+    if ids:clean['limitations'].append('实际提供的参考 source_id：'+'、'.join(ids)+
+        '；仅记录输入来源，未证明模型采用或完成比对，借鉴要点及本题改写差异需人工核对。')
+    return normalize(run,'review',clean,conservative_handoff=True)
 
 
 def candidate(db, store, run):
@@ -30,56 +72,30 @@ def candidate(db, store, run):
     require(created and row[5] is not None and row[5]>=datetime.fromisoformat(created).timestamp(),
             'VERSION_CONFLICT','审核结果早于当前稿件')
     raw=json.loads(row[2])
-    error_kind=None
     try:normalize(run,'review',copy.deepcopy(raw))
     except DomainError as error:
+        require(error.code in ('MODEL_OUTPUT_INVALID','REVIEW_GATE_FAILED'),
+                'INVALID_TRANSITION','此审核错误不能自动整理，请查看诊断')
         error_kind=str(error)
-        require(error_kind in ('模型引用无法匹配原始素材','旧问题必须逐项复核'),'INVALID_TRANSITION','此审核错误不能自动整理，请查看诊断')
-    else:raise DomainError('INVALID_TRANSITION','审核不存在可整理的格式错误')
-    if error_kind=='旧问题必须逐项复核':
-        clean=copy.deepcopy(raw)
-        required={i['issue_id'] for i in (run.prior_review or {}).get('issues',[])}
-        results=clean.get('previous_issue_results',[])
-        require(isinstance(results,list) and all(isinstance(i,dict) for i in results),'INVALID_TRANSITION','复核列表格式无效')
-        ids=[i.get('issue_id') for i in results]
-        require(all(isinstance(i,str) for i in ids) and len(ids)==len(set(ids)) and required.issubset(ids),
-                'INVALID_TRANSITION','缺少或重复本轮旧问题，不能推定复核结果')
-        historical={i['issue_id'] for report in run.reviews for i in report.get('issues',[])}
-        excluded=[i for i in results if i['issue_id'] not in required]
-        require(excluded and all(i['issue_id'] in historical and i.get('result') in ('resolved','unresolved','regressed') for i in excluded),
-                'INVALID_TRANSITION','未知历史问题编号，不能自动整理')
-        require(clean.get('decision') in ('revision_required','needs_human'),'INVALID_TRANSITION','整理格式不能自动通过审核')
-        clean['previous_issue_results']=[i for i in results if i['issue_id'] in required]
-        report=normalize(run,'review',clean)
-        return row[0],report,[],excluded
-    clean=copy.deepcopy(raw);kept=[];removed=[]
-    for entry in clean['claim_map']:
-        try:verify_quotes([entry],material_records(run.context),draft_text(draft['content']))
-        except DomainError as error:
-            require(str(error)=='模型引用无法匹配原始素材','INVALID_TRANSITION','稿件引用位置也不匹配，不能自动整理')
-            require(isinstance(entry.get('excerpt'),str) and entry['excerpt'].strip() and entry['excerpt'] in draft_text(draft['content']),
-                    'INVALID_TRANSITION','稿件引用位置也不匹配，不能自动整理')
-            removed.append(entry)
-        else:kept.append(entry)
-    require(removed,'INVALID_TRANSITION','没有可整理的引用问题')
-    clean['claim_map']=kept
-    clean['decision']='revision_required';clean['next_action']='revise'
-    require(isinstance(clean.get('issues'),list) and isinstance(clean.get('limitations'),list),'MODEL_OUTPUT_INVALID','审核字段无效')
-    issue_id='citation-recovery-'+row[0]
-    require(not any(i.get('issue_id')==issue_id for i in clean['issues'] if isinstance(i,dict)),'MODEL_OUTPUT_INVALID','恢复问题编号冲突')
-    clean['issues'].append({'issue_id':issue_id,'severity':'major','state':'open','location':'body',
-        'excerpt':removed[0]['excerpt'],'reason':f'{len(removed)} 条审核来源引用无法在素材正文中找到，尚未证明相关陈述有依据。',
-        'suggestion':'请查看被排除的引用，核对原文并修改相关陈述；保存新版本后重新审核。'})
-    clean['limitations'].append(f'本审核由已收到的结果免费整理：排除 {len(removed)} 条无效来源引用，保留原始响应审计；未通过审核，须人工改稿并重新审核。')
-    report=normalize(run,'review',clean)
-    return row[0],report,removed,[]
+    else:
+        # The original review may have failed a later domain transition, after
+        # schema normalization. Never turn an invalid persisted response into
+        # approval just because its schema now passes.
+        error_kind='已收到的审核未完成有效的领域校验，需人工核对'
+    report=conservative_review(run,raw,error_kind)
+    removed=copy.deepcopy(raw.get('claim_map',[])) if isinstance(raw,dict) else []
+    if not isinstance(removed,list):removed=[]
+    required={i['issue_id'] for i in (run.prior_review or {}).get('issues',[])}
+    results=raw.get('previous_issue_results',[]) if isinstance(raw,dict) else []
+    excluded=[copy.deepcopy(i) for i in results if isinstance(i,dict) and i.get('issue_id') not in required] if isinstance(results,list) else []
+    return row[0],report,removed,excluded
 
 
 def public(store, run):
     try:
         with store.connect() as db:call_id,report,removed,excluded=candidate(db,store,run)
         return {'available':True,'call_id':call_id,'invalid_quotes':removed,'excluded_previous_results':excluded,
-                'reason':('复审混入更早轮次的问题编号。可免费整理已收到的审核，保留本轮未解决问题；不会确认稿件或调用 AI。' if excluded else '稿件已保存，审核引用校验失败。可免费查看问题并进入改稿；不会确认稿件或调用 AI。')}
+                'reason':'稿件已保存，已收到的审核未能可靠校验。可免费保留原稿、已有问题和调用记录，交给人工核对；不会确认稿件或调用 AI。'}
     except (DomainError,TypeError,ValueError,KeyError):return {'available':False}
 
 
@@ -98,9 +114,9 @@ def repair(store, run_id, owner, version, key):
         run.node_runs.append({'id':str(uuid4()),'agent':'reviewer','stage':'review','mode':'live',
             'snapshot_id':run.snapshot_id,'input':{'recovered_call_id':call_id,'excluded_claim_map':removed,'excluded_previous_results':excluded},
             'output':report,'model_calls':0,'tokens':0,'cost':0,'duration_ms':0,'tools':[],
-            'memory':'人工触发免费整理已有审核；原始调用响应和费用保持不变'})
+            'memory':'人工触发保守交接；没有可靠的模型审核结论，原始调用响应和费用保持不变'})
         run.event('agent.completed',agent='reviewer',stage='review',mode='live',
-                  recovery='obsolete_previous_issue_ids' if excluded else 'invalid_citations_for_manual_edit',
+                  recovery='system_conservative_handoff',
                   call_id=call_id,excluded_claim_map=removed,excluded_previous_results=excluded)
         db.execute("UPDATE runtime_jobs SET status=?,error=NULL,token=NULL,lease_until=NULL,thread_id=?,updated=? WHERE run_id=?",
                    ('waiting' if run.run_status=='WAITING_USER' else 'paused',str(uuid4()),time.time(),run_id))

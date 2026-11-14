@@ -114,7 +114,7 @@ test('failed probe refreshes actual status without losing unsaved configuration 
  const s=setup(),errors=[];s.sandbox.currentPage='models';s.sandbox.window.confirm=()=>true;
  s.element('modelConnectionEditor').innerHTML='保留未提交编辑';let refreshes=0;
  s.sandbox.refreshModelStatus=async()=>{refreshes++;};s.sandbox.error=e=>errors.push(e.message);
- s.sandbox.api=async(path,...args)=>{s.calls.push([path,...args]);if(path.endsWith('/test'))throw new Error('密钥无效，请编辑连接');return {connections:[{id:'id',version:2,test_status:'failed',last_tested:'刚刚'}]};};
+ s.sandbox.api=async(path,...args)=>{s.calls.push([path,...args]);if(path.endsWith('/test'))throw new Error('密钥无效，请编辑连接');return {connections:[{id:'id',version:2,test_status:'failed',last_tested:1791734400}]};};
  await s.eval("testModelConnection({id:'id',label:'test',version:2})");
  assert.equal(refreshes,1);assert.match(s.element('modelTestStatus-id').textContent,/上次测试失败/);
  assert.equal(s.element('modelConnectionEditor').innerHTML,'保留未提交编辑');assert.match(errors[0],/密钥无效/);
@@ -127,4 +127,27 @@ test('settings read failure offers an in-page non-billing retry',async()=>{
  await s.element('retryModelSettings').onclick();assert.match(s.element('operationsContent').innerHTML,/平台 DeepSeek 尚未配置/);
  assert.doesNotMatch(s.element('operationsContent').innerHTML,/网络暂时不可用|配置读取失败/);assert.equal(globalErrors.length,0);
  assert.ok(s.calls.every(c=>!c[0].includes('/test')));
+});
+
+
+test('model test time converts backend Unix seconds before using the shared date formatter',()=>{
+ const s=setup(),seconds=Date.parse('2026-10-12T03:04:05Z')/1000;
+ const formatter=fs.readFileSync('frontend/operations.js','utf8').split('\n').find(line=>line.startsWith('const dateText='));
+ s.eval(formatter);s.sandbox.connection={test_status:'passed',last_tested:seconds};
+ const label=s.eval('modelTestLabel(connection)');
+ assert.equal(label,'测试状态：短请求测试通过 · '+new Date(seconds*1000).toLocaleString('zh-CN',{hour12:false}));
+ assert.match(label,/2026/);assert.doesNotMatch(label,/1970/);
+});
+test('untested model connections show no test time without formatting empty values',()=>{
+ const s=setup();s.sandbox.dateText=()=>{throw new Error('empty timestamps must not be formatted');};
+ for(const last_tested of [undefined,null,'',0]){
+  s.sandbox.connection={test_status:'untested',last_tested};
+  assert.equal(s.eval('modelTestLabel(connection)'),'测试状态：未测试 · 尚无测试时间');
+ }
+});
+
+test('JSON hint scopes automatic mode to official Beijing qwen-plus without changing saved checkbox state',()=>{
+ const s=setup();
+ for(const enabled of [false,true]){s.sandbox.item={id:'q',provider:'qwen',model:'qwen-plus',json_mode:enabled};const html=s.eval("modelConnectionForm([{id:'qwen',name:'Qwen'}],item)");assert.match(html,/北京官方接口的 qwen-plus（OpenAI 兼容协议）自动请求 JSON 结构；其他连接按显式设置/);const input=html.match(/<input name="json_mode"[^>]*>/)[0];assert.equal(/checked/.test(input),enabled);}
+ assert.equal(s.calls.length,0);
 });

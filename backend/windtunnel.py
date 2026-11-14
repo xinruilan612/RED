@@ -5,6 +5,7 @@ drafts, confirmed conditions and reports are committed with the Run envelope.
 """
 import copy
 import json
+import re
 import time
 from dataclasses import asdict
 from uuid import uuid4
@@ -33,19 +34,42 @@ def draft(run):
 
 
 def edit_spans(text):
-    """Bounded, exact edit targets; duplicate paragraphs retain distinct IDs."""
-    prefix, cursor, spans = digest(text)[:12], 0, []
-    count = 0
-    for paragraph in text.split('\n\n'):
-        end = cursor + len(paragraph)
-        if paragraph and count < 60:
+    """Bounded, exact edit targets; duplicate paragraphs retain distinct IDs.
+
+    Paragraphs are separated by a blank line, but short notes and pasted
+    captions often use single line breaks. Falling back to line-level targets
+    keeps "局部修改" granular for those drafts instead of offering only a
+    whole-body replacement. Both LF and CRLF separators are recognised so a
+    draft pasted from Windows keeps clean targets instead of stray carriage
+    returns inside every replacement.
+    """
+    prefix = digest(text)[:12]
+
+    def compile_units(units):
+        spans, count = [], 0
+        for start, end in units[:60]:
             count += 1
-            spans.append(dict(span_id=f'{prefix}:P{count}', kind='replace', start=cursor, end=end, original=paragraph))
+            spans.append(dict(span_id=f'{prefix}:P{count}', kind='replace', start=start, end=end, original=text[start:end]))
             if end < len(text):
                 spans.append(dict(span_id=f'{prefix}:I{count}', kind='insert', start=end, end=end, original=''))
-        cursor = end + 2
-    spans.append(dict(span_id=f'{prefix}:END', kind='insert', start=len(text), end=len(text), original=''))
-    return spans
+        spans.append(dict(span_id=f'{prefix}:END', kind='insert', start=len(text), end=len(text), original=''))
+        return spans
+
+    def blocks(pattern):
+        units, cursor = [], 0
+        for match in re.finditer(pattern, text):
+            if match.start() > cursor:
+                units.append((cursor, match.start()))
+            cursor = match.end()
+        if len(text) > cursor:
+            units.append((cursor, len(text)))
+        return units
+
+    units = blocks(r'(?:\r?\n){2}')
+    if len(units) >= 3:
+        return compile_units(units)
+    lines = blocks(r'\r?\n')
+    return compile_units(lines or units)
 
 
 def evidence_passages(sources):
@@ -143,9 +167,15 @@ def messages_for(run, stage):
     require(stage in STAGES, 'INVALID_INPUT', '未知预演步骤')
     state = checked(run)
     if stage == 'wt_conditions':
-        data = dict(scene=state['scene'], feedback=stage_sources(run, stage))
+        visible = stage_sources(run, stage)
+        data = dict(scene=state['scene'],
+                    feedback=[s for s in visible if s.get('provenance') in ('historical_feedback', 'pilot_feedback')],
+                    author_notes=[{'text': s['text'], 'title': s.get('title', '')} for s in visible
+                                  if s.get('provenance') not in ('historical_feedback', 'pilot_feedback')])
         shape = {'conditions': [{'question': '作者需要读者能回答的问题', 'scene': '适用场景', 'source_ids': [], 'origin': 'author'}]}
-        rule = '将反馈转换为最多12条待作者确认的问题。来源只能使用给定反馈ID；无反馈标author，不能声称真实读者意见。不要预填问题答案。'
+        rule = ('将反馈转换为最多12条待作者确认的问题。feedback 是真实反馈，引用时 source_ids 只能复制其中 id，origin=feedback；'
+                'author_notes 是作者设定，只能作为问题来源，origin 必须为 author 且 source_ids 必须为空；不能把作者设定说成真实读者意见。'
+                '不要预填问题答案。')
     else:
         cs = conditions(run)
         require(cs['confirmed'], 'INVALID_TRANSITION', '请先确认检查条件')
@@ -433,10 +463,29 @@ class Windtunnel:
             state['current_set_id'] = cs['id']
             waiting(run, 'wt_confirm_conditions')
         run.event('run.queued')
+        closed = []
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
-            rows = db.execute('SELECT payload FROM runs WHERE owner=?', (owner,)).fetchall()
-            require(not any(json.loads(r[0]).get('workflow_type', 'creation') == 'windtunnel' and json.loads(r[0])['run_status'] not in ('SUCCEEDED', 'CANCELLED', 'FAILED', 'EXPIRED') for r in rows), 'RUN_ALREADY_ACTIVE', '已有未结束的内容预演')
+            rows = db.execute('SELECT id,payload FROM runs WHERE owner=?', (owner,)).fetchall()
+            for row in rows:
+                old_run = json.loads(row[1])
+                if (old_run.get('workflow_type', 'creation') != 'windtunnel'
+                        or old_run['run_status'] in ('SUCCEEDED', 'CANCELLED', 'FAILED', 'EXPIRED')):
+                    continue
+                # Starting a new check supersedes an unfinished one: close it with
+                # its own event so the old draft, report and patches stay readable,
+                # instead of blocking the new check behind a stale run.
+                prior = Run(**old_run)
+                prior.run_status, prior.wait_reason = 'CANCELLED', None
+                prior.status_version += 1
+                prior.event('run.cancelled')
+                db.execute('UPDATE runs SET payload=? WHERE id=?',
+                           (json.dumps(asdict(prior), ensure_ascii=False), prior.run_id))
+                db.execute("UPDATE runtime_jobs SET status='paused',token=NULL,lease_until=NULL,updated=? WHERE run_id=?",
+                           (time.time(), prior.run_id))
+                closed.append(prior.run_id)
+            if closed:
+                run.context['auto_closed_windtunnels'] = closed
             db.execute('INSERT INTO runs(id,owner,payload) VALUES(?,?,?)', (run.run_id, owner, json.dumps(asdict(run), ensure_ascii=False)))
         return run
 

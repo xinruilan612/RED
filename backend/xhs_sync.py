@@ -7,6 +7,7 @@ import hashlib
 import json
 import time
 import math
+import os
 import re
 from datetime import date, datetime, timezone
 from urllib.parse import urlsplit, urlunsplit
@@ -19,6 +20,18 @@ from backend.creator_metrics import PUBLIC_VISIBILITY_SOURCE
 
 
 def encoded(value):return json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(',',':'))
+
+
+def _bridge_port(port=None):
+    """Resolve the local connector port; XHS_BRIDGE_PORT overrides the default."""
+    value=18061 if port is None else port
+    if port is None:
+        raw=os.environ.get('XHS_BRIDGE_PORT','').strip()
+        if raw:
+            require(raw.isdigit(),'INVALID_INPUT','本机连接器端口无效')
+            value=int(raw)
+    require(type(value) is int and 1024<=value<=65535,'INVALID_INPUT','本机连接器端口无效')
+    return value
 
 
 CREATOR_COUNTS=('exposure','views','likes','favorites','comments','shares')
@@ -132,11 +145,14 @@ class XHSSync:
                           'metric_displays':{k:v for k,v in note.get('metric_displays',{}).items() if k in CREATOR_COUNTS+CREATOR_RATES}})
         return {**snapshot,'account':None,'notes':notes}
 
-    def bind(self,owner,account_id,port=18061,interval_s=900):
+    def bind(self,owner,account_id,port=None,interval_s=900):
         account=find_account(Operations(self.store).read(owner),account_id)
         require(account['platform']=='xiaohongshu','INVALID_INPUT','只能绑定小红书账号档案')
         require(type(interval_s) is int and 300<=interval_s<=86400,'INVALID_INPUT','同步间隔须为5分钟至24小时')
+        port=_bridge_port(port)
         identity=self.factory(port).identity()
+        require(isinstance(identity,dict) and isinstance(identity.get('id'),str) and identity['id'],
+                'XHS_IDENTITY_UNVERIFIED','无法核实账号身份，未写入绑定')
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             conflict=db.execute('SELECT owner,account_id FROM xhs_sync_links WHERE source_id=? OR bridge_port=?',(identity['id'],port)).fetchall()
@@ -206,13 +222,24 @@ class XHSSync:
                 for r in rows if json.loads(r[0])['id'] in visible]
 
     def reconnect(self,owner,account_id):
+        """Return a login QR even before the first binding.
+
+        bind() verifies identity through the connector, and identity() itself
+        requires an already logged-in session. If the login entry had required an
+        existing binding, a fresh install could never reach the QR step at all:
+        bind needed login and login needed bind. An unbound account therefore
+        falls back to the configured bridge port instead of being refused.
+        """
         find_account(Operations(self.store).read(owner),account_id)
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             row=db.execute('SELECT bridge_port FROM xhs_sync_links WHERE owner=? AND account_id=?',(owner,account_id)).fetchone()
-            require(row is not None,'RESOURCE_NOT_FOUND','仅已有绑定账号可以重新登录')
-            db.execute("UPDATE xhs_sync_links SET enabled=0,status='paused',token=NULL,lease_until=NULL WHERE owner=? AND account_id=?",(owner,account_id))
-        return self.factory(row[0]).reconnect()
+            if row is None:
+                port=_bridge_port(None)
+            else:
+                port=row[0]
+                db.execute("UPDATE xhs_sync_links SET enabled=0,status='paused',token=NULL,lease_until=NULL WHERE owner=? AND account_id=?",(owner,account_id))
+        return self.factory(port).reconnect()
 
     def comments(self,owner,account_id,note_id,offset=0):
         find_account(Operations(self.store).read(owner),account_id)

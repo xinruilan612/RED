@@ -195,11 +195,14 @@ class WindtunnelRuntimeTests(unittest.TestCase):
         before=len(self.fixture.calls);Worker(self.service).once()
         self.assertEqual(len(self.fixture.calls),before);self.assertEqual(self.job()['status'],'blocked')
 
-    def test_coexisting_creation_limit_and_paid_disabled(self):
+    def test_coexisting_creation_limit_and_windtunnel_supersede(self):
         creation=self.service.create(self.owner,dict(topic='原创作',audience='测试读者',tone='清楚',material='材料',allow_hypothesis=True,mode='simulation'))
         self.assertEqual(creation['workflow_type'],'creation')
-        with self.assertRaises(DomainError):self.service.create(self.owner,self.input)
-        self.action('cancel')
+        # A new check supersedes the unfinished one instead of being blocked by it;
+        # the old draft/report stay readable on the cancelled record.
+        second=self.service.create(self.owner,self.input)
+        self.assertEqual(second['context']['auto_closed_windtunnels'],[self.run_id])
+        self.assertEqual(self.store.get(self.run_id,self.owner).run_status,'CANCELLED')
         unconfigured=Service(self.store,Config('existing-key-must-not-be-used'))
         with self.assertRaisesRegex(DomainError,'未启用'):unconfigured.create(self.owner,self.input)
         simulated=unconfigured.create(self.owner,{**self.input,'mode':'simulation'})

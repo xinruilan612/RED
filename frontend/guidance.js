@@ -15,7 +15,8 @@ function onboardingState(account,documents=[],runs=[]){
   creation:!!account?.id&&runs.some(r=>r.workflow_type!=='windtunnel'&&r.context?.operations?.account_id===account.id&&r.run_status==='SUCCEEDED'&&r.accepted_ref&&r.drafts?.some(d=>d.ref===r.accepted_ref))};
 }
 function creationStatusText(value){
- if(value.run_status==='WAITING_USER')return value.wait_reason==='final_confirmation'?'成稿待你确认':value.wait_reason==='review_blocked'?'需要补充资料或处理审核问题':'等待你处理';
+ if(value.workflow_type!=='windtunnel'&&value.run_status==='WAITING_USER'&&['missing_material','hypothesis_permission'].includes(value.wait_reason))return '可按现有资料继续生成';
+ if(value.run_status==='WAITING_USER')return value.wait_reason==='final_confirmation'?'成稿待你确认':value.wait_reason==='review_blocked'?'稿件审核问题待确认':'等待你处理';
  return ({QUEUED:'已排队，等待创作',RUNNING:'正在创作',SUCCEEDED:'已确认成稿',FAILED:'执行未完成，可查看原因',CANCELLED:'已取消',EXPIRED:'任务已过期'})[value.run_status]||'查看任务详情';
 }
 function gettingStartedHTML(account,runs=[]){

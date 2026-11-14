@@ -1,0 +1,36 @@
+{
+  "supersedes": "earlier 1336-test report",
+  "all_pages_visually_inspected": true,
+  "latest_manifest": {
+    "page_count": 3,
+    "scope": "post human review update",
+    "review_date": "2026-11-03",
+    "artifacts": [
+      {
+        "file": "有迹-测试与验证报告-20261103.docx",
+        "bytes": 43288,
+        "sha256": "c5f3ee3fc285a3242a21f88fc655f13135af0b47862a8edd3589a8697e7b3a8e"
+      },
+      {
+        "file": "有迹-测试与验证报告-20261103.pdf",
+        "bytes": 433467,
+        "sha256": "dbf6c50e31b03770c433e991838f349ac6d23c2fa71e30996871675a976149cb"
+      },
+      {
+        "file": "_qa/有迹-测试与验证报告-20261103/page-1.png",
+        "bytes": 465827,
+        "sha256": "0add3c818580c3cd5a281b718b3cdfe85bc7afa0d8845525ce0c9ee904a67048"
+      },
+      {
+        "file": "_qa/有迹-测试与验证报告-20261103/page-2.png",
+        "bytes": 426996,
+        "sha256": "9b39cf0d4a410eec210ee1349c720165eecf38b8986e43b8ebbc48dbf15be60b"
+      },
+      {
+        "file": "_qa/有迹-测试与验证报告-20261103/page-3.png",
+        "bytes": 469381,
+        "sha256": "e7a30eaef5a4956c29b12daa9544972fe33dcf9a2fac439d01a986c6c8d87c51"
+      }
+    ]
+  }
+}

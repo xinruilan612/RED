@@ -67,7 +67,7 @@ class GroupedBM25FallbackTests(unittest.TestCase):
         example=self.save('准许样例','example');fact=self.save('准许事实')
         self.save('跨领域','example',domain='photography')
         self.save('跨形式','example',form='video_script')
-        self.save('未知渠道样例','example',channel='any')
+        generic=self.save('通用渠道样例','example',channel='any')
         self.save('通用领域不能充当样例','example',domain='general')
         self.save('错误型号',text='B2面霜产品资料：净含量80毫升。')
         self.save('型号子串',text='XA1面霜产品资料：净含量90毫升。')
@@ -88,10 +88,10 @@ class GroupedBM25FallbackTests(unittest.TestCase):
         self.save('同用户另一账号事实',account=state['accounts'][-1]['id'])
         with patch('backend.knowledge.bm25_scores',wraps=bm25_scores) as rank:
             result=self.retrieve()
-        self.assertEqual({s['document_id'] for s in result['sources']},{example['id'],fact['id']})
+        self.assertEqual({s['document_id'] for s in result['sources']},{example['id'],generic['id'],fact['id']})
         ranked_ids={row[1] for call in rank.call_args_list for row in call.args[1]}
-        self.assertEqual(ranked_ids,{example['id'],fact['id']})
-        self.assertEqual(result['filters']['examples']['candidate_count'],1)
+        self.assertEqual(ranked_ids,{example['id'],generic['id'],fact['id']})
+        self.assertEqual(result['filters']['examples']['candidate_count'],2)
         self.assertEqual(result['filters']['facts']['candidate_count'],1)
 
     def test_fallback_keeps_selected_documents_active_versions_and_owner_scope(self):

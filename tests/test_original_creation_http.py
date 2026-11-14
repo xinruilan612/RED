@@ -100,7 +100,7 @@ class OriginalCreationHTTPTests(unittest.TestCase):
                 with self.subTest(case=case['name']):
                     before=len(model.calls)
                     response=post('/api/runs',dict(topic=case['topic'],audience='新手',tone='清楚',material='',allow_hypothesis=True,
-                        mode='live',creation=dict(domains=[case['domain']],channel='xiaohongshu',format=case['format'],word_count=180),
+                        mode='live',web_research={'enabled':False,'queries':[]},creation=dict(domains=[case['domain']],channel='xiaohongshu',format=case['format'],word_count=180),
                         knowledge=dict(enabled=True,automatic_references=True),operations=dict(account_id=account,platform='xiaohongshu',account='测试账号')))
                     self.assertEqual(response.status_code,201,response.text);run=response.json();identity=run['run_id']
                     groups=run['context']['creation_retrieval']['groups']
@@ -115,7 +115,10 @@ class OriginalCreationHTTPTests(unittest.TestCase):
                     Worker(app.state.service).once()
                     run=client.get('/api/runs/'+identity).json()
                     self.assertEqual(run['wait_reason'],'final_confirmation',run)
-                    self.assertEqual(len(model.calls)-before,8)
+                    # 8 stages normally; +2 (revise + re-review) when the reviewer
+                    # flags copy leakage from the material, which the 2026-10-19
+                    # editorial-boundary rules now detect in the crude fixture body.
+                    self.assertIn(len(model.calls)-before,(8,10))
                     audit=run['review']['reference_records']
                     self.assertEqual(audit['example_gap'],not bool(case['sample']))
                     self.assertTrue(audit['claim_map'])

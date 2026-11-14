@@ -125,11 +125,16 @@ def _regular_file(root: Path, relative: str) -> Path:
 
 
 def _root(path: Path) -> Path:
-    path = path.absolute()
-    for item in (path, *path.parents):
-        info = item.lstat()
-        if stat.S_ISLNK(info.st_mode) or getattr(info, 'st_file_attributes', 0) & 0x400:
-            raise PackageError('Input directory contains a symlink/reparse point')
+    # Only the input directory itself must not be a link. The previous version also
+    # walked every ancestor up to the filesystem root, which falsely refuses any
+    # macOS temp path because /var is a symlink to /private/var; packaging and its
+    # tests were therefore impossible on that platform. Ancestors above the caller
+    # supplied path are OS-level facts, not packaged content. Symlinks inside the
+    # tree stay refused by _regular_file per file and by _site_files per directory.
+    path = Path(path).absolute()
+    info = path.lstat()
+    if stat.S_ISLNK(info.st_mode) or getattr(info, 'st_file_attributes', 0) & 0x400:
+        raise PackageError('Input directory is a symlink/reparse point')
     return path.resolve()
 
 

@@ -150,6 +150,13 @@ class ModelConnections:
             require(not json_mode or protocol!='anthropic','INVALID_INPUT','Anthropic Messages 使用提示词输出 JSON，请关闭强制 JSON 模式')
             payload={'id':connection_id,'version':version,'label':label,'provider':provider,'model':model,'base_url':url,
                      'protocol':protocol,'json_mode':json_mode,**fees,'test_status':'untested','last_tested':None}
+            execution_fields=('provider','model','base_url','protocol','json_mode',*CONNECTION_DEFAULTS)
+            if previous and secret==old_secret and all(payload[k]==previous.get(k) for k in execution_fields):
+                # Renaming a connection must not invalidate a saved task. Edits
+                # to credentials, endpoint, model, format or fees clear this list.
+                payload['compatible_versions']=sorted(set(previous.get('compatible_versions',[])+[previous['version']]))
+                payload['test_status']=previous.get('test_status','untested')
+                payload['last_tested']=previous.get('last_tested')
             db.execute('INSERT INTO model_connections(owner,id,version,payload,secret,active) VALUES(?,?,?,?,?,1) ON CONFLICT(owner,id) DO UPDATE SET version=excluded.version,payload=excluded.payload,secret=excluded.secret',(owner,connection_id,version,json.dumps(payload),secret))
         return payload
 
@@ -184,7 +191,7 @@ class ModelConnections:
         require(route.billing_source=='user','CONFIG_INVALID','个人模型计费来源无效')
         require(route.owner_id==owner,'FORBIDDEN','模型连接不属于当前用户')
         item,secret,version=self._get(owner,route.connection_id)
-        require(version==route.connection_version and item['provider']==route.provider and item['model']==route.model and item['rate_usd_per_million']/1_000_000==route.rate and item['run_budget_usd']==route.run_budget_usd and item['day_budget_usd']==route.day_budget_usd,'CONFIG_INVALID','模型连接已修改，请新建任务以使用新版本')
+        require((version==route.connection_version or route.connection_version in item.get('compatible_versions',[])) and item['provider']==route.provider and item['model']==route.model and item['rate_usd_per_million']/1_000_000==route.rate and item['run_budget_usd']==route.run_budget_usd and item['day_budget_usd']==route.day_budget_usd,'CONFIG_INVALID','模型连接已修改，请新建任务以使用新版本')
         from backend.provider import ConnectedModel
         return ConnectedModel(item,self.vault.decrypt(secret))
 
@@ -207,7 +214,10 @@ class ModelConnections:
         except Exception as error:
             with self.store.connect() as db:
                 db.execute('BEGIN IMMEDIATE')
-                db.execute("UPDATE model_connection_tests SET status='failed' WHERE id=?",(test_id,))
+                if isinstance(error, DomainError) and error.code == 'MODEL_REQUEST_NOT_SENT':
+                    db.execute("UPDATE model_connection_tests SET status='failed',tokens=0 WHERE id=?",(test_id,))
+                else:
+                    db.execute("UPDATE model_connection_tests SET status='failed' WHERE id=?",(test_id,))
                 # Report the failure only on the tested version. A concurrent edit
                 # or deletion must not be overwritten by an old probe's result.
                 row=db.execute('SELECT payload,version,active FROM model_connections WHERE owner=? AND id=?',(owner,connection_id)).fetchone()

@@ -33,7 +33,7 @@ def layout(script=None):
     # API/provider settings always read app/.env if it exists. Refuse rather than
     # inspect, delete, copy, or accidentally use an author's old configuration.
     if (app / '.env').exists() or (app / '.env').is_symlink():
-        raise LaunchError('教师包 app 中发现 .env。为避免读取原数据库或密钥，已停止；请使用未混入旧配置的完整运行包。')
+        raise LaunchError('运行包 app 中发现 .env。为避免读取原数据库或密钥，已停止；请使用未混入旧配置的完整运行包。')
     return app, bundle, interpreter
 
 
@@ -42,13 +42,20 @@ def child_environment(data, port, source=None):
     # Explicit OS-only allowlist: no inherited DB, model, proxy, connector,
     # Python startup/site hooks, credentials or tracing/exporter configuration.
     allowed = {'SYSTEMROOT', 'WINDIR', 'COMSPEC', 'TEMP', 'TMP', 'USERPROFILE',
-               'APPDATA', 'LOCALAPPDATA', 'PROGRAMDATA', 'OS', 'NUMBER_OF_PROCESSORS'}
+               'APPDATA', 'LOCALAPPDATA', 'PROGRAMDATA', 'OS', 'NUMBER_OF_PROCESSORS',
+               # Opt-in: bypass a broken OS proxy and connect to the pinned public IP.
+               'YOUJI_DIRECT_CONNECT'}
     env = {key: value for key, value in source.items() if key.upper() in allowed}
+    # The connector token *path* is a non-secret location, not a credential. It is
+    # accepted from the operator so a source checkout can drive the same local
+    # connector; the file itself is never read into the child environment.
+    token_file = next((value for key, value in source.items() if key.upper() == 'YOUJI_XHS_TOKEN_FILE'), None)
     env.update(DATABASE_URL=str((data / 'teacher.sqlite').resolve()),
                PUBLIC_ORIGIN=f'http://127.0.0.1:{port}', REGISTRATION_INVITE='',
                DEEPSEEK_API_KEY='', MODEL_ROUTES_JSON='{}', MODEL_CREDENTIAL_KEY='',
                WINDTUNNEL_ALLOW_LIVE='false', YOUJI_EMBEDDING_MODEL_PATH='off',
-               PYTHONUTF8='1', PYTHONIOENCODING='utf-8', PYTHONDONTWRITEBYTECODE='1')
+               PYTHONUTF8='1', PYTHONIOENCODING='utf-8', PYTHONDONTWRITEBYTECODE='1',
+               YOUJI_XHS_TOKEN_FILE=str(token_file or (Path(data).parent / 'runtime/xhs-local/control-token')))
     return env
 
 
@@ -150,7 +157,7 @@ def serve(app, bundle, interpreter, *, no_browser=False, stop=None, startup_time
             try:
                 stack.enter_context(exclusive_file_lock(data / 'launcher.lock'))
             except BlockingIOError:
-                print('教师版已经在运行。请使用原来的控制窗口和浏览器；本次没有重复启动。', flush=True)
+                print('有迹已经在运行。请使用原来的控制窗口和浏览器；本次没有重复启动。', flush=True)
                 return 0
             port = available_port()
             url = f'http://127.0.0.1:{port}'
@@ -169,7 +176,7 @@ def serve(app, bundle, interpreter, *, no_browser=False, stop=None, startup_time
                     children.start([str(interpreter), '-X', 'utf8', '-B', '-m', module, *extra],
                                    cwd=app, env=env, log=log)
                 write_state(data, 'starting', url, children.processes)
-                print('正在启动教师版，请保持这个窗口打开。首次启动会建立本包独立数据库。', flush=True)
+                print('正在启动有迹，请保持这个窗口打开。首次启动会建立本包独立数据库。', flush=True)
                 deadline = time.monotonic() + startup_timeout
                 announced = False
                 while not stop.is_set():
@@ -179,7 +186,7 @@ def serve(app, bundle, interpreter, *, no_browser=False, stop=None, startup_time
                         if ready(url, Path(env['DATABASE_URL']), started):
                             announced = True
                             write_state(data, 'ready', url, children.processes)
-                            print(f'教师版已就绪：{url}/\n数据仅保存在：{data}\n按 Ctrl+C 或关闭本窗口停止本包进程。\n停止窗口不等于取消已保存任务；已开启真实任务请先在网页取消。', flush=True)
+                            print(f'有迹已就绪：{url}/\n数据仅保存在：{data}\n按 Ctrl+C 或关闭本窗口停止本包进程。\n停止窗口不等于取消已保存任务；已开启真实任务请先在网页取消。', flush=True)
                             if not no_browser:
                                 try:
                                     if not webbrowser.open(url + '/'):

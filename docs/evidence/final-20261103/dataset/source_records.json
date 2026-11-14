@@ -1,0 +1,579 @@
+{
+  "schema": "youji-official-source-records/1",
+  "records_are_not_full_page_archives": true,
+  "items": [
+    {
+      "source_id": "official:REAL-D01",
+      "url": "https://www.apple.com.cn/newsroom/2024/10/apples-all-new-mac-mini-is-even-more-mighty-and-more-mini/",
+      "title": "Apple 全新 Mac mini 更强大、更迷你",
+      "publisher": "Apple",
+      "publication_date": "2024-10-29",
+      "retrieved_on": "2026-11-03",
+      "read_mode": "opened_official_body_not_search_snippet",
+      "observed_capture": {
+        "observed_text_sha256": "0da4f523f886a31d4295fc300b422276afadab53ffb1c78ba3dbb0fb15e67011",
+        "observed_chars": 4837
+      },
+      "retained_excerpt_text": "12.7\n10 核\n16GB\nUSB-C\n雷雳 4",
+      "retained_excerpt_sha256": "a7116e20a5ef477ce5d45afd48d39dbaf06a3883522f320ad6d7ccec3f2a824f",
+      "verbatim_quote_budget": {
+        "limit_words": 25,
+        "conservative_chinese_char_and_latin_token_count": 8
+      },
+      "excerpts": [
+        {
+          "quote": "12.7",
+          "visible_text_start": 396,
+          "visible_text_end": 400,
+          "web_line": 47,
+          "excerpt_id": "official:REAL-D01:e1",
+          "retained_start": 0,
+          "retained_end": 4,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "10 核",
+          "visible_text_start": 1364,
+          "visible_text_end": 1368,
+          "web_line": 55,
+          "excerpt_id": "official:REAL-D01:e2",
+          "retained_start": 5,
+          "retained_end": 9,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "16GB",
+          "visible_text_start": 754,
+          "visible_text_end": 758,
+          "web_line": 47,
+          "excerpt_id": "official:REAL-D01:e3",
+          "retained_start": 10,
+          "retained_end": 14,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "USB-C",
+          "visible_text_start": 3204,
+          "visible_text_end": 3209,
+          "web_line": 93,
+          "excerpt_id": "official:REAL-D01:e4",
+          "retained_start": 15,
+          "retained_end": 20,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "雷雳 4",
+          "visible_text_start": null,
+          "visible_text_end": null,
+          "web_line": 93,
+          "excerpt_id": "official:REAL-D01:e5",
+          "retained_start": 21,
+          "retained_end": 25,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "source line93 (M4 port statement), no retained full-page character snapshot"
+        }
+      ],
+      "paraphrase_fact_ids": [
+        "F1",
+        "F2",
+        "F3",
+        "F4",
+        "F5"
+      ],
+      "source_completeness": "仅保存版权限额内短摘录和事实转述；未归档整页HTML；observed_text_sha256是已读浏览器提取文本的哈希，不是原始网站字节哈希",
+      "rights_scope": "公开访问不等于内容转授权；只在本次研究中有限引用与独立转述，商标归原权利人"
+    },
+    {
+      "source_id": "official:REAL-D02",
+      "url": "https://www.logi.com/zh-cn/shop/p/m650-signature-wireless-mouse",
+      "title": "罗技 M650 无线鼠标",
+      "publisher": "Logitech",
+      "publication_date": null,
+      "retrieved_on": "2026-11-03",
+      "read_mode": "opened_official_body_not_search_snippet",
+      "observed_capture": {
+        "observed_text_sha256": "17da09e488d1ff5309628854f3c1586043f2faec606a4181e2654636fd8d8d59",
+        "observed_chars": 2624
+      },
+      "retained_excerpt_text": "SmartWheel\n中小尺寸\nM650 L Left\n蓝牙低功耗\nLogi Bolt USB",
+      "retained_excerpt_sha256": "b36b9b8fc4d4c3e50c6bf708718a1ada28a7c81e4fc90fbdd686bb179b6b2a62",
+      "verbatim_quote_budget": {
+        "limit_words": 25,
+        "conservative_chinese_char_and_latin_token_count": 16
+      },
+      "excerpts": [
+        {
+          "quote": "SmartWheel",
+          "visible_text_start": 982,
+          "visible_text_end": 992,
+          "web_line": 51,
+          "excerpt_id": "official:REAL-D02:e1",
+          "retained_start": 0,
+          "retained_end": 10,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "中小尺寸",
+          "visible_text_start": 1470,
+          "visible_text_end": 1474,
+          "web_line": 79,
+          "excerpt_id": "official:REAL-D02:e2",
+          "retained_start": 11,
+          "retained_end": 15,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "M650 L Left",
+          "visible_text_start": 1502,
+          "visible_text_end": 1513,
+          "web_line": 79,
+          "excerpt_id": "official:REAL-D02:e3",
+          "retained_start": 16,
+          "retained_end": 27,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "蓝牙低功耗",
+          "visible_text_start": 2013,
+          "visible_text_end": 2018,
+          "web_line": 97,
+          "excerpt_id": "official:REAL-D02:e4",
+          "retained_start": 28,
+          "retained_end": 33,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "Logi Bolt USB",
+          "visible_text_start": 2020,
+          "visible_text_end": 2033,
+          "web_line": 97,
+          "excerpt_id": "official:REAL-D02:e5",
+          "retained_start": 34,
+          "retained_end": 47,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        }
+      ],
+      "paraphrase_fact_ids": [
+        "F1",
+        "F2",
+        "F3",
+        "F4"
+      ],
+      "source_completeness": "仅保存版权限额内短摘录和事实转述；未归档整页HTML；observed_text_sha256是已读浏览器提取文本的哈希，不是原始网站字节哈希",
+      "rights_scope": "公开访问不等于内容转授权；只在本次研究中有限引用与独立转述，商标归原权利人"
+    },
+    {
+      "source_id": "official:REAL-H01",
+      "url": "https://www.ikea.cn/cn/zh/p/lack-side-table-white-10449909/",
+      "title": "LACK 拉克 边桌 白色",
+      "publisher": "IKEA",
+      "publication_date": null,
+      "retrieved_on": "2026-11-03",
+      "read_mode": "opened_official_body_not_search_snippet",
+      "observed_capture": {
+        "observed_text_sha256": "a699b432b182025efa03cc35d176c8b381eb9619bdc14109c12edcf80deeadec",
+        "observed_chars": 3110
+      },
+      "retained_excerpt_text": "104.499.09\n55 厘米\n45 厘米\n10 公斤\n须单独另购\n定期检查",
+      "retained_excerpt_sha256": "41722325d7102cecbc026b913000456da0576b3a7845a9a89d0a8479c15a8601",
+      "verbatim_quote_budget": {
+        "limit_words": 25,
+        "conservative_chinese_char_and_latin_token_count": 19
+      },
+      "excerpts": [
+        {
+          "quote": "104.499.09",
+          "visible_text_start": 929,
+          "visible_text_end": 939,
+          "web_line": 44,
+          "excerpt_id": "official:REAL-H01:e1",
+          "retained_start": 0,
+          "retained_end": 10,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "55 厘米",
+          "visible_text_start": 1429,
+          "visible_text_end": 1434,
+          "web_line": 79,
+          "excerpt_id": "official:REAL-H01:e2",
+          "retained_start": 11,
+          "retained_end": 16,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "45 厘米",
+          "visible_text_start": 1491,
+          "visible_text_end": 1496,
+          "web_line": 87,
+          "excerpt_id": "official:REAL-H01:e3",
+          "retained_start": 17,
+          "retained_end": 22,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "10 公斤",
+          "visible_text_start": 1525,
+          "visible_text_end": 1530,
+          "web_line": 91,
+          "excerpt_id": "official:REAL-H01:e4",
+          "retained_start": 23,
+          "retained_end": 28,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "须单独另购",
+          "visible_text_start": 1315,
+          "visible_text_end": 1320,
+          "web_line": 67,
+          "excerpt_id": "official:REAL-H01:e5",
+          "retained_start": 29,
+          "retained_end": 34,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "定期检查",
+          "visible_text_start": 1893,
+          "visible_text_end": 1897,
+          "web_line": 131,
+          "excerpt_id": "official:REAL-H01:e6",
+          "retained_start": 35,
+          "retained_end": 39,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        }
+      ],
+      "paraphrase_fact_ids": [
+        "F1",
+        "F2",
+        "F3",
+        "F4"
+      ],
+      "source_completeness": "仅保存版权限额内短摘录和事实转述；未归档整页HTML；observed_text_sha256是已读浏览器提取文本的哈希，不是原始网站字节哈希",
+      "rights_scope": "公开访问不等于内容转授权；只在本次研究中有限引用与独立转述，商标归原权利人"
+    },
+    {
+      "source_id": "official:REAL-H02",
+      "url": "https://www.ikea.cn/cn/zh/p/billy-bookcase-white-s89545291/",
+      "title": "BILLY 毕利 书架 白色（加高组合）",
+      "publisher": "IKEA",
+      "publication_date": null,
+      "retrieved_on": "2026-11-03",
+      "read_mode": "opened_official_body_not_search_snippet",
+      "observed_capture": {
+        "observed_text_sha256": "37ce3c5b3d86b4e076a890ab0a343a12d8a1f4ea47b995948256dbb88fa45d1a",
+        "observed_chars": 3958
+      },
+      "retained_excerpt_text": "895.452.91\n80 厘米\n28 厘米\n237 厘米\n30 公斤\n加高件\n必须安全固定",
+      "retained_excerpt_sha256": "5bcddbef3e14fc65da0b9506722979612e37adc49b6f82b1b08eebf1150c1b31",
+      "verbatim_quote_budget": {
+        "limit_words": 25,
+        "conservative_chinese_char_and_latin_token_count": 22
+      },
+      "excerpts": [
+        {
+          "quote": "895.452.91",
+          "visible_text_start": 833,
+          "visible_text_end": 843,
+          "web_line": 42,
+          "excerpt_id": "official:REAL-H02:e1",
+          "retained_start": 0,
+          "retained_end": 10,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "80 厘米",
+          "visible_text_start": 1239,
+          "visible_text_end": 1244,
+          "web_line": 71,
+          "excerpt_id": "official:REAL-H02:e2",
+          "retained_start": 11,
+          "retained_end": 16,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "28 厘米",
+          "visible_text_start": 1270,
+          "visible_text_end": 1275,
+          "web_line": 75,
+          "excerpt_id": "official:REAL-H02:e3",
+          "retained_start": 17,
+          "retained_end": 22,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "237 厘米",
+          "visible_text_start": 1301,
+          "visible_text_end": 1307,
+          "web_line": 79,
+          "excerpt_id": "official:REAL-H02:e4",
+          "retained_start": 23,
+          "retained_end": 29,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "30 公斤",
+          "visible_text_start": 1340,
+          "visible_text_end": 1345,
+          "web_line": 83,
+          "excerpt_id": "official:REAL-H02:e5",
+          "retained_start": 30,
+          "retained_end": 35,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "加高件",
+          "visible_text_start": 785,
+          "visible_text_end": 788,
+          "web_line": 40,
+          "excerpt_id": "official:REAL-H02:e6",
+          "retained_start": 36,
+          "retained_end": 39,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "必须安全固定",
+          "visible_text_start": 1021,
+          "visible_text_end": 1027,
+          "web_line": 57,
+          "excerpt_id": "official:REAL-H02:e7",
+          "retained_start": 40,
+          "retained_end": 46,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        }
+      ],
+      "paraphrase_fact_ids": [
+        "F1",
+        "F2",
+        "F3",
+        "F4"
+      ],
+      "source_completeness": "仅保存版权限额内短摘录和事实转述；未归档整页HTML；observed_text_sha256是已读浏览器提取文本的哈希，不是原始网站字节哈希",
+      "rights_scope": "公开访问不等于内容转授权；只在本次研究中有限引用与独立转述，商标归原权利人"
+    },
+    {
+      "source_id": "official:REAL-S01",
+      "url": "https://docs.github.com/zh/pages/getting-started-with-github-pages/creating-a-github-pages-site",
+      "title": "创建GitHub Pages网站",
+      "publisher": "GitHub",
+      "publication_date": null,
+      "retrieved_on": "2026-11-03",
+      "read_mode": "opened_official_body_not_search_snippet",
+      "observed_capture": {
+        "observed_text_sha256": "947802a07924bc05f094bde3171cb8ccf60ad4ebf4d989c9499550f407d8bb27",
+        "observed_chars": 5417
+      },
+      "retained_excerpt_text": "GitHub Free\nmust be public\nindex.html\nindex.md\nREADME.md\npublicly available\nConfigure your publishing source",
+      "retained_excerpt_sha256": "7ea28cfd87693553c8fd05d0627db301dfd486155efa75244b808c2da67ec8b6",
+      "verbatim_quote_budget": {
+        "limit_words": 25,
+        "conservative_chinese_char_and_latin_token_count": 14
+      },
+      "excerpts": [
+        {
+          "quote": "GitHub Free",
+          "visible_text_start": 627,
+          "visible_text_end": 638,
+          "web_line": 25,
+          "excerpt_id": "official:REAL-S01:e1",
+          "retained_start": 0,
+          "retained_end": 11,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "must be public",
+          "visible_text_start": 1718,
+          "visible_text_end": 1732,
+          "web_line": 46,
+          "excerpt_id": "official:REAL-S01:e2",
+          "retained_start": 12,
+          "retained_end": 26,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "index.html",
+          "visible_text_start": 3748,
+          "visible_text_end": 3758,
+          "web_line": 70,
+          "excerpt_id": "official:REAL-S01:e3",
+          "retained_start": 27,
+          "retained_end": 37,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "index.md",
+          "visible_text_start": 3762,
+          "visible_text_end": 3770,
+          "web_line": 70,
+          "excerpt_id": "official:REAL-S01:e4",
+          "retained_start": 38,
+          "retained_end": 46,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "README.md",
+          "visible_text_start": 3777,
+          "visible_text_end": 3786,
+          "web_line": 70,
+          "excerpt_id": "official:REAL-S01:e5",
+          "retained_start": 47,
+          "retained_end": 56,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "publicly available",
+          "visible_text_start": 3241,
+          "visible_text_end": 3259,
+          "web_line": 65,
+          "excerpt_id": "official:REAL-S01:e6",
+          "retained_start": 57,
+          "retained_end": 75,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "Configure your publishing source",
+          "visible_text_start": 4456,
+          "visible_text_end": 4488,
+          "web_line": 75,
+          "excerpt_id": "official:REAL-S01:e7",
+          "retained_start": 76,
+          "retained_end": 108,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        }
+      ],
+      "paraphrase_fact_ids": [
+        "F1",
+        "F2",
+        "F3",
+        "F4",
+        "F5"
+      ],
+      "source_completeness": "仅保存版权限额内短摘录和事实转述；未归档整页HTML；observed_text_sha256是已读浏览器提取文本的哈希，不是原始网站字节哈希",
+      "rights_scope": "公开访问不等于内容转授权；只在本次研究中有限引用与独立转述，商标归原权利人"
+    },
+    {
+      "source_id": "official:REAL-S02",
+      "url": "https://support.google.com/docs/answer/6281888?hl=zh-Hans",
+      "title": "如何使用 Google 表单（计算机）",
+      "publisher": "Google",
+      "publication_date": null,
+      "retrieved_on": "2026-11-03",
+      "read_mode": "opened_official_body_not_search_snippet",
+      "observed_capture": {
+        "observed_text_sha256": "388a8785ca3cecfac98a971b13b9f305efcb001cd26202d735af955919ab99dc",
+        "observed_chars": 3274
+      },
+      "retained_excerpt_text": "空白表单\n命名\n新的工作表\n协作者\n发布表单\n查看和分析回复",
+      "retained_excerpt_sha256": "2c7d36df7fb6496bc04d311485644695c268696133df1c3c9ba99cfafa869e1b",
+      "verbatim_quote_budget": {
+        "limit_words": 25,
+        "conservative_chinese_char_and_latin_token_count": 25
+      },
+      "excerpts": [
+        {
+          "quote": "空白表单",
+          "visible_text_start": 895,
+          "visible_text_end": 899,
+          "web_line": 32,
+          "excerpt_id": "official:REAL-S02:e1",
+          "retained_start": 0,
+          "retained_end": 4,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "命名",
+          "visible_text_start": 962,
+          "visible_text_end": 964,
+          "web_line": 33,
+          "excerpt_id": "official:REAL-S02:e2",
+          "retained_start": 5,
+          "retained_end": 7,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "新的工作表",
+          "visible_text_start": 1038,
+          "visible_text_end": 1043,
+          "web_line": 37,
+          "excerpt_id": "official:REAL-S02:e3",
+          "retained_start": 8,
+          "retained_end": 13,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "协作者",
+          "visible_text_start": 789,
+          "visible_text_end": 792,
+          "web_line": 28,
+          "excerpt_id": "official:REAL-S02:e4",
+          "retained_start": 14,
+          "retained_end": 17,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "发布表单",
+          "visible_text_start": 1769,
+          "visible_text_end": 1773,
+          "web_line": 60,
+          "excerpt_id": "official:REAL-S02:e5",
+          "retained_start": 18,
+          "retained_end": 22,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        },
+        {
+          "quote": "查看和分析回复",
+          "visible_text_start": 1814,
+          "visible_text_end": 1821,
+          "web_line": 62,
+          "excerpt_id": "official:REAL-S02:e6",
+          "retained_start": 23,
+          "retained_end": 30,
+          "offset_unit": "unicode_codepoint",
+          "visible_text_offset_basis": "browser extracted visible text with line metadata, not HTML byte offsets"
+        }
+      ],
+      "paraphrase_fact_ids": [
+        "F1",
+        "F2",
+        "F3",
+        "F4",
+        "F5"
+      ],
+      "source_completeness": "仅保存版权限额内短摘录和事实转述；未归档整页HTML；observed_text_sha256是已读浏览器提取文本的哈希，不是原始网站字节哈希",
+      "rights_scope": "公开访问不等于内容转授权；只在本次研究中有限引用与独立转述，商标归原权利人"
+    }
+  ]
+}

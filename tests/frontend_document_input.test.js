@@ -6,7 +6,7 @@ function setup(){
  get('documentTitle').value='产品资料';get('documentText').value='原价 129.50 元';get('documentMaterialType').value='fact';
  const preview={source_sha256:'hash',warnings:['请核对'],pages:[{page:1,text:'原价 129.50 元',original_text:'原价 129.50 元'}]};
  const sandbox={pageInfo:{},activeAccountId:'account',currentPage:'library',crypto:{randomUUID:()=> '00000000-0000-4000-8000-000000000001'},$ :get,esc:s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),toast(){},error:e=>errors.push(e.message),api:async(path,method,data)=>{calls.push({path,method,data});return path.endsWith('/preview')?structuredClone(preview):{id:'saved'};}};
- vm.createContext(sandbox);vm.runInContext(fs.readFileSync('frontend/knowledge.js','utf8'),sandbox);
+ vm.createContext(sandbox);const app=fs.readFileSync('frontend/app.js','utf8');vm.runInContext(app.slice(app.indexOf('function domainFieldError('),app.indexOf('async function mountDomainPicker(')),sandbox);vm.runInContext(fs.readFileSync('frontend/knowledge.js','utf8'),sandbox);
  const run=source=>vm.runInContext(source,sandbox);
  run('renderLibrary=async()=>{};bindDocumentInput("account",0,[])');
  const parse=()=>get('documentForm').onsubmit({preventDefault(){},submitter:get('parseButton')});
@@ -24,7 +24,7 @@ test('back or cancel does not save and preserves original input',async()=>{
 });
 test('parse failure offers file or paste recovery without clearing input',async()=>{
  const s=setup();s.sandbox.api=async()=>{throw new Error('文件无法解析');};await s.parse();
- assert.equal(s.get('documentText').value,'原价 129.50 元');assert.match(s.get('documentInputStatus').textContent,/换文件.*粘贴/);assert.equal(s.get('parseButton').disabled,false);
+ assert.equal(s.get('documentText').value,'原价 129.50 元');assert.match(s.get('documentInputStatus').textContent,/预览未完成：文件无法解析.*原输入已保留.*重试/);assert.equal(s.get('parseButton').disabled,false);
 });
 test('uncertain confirmation retries the identical payload and locks reviewed text',async()=>{
  const s=setup();await s.parse();s.sandbox.api=async(path,method,data)=>{s.calls.push({path,data});throw new Error('网络超时');};
@@ -38,13 +38,13 @@ test('old confirmation explicitly distinguishes saved version from a later edit'
  assert.equal(notices.length,1);assert.match(notices[0],/先前校对版本 v1.*当前资料已更新至 v2.*未覆盖/);
 });
 test('late preview cannot render in another account and cached input stays account scoped',async()=>{
- const s=setup();let resolve;s.sandbox.api=()=>new Promise(r=>resolve=r);const pending=s.parse();await Promise.resolve();
+ const s=setup();let resolve;s.sandbox.api=()=>new Promise(r=>resolve=r);const pending=s.parse();await new Promise(setImmediate);
  s.sandbox.activeAccountId='other';resolve(s.preview);await pending;assert.equal(s.get('documentInputPreview').innerHTML,'');
  s.get('documentText').value='other';s.run('bindDocumentInput("other",0,[])');assert.equal(s.get('documentText').value,'other');
  s.sandbox.activeAccountId='account';s.run('bindDocumentInput("account",0,[])');assert.equal(s.get('documentText').value,'原价 129.50 元');
 });
 test('editing source while parsing discards the outdated response',async()=>{
- const s=setup();let resolve;s.sandbox.api=()=>new Promise(r=>resolve=r);const pending=s.parse();await Promise.resolve();
+ const s=setup();let resolve;s.sandbox.api=()=>new Promise(r=>resolve=r);const pending=s.parse();await new Promise(setImmediate);
  s.get('documentText').value='新输入';s.get('documentForm').events.input();resolve(s.preview);await pending;
  assert.equal(s.get('documentInputPreview').innerHTML,'');assert.equal(s.get('documentText').value,'新输入');
 });

@@ -6,7 +6,7 @@ function showLogin(session){
  const panel=document.getElementById('loginPanel');panel.hidden=false;
  document.getElementById('authInviteWrap').hidden=!session.invite_required;
  document.getElementById('authForm').onsubmit=async e=>{
-  e.preventDefault();const button=e.submitter;button.disabled=true;
+  e.preventDefault();const button=e.submitter;if(button.disabled)return;button.disabled=true;document.getElementById('authError').textContent='';
   const mode=document.getElementById('authMode').value;
   const data={username:document.getElementById('authUsername').value,password:document.getElementById('authPassword').value};
   if(mode==='register'){data.invite=document.getElementById('authInvite').value;data.claim_legacy=document.getElementById('claimLegacy').checked;}
@@ -23,7 +23,7 @@ function showLogin(session){
   finally{button.disabled=false;}
  };
  document.getElementById('authMode').onchange=e=>{
-  const mode=e.target.value;
+  const mode=e.target.value;document.getElementById('authError').textContent='';
   document.getElementById('claimLegacyWrap').hidden=mode!=='register';
   document.getElementById('authInviteWrap').hidden=mode!=='register'||!session.invite_required;
   document.getElementById('authRecoveryWrap').hidden=mode!=='reset';
@@ -41,6 +41,7 @@ function showLogin(session){
 }
 function showWebsiteUser(session){
  websiteSession=session;
+ if(typeof mountDomainPicker==='function')mountDomainPicker('creationDomains');
  if(!session.auth_required)return;
  document.getElementById('websiteUser').hidden=false;
  for(const id of ['connectionsNav','modelsNav'])document.getElementById(id).hidden=false;

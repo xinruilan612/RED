@@ -67,12 +67,12 @@ class Store:
         with self.connect() as db:
             return self._get(db, run_id, owner)
 
-    def command(self, run_id, owner, expected_version, key, action, payload=None):
+    def command(self, run_id, owner, expected_version, key, action, payload=None, *, revision_retrieval=None):
         """Internal service entry; public adapters must expose a smaller action whitelist."""
         payload = {} if payload is None else payload
         require(isinstance(payload,dict) and isinstance(key,str) and key, 'INVALID_INPUT', '命令参数无效')
         integer(expected_version, 'expected_version')
-        actions = ('start','cancel','branch','retry','join','supplement','draft','reviewed','accept','adopt_manual','edit','request_revision','demo_step','demo_supplement')
+        actions = ('start','cancel','branch','retry','join','supplement','draft','reviewed','accept','adopt_manual','edit','retitle','review_current','request_revision','demo_step','demo_supplement','skip_questions')
         require(action in actions, 'INVALID_INPUT', '未知命令')
         fingerprint = digest({'version':expected_version,'action':action,'payload':payload})
         with self.connect() as db:
@@ -89,7 +89,49 @@ class Store:
             if action in ('accept','adopt_manual','edit','request_revision') and db.has_table('live_steps'):
                 require(not db.execute("SELECT 1 FROM live_steps WHERE run_id=? AND state='running'",(run_id,)).fetchone(), 'JOB_ACTIVE', '模型正在执行，请等待完成')
             before = run.drafts[-1] if action == 'edit' and run.drafts else None
-            getattr(run, action)(**payload)
+            arguments=dict(payload)
+            if action=='request_revision' and 'document_ids' in arguments:
+                ids=arguments.pop('document_ids')
+                require(revision_retrieval is not None,'INVALID_INPUT','改稿资料须由服务端检索')
+                account=run.context.get('operations',{}).get('account_id')
+                from backend.knowledge import document_is_public
+                facts=revision_retrieval['groups']['facts']
+                require(set(ids)=={s['document_id'] for s in facts},'INVALID_INPUT','改稿资料不完整')
+                for source in facts:
+                    row=db.execute("SELECT d.version,v.metadata,d.source_url FROM knowledge_documents d JOIN knowledge_versions v ON v.document_id=d.id AND v.version=d.version WHERE d.id=? AND d.owner=? AND d.account_id=? AND d.status='active'",
+                                   (source['document_id'],owner,account)).fetchone()
+                    require(row is not None and row[0]==source['version'] and
+                            document_is_public(db,owner,account,json.loads(row[1]),row[2]),
+                            'SOURCE_VISIBILITY_CHANGED','改稿资料已更新或不可访问，请重新选择')
+            getattr(run, action)(**arguments)
+            if action == 'demo_step':
+                from backend.creation_algorithms import refresh
+                refresh(run)
+            if action=='request_revision' and revision_retrieval is not None:
+                from copy import deepcopy
+                old=deepcopy(run.context.get('creation_retrieval',{}))
+                run.context.setdefault('revision_source_history',[]).append({
+                    'snapshot_id':run.snapshot_id,'retrieval':old,'evidence':deepcopy(run.context.get('evidence',[]))})
+                fresh=deepcopy(revision_retrieval)
+                for group in ('methods','examples'):
+                    fresh['groups'][group]=old.get('groups',{}).get(group,[])
+                    fresh['filters'][group]=old.get('filters',{}).get(group,fresh['filters'][group])
+                fresh['sources']=[s for group in fresh['groups'].values() for s in group]
+                fresh['context_chars']=sum(len(s['text']) for s in fresh['sources'])
+                require(fresh['context_chars']<=fresh['limits']['total_chars'],
+                        'INVALID_INPUT','改稿资料与原参考超过输入限额，请减少资料')
+                run.snapshot_id=digest({'previous':run.snapshot_id,'revision':run.context['pending_revision']['id'],
+                                       'sources':fresh['sources']})
+                run.context['creation_retrieval']=fresh
+                run.context['retrieval']=fresh
+                run.context['evidence']=fresh['sources']
+                run.context['knowledge_selection']={**run.context.get('knowledge_selection',{}),
+                    'enabled':True,'document_ids':payload['document_ids']}
+                run.context['pending_revision']['snapshot_id']=run.snapshot_id
+                run.context['revision_requests'][-1]['snapshot_id']=run.snapshot_id
+                run.event('artifact.created',stage='revision_sources',snapshot_id=run.snapshot_id)
+                # Derived plans may not be presented as current after new evidence.
+                run.context.pop('algorithm_state', None)
             if before is not None:
                 from backend.accounts import capture_edit
                 capture_edit(db, run, before)
@@ -102,6 +144,27 @@ class Store:
             db.execute('UPDATE runs SET payload=? WHERE id=?', (encoded,run_id))
             db.execute('INSERT INTO commands VALUES(?,?,?,?)', (run_id,key,fingerprint,encoded))
             return run
+
+    def delete_run(self, run_id, owner):
+        """Permanently remove a terminal run and its task-local artifacts.
+
+        Model/cost audit rows are retained as a billing ledger; they contain
+        hashes and token counts, not the draft body. Everything that can
+        reopen or reconstruct the task is deleted.
+        """
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            run = self._get(db, run_id, owner)
+            require(run.run_status not in ('QUEUED','RUNNING'), 'INVALID_TRANSITION', '请先取消正在运行的任务，再删除')
+            job = db.execute('SELECT status FROM runtime_jobs WHERE run_id=?', (run_id,)).fetchone() if db.has_table('runtime_jobs') else None
+            require(not job or job[0] not in ('queued','running','pausing'), 'JOB_ACTIVE', '后台任务尚未停稳，请稍后再删除')
+            for table, column in (('runtime_jobs','run_id'),('runtime_nodes','run_id'),('runtime_commands','run_id'),
+                                  ('live_calls','run_id'),('live_steps','run_id'),('commands','run_id'),
+                                  ('reservations','run_id'),('live_lineage','run_id')):
+                db.execute(f'DELETE FROM {table} WHERE {column}=?', (run_id,))
+            db.execute('DELETE FROM live_recoveries WHERE parent=? OR child=?', (run_id, run_id))
+            db.execute('DELETE FROM runs WHERE id=? AND owner=?', (run_id, owner))
+            return {'run_id': run_id, 'deleted': True}
 
     def reserve(self, run_id, owner, call_id, tokens):
         """Atomic worst-case token reservation. No paid provider is enabled here."""

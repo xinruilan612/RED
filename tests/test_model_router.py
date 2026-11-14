@@ -38,6 +38,16 @@ class RouterTests(unittest.TestCase):
         self.assertEqual(self.model.calls,[])
         self.assertEqual(self.run.run_status,'FAILED')
 
+    def test_adapter_receives_stage_specific_output_cap(self):
+        class Adapter:
+            def __init__(self):self.seen=None
+            def complete_result(self,messages,max_tokens=3000):
+                self.seen=max_tokens
+                return {'ok':True},1,{}
+        adapter=Adapter();router=ModelRouter(self.config,None,{}, {('offline','test'):adapter})
+        value,tokens,_=router.complete(Route('offline','test'),[{'role':'user','content':'x'}],max_tokens=6000)
+        self.assertEqual(value,{'ok':True});self.assertEqual(tokens,1);self.assertEqual(adapter.seen,6000)
+
     def test_failed_calls_have_audit_and_unknown_usage(self):
         def fail(messages):raise TimeoutError('potential secret')
         self.model.complete=fail;self.step()
@@ -59,6 +69,8 @@ class RouterTests(unittest.TestCase):
         router=ModelRouter(self.config,self.model,{'review':Route('offline','different-reviewer')},{('offline','different-reviewer'):alternate})
         self.executor=Executor(self.store,self.config,router)
         for _ in range(7):self.step()
-        self.assertEqual(self.run.run_status,'FAILED')
+        self.assertEqual(self.run.run_status,'WAITING_USER')
+        self.assertEqual(self.run.review['decision'],'needs_human')
+        self.assertEqual(self.run.review['claim_map'],[])
         with self.assertRaises(DomainError):
             self.store.command(self.run.run_id,'me',self.run.status_version,'unsafe','accept',{'draft_ref':self.run.drafts[-1]['ref'],'review_ref':'forged'})

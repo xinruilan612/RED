@@ -82,9 +82,9 @@ test('late response for the same account cannot replace newer keyword results',a
  assert.match(s.element('ragJobResult').innerHTML,/新主题/);assert.doesNotMatch(s.element('ragJobResult').innerHTML,/旧主题/);
 });
 test('running job exposes cancellation and duplicate submissions are guarded',async()=>{
- const s=setup();fill(s);s.sandbox.api=async(...args)=>{s.calls.push(args);return args[0].includes('/jobs?')?[{id:'j',provider:'xhs_local',queries:['美妆'],style_filters:{min_likes:100,min_favorites:50,sort_by:'favorites'},status:'running'}]:args[0].includes('/settings')?{providers:[]}:{bound:true};};
+ const s=setup();fill(s,'bing');s.sandbox.api=async(...args)=>{s.calls.push(args);return args[0].includes('/jobs?')?[{id:'j',provider:'bing',queries:['美妆'],style_filters:{min_likes:100,min_favorites:50,sort_by:'favorites'},status:'running'}]:args[0].includes('/settings')?{providers:[{id:'bing',can_attempt:true}]}:{bound:true};};
  s.run("bindRagSearch('a',0)");await s.run("refreshRagJobs('a',0)");
- assert.match(s.element('ragJobResult').innerHTML,/data-rag-cancel="j"/);fill(s);
+ assert.match(s.element('ragJobResult').innerHTML,/data-rag-cancel="j"/);fill(s,'bing');
  await s.element('ragSearchForm').onsubmit({preventDefault(){},submitter:{}});assert.equal(s.calls.filter(c=>c[1]==='POST').length,0);
 });
 test('query and selection state survive a page rebind without opening a source',()=>{
@@ -126,8 +126,8 @@ test('platform abbreviated metrics stay original strings without becoming exact 
 });
 
 
-test('resuming interrupted confirmation preserves its original selection and key',async()=>{
- const s=setup();s.sandbox.job={id:'j',status:'cancelled',candidates:[candidate,{...candidate,id:'c2'},{...candidate,id:'c3'}],items:[{candidate_id:'c1',status:'saved'}],confirmation:{candidate_ids:['c1','c2'],key:'prior-key'}};
+test('retrying active confirmation preserves its original selection and key',async()=>{
+ const s=setup();s.sandbox.job={id:'j',status:'confirming',candidates:[candidate,{...candidate,id:'c2'},{...candidate,id:'c3'}],items:[{candidate_id:'c1',status:'saved'}],confirmation:{candidate_ids:['c1','c2'],key:'prior-key'}};
  s.sandbox.form={querySelectorAll:()=>[]};s.sandbox.refreshRagJobs=async()=>{};s.sandbox.refreshRagDocuments=async()=>{};
  const html=s.run("ragCandidatePanel(job,'a')");assert.match(html,/value="c2" checked/);assert.match(html,/value="c3"[^>]*disabled/);
  await s.run("confirmRagSelection('a',0,job,['c2'],form)");assert.deepEqual(Array.from(s.calls[0][2].candidate_ids),['c1','c2']);assert.equal(s.calls[0][2].key,'prior-key');
@@ -185,7 +185,78 @@ test('job details show canonical query and local MCP errors without claiming ups
  const s=setup();s.sandbox.job={queries:['主题 研究'],raw_queries:[' 主题   研究 '],phase:'complete',counts:{raw_count:4,detail_failed_count:2},reuse:{kind:'active_task',cache_hit:false},error_origin:'local_mcp',mcp_http_status:500};
  const html=s.run('ragJobTrace(job)');assert.match(html,/实际查询：主题 研究/);assert.match(html,/输入原文/);assert.match(html,/复用同范围运行中任务/);assert.match(html,/未使用结果缓存/);assert.match(html,/本机 MCP HTTP 500/);assert.match(html,/不能据此推断平台上游/);
 });
+test('read-only retry trace states no new Baidu search and suppresses cache miss wording',()=>{
+ const s=setup();s.sandbox.job={queries:['主题 研究'],read_only_retry:true,reuse:{cache_hit:false}};
+ const html=s.run('ragJobTrace(job)');assert.match(html,/仅重读已保存链接，无新增百度搜索/);assert.doesNotMatch(html,/未使用结果缓存/);
+});
 test('unrelated pending history does not keep current completed search polling',async()=>{
  const s=setup();s.sandbox.jobs=[{id:'new',queries:['新主题'],status:'done'},{id:'old',queries:['旧主题'],status:'running'}];s.run("ragViewState.set('a',{jobId:'new'})");s.sandbox.api=async()=>s.sandbox.jobs;
  await s.run("refreshRagJobs('a',0)");assert.equal(s.timers.length,0);
+});
+
+function withSearchLeadHelpers(s){vm.runInContext(fs.readFileSync('frontend/research.js','utf8'),s.sandbox);}
+test('library distinguishes eight search leads from zero readable candidates and offers only rereading',()=>{
+ const s=setup();withSearchLeadHelpers(s);s.sandbox.job={id:'j',status:'failed',search_result_count:8,search_result_retention:'legacy_partial',search_results:Array.from({length:5},(_,i)=>({url:'https://example.com/'+i,title:'线索'+i,body_read:false})),candidates:[]};
+ const html=s.run("ragJobPanel(job,'a')");assert.match(html,/搜索已有结果，正文读取未完成/);assert.match(html,/搜索返回 8 条结果/);assert.match(html,/旧任务仅保留 5 条链接/);assert.match(html,/可预览正文 0 条/);assert.match(html,/data-rag-retry-reads="j"/);assert.doesNotMatch(html,/data-rag-candidate|搜索到 0/);
+ for(const status of ['running','queued','confirming','done']){s.sandbox.job.status=status;assert.doesNotMatch(s.run("ragJobPanel(job,'a')"),/data-rag-retry-reads/);}
+ s.sandbox.job.status='partial';s.sandbox.job.confirmation={candidate_ids:['c']};assert.doesNotMatch(s.run("ragJobPanel(job,'a')"),/data-rag-retry-reads/);
+});
+test('reread posts the saved job only, does not search or confirm, and prevents double clicks',async()=>{
+ const s=setup();withSearchLeadHelpers(s);s.sandbox.job={id:'a/b',status:'failed',search_results:[{url:'https://example.com',body_read:false}]};s.sandbox.button={disabled:false};let finish;
+ s.sandbox.api=async(...args)=>{s.calls.push(args);return new Promise(resolve=>finish=resolve);};s.run('refreshRagJobs=async()=>{}');
+ const pending=s.run("retryRagReads(job,'a',0,button)");await s.run("retryRagReads(job,'a',0,button)");assert.equal(s.calls.length,1);assert.equal(s.calls[0][0],'/api/research/jobs/a%2Fb/retry-reads');assert.equal(s.calls[0][1],'POST');assert.deepEqual(JSON.parse(JSON.stringify(s.calls[0][2])),{});finish({});await pending;assert.equal(s.sandbox.button.disabled,false);
+ s.sandbox.activeAccountId='other';await s.run("retryRagReads(job,'a',0,button)");assert.equal(s.calls.length,1);
+});
+test('failed reread keeps the original leads and unlocks retry',async()=>{
+ const s=setup();withSearchLeadHelpers(s);s.sandbox.job={id:'j',status:'failed',search_results:[{url:'https://example.com',body_read:false}]};s.sandbox.button={disabled:false};s.sandbox.api=async()=>{throw Error('链接读取未启动，请重试');};
+ await s.run("retryRagReads(job,'a',0,button)");assert.equal(s.sandbox.button.disabled,false);assert.equal(s.sandbox.job.search_results.length,1);assert.match(s.errors[0].message,/请重试/);
+});
+
+test('library source HTTP failures explain page restrictions without blaming credentials',()=>{
+ const s=setup();for(const [code,label] of [['SOURCE_HTTP_403','读取被拒绝（403）'],['SOURCE_HTTP_404','页面不存在（404）'],['SOURCE_HTTP_429','限流（429）'],['SOURCE_HTTP_ERROR','上游 HTTP 错误']]){
+  s.sandbox.code=code;const text=s.run('ragErrorText(code)');assert.ok(text.includes(label));assert.doesNotMatch(text,/密钥|Key|重新登录/);
+ }
+});
+
+test('usable bodies precede folded unread leads with one selection per candidate',()=>{
+ const s=setup();withSearchLeadHelpers(s);s.sandbox.job={id:'j',status:'awaiting_confirmation',candidates:[candidate],search_results:[{url:candidate.packet.source_url,body_read:true},{url:'https://example.com/unread',body_read:false,read_error:'SOURCE_HTTP_403'}]};
+ const html=s.run("ragJobPanel(job,'a')");assert.ok(html.indexOf('data-rag-confirm')<html.indexOf('research-search-leads'));assert.equal((html.match(/data-rag-candidate value/g)||[]).length,1);assert.match(html,/rag-selectable-card/);assert.match(html,/data-rag-link-candidate="c1"/);assert.match(html,/data-rag-save-lead="https:\/\/example.com\/unread"/);assert.match(html,/<details><summary>程序未读到 1 条/);assert.match(html,/不代表浏览器无法打开/);assert.match(html,/一键加入全部可用正文/);assert.match(html,/加入所选资料/);assert.match(html,/写作材料 \/ 待核验事实/);assert.match(html,/写法参考/);
+});
+test('lead save submits only known unread unsaved URLs, separately from bodies',async()=>{
+ const s=setup();s.sandbox.job={id:'j',candidates:[candidate],search_results:[{url:'https://example.com/unread'},{url:'https://example.com/saved',lead_saved:true},{url:candidate.packet.source_url,body_read:true}]};s.sandbox.form={querySelectorAll:()=>[]};s.sandbox.refreshRagJobs=async()=>{};s.sandbox.refreshRagDocuments=async()=>{};
+ await s.run("confirmRagSelection('a',0,job,[],form,['https://example.com/unread','https://example.com/unread','https://example.com/saved','https://example.com/post','https://unknown.test'])");
+ assert.deepEqual(Array.from(s.calls[0][2].candidate_ids),[]);assert.deepEqual(Array.from(s.calls[0][2].lead_urls),['https://example.com/unread']);assert.equal(s.calls[0][2].purpose,'product_fact');
+});
+test('selected purpose is submitted and changes confirmation attempt identity',async()=>{
+ const s=setup();let purpose='product_fact';s.sandbox.job={id:'j',candidates:[candidate]};s.sandbox.form={querySelectorAll:()=>[],querySelector:q=>q==='[data-rag-purpose]'?{value:purpose}:null};s.sandbox.refreshRagJobs=async()=>{};s.sandbox.refreshRagDocuments=async()=>{};
+ await s.run("confirmRagSelection('a',0,job,['c1'],form)");purpose='expression_reference';await s.run("confirmRagSelection('a',0,job,['c1'],form)");assert.equal(s.calls[0][2].purpose,'product_fact');assert.equal(s.calls[1][2].purpose,'expression_reference');assert.notEqual(s.calls[0][2].key,s.calls[1][2].key);
+});
+test('add all uses only usable unsaved body candidates and excludes leads',async()=>{
+ const s=setup();s.sandbox.jobs=[{id:'j',candidates:[candidate,{...candidate,id:'saved'},{id:'empty',packet:{text:''}}],items:[{candidate_id:'saved',status:'saved'}],search_results:[{url:'https://example.com/unread'}]}];const all={},form={dataset:{ragConfirm:'j'},querySelectorAll:()=>[],querySelector:q=>q==='[data-rag-add-all]'?all:null};s.sandbox.document.querySelectorAll=q=>q==='[data-rag-confirm]'?[form]:[];s.sandbox.refreshRagJobs=async()=>{};s.sandbox.refreshRagDocuments=async()=>{};
+ s.run("bindRagCandidates(jobs,'a',0)");await all.onclick();assert.deepEqual(Array.from(s.calls[0][2].candidate_ids),['c1']);assert.deepEqual(Array.from(s.calls[0][2].lead_urls),[]);
+});
+test('search body shortcut selects the existing checkbox and does not submit',()=>{
+ const s=setup();let changes=0,scrolls=0;const input={value:'c1',checked:false,onchange:()=>changes++,closest:()=>({scrollIntoView:()=>scrolls++})},form={dataset:{ragConfirm:'j'},querySelectorAll:()=>[input]},button={dataset:{job:'j',ragLinkCandidate:'c1'}};
+ s.sandbox.document.querySelectorAll=q=>q==='[data-rag-link-candidate]'?[button]:q==='[data-rag-confirm]'?[form]:[];s.run("bindRagSearchResults([],'a',0)");button.onclick();assert.equal(input.checked,true);assert.equal(changes,1);assert.equal(scrolls,1);assert.equal(s.calls.length,0);
+});
+
+test('completed confirmation history does not lock another unsaved body or a lead',async()=>{
+ const s=setup();withSearchLeadHelpers(s);s.sandbox.job={id:'j',status:'done',candidates:[candidate,{...candidate,id:'c2'}],items:[{candidate_id:'c1',status:'saved'}],confirmation:{candidate_ids:['c1'],key:'old-key'},search_results:[{url:'https://example.com/unread'}]};s.sandbox.form={querySelectorAll:()=>[]};s.sandbox.refreshRagJobs=async()=>{};s.sandbox.refreshRagDocuments=async()=>{};
+ const html=s.run("ragCandidatePanel(job,'a')");assert.doesNotMatch(html,/value="c2"[^>]*disabled/);
+ await s.run("confirmRagSelection('a',0,job,['c2'],form)");assert.deepEqual(Array.from(s.calls[0][2].candidate_ids),['c2']);assert.notEqual(s.calls[0][2].key,'old-key');
+ await s.run("confirmRagSelection('a',0,job,[],form,['https://example.com/unread'])");assert.deepEqual(Array.from(s.calls[1][2].lead_urls),['https://example.com/unread']);
+});
+
+test('historical reference metadata labels report date, original displayed counts and analysis scope',()=>{
+ const s=setup();s.sandbox.doc={source_url:'https://example.com/note',metadata:{research_case:{evidence_role:'expression_reference',metrics:{likes:768300,favorites:672900},provenance:{metrics_basis:'historical_report',report_published_date:'2022-07-07',metrics_display:{likes:'76.83万',favorites:'67.29万'},content_scope:'short_excerpt_and_structure_analysis',evidence_url:'https://example.com/report'}}}};
+ const html=s.run('ragDocumentMeta(doc)');assert.match(html,/写法参考 · 历史报道指标（2022-07-07） · 点赞 76.83万 · 收藏 67.29万/);assert.match(html,/短摘录与原创结构拆解/);assert.match(html,/href="https:\/\/example.com\/report"/);assert.match(html,/案例出处/);assert.doesNotMatch(html,/原文来源|href="https:\/\/example.com\/note"/);
+});
+test('primary snapshot labels observation date and preserves original source link',()=>{
+ const s=setup();s.sandbox.doc={source_url:'https://example.com/note',metadata:{research_case:{evidence_role:'expression_reference',metrics:{likes:100,favorites:null},provenance:{metrics_basis:'public_page_snapshot',metrics_observed_date:'2026-10-13'}}}};
+ const html=s.run('ragDocumentMeta(doc)');assert.match(html,/公开页面快照指标（2026-10-13）/);assert.match(html,/点赞 100 · 收藏 未知/);assert.match(html,/原文来源/);assert.doesNotMatch(html,/历史报道|案例出处|短摘录/);
+});
+test('provenance labels escape external values and unsupported metadata adds no fabricated claims',()=>{
+ const s=setup();s.sandbox.doc={source_url:'javascript:alert(1)',metadata:{research_case:{metrics:{likes:0},provenance:{metrics_basis:'historical_report',report_published_date:'<img>',metrics_display:{likes:'<script>'},evidence_url:'javascript:alert(1)'}}}};
+ let html=s.run('ragDocumentMeta(doc)');assert.match(html,/&lt;img&gt;/);assert.match(html,/&lt;script&gt;/);assert.doesNotMatch(html,/<img>|<script>|javascript:|写法参考/);
+ s.sandbox.doc={metadata:{research_case:{metrics:{likes:0,favorites:2}}}};assert.equal(s.run('ragDocumentMeta(doc)'),'<p class="helper">点赞 0 · 收藏 2</p>');s.sandbox.doc={};assert.equal(s.run('ragDocumentMeta(doc)'),'');
 });

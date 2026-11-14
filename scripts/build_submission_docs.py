@@ -81,6 +81,9 @@ def build():
     def rich(text):
         text = escape(text)
         text = re.sub(r'\[([^\]]+)\]\((https?://[^)]+)\)', r'<link href="\2" color="#234E70">\1</link>', text)
+        # Inline emphasis: ``**bold**`` -> <b>. ReportLab paragraphs accept the tag,
+        # and escape() has already run so this cannot inject markup from the source.
+        text = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', text)
         return text.replace('`', '')
 
     for path in sorted(SOURCE.glob('[0-9][0-9]_*.md')):
@@ -96,6 +99,9 @@ def build():
                 continue
             if line == '<!-- page -->':
                 story.append(PageBreak())
+            elif re.fullmatch(r'-{3,}', line):
+                # Markdown horizontal rule: render as spacing, never as literal dashes.
+                story.append(Spacer(1, 10))
             elif line in ('[[architecture]]', '[[workflow]]'):
                 story.extend([SystemDiagram(line[2:-2]), Spacer(1, 12)])
             elif line.startswith('|'):

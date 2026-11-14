@@ -46,8 +46,8 @@ test('draft-first rendering follows worker latest, comparison is opt-in and froz
  s.eval("run.drafts=fixtureDrafts;run.allowed_actions=[];draftEvidenceHTML=d=>'<details>frozen-evidence-'+d.ref+'</details>';actualRenderDraft()");
  assert.match(s.element('draftView').innerHTML,/新正文/);assert.doesNotMatch(s.element('draftView').innerHTML,/旧正文/);assert.match(s.element('draftView').innerHTML,/frozen-evidence-v2/);
  assert.equal(s.eval('viewVersion'),null);assert.equal(s.element('compareVersionsWrap').hidden,false);
- s.element('compareVersions').checked=true;s.element('compareVersions').onchange();assert.match(s.element('draftView').innerHTML,/旧正文/);assert.match(s.element('draftView').innerHTML,/新正文/);
- s.sandbox.nextDraft=draft('v3','后台最新');s.eval('run.drafts.push(nextDraft);actualRenderDraft()');assert.match(s.element('draftView').innerHTML,/后台最新/);
+ s.element('compareVersions').checked=true;s.element('compareVersions').onchange();const comparison=s.element('draftView').innerHTML,comparisonText=comparison.replace(/<[^>]*>/g,'');assert.match(comparisonText,/旧正文/);assert.match(comparisonText,/新正文/);assert.match(comparison,/class="diff-del"/);assert.match(comparison,/class="diff-add"/);
+ s.sandbox.nextDraft=draft('v3','后台最新');s.eval('run.drafts.push(nextDraft);actualRenderDraft()');assert.match(s.element('draftView').innerHTML.replace(/<[^>]*>/g,''),/后台最新/);
  s.element('versionSelect').onchange({target:{value:'0'}});assert.equal(s.eval('viewVersion'),0);assert.equal(s.element('compareVersionsWrap').hidden,true);
  s.element('versionSelect').onchange({target:{value:'2'}});assert.equal(s.eval('viewVersion'),null);
 });

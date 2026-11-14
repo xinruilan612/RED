@@ -171,3 +171,151 @@ def due_reviews(state, instant=None):
                 state='ready' if quality == 'comparable' else 'needs_data',
                 note='可复盘' if quality == 'comparable' else '窗口已到，请补录当时快照；没有当时数据可保留当前观察并注明偏差'))
     return tasks
+
+
+# Content planning is independent of the account-scoped weekly planner above.
+def plan(requirements, modules, budget, *, redundancy_penalty=0.15, solver='auto'):
+    """Exact selection for <=12 eligible modules; deterministic greedy above that.
+
+    ``supported`` is an upstream evidence decision, not independent verification.
+    Question/limitation modules are eligible without evidence but earn no factual
+    coverage. Budget measures estimated characters, not actual output length.
+    """
+    import math
+    import itertools
+    import time
+    from copy import deepcopy
+
+    started = time.perf_counter()
+    if solver not in ('auto', 'greedy'):
+        raise ValueError('solver must be auto or greedy')
+
+    def number(value, label, minimum=0):
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value < minimum:
+            raise ValueError(label + ' must be a finite nonnegative number')
+        return float(value)
+
+    budget = number(budget, 'budget')
+    penalty = number(redundancy_penalty, 'redundancy_penalty')
+    if not isinstance(requirements, list) or not isinstance(modules, list):
+        raise ValueError('requirements and modules must be lists')
+    weights = {}
+    normalized = []
+    for item in requirements:
+        if not isinstance(item, dict) or not isinstance(item.get('id'), str) or not item['id'].strip() or item['id'] in weights:
+            raise ValueError('requirement IDs must be unique nonempty strings')
+        weights[item['id']] = number(item.get('weight', 1), 'weight')
+    excluded = []
+    seen = set()
+    for item in modules:
+        if not isinstance(item, dict) or not isinstance(item.get('id'), str) or not item['id'].strip() or item['id'] in seen:
+            raise ValueError('module IDs must be unique nonempty strings')
+        seen.add(item['id'])
+        length = number(item.get('length'), 'module length')
+        if length <= 0:
+            raise ValueError('module length must be positive')
+        covers = item.get('covers', [])
+        source_ids = item.get('source_ids', [])
+        if not isinstance(covers, list) or not all(isinstance(v, str) for v in covers):
+            raise ValueError('covers must be string IDs')
+        if not isinstance(source_ids, list) or not all(isinstance(v, str) and v.strip() for v in source_ids):
+            raise ValueError('source_ids must be nonempty string IDs')
+        unknown = sorted(set(covers) - weights.keys())
+        if unknown:
+            excluded.append({'id': item['id'], 'reason': 'unknown_requirements', 'requirement_ids': unknown})
+            continue
+        statement_type = item.get('statement_type', 'assertion')
+        if statement_type not in ('assertion', 'question', 'limitation'):
+            raise ValueError('unknown statement_type')
+        supported = item.get('supported') is True and bool(source_ids)
+        if statement_type == 'assertion' and not supported:
+            excluded.append({'id': item['id'], 'reason': 'unsupported_assertion'})
+            continue
+        normalized.append({'module': deepcopy(item), 'id': item['id'], 'length': length,
+                           'covers': set(covers) if supported and statement_type == 'assertion' else set()})
+    selected, steps, covered = [], [], set()
+    used = 0.0
+    pending = list(normalized)
+    while pending:
+        candidates = []
+        for item in pending:
+            new = item['covers'] - covered
+            repeated = item['covers'] & covered
+            gain = sum(weights[r] for r in sorted(new))
+            redundancy = sum(weights[r] for r in sorted(repeated))
+            marginal = gain - penalty * redundancy
+            candidates.append({'id': item['id'], 'new_requirement_ids': sorted(new),
+                'new_weight': gain, 'redundant_weight': redundancy, 'marginal_gain': marginal,
+                'length': item['length'], 'score': marginal / item['length'],
+                'fits_budget': used + item['length'] <= budget})
+        eligible = [c for c in candidates if c['fits_budget'] and c['marginal_gain'] > 0]
+        if not eligible:
+            break
+        best = min(eligible, key=lambda c: (-c['score'], -c['new_weight'], c['length'], c['id']))
+        chosen = next(item for item in pending if item['id'] == best['id'])
+        used += chosen['length']
+        covered.update(chosen['covers'])
+        selected.append(chosen['module'])
+        steps.append({'step': len(steps) + 1, 'selected_id': chosen['id'],
+                      'candidates': sorted(candidates, key=lambda c: c['id']),
+                      'used_budget': used, 'remaining_budget': budget - used})
+        pending.remove(chosen)
+    def objective(items):
+        counts = {r: sum(r in item['covers'] for item in items) for r in weights}
+        return sum(weights[r] for r, count in counts.items() if count) - penalty * sum(
+            weights[r] * max(0, count - 1) for r, count in counts.items())
+
+    greedy_ids = [item['id'] for item in selected]
+    greedy_items = [item for item in normalized if item['id'] in greedy_ids]
+    greedy_objective = objective(greedy_items)
+    exact = solver == 'auto' and len(normalized) <= 12
+    best_items = greedy_items
+    examined = 0
+    if exact:
+        # The entire admitted candidate pool is enumerated, including the empty
+        # set. Tie breaks prefer fewer characters, then lexicographic IDs.
+        ordered = sorted(normalized, key=lambda item: item['id'])
+        best_key = (-greedy_objective, used, tuple(sorted(greedy_ids)))
+        for size in range(len(ordered) + 1):
+            for group in itertools.combinations(ordered, size):
+                examined += 1
+                length = sum(item['length'] for item in group)
+                if length > budget:
+                    continue
+                key = (-objective(group), length, tuple(item['id'] for item in group))
+                if key < best_key:
+                    best_key, best_items = key, list(group)
+        # Greedy order is kept when its chosen set is exact-optimal, so existing
+        # decision logs stay directly useful. Otherwise use stable candidate IDs.
+        if {item['id'] for item in best_items} == set(greedy_ids):
+            best_items = [next(item for item in normalized if item['id'] == key) for key in greedy_ids]
+        selected = [item['module'] for item in best_items]
+        used = sum(item['length'] for item in best_items)
+        covered = set().union(*(item['covers'] for item in best_items)) if best_items else set()
+    selected_ids = {item['id'] for item in selected}
+    for item in normalized:
+        if item['id'] not in selected_ids:
+            excluded.append({'id': item['id'], 'reason': 'budget' if used + item['length'] > budget else
+                             'not_in_exact_optimum' if exact else 'no_positive_marginal_coverage'})
+    final_items = [item for item in normalized if item['id'] in selected_ids]
+    final_objective = objective(final_items)
+    candidate_covered = set().union(*(item['covers'] for item in normalized)) if normalized else set()
+    total = sum(weights.values())
+    covered_weight = sum(weights[r] for r in sorted(covered))
+    return {'algorithm': 'evidence-gated-budgeted-exact-v2' if exact else 'evidence-gated-budgeted-greedy-v2',
+        'optimality_guaranteed': exact,
+        'optimality_scope': 'current admitted candidate pool and stated estimated-length objective only' if exact else 'none; greedy heuristic',
+        'global_retrieval_optimality': False, 'eligible_candidate_count': len(normalized),
+        'exact_candidate_limit': 12, 'subsets_examined': examined,
+        'objective_value': final_objective, 'greedy_objective': greedy_objective,
+        'objective_gap_vs_greedy': final_objective - greedy_objective,
+        'greedy_selected_module_ids': greedy_ids, 'steps_strategy': 'greedy_comparator',
+        'candidate_recall_numerator': len(candidate_covered), 'candidate_recall_denominator': len(weights),
+        'candidate_recall': len(candidate_covered) / len(weights) if weights else None,
+        'elapsed_ms': (time.perf_counter() - started) * 1000,
+        'selected_modules': selected, 'selected_module_ids': [m['id'] for m in selected],
+        'covered_requirement_ids': sorted(covered), 'uncovered_requirement_ids': sorted(weights.keys() - covered),
+        'covered_weight': covered_weight, 'total_weight': total,
+        'weighted_coverage': covered_weight / total if total else None,
+        'budget': budget, 'used_budget': used, 'remaining_budget': budget - used,
+        'redundancy_penalty': penalty, 'steps': steps, 'excluded': excluded}

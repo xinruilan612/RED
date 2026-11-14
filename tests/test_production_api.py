@@ -46,8 +46,8 @@ class ProductionTests(unittest.TestCase):
                 self.assertEqual(page.status_code, 200)
                 self.assertEqual(page.headers['content-type'], 'text/html; charset=utf-8')
                 assets = re.findall(r'(?:src|href)="(/[^"?]+\.(?:js|css))"', page.text)
-                self.assertTrue({'/auth.js','/app.js','/operations.js','/knowledge.js','/guidance.js','/style.css'}.issubset(assets))
-                self.assertFalse({'/windtunnel.js','/windtunnel.css','/trials.js','/trials.css'}.intersection(assets))
+                self.assertTrue({'/auth.js','/app.js','/operations.js','/knowledge.js','/guidance.js','/style.css','/windtunnel.js','/windtunnel.css'}.issubset(assets))
+                self.assertFalse({'/trials.js','/trials.css'}.intersection(assets))
                 for path in assets:
                     response = self.client.get(path)
                     self.assertEqual(response.status_code, 200, path)
@@ -59,6 +59,11 @@ class ProductionTests(unittest.TestCase):
                     self.assertIn("script-src 'self';",policy)
                     self.assertNotIn("img-src *",policy)
                     self.assertEqual(response.headers['cache-control'], 'no-store')
+                for image in ('/mascot-space.png', '/mascot-dog.png', '/shape-hemisphere.png', '/shape-torus.png'):
+                    response = self.client.get(image)
+                    self.assertEqual(response.status_code, 200, image)
+                    self.assertEqual(response.headers['content-type'], 'image/png')
+                    self.assertEqual(response.headers['x-content-type-options'], 'nosniff')
                 self.assertEqual(self.client.get('/secret.js').status_code, 404)
 
     def test_login_logout_fresh_device_and_no_password_leak(self):

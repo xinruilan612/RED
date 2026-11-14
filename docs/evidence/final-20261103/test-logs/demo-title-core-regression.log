@@ -1,0 +1,9 @@
+test_failed_migration_rolls_back (test_core_contracts.CoreContractTests.test_failed_migration_rolls_back) ... ok
+test_migration_reentry_and_tampering (test_core_contracts.CoreContractTests.test_migration_reentry_and_tampering) ... ok
+test_strict_commands (test_core_contracts.CoreContractTests.test_strict_commands) ... ok
+test_xiaohongshu_title_is_limited_to_20_characters (test_core_contracts.CoreContractTests.test_xiaohongshu_title_is_limited_to_20_characters) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.011s
+
+OK

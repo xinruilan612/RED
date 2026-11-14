@@ -1,0 +1,3730 @@
+{
+  "snapshot_id": "a384328b-a56f-4642-9c50-f268086d40f3",
+  "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+  "schema_version": 2,
+  "run_status": "WAITING_USER",
+  "current_stage": "reviewer",
+  "wait_reason": "final_confirmation",
+  "status_version": 19,
+  "iteration": 0,
+  "supplements": 0,
+  "context": {
+    "topic": "宜家LACK白色边桌尺寸与使用前检查",
+    "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+    "tone": "清楚自然克制",
+    "material": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象为货号104.499.09的白色LACK边桌，桌面长55厘米、宽55厘米，高45厘米。\nF2：官方列出的桌面最大载重是10公斤。\nF3：同系列35×35厘米小桌需要另外购买，不能把它当作本商品附赠。\nF4：官方保养说明包括湿布清洁、再擦干，并定期检查和重新紧固松动的组装件。\n【完整限制】这里没有作者家中实测、座站安全认证、长期耐水或抗刮试验记录。10公斤是该页面列出的桌面载重值，不应扩大成可坐可站或任何受力方式都安全；不要把包装尺寸当家具尺寸。不写即时库存、促销价格或环保等级认证，购买信息应由读者当时另查。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+    "scenario": "standard",
+    "allow_hypothesis": false,
+    "algorithm_options": {
+      "enabled": false,
+      "ask_questions": false
+    },
+    "web_research": {
+      "enabled": false,
+      "queries": [],
+      "provider": "bing",
+      "targets": [
+        "web"
+      ],
+      "status": "pending"
+    },
+    "mode": "live",
+    "material_policy": "available_only",
+    "material_policy_version": "available-only-v1",
+    "model_policy": {
+      "version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "routes": {
+        "audience": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "research": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "strategy": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "outline": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "hook": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "title": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "body": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "revise": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        },
+        "review": {
+          "provider": "qwen",
+          "model": "qwen-plus",
+          "rate": 1.142858e-06,
+          "connection_id": "[已隐去]",
+          "connection_version": 1,
+          "owner_id": "[已隐去]",
+          "billing_source": "user",
+          "run_budget_usd": 2,
+          "day_budget_usd": 3
+        }
+      },
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1"
+    },
+    "operations": {
+      "platform": "xiaohongshu",
+      "account": "我的账号",
+      "account_id": "[已隐去]",
+      "hypothesis_id": null,
+      "profile": {
+        "id": "5285e961-e866-5533-b51e-87cd6014586e",
+        "name": "我的账号",
+        "platform": "xiaohongshu",
+        "aliases": [
+          "我的账号"
+        ],
+        "revision": 1,
+        "profile": {
+          "positioning": "",
+          "audience": "",
+          "tone": "",
+          "pillars": "",
+          "goal": "",
+          "resources": "",
+          "banned": "",
+          "weekly_frequency": 3
+        },
+        "revisions": []
+      },
+      "trend": null,
+      "memories": [],
+      "active_hypothesis": null,
+      "experiment_memory": [],
+      "history": [],
+      "metrics": [],
+      "competitors": [],
+      "preferences": []
+    },
+    "knowledge_selection": {
+      "enabled": false,
+      "automatic_references": true
+    },
+    "creation_classification": {
+      "domains": [
+        "furniture"
+      ],
+      "channel": "xiaohongshu",
+      "format": "note",
+      "word_count": 300,
+      "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+      "origin": "user",
+      "ambiguities": []
+    },
+    "comment_feedback": {
+      "enabled": false,
+      "note_ids": [],
+      "notes": [],
+      "samples": []
+    },
+    "creation_retrieval": {
+      "engine": "filtered-bm25-zh-bigram-v1",
+      "reranker": "bm25-zh-bigram-v1",
+      "classification": {
+        "domains": [
+          "furniture"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "word_count": 300,
+        "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+        "origin": "user",
+        "ambiguities": []
+      },
+      "groups": {
+        "methods": [],
+        "examples": [
+          {
+            "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+            "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+            "version": 1,
+            "page": 1,
+            "offset": 0,
+            "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是边桌摆放。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+            "title": "虚构选购结构参考-REAL-H01",
+            "url": "",
+            "source_type": "text",
+            "filename": "虚构选购结构参考-REAL-H01.txt",
+            "location_type": "page",
+            "evidence_role": "expression_reference",
+            "content_kind": "text",
+            "source_scope": "current_account",
+            "body_kind": "text",
+            "classification": {
+              "domains": [
+                "furniture"
+              ],
+              "channel": "xiaohongshu",
+              "format": "note",
+              "material_type": "example",
+              "origin": "user"
+            },
+            "case_ref": null,
+            "score": 2.013775,
+            "semantic_score": null,
+            "retrieval_mode": "bm25",
+            "topic_coverage": 0.076923,
+            "material_type": "example",
+            "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+          }
+        ],
+        "facts": []
+      },
+      "sources": [
+        {
+          "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+          "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+          "version": 1,
+          "page": 1,
+          "offset": 0,
+          "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是边桌摆放。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+          "title": "虚构选购结构参考-REAL-H01",
+          "url": "",
+          "source_type": "text",
+          "filename": "虚构选购结构参考-REAL-H01.txt",
+          "location_type": "page",
+          "evidence_role": "expression_reference",
+          "content_kind": "text",
+          "source_scope": "current_account",
+          "body_kind": "text",
+          "classification": {
+            "domains": [
+              "furniture"
+            ],
+            "channel": "xiaohongshu",
+            "format": "note",
+            "material_type": "example",
+            "origin": "user"
+          },
+          "case_ref": null,
+          "score": 2.013775,
+          "semantic_score": null,
+          "retrieval_mode": "bm25",
+          "topic_coverage": 0.076923,
+          "material_type": "example",
+          "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+        }
+      ],
+      "filters": {
+        "methods": {
+          "owner": "[已隐去]",
+          "account_id": "[已隐去]",
+          "material_type": "method",
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "allow_general": true,
+          "document_ids": null,
+          "enabled": true,
+          "candidate_count": 0,
+          "vector_query": "图文笔记 原创写作 开篇 节奏 结构 表达 行动引导",
+          "retrieval_mode": "bm25",
+          "vector_candidate_count": 0,
+          "lexical_candidate_count": 0
+        },
+        "examples": {
+          "owner": "[已隐去]",
+          "account_id": "[已隐去]",
+          "material_type": "example",
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "allow_general": false,
+          "document_ids": null,
+          "enabled": true,
+          "candidate_count": 1,
+          "vector_query": "家具 图文笔记 开篇 结构 表达",
+          "retrieval_mode": "bm25",
+          "vector_candidate_count": 0,
+          "lexical_candidate_count": 1
+        },
+        "facts": {
+          "owner": "[已隐去]",
+          "account_id": "[已隐去]",
+          "material_type": "fact",
+          "domains": [
+            "furniture"
+          ],
+          "channel": null,
+          "format": null,
+          "allow_general": false,
+          "document_ids": null,
+          "enabled": false,
+          "candidate_count": 0,
+          "vector_query": "宜家LACK白色边桌尺寸与使用前检查",
+          "retrieval_mode": "disabled",
+          "vector_candidate_count": 0,
+          "lexical_candidate_count": 0
+        }
+      },
+      "gaps": [
+        {
+          "code": "VECTOR_UNAVAILABLE",
+          "detail": "本地语义检索已关闭，使用 BM25",
+          "fallback": "bm25"
+        },
+        {
+          "code": "NO_MATCHING_METHODS",
+          "group": "methods",
+          "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+        }
+      ],
+      "insufficient": true,
+      "context_chars": 209,
+      "limits": {
+        "limits": {
+          "methods": 2,
+          "examples": 3,
+          "facts": 4
+        },
+        "total_chars": 5200,
+        "chunk_chars": 700
+      },
+      "embedding_note": "本地语义检索已关闭，使用 BM25；缺失或不可用向量组已降级为限定范围 BM25；不是语义向量结果"
+    },
+    "retrieval": {
+      "engine": "filtered-bm25-zh-bigram-v1",
+      "reranker": "bm25-zh-bigram-v1",
+      "classification": {
+        "domains": [
+          "furniture"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "word_count": 300,
+        "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+        "origin": "user",
+        "ambiguities": []
+      },
+      "groups": {
+        "methods": [],
+        "examples": [
+          {
+            "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+            "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+            "version": 1,
+            "page": 1,
+            "offset": 0,
+            "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是边桌摆放。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+            "title": "虚构选购结构参考-REAL-H01",
+            "url": "",
+            "source_type": "text",
+            "filename": "虚构选购结构参考-REAL-H01.txt",
+            "location_type": "page",
+            "evidence_role": "expression_reference",
+            "content_kind": "text",
+            "source_scope": "current_account",
+            "body_kind": "text",
+            "classification": {
+              "domains": [
+                "furniture"
+              ],
+              "channel": "xiaohongshu",
+              "format": "note",
+              "material_type": "example",
+              "origin": "user"
+            },
+            "case_ref": null,
+            "score": 2.013775,
+            "semantic_score": null,
+            "retrieval_mode": "bm25",
+            "topic_coverage": 0.076923,
+            "material_type": "example",
+            "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+          }
+        ],
+        "facts": []
+      },
+      "sources": [
+        {
+          "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+          "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+          "version": 1,
+          "page": 1,
+          "offset": 0,
+          "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是边桌摆放。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+          "title": "虚构选购结构参考-REAL-H01",
+          "url": "",
+          "source_type": "text",
+          "filename": "虚构选购结构参考-REAL-H01.txt",
+          "location_type": "page",
+          "evidence_role": "expression_reference",
+          "content_kind": "text",
+          "source_scope": "current_account",
+          "body_kind": "text",
+          "classification": {
+            "domains": [
+              "furniture"
+            ],
+            "channel": "xiaohongshu",
+            "format": "note",
+            "material_type": "example",
+            "origin": "user"
+          },
+          "case_ref": null,
+          "score": 2.013775,
+          "semantic_score": null,
+          "retrieval_mode": "bm25",
+          "topic_coverage": 0.076923,
+          "material_type": "example",
+          "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+        }
+      ],
+      "filters": {
+        "methods": {
+          "owner": "[已隐去]",
+          "account_id": "[已隐去]",
+          "material_type": "method",
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "allow_general": true,
+          "document_ids": null,
+          "enabled": true,
+          "candidate_count": 0,
+          "vector_query": "图文笔记 原创写作 开篇 节奏 结构 表达 行动引导",
+          "retrieval_mode": "bm25",
+          "vector_candidate_count": 0,
+          "lexical_candidate_count": 0
+        },
+        "examples": {
+          "owner": "[已隐去]",
+          "account_id": "[已隐去]",
+          "material_type": "example",
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "allow_general": false,
+          "document_ids": null,
+          "enabled": true,
+          "candidate_count": 1,
+          "vector_query": "家具 图文笔记 开篇 结构 表达",
+          "retrieval_mode": "bm25",
+          "vector_candidate_count": 0,
+          "lexical_candidate_count": 1
+        },
+        "facts": {
+          "owner": "[已隐去]",
+          "account_id": "[已隐去]",
+          "material_type": "fact",
+          "domains": [
+            "furniture"
+          ],
+          "channel": null,
+          "format": null,
+          "allow_general": false,
+          "document_ids": null,
+          "enabled": false,
+          "candidate_count": 0,
+          "vector_query": "宜家LACK白色边桌尺寸与使用前检查",
+          "retrieval_mode": "disabled",
+          "vector_candidate_count": 0,
+          "lexical_candidate_count": 0
+        }
+      },
+      "gaps": [
+        {
+          "code": "VECTOR_UNAVAILABLE",
+          "detail": "本地语义检索已关闭，使用 BM25",
+          "fallback": "bm25"
+        },
+        {
+          "code": "NO_MATCHING_METHODS",
+          "group": "methods",
+          "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+        }
+      ],
+      "insufficient": true,
+      "context_chars": 209,
+      "limits": {
+        "limits": {
+          "methods": 2,
+          "examples": 3,
+          "facts": 4
+        },
+        "total_chars": 5200,
+        "chunk_chars": 700
+      },
+      "embedding_note": "本地语义检索已关闭，使用 BM25；缺失或不可用向量组已降级为限定范围 BM25；不是语义向量结果"
+    },
+    "evidence": [
+      {
+        "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+        "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+        "version": 1,
+        "page": 1,
+        "offset": 0,
+        "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是边桌摆放。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+        "title": "虚构选购结构参考-REAL-H01",
+        "url": "",
+        "source_type": "text",
+        "filename": "虚构选购结构参考-REAL-H01.txt",
+        "location_type": "page",
+        "evidence_role": "expression_reference",
+        "content_kind": "text",
+        "source_scope": "current_account",
+        "body_kind": "text",
+        "classification": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "material_type": "example",
+          "origin": "user"
+        },
+        "case_ref": null,
+        "score": 2.013775,
+        "semantic_score": null,
+        "retrieval_mode": "bm25",
+        "topic_coverage": 0.076923,
+        "material_type": "example",
+        "verification": "原文切片；事实须核验来源，样例仅供表达参考"
+      }
+    ],
+    "runtime_execution": {
+      "mode": "automatic"
+    }
+  },
+  "artifacts": [
+    {
+      "stage": "strategy",
+      "value": {
+        "angle": "用官方参数帮读者快速确认是否适配小空间与日常使用场景",
+        "reader": "小红书上想买宜家LACK边桌但怕尺寸/承重/配件搞错的普通用户和中小创作者",
+        "promise": "明确给出货号104.499.09的55×55×45cm尺寸、10kg载重、不附赠小桌、必须定期紧固等可验证事实",
+        "tone": "清楚自然克制",
+        "assumptions": [
+          "读者需快速核对型号避免买错",
+          "读者关注小空间摆放可行性",
+          "读者需要区分官方说明与主观经验"
+        ],
+        "candidate_angles": [
+          "尺寸+载重能否满足台灯+书+水杯日常摆放",
+          "同系列35×35cm小桌需另购，非本款配件"
+        ],
+        "cta": "收藏前请核对货号104.499.09，尺寸与保养要求以你下单时页面为准",
+        "why_account": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：借鉴其‘先分已知/待确认’结构与问题引导式开篇，但全部事实仅来自user-material，剔除虚构场景与兼容性结论；不移植任何未出现的测试、体验或连接描述",
+        "content_brief": {
+          "account_id": "[已隐去]",
+          "profile_revision": 1,
+          "goal": "先验证内容是否对目标受众有用",
+          "core_viewpoint": "用官方参数帮读者快速确认是否适配小空间与日常使用场景",
+          "audience": "小红书上想买宜家LACK边桌但怕尺寸/承重/配件搞错的普通用户和中小创作者",
+          "content_type": "图文笔记",
+          "hook_options": [
+            "尺寸+载重能否满足台灯+书+水杯日常摆放",
+            "同系列35×35cm小桌需另购，非本款配件"
+          ],
+          "evidence_scope": "引用用户素材与检索原文；历史表现与竞品观察不能证明正文事实",
+          "cta": "收藏前请核对货号104.499.09，尺寸与保养要求以你下单时页面为准",
+          "banned": "",
+          "publishing_window": "由用户安排；暂无经过验证的最佳发布时间",
+          "recommendation_reason": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：借鉴其‘先分已知/待确认’结构与问题引导式开篇，但全部事实仅来自user-material，剔除虚构场景与兼容性结论；不移植任何未出现的测试、体验或连接描述"
+        },
+        "learning_refs": [],
+        "next_experiments": []
+      },
+      "snapshot_id": "a384328b-a56f-4642-9c50-f268086d40f3"
+    },
+    {
+      "stage": "outline",
+      "value": [
+        "确认货号104.499.09：55×55×45cm白色LACK边桌，小空间易摆放",
+        "桌面承重10kg，适合台灯+书+水杯，非坐具，不适用站立或重压",
+        "不附赠35×35cm小桌，需另购；组装后须定期检查并重新紧固螺丝",
+        "清洁仅用湿布擦拭后擦干，无耐水/抗刮/安全认证等延伸说明"
+      ],
+      "snapshot_id": "a384328b-a56f-4642-9c50-f268086d40f3"
+    },
+    {
+      "stage": "hook",
+      "value": "宜家LACK白色边桌（货号104.499.09）桌面55×55cm、高45cm，小空间靠墙或床边摆放刚好；官方载重10kg，够放台灯、书和水杯，但不适用坐或站。",
+      "snapshot_id": "a384328b-a56f-4642-9c50-f268086d40f3"
+    },
+    {
+      "stage": "title",
+      "value": {
+        "candidates": [
+          "LACK白边桌55×55×45cm",
+          "宜家LACK边桌尺寸实查",
+          "货号104.499.09参数速览",
+          "小空间够用吗？LACK白桌实尺",
+          "10kg承重能放啥？LACK边桌"
+        ],
+        "selected": "LACK白边桌55×55×45cm",
+        "note": "最简、准确、含全部核心尺寸，字符数16（含×符号），符合小红书标题上限；无冗余词，直击读者查尺寸首要需求",
+        "reasons": [
+          "账号风格偏简洁信息型，此标题匹配参考样例开篇即给关键数字的节奏",
+          "明确列出长宽高三向尺寸，比'实查''速览'等虚词更具具体性和可验证感",
+          "避免同质化'宜家XX'泛称，用'LACK白边桌'锁定视觉与型号认知，降低混淆",
+          "不设问不悬念，但'55×55×45cm'本身构成小空间用户秒判依据，动机清晰",
+          "相比承重或使用场景类标题，尺寸是选购最先需确认的硬门槛，打开率基础更稳"
+        ]
+      },
+      "snapshot_id": "a384328b-a56f-4642-9c50-f268086d40f3"
+    },
+    {
+      "stage": "body",
+      "value": {
+        "selected_title": "LACK白边桌55×55×45cm",
+        "body": "宜家LACK白色边桌（货号104.499.09）：桌面55×55cm，高45cm，小空间靠墙、床边或沙发旁摆放刚好。\n官方标注桌面最大载重10kg——够放台灯、书本、水杯等日常物品，但非坐具，不可站立或重压受力。\n注意：不附赠35×35cm小桌，需单独选购；组装后须定期检查并重新紧固螺丝，这是官方保养要求，非可选建议。\n清洁仅用微湿布擦拭，再擦干；无耐水、抗刮或安全认证延伸说明。",
+        "cta": "收藏前请核对货号104.499.09，尺寸与保养要求以你下单时页面为准",
+        "tags": [
+          "宜家LACK",
+          "边桌尺寸",
+          "小空间家具",
+          "货号104.499.09",
+          "承重10kg",
+          "家具保养"
+        ]
+      },
+      "snapshot_id": "a384328b-a56f-4642-9c50-f268086d40f3"
+    }
+  ],
+  "node_runs": [
+    {
+      "id": "61d151da-a835-49f0-b6d1-694acd0e2352",
+      "agent": "research",
+      "stage": "research",
+      "mode": "live",
+      "snapshot_id": "a384328b-a56f-4642-9c50-f268086d40f3",
+      "input": {
+        "brief": {
+          "topic": "宜家LACK白色边桌尺寸与使用前检查",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "tone": "清楚自然克制",
+          "allow_hypothesis": false
+        },
+        "materials": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象为货号104.499.09的白色LACK边桌，桌面长55厘米、宽55厘米，高45厘米。\nF2：官方列出的桌面最大载重是10公斤。\nF3：同系列35×35厘米小桌需要另外购买，不能把它当作本商品附赠。\nF4：官方保养说明包括湿布清洁、再擦干，并定期检查和重新紧固松动的组装件。\n【完整限制】这里没有作者家中实测、座站安全认证、长期耐水或抗刮试验记录。10公斤是该页面列出的桌面载重值，不应扩大成可坐可站或任何受力方式都安全；不要把包装尺寸当家具尺寸。不写即时库存、促销价格或环保等级认证，购买信息应由读者当时另查。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          }
+        ],
+        "current_date": "2026-11-03",
+        "date_timezone": "Asia/Shanghai",
+        "retrieved_references": [
+          {
+            "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+            "title": "虚构选购结构参考-REAL-H01",
+            "url": "",
+            "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          }
+        ],
+        "creation_classification": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "creation_retrieval": {
+          "methods": [],
+          "examples": [
+            {
+              "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+              "source_type": "text",
+              "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是边桌摆放。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-H01",
+              "url": "",
+              "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "furniture"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            }
+          ],
+          "facts": [
+            {
+              "source_id": "user-material"
+            }
+          ],
+          "gaps": [
+            {
+              "code": "VECTOR_UNAVAILABLE",
+              "detail": "本地语义检索已关闭，使用 BM25",
+              "fallback": "bm25"
+            },
+            {
+              "code": "NO_MATCHING_METHODS",
+              "group": "methods",
+              "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+            }
+          ]
+        },
+        "web_research": {
+          "status": "not_requested",
+          "reads": [],
+          "limitation": "本任务没有实际执行联网调查，不能自称已查询官网或媒体。"
+        },
+        "material_policy": "available_only",
+        "material_policy_version": "available-only-v1",
+        "operations": {
+          "platform": "xiaohongshu",
+          "account": "我的账号",
+          "account_id": "[已隐去]",
+          "hypothesis_id": null,
+          "profile": {
+            "id": "5285e961-e866-5533-b51e-87cd6014586e",
+            "name": "我的账号",
+            "platform": "xiaohongshu",
+            "aliases": [
+              "我的账号"
+            ],
+            "revision": 1,
+            "profile": {
+              "positioning": "",
+              "audience": "",
+              "tone": "",
+              "pillars": "",
+              "goal": "",
+              "resources": "",
+              "banned": "",
+              "weekly_frequency": 3
+            },
+            "revisions": []
+          },
+          "trend": null,
+          "memories": [],
+          "active_hypothesis": null,
+          "experiment_memory": [],
+          "history": [],
+          "metrics": [],
+          "competitors": [],
+          "preferences": []
+        }
+      },
+      "output": {
+        "core_gap": false,
+        "gaps": [],
+        "facts": [
+          {
+            "source_id": "user-material",
+            "quote": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象为货号104.499.09的白色LACK边桌，桌面长55厘米、宽55厘米，高45厘米。\nF2：官方列出的桌面最大载重是10公斤。\nF3：同系列35×35厘米小桌需要另外购买，不能把它当作本商品附赠。\nF4：官方保养说明包括湿布清洁、再擦干，并定期检查和重新紧固松动的组装件。\n【完整限制】这里没有作者家中实测、座站安全认证、长期耐水或抗刮试验记录。10公斤是该页面列出的桌面载重值，不应扩大成可坐可站或任何受力方式都安全；不要把包装尺寸当家具尺寸。不写即时库存、促销价格或环保等级认证，购买信息应由读者当时另查。"
+          },
+          {
+            "source_id": "user-material",
+            "quote": "F1：对象为货号104.499.09的白色LACK边桌，桌面长55厘米、宽55厘米，高45厘米。"
+          },
+          {
+            "source_id": "user-material",
+            "quote": "F2：官方列出的桌面最大载重是10公斤。"
+          },
+          {
+            "source_id": "user-material",
+            "quote": "F3：同系列35×35厘米小桌需要另外购买，不能把它当作本商品附赠。"
+          },
+          {
+            "source_id": "user-material",
+            "quote": "F4：官方保养说明包括湿布清洁、再擦干，并定期检查和重新紧固松动的组装件。"
+          },
+          {
+            "source_id": "user-material",
+            "quote": "【完整限制】这里没有作者家中实测、座站安全认证、长期耐水或抗刮试验记录。10公斤是该页面列出的桌面载重值，不应扩大成可坐可站或任何受力方式都安全；不要把包装尺寸当家具尺寸。不写即时库存、促销价格或环保等级认证，购买信息应由读者当时另查。"
+          }
+        ],
+        "prohibited_claims": [
+          "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：仅作表达结构参考，不可移植其虚构场景、连接选项、兼容性结论或‘效果测试’等未在user-material中出现的表述；所有事实必须严格对应user-material原文"
+        ],
+        "sources": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象为货号104.499.09的白色LACK边桌，桌面长55厘米、宽55厘米，高45厘米。\nF2：官方列出的桌面最大载重是10公斤。\nF3：同系列35×35厘米小桌需要另外购买，不能把它当作本商品附赠。\nF4：官方保养说明包括湿布清洁、再擦干，并定期检查和重新紧固松动的组装件。\n【完整限制】这里没有作者家中实测、座站安全认证、长期耐水或抗刮试验记录。10公斤是该页面列出的桌面载重值，不应扩大成可坐可站或任何受力方式都安全；不要把包装尺寸当家具尺寸。不写即时库存、促销价格或环保等级认证，购买信息应由读者当时另查。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          },
+          {
+            "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+            "source_type": "text",
+            "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是边桌摆放。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+            "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+            "page": 1,
+            "title": "虚构选购结构参考-REAL-H01",
+            "url": "",
+            "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+            "version": 1,
+            "location_type": "page",
+            "offset": 0,
+            "evidence_role": "expression_reference",
+            "content_kind": "text",
+            "source_scope": "current_account",
+            "case_ref": null,
+            "material_type": "example",
+            "classification": {
+              "domains": [
+                "furniture"
+              ],
+              "channel": "xiaohongshu",
+              "format": "note",
+              "material_type": "example",
+              "origin": "user"
+            }
+          }
+        ],
+        "scope": "分析用户素材与检索到的原文快照；引用逐字校验，事实未独立核实",
+        "topic_card": {
+          "topic": "宜家LACK白色边桌尺寸与使用前检查",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "why_now": "自主选题，暂无可核验的时效依据",
+          "evidence": [],
+          "account_fit": "账号定位尚待补充",
+          "risk": [
+            "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：仅作表达结构参考，不可移植其虚构场景、连接选项、兼容性结论或‘效果测试’等未在user-material中出现的表述；所有事实必须严格对应user-material原文"
+          ],
+          "content_angles": [
+            "结合真实场景解释问题",
+            "整理可验证的尝试步骤"
+          ],
+          "limitation": "选题卡基于用户线索；没有自动抓取、热度统计或时效核实。"
+        }
+      },
+      "duration_ms": 16851,
+      "model_calls": 1,
+      "tokens": 3840,
+      "cost": null,
+      "call_id": "8380b4aa-9bf7-460e-8a2b-825f5c86ce0f",
+      "tools": [
+        "knowledge_snapshot"
+      ],
+      "memory": "读取本任务的账号与证据快照"
+    },
+    {
+      "id": "ffe5ff8d-f898-4b20-b75b-3fdb3ed3bcbb",
+      "agent": "audience",
+      "stage": "audience",
+      "mode": "live",
+      "snapshot_id": "a384328b-a56f-4642-9c50-f268086d40f3",
+      "input": {
+        "brief": {
+          "topic": "宜家LACK白色边桌尺寸与使用前检查",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "tone": "清楚自然克制",
+          "allow_hypothesis": false
+        },
+        "materials": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象为货号104.499.09的白色LACK边桌，桌面长55厘米、宽55厘米，高45厘米。\nF2：官方列出的桌面最大载重是10公斤。\nF3：同系列35×35厘米小桌需要另外购买，不能把它当作本商品附赠。\nF4：官方保养说明包括湿布清洁、再擦干，并定期检查和重新紧固松动的组装件。\n【完整限制】这里没有作者家中实测、座站安全认证、长期耐水或抗刮试验记录。10公斤是该页面列出的桌面载重值，不应扩大成可坐可站或任何受力方式都安全；不要把包装尺寸当家具尺寸。不写即时库存、促销价格或环保等级认证，购买信息应由读者当时另查。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          }
+        ],
+        "current_date": "2026-11-03",
+        "date_timezone": "Asia/Shanghai",
+        "retrieved_references": [
+          {
+            "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+            "title": "虚构选购结构参考-REAL-H01",
+            "url": "",
+            "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          }
+        ],
+        "creation_classification": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "creation_retrieval": {
+          "methods": [],
+          "examples": [
+            {
+              "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+              "source_type": "text",
+              "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是边桌摆放。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-H01",
+              "url": "",
+              "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "furniture"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            }
+          ],
+          "facts": [
+            {
+              "source_id": "user-material"
+            }
+          ],
+          "gaps": [
+            {
+              "code": "VECTOR_UNAVAILABLE",
+              "detail": "本地语义检索已关闭，使用 BM25",
+              "fallback": "bm25"
+            },
+            {
+              "code": "NO_MATCHING_METHODS",
+              "group": "methods",
+              "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+            }
+          ]
+        },
+        "web_research": {
+          "status": "not_requested",
+          "reads": [],
+          "limitation": "本任务没有实际执行联网调查，不能自称已查询官网或媒体。"
+        },
+        "material_policy": "available_only",
+        "material_policy_version": "available-only-v1",
+        "operations": {
+          "platform": "xiaohongshu",
+          "account": "我的账号",
+          "account_id": "[已隐去]",
+          "hypothesis_id": null,
+          "profile": {
+            "id": "5285e961-e866-5533-b51e-87cd6014586e",
+            "name": "我的账号",
+            "platform": "xiaohongshu",
+            "aliases": [
+              "我的账号"
+            ],
+            "revision": 1,
+            "profile": {
+              "positioning": "",
+              "audience": "",
+              "tone": "",
+              "pillars": "",
+              "goal": "",
+              "resources": "",
+              "banned": "",
+              "weekly_frequency": 3
+            },
+            "revisions": []
+          },
+          "trend": null,
+          "memories": [],
+          "active_hypothesis": null,
+          "experiment_memory": [],
+          "history": [],
+          "metrics": [],
+          "competitors": [],
+          "preferences": []
+        }
+      },
+      "output": {
+        "primary_audience": "小红书上关注实用家具信息的中小创作者及普通读者，需快速获取准确参数与使用前提",
+        "basis": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：借鉴其分栏式结构（已知/待确认）与问题导向开篇，但仅复用逻辑框架，不移植虚构场景或未验证结论；所有参数严格限于user-material所列F1–F4",
+        "pain_points": [
+          "尺寸是否真适合小空间？",
+          "载重10kg能否放台灯+书+水杯？",
+          "组装后松动怎么办？",
+          "买错型号怕白跑一趟"
+        ],
+        "content_opportunities": [
+          "明确标出货号104.499.09，避免混淆同系列其他尺寸",
+          "用桌面55×55×45cm具象化小空间适配性",
+          "强调‘定期检查并重新紧固’是官方保养动作，非建议而是必要操作",
+          "划清边界：不附赠35×35cm小桌，10kg≠可坐"
+        ],
+        "observations": [],
+        "sample_size": 0,
+        "confidence": "low",
+        "status": "needs_data",
+        "account_context": {
+          "account_id": "[已隐去]",
+          "profile_revision": 1
+        },
+        "history_refs": [],
+        "competitor_observations": [],
+        "evidence_limit": "历史仅为描述性记录；偏好与传播效果分开，竞品观察未经独立核验。"
+      },
+      "duration_ms": 28430,
+      "model_calls": 1,
+      "tokens": 3391,
+      "cost": null,
+      "call_id": "3cef4b25-8ff6-43b6-aae6-179c05a62943",
+      "tools": [
+        "knowledge_snapshot"
+      ],
+      "memory": "读取本任务的账号与证据快照"
+    },
+    {
+      "id": "6dc96a42-7623-4e03-855a-13ec46791c21",
+      "agent": "content",
+      "stage": "strategy",
+      "mode": "live",
+      "snapshot_id": "a384328b-a56f-4642-9c50-f268086d40f3",
+      "input": {
+        "brief": {
+          "topic": "宜家LACK白色边桌尺寸与使用前检查",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "tone": "清楚自然克制",
+          "allow_hypothesis": false
+        },
+        "materials": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象为货号104.499.09的白色LACK边桌，桌面长55厘米、宽55厘米，高45厘米。\nF2：官方列出的桌面最大载重是10公斤。\nF3：同系列35×35厘米小桌需要另外购买，不能把它当作本商品附赠。\nF4：官方保养说明包括湿布清洁、再擦干，并定期检查和重新紧固松动的组装件。\n【完整限制】这里没有作者家中实测、座站安全认证、长期耐水或抗刮试验记录。10公斤是该页面列出的桌面载重值，不应扩大成可坐可站或任何受力方式都安全；不要把包装尺寸当家具尺寸。不写即时库存、促销价格或环保等级认证，购买信息应由读者当时另查。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          }
+        ],
+        "current_date": "2026-11-03",
+        "date_timezone": "Asia/Shanghai",
+        "retrieved_references": [
+          {
+            "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+            "title": "虚构选购结构参考-REAL-H01",
+            "url": "",
+            "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          }
+        ],
+        "creation_classification": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "creation_retrieval": {
+          "methods": [],
+          "examples": [
+            {
+              "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+              "source_type": "text",
+              "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是边桌摆放。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-H01",
+              "url": "",
+              "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "furniture"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            }
+          ],
+          "facts": [
+            {
+              "source_id": "user-material"
+            }
+          ],
+          "gaps": [
+            {
+              "code": "VECTOR_UNAVAILABLE",
+              "detail": "本地语义检索已关闭，使用 BM25",
+              "fallback": "bm25"
+            },
+            {
+              "code": "NO_MATCHING_METHODS",
+              "group": "methods",
+              "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+            }
+          ]
+        },
+        "web_research": {
+          "status": "not_requested",
+          "reads": [],
+          "limitation": "本任务没有实际执行联网调查，不能自称已查询官网或媒体。"
+        },
+        "branches": {
+          "audience": {
+            "data": {
+              "primary_audience": "小红书上关注实用家具信息的中小创作者及普通读者，需快速获取准确参数与使用前提",
+              "sample_size": 0,
+              "confidence": "low",
+              "status": "needs_data",
+              "pain_points": [
+                "尺寸是否真适合小空间？",
+                "载重10kg能否放台灯+书+水杯？",
+                "组装后松动怎么办？",
+                "买错型号怕白跑一趟"
+              ],
+              "content_opportunities": [
+                "明确标出货号104.499.09，避免混淆同系列其他尺寸",
+                "用桌面55×55×45cm具象化小空间适配性",
+                "强调‘定期检查并重新紧固’是官方保养动作，非建议而是必要操作",
+                "划清边界：不附赠35×35cm小桌，10kg≠可坐"
+              ]
+            }
+          },
+          "research": {
+            "data": {
+              "core_gap": false,
+              "gaps": [],
+              "prohibited_claims": [
+                "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：仅作表达结构参考，不可移植其虚构场景、连接选项、兼容性结论或‘效果测试’等未在user-material中出现的表述；所有事实必须严格对应user-material原文"
+              ]
+            }
+          }
+        },
+        "upstream": {},
+        "material_policy": "available_only",
+        "material_policy_version": "available-only-v1",
+        "operations": {
+          "platform": "xiaohongshu",
+          "account": "我的账号",
+          "account_id": "[已隐去]",
+          "hypothesis_id": null,
+          "profile": {
+            "id": "5285e961-e866-5533-b51e-87cd6014586e",
+            "name": "我的账号",
+            "platform": "xiaohongshu",
+            "aliases": [
+              "我的账号"
+            ],
+            "revision": 1,
+            "profile": {
+              "positioning": "",
+              "audience": "",
+              "tone": "",
+              "pillars": "",
+              "goal": "",
+              "resources": "",
+              "banned": "",
+              "weekly_frequency": 3
+            },
+            "revisions": []
+          },
+          "trend": null,
+          "memories": [],
+          "active_hypothesis": null,
+          "experiment_memory": [],
+          "history": [],
+          "metrics": [],
+          "competitors": [],
+          "preferences": []
+        }
+      },
+      "output": {
+        "angle": "用官方参数帮读者快速确认是否适配小空间与日常使用场景",
+        "reader": "小红书上想买宜家LACK边桌但怕尺寸/承重/配件搞错的普通用户和中小创作者",
+        "promise": "明确给出货号104.499.09的55×55×45cm尺寸、10kg载重、不附赠小桌、必须定期紧固等可验证事实",
+        "tone": "清楚自然克制",
+        "assumptions": [
+          "读者需快速核对型号避免买错",
+          "读者关注小空间摆放可行性",
+          "读者需要区分官方说明与主观经验"
+        ],
+        "candidate_angles": [
+          "尺寸+载重能否满足台灯+书+水杯日常摆放",
+          "同系列35×35cm小桌需另购，非本款配件"
+        ],
+        "cta": "收藏前请核对货号104.499.09，尺寸与保养要求以你下单时页面为准",
+        "why_account": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：借鉴其‘先分已知/待确认’结构与问题引导式开篇，但全部事实仅来自user-material，剔除虚构场景与兼容性结论；不移植任何未出现的测试、体验或连接描述",
+        "content_brief": {
+          "account_id": "[已隐去]",
+          "profile_revision": 1,
+          "goal": "先验证内容是否对目标受众有用",
+          "core_viewpoint": "用官方参数帮读者快速确认是否适配小空间与日常使用场景",
+          "audience": "小红书上想买宜家LACK边桌但怕尺寸/承重/配件搞错的普通用户和中小创作者",
+          "content_type": "图文笔记",
+          "hook_options": [
+            "尺寸+载重能否满足台灯+书+水杯日常摆放",
+            "同系列35×35cm小桌需另购，非本款配件"
+          ],
+          "evidence_scope": "引用用户素材与检索原文；历史表现与竞品观察不能证明正文事实",
+          "cta": "收藏前请核对货号104.499.09，尺寸与保养要求以你下单时页面为准",
+          "banned": "",
+          "publishing_window": "由用户安排；暂无经过验证的最佳发布时间",
+          "recommendation_reason": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：借鉴其‘先分已知/待确认’结构与问题引导式开篇，但全部事实仅来自user-material，剔除虚构场景与兼容性结论；不移植任何未出现的测试、体验或连接描述"
+        },
+        "learning_refs": [],
+        "next_experiments": []
+      },
+      "duration_ms": 9027,
+      "model_calls": 1,
+      "tokens": 3728,
+      "cost": null,
+      "call_id": "d06c68aa-b9ad-4105-ad19-38c6e7b0338d",
+      "tools": [
+        "knowledge_snapshot"
+      ],
+      "memory": "读取本任务的账号与证据快照"
+    },
+    {
+      "id": "ce841c66-cb9e-4565-b184-6c0d5a3a999a",
+      "agent": "content",
+      "stage": "outline",
+      "mode": "live",
+      "snapshot_id": "a384328b-a56f-4642-9c50-f268086d40f3",
+      "input": {
+        "brief": {
+          "topic": "宜家LACK白色边桌尺寸与使用前检查",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "tone": "清楚自然克制",
+          "allow_hypothesis": false
+        },
+        "materials": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象为货号104.499.09的白色LACK边桌，桌面长55厘米、宽55厘米，高45厘米。\nF2：官方列出的桌面最大载重是10公斤。\nF3：同系列35×35厘米小桌需要另外购买，不能把它当作本商品附赠。\nF4：官方保养说明包括湿布清洁、再擦干，并定期检查和重新紧固松动的组装件。\n【完整限制】这里没有作者家中实测、座站安全认证、长期耐水或抗刮试验记录。10公斤是该页面列出的桌面载重值，不应扩大成可坐可站或任何受力方式都安全；不要把包装尺寸当家具尺寸。不写即时库存、促销价格或环保等级认证，购买信息应由读者当时另查。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          }
+        ],
+        "current_date": "2026-11-03",
+        "date_timezone": "Asia/Shanghai",
+        "retrieved_references": [
+          {
+            "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+            "title": "虚构选购结构参考-REAL-H01",
+            "url": "",
+            "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          }
+        ],
+        "creation_classification": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "creation_retrieval": {
+          "methods": [],
+          "examples": [
+            {
+              "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+              "source_type": "text",
+              "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是边桌摆放。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-H01",
+              "url": "",
+              "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "furniture"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            }
+          ],
+          "facts": [
+            {
+              "source_id": "user-material"
+            }
+          ],
+          "gaps": [
+            {
+              "code": "VECTOR_UNAVAILABLE",
+              "detail": "本地语义检索已关闭，使用 BM25",
+              "fallback": "bm25"
+            },
+            {
+              "code": "NO_MATCHING_METHODS",
+              "group": "methods",
+              "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+            }
+          ]
+        },
+        "web_research": {
+          "status": "not_requested",
+          "reads": [],
+          "limitation": "本任务没有实际执行联网调查，不能自称已查询官网或媒体。"
+        },
+        "branches": {
+          "audience": {
+            "data": {
+              "primary_audience": "小红书上关注实用家具信息的中小创作者及普通读者，需快速获取准确参数与使用前提",
+              "sample_size": 0,
+              "confidence": "low",
+              "status": "needs_data",
+              "pain_points": [
+                "尺寸是否真适合小空间？",
+                "载重10kg能否放台灯+书+水杯？",
+                "组装后松动怎么办？",
+                "买错型号怕白跑一趟"
+              ],
+              "content_opportunities": [
+                "明确标出货号104.499.09，避免混淆同系列其他尺寸",
+                "用桌面55×55×45cm具象化小空间适配性",
+                "强调‘定期检查并重新紧固’是官方保养动作，非建议而是必要操作",
+                "划清边界：不附赠35×35cm小桌，10kg≠可坐"
+              ]
+            }
+          },
+          "research": {
+            "data": {
+              "core_gap": false,
+              "gaps": [],
+              "prohibited_claims": [
+                "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：仅作表达结构参考，不可移植其虚构场景、连接选项、兼容性结论或‘效果测试’等未在user-material中出现的表述；所有事实必须严格对应user-material原文"
+              ]
+            }
+          }
+        },
+        "upstream": {
+          "strategy": {
+            "angle": "用官方参数帮读者快速确认是否适配小空间与日常使用场景",
+            "reader": "小红书上想买宜家LACK边桌但怕尺寸/承重/配件搞错的普通用户和中小创作者",
+            "promise": "明确给出货号104.499.09的55×55×45cm尺寸、10kg载重、不附赠小桌、必须定期紧固等可验证事实",
+            "tone": "清楚自然克制",
+            "assumptions": [
+              "读者需快速核对型号避免买错",
+              "读者关注小空间摆放可行性",
+              "读者需要区分官方说明与主观经验"
+            ],
+            "cta": "收藏前请核对货号104.499.09，尺寸与保养要求以你下单时页面为准"
+          }
+        },
+        "material_policy": "available_only",
+        "material_policy_version": "available-only-v1",
+        "operations": {
+          "platform": "xiaohongshu",
+          "account": "我的账号",
+          "account_id": "[已隐去]",
+          "hypothesis_id": null,
+          "profile": {
+            "id": "5285e961-e866-5533-b51e-87cd6014586e",
+            "name": "我的账号",
+            "platform": "xiaohongshu",
+            "aliases": [
+              "我的账号"
+            ],
+            "revision": 1,
+            "profile": {
+              "positioning": "",
+              "audience": "",
+              "tone": "",
+              "pillars": "",
+              "goal": "",
+              "resources": "",
+              "banned": "",
+              "weekly_frequency": 3
+            },
+            "revisions": []
+          },
+          "trend": null,
+          "memories": [],
+          "active_hypothesis": null,
+          "experiment_memory": [],
+          "history": [],
+          "metrics": [],
+          "competitors": [],
+          "preferences": []
+        }
+      },
+      "output": [
+        "确认货号104.499.09：55×55×45cm白色LACK边桌，小空间易摆放",
+        "桌面承重10kg，适合台灯+书+水杯，非坐具，不适用站立或重压",
+        "不附赠35×35cm小桌，需另购；组装后须定期检查并重新紧固螺丝",
+        "清洁仅用湿布擦拭后擦干，无耐水/抗刮/安全认证等延伸说明"
+      ],
+      "duration_ms": 5047,
+      "model_calls": 1,
+      "tokens": 3808,
+      "cost": null,
+      "call_id": "cca0106e-7098-4a79-af83-704b01159098",
+      "tools": [
+        "knowledge_snapshot"
+      ],
+      "memory": "读取本任务的账号与证据快照"
+    },
+    {
+      "id": "3238170d-16e0-4aa7-a5a5-378ac5f6742e",
+      "agent": "content",
+      "stage": "hook",
+      "mode": "live",
+      "snapshot_id": "a384328b-a56f-4642-9c50-f268086d40f3",
+      "input": {
+        "brief": {
+          "topic": "宜家LACK白色边桌尺寸与使用前检查",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "tone": "清楚自然克制",
+          "allow_hypothesis": false
+        },
+        "materials": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象为货号104.499.09的白色LACK边桌，桌面长55厘米、宽55厘米，高45厘米。\nF2：官方列出的桌面最大载重是10公斤。\nF3：同系列35×35厘米小桌需要另外购买，不能把它当作本商品附赠。\nF4：官方保养说明包括湿布清洁、再擦干，并定期检查和重新紧固松动的组装件。\n【完整限制】这里没有作者家中实测、座站安全认证、长期耐水或抗刮试验记录。10公斤是该页面列出的桌面载重值，不应扩大成可坐可站或任何受力方式都安全；不要把包装尺寸当家具尺寸。不写即时库存、促销价格或环保等级认证，购买信息应由读者当时另查。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          }
+        ],
+        "current_date": "2026-11-03",
+        "date_timezone": "Asia/Shanghai",
+        "retrieved_references": [
+          {
+            "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+            "title": "虚构选购结构参考-REAL-H01",
+            "url": "",
+            "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          }
+        ],
+        "creation_classification": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "creation_retrieval": {
+          "methods": [],
+          "examples": [
+            {
+              "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+              "source_type": "text",
+              "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是边桌摆放。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-H01",
+              "url": "",
+              "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "furniture"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            }
+          ],
+          "facts": [
+            {
+              "source_id": "user-material"
+            }
+          ],
+          "gaps": [
+            {
+              "code": "VECTOR_UNAVAILABLE",
+              "detail": "本地语义检索已关闭，使用 BM25",
+              "fallback": "bm25"
+            },
+            {
+              "code": "NO_MATCHING_METHODS",
+              "group": "methods",
+              "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+            }
+          ]
+        },
+        "web_research": {
+          "status": "not_requested",
+          "reads": [],
+          "limitation": "本任务没有实际执行联网调查，不能自称已查询官网或媒体。"
+        },
+        "branches": {
+          "audience": {
+            "data": {
+              "primary_audience": "小红书上关注实用家具信息的中小创作者及普通读者，需快速获取准确参数与使用前提",
+              "sample_size": 0,
+              "confidence": "low",
+              "status": "needs_data",
+              "pain_points": [
+                "尺寸是否真适合小空间？",
+                "载重10kg能否放台灯+书+水杯？",
+                "组装后松动怎么办？"
+              ],
+              "content_opportunities": [
+                "明确标出货号104.499.09，避免混淆同系列其他尺寸",
+                "用桌面55×55×45cm具象化小空间适配性",
+                "强调‘定期检查并重新紧固’是官方保养动作，非建议而是必要操作"
+              ]
+            }
+          },
+          "research": {
+            "data": {
+              "core_gap": false,
+              "gaps": [],
+              "prohibited_claims": [
+                "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：仅作表达结构参考，不可移植其虚构场景、连接选项、兼容性结论或‘效果测试’等未在user-material中出现的表述；所有事实必须严格对应user-material原文"
+              ]
+            }
+          }
+        },
+        "upstream": {
+          "strategy": {
+            "angle": "用官方参数帮读者快速确认是否适配小空间与日常使用场景",
+            "reader": "小红书上想买宜家LACK边桌但怕尺寸/承重/配件搞错的普通用户和中小创作者",
+            "promise": "明确给出货号104.499.09的55×55×45cm尺寸、10kg载重、不附赠小桌、必须定期紧固等可验证事实",
+            "tone": "清楚自然克制",
+            "assumptions": [
+              "读者需快速核对型号避免买错",
+              "读者关注小空间摆放可行性",
+              "读者需要区分官方说明与主观经验"
+            ],
+            "cta": "收藏前请核对货号104.499.09，尺寸与保养要求以你下单时页面为准"
+          },
+          "outline": [
+            "确认货号104.499.09：55×55×45cm白色LACK边桌，小空间易摆放",
+            "桌面承重10kg，适合台灯+书+水杯，非坐具，不适用站立或重压",
+            "不附赠35×35cm小桌，需另购；组装后须定期检查并重新紧固螺丝",
+            "清洁仅用湿布擦拭后擦干，无耐水/抗刮/安全认证等延伸说明"
+          ]
+        },
+        "material_policy": "available_only",
+        "material_policy_version": "available-only-v1",
+        "operations": {
+          "platform": "xiaohongshu",
+          "account": "我的账号",
+          "account_id": "[已隐去]",
+          "hypothesis_id": null,
+          "profile": {
+            "id": "5285e961-e866-5533-b51e-87cd6014586e",
+            "name": "我的账号",
+            "platform": "xiaohongshu",
+            "aliases": [
+              "我的账号"
+            ],
+            "revision": 1,
+            "profile": {
+              "positioning": "",
+              "audience": "",
+              "tone": "",
+              "pillars": "",
+              "goal": "",
+              "resources": "",
+              "banned": "",
+              "weekly_frequency": 3
+            },
+            "revisions": []
+          },
+          "trend": null,
+          "memories": [],
+          "active_hypothesis": null,
+          "experiment_memory": [],
+          "history": [],
+          "metrics": [],
+          "competitors": [],
+          "preferences": []
+        }
+      },
+      "output": "宜家LACK白色边桌（货号104.499.09）桌面55×55cm、高45cm，小空间靠墙或床边摆放刚好；官方载重10kg，够放台灯、书和水杯，但不适用坐或站。",
+      "duration_ms": 2512,
+      "model_calls": 1,
+      "tokens": 3855,
+      "cost": null,
+      "call_id": "c9736c71-3b4a-48c2-b7c5-edd424515c66",
+      "tools": [
+        "knowledge_snapshot"
+      ],
+      "memory": "读取本任务的账号与证据快照"
+    },
+    {
+      "id": "40956a06-b96d-4a88-861e-298a8703c16b",
+      "agent": "content",
+      "stage": "title",
+      "mode": "live",
+      "snapshot_id": "a384328b-a56f-4642-9c50-f268086d40f3",
+      "input": {
+        "brief": {
+          "topic": "宜家LACK白色边桌尺寸与使用前检查",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "tone": "清楚自然克制",
+          "allow_hypothesis": false
+        },
+        "materials": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象为货号104.499.09的白色LACK边桌，桌面长55厘米、宽55厘米，高45厘米。\nF2：官方列出的桌面最大载重是10公斤。\nF3：同系列35×35厘米小桌需要另外购买，不能把它当作本商品附赠。\nF4：官方保养说明包括湿布清洁、再擦干，并定期检查和重新紧固松动的组装件。\n【完整限制】这里没有作者家中实测、座站安全认证、长期耐水或抗刮试验记录。10公斤是该页面列出的桌面载重值，不应扩大成可坐可站或任何受力方式都安全；不要把包装尺寸当家具尺寸。不写即时库存、促销价格或环保等级认证，购买信息应由读者当时另查。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          }
+        ],
+        "current_date": "2026-11-03",
+        "date_timezone": "Asia/Shanghai",
+        "retrieved_references": [
+          {
+            "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+            "title": "虚构选购结构参考-REAL-H01",
+            "url": "",
+            "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          }
+        ],
+        "creation_classification": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "creation_retrieval": {
+          "methods": [],
+          "examples": [
+            {
+              "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+              "source_type": "text",
+              "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是边桌摆放。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-H01",
+              "url": "",
+              "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "furniture"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            }
+          ],
+          "facts": [
+            {
+              "source_id": "user-material"
+            }
+          ],
+          "gaps": [
+            {
+              "code": "VECTOR_UNAVAILABLE",
+              "detail": "本地语义检索已关闭，使用 BM25",
+              "fallback": "bm25"
+            },
+            {
+              "code": "NO_MATCHING_METHODS",
+              "group": "methods",
+              "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+            }
+          ]
+        },
+        "web_research": {
+          "status": "not_requested",
+          "reads": [],
+          "limitation": "本任务没有实际执行联网调查，不能自称已查询官网或媒体。"
+        },
+        "branches": {
+          "audience": {
+            "data": {
+              "primary_audience": "小红书上关注实用家具信息的中小创作者及普通读者，需快速获取准确参数与使用前提",
+              "sample_size": 0,
+              "confidence": "low",
+              "status": "needs_data",
+              "pain_points": [
+                "尺寸是否真适合小空间？",
+                "载重10kg能否放台灯+书+水杯？",
+                "组装后松动怎么办？"
+              ],
+              "content_opportunities": [
+                "明确标出货号104.499.09，避免混淆同系列其他尺寸",
+                "用桌面55×55×45cm具象化小空间适配性",
+                "强调‘定期检查并重新紧固’是官方保养动作，非建议而是必要操作"
+              ]
+            }
+          },
+          "research": {
+            "data": {
+              "core_gap": false,
+              "gaps": [],
+              "prohibited_claims": [
+                "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：仅作表达结构参考，不可移植其虚构场景、连接选项、兼容性结论或‘效果测试’等未在user-material中出现的表述；所有事实必须严格对应user-material原文"
+              ]
+            }
+          }
+        },
+        "upstream": {
+          "strategy": {
+            "angle": "用官方参数帮读者快速确认是否适配小空间与日常使用场景",
+            "reader": "小红书上想买宜家LACK边桌但怕尺寸/承重/配件搞错的普通用户和中小创作者",
+            "promise": "明确给出货号104.499.09的55×55×45cm尺寸、10kg载重、不附赠小桌、必须定期紧固等可验证事实",
+            "tone": "清楚自然克制",
+            "assumptions": [
+              "读者需快速核对型号避免买错",
+              "读者关注小空间摆放可行性",
+              "读者需要区分官方说明与主观经验"
+            ],
+            "cta": "收藏前请核对货号104.499.09，尺寸与保养要求以你下单时页面为准"
+          },
+          "hook": "宜家LACK白色边桌（货号104.499.09）桌面55×55cm、高45cm，小空间靠墙或床边摆放刚好；官方载重10kg，够放台灯、书和水杯，但不适用坐或站。"
+        },
+        "material_policy": "available_only",
+        "material_policy_version": "available-only-v1",
+        "operations": {
+          "platform": "xiaohongshu",
+          "account": "我的账号",
+          "account_id": "[已隐去]",
+          "hypothesis_id": null,
+          "profile": {
+            "id": "5285e961-e866-5533-b51e-87cd6014586e",
+            "name": "我的账号",
+            "platform": "xiaohongshu",
+            "aliases": [
+              "我的账号"
+            ],
+            "revision": 1,
+            "profile": {
+              "positioning": "",
+              "audience": "",
+              "tone": "",
+              "pillars": "",
+              "goal": "",
+              "resources": "",
+              "banned": "",
+              "weekly_frequency": 3
+            },
+            "revisions": []
+          },
+          "trend": null,
+          "memories": [],
+          "active_hypothesis": null,
+          "experiment_memory": [],
+          "history": [],
+          "metrics": [],
+          "competitors": [],
+          "preferences": []
+        }
+      },
+      "output": {
+        "candidates": [
+          "LACK白边桌55×55×45cm",
+          "宜家LACK边桌尺寸实查",
+          "货号104.499.09参数速览",
+          "小空间够用吗？LACK白桌实尺",
+          "10kg承重能放啥？LACK边桌"
+        ],
+        "selected": "LACK白边桌55×55×45cm",
+        "note": "最简、准确、含全部核心尺寸，字符数16（含×符号），符合小红书标题上限；无冗余词，直击读者查尺寸首要需求",
+        "reasons": [
+          "账号风格偏简洁信息型，此标题匹配参考样例开篇即给关键数字的节奏",
+          "明确列出长宽高三向尺寸，比'实查''速览'等虚词更具具体性和可验证感",
+          "避免同质化'宜家XX'泛称，用'LACK白边桌'锁定视觉与型号认知，降低混淆",
+          "不设问不悬念，但'55×55×45cm'本身构成小空间用户秒判依据，动机清晰",
+          "相比承重或使用场景类标题，尺寸是选购最先需确认的硬门槛，打开率基础更稳"
+        ]
+      },
+      "duration_ms": 8262,
+      "model_calls": 1,
+      "tokens": 4253,
+      "cost": null,
+      "call_id": "4d7e49eb-09d7-473a-bce7-ae979a6dd586",
+      "tools": [
+        "knowledge_snapshot"
+      ],
+      "memory": "读取本任务的账号与证据快照"
+    },
+    {
+      "id": "109983e6-8094-44ff-aaec-2bff2748eba8",
+      "agent": "content",
+      "stage": "body",
+      "mode": "live",
+      "snapshot_id": "a384328b-a56f-4642-9c50-f268086d40f3",
+      "input": {
+        "brief": {
+          "topic": "宜家LACK白色边桌尺寸与使用前检查",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "tone": "清楚自然克制",
+          "allow_hypothesis": false
+        },
+        "materials": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象为货号104.499.09的白色LACK边桌，桌面长55厘米、宽55厘米，高45厘米。\nF2：官方列出的桌面最大载重是10公斤。\nF3：同系列35×35厘米小桌需要另外购买，不能把它当作本商品附赠。\nF4：官方保养说明包括湿布清洁、再擦干，并定期检查和重新紧固松动的组装件。\n【完整限制】这里没有作者家中实测、座站安全认证、长期耐水或抗刮试验记录。10公斤是该页面列出的桌面载重值，不应扩大成可坐可站或任何受力方式都安全；不要把包装尺寸当家具尺寸。不写即时库存、促销价格或环保等级认证，购买信息应由读者当时另查。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          }
+        ],
+        "current_date": "2026-11-03",
+        "date_timezone": "Asia/Shanghai",
+        "retrieved_references": [
+          {
+            "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+            "title": "虚构选购结构参考-REAL-H01",
+            "url": "",
+            "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          }
+        ],
+        "creation_classification": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "creation_retrieval": {
+          "methods": [],
+          "examples": [
+            {
+              "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+              "source_type": "text",
+              "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是边桌摆放。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-H01",
+              "url": "",
+              "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "furniture"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            }
+          ],
+          "facts": [
+            {
+              "source_id": "user-material"
+            }
+          ],
+          "gaps": [
+            {
+              "code": "VECTOR_UNAVAILABLE",
+              "detail": "本地语义检索已关闭，使用 BM25",
+              "fallback": "bm25"
+            },
+            {
+              "code": "NO_MATCHING_METHODS",
+              "group": "methods",
+              "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+            }
+          ]
+        },
+        "web_research": {
+          "status": "not_requested",
+          "reads": [],
+          "limitation": "本任务没有实际执行联网调查，不能自称已查询官网或媒体。"
+        },
+        "branches": {
+          "audience": {
+            "data": {
+              "primary_audience": "小红书上关注实用家具信息的中小创作者及普通读者，需快速获取准确参数与使用前提",
+              "sample_size": 0,
+              "confidence": "low",
+              "status": "needs_data",
+              "pain_points": [
+                "尺寸是否真适合小空间？",
+                "载重10kg能否放台灯+书+水杯？",
+                "组装后松动怎么办？",
+                "买错型号怕白跑一趟"
+              ],
+              "content_opportunities": [
+                "明确标出货号104.499.09，避免混淆同系列其他尺寸",
+                "用桌面55×55×45cm具象化小空间适配性",
+                "强调‘定期检查并重新紧固’是官方保养动作，非建议而是必要操作",
+                "划清边界：不附赠35×35cm小桌，10kg≠可坐"
+              ]
+            }
+          },
+          "research": {
+            "data": {
+              "core_gap": false,
+              "gaps": [],
+              "prohibited_claims": [
+                "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：仅作表达结构参考，不可移植其虚构场景、连接选项、兼容性结论或‘效果测试’等未在user-material中出现的表述；所有事实必须严格对应user-material原文"
+              ]
+            }
+          }
+        },
+        "upstream": {
+          "strategy": {
+            "angle": "用官方参数帮读者快速确认是否适配小空间与日常使用场景",
+            "reader": "小红书上想买宜家LACK边桌但怕尺寸/承重/配件搞错的普通用户和中小创作者",
+            "promise": "明确给出货号104.499.09的55×55×45cm尺寸、10kg载重、不附赠小桌、必须定期紧固等可验证事实",
+            "tone": "清楚自然克制",
+            "assumptions": [
+              "读者需快速核对型号避免买错",
+              "读者关注小空间摆放可行性",
+              "读者需要区分官方说明与主观经验"
+            ],
+            "cta": "收藏前请核对货号104.499.09，尺寸与保养要求以你下单时页面为准"
+          },
+          "outline": [
+            "确认货号104.499.09：55×55×45cm白色LACK边桌，小空间易摆放",
+            "桌面承重10kg，适合台灯+书+水杯，非坐具，不适用站立或重压",
+            "不附赠35×35cm小桌，需另购；组装后须定期检查并重新紧固螺丝",
+            "清洁仅用湿布擦拭后擦干，无耐水/抗刮/安全认证等延伸说明"
+          ],
+          "hook": "宜家LACK白色边桌（货号104.499.09）桌面55×55cm、高45cm，小空间靠墙或床边摆放刚好；官方载重10kg，够放台灯、书和水杯，但不适用坐或站。",
+          "title": {
+            "candidates": [
+              "LACK白边桌55×55×45cm",
+              "宜家LACK边桌尺寸实查",
+              "货号104.499.09参数速览",
+              "小空间够用吗？LACK白桌实尺",
+              "10kg承重能放啥？LACK边桌"
+            ],
+            "selected": "LACK白边桌55×55×45cm",
+            "note": "最简、准确、含全部核心尺寸，字符数16（含×符号），符合小红书标题上限；无冗余词，直击读者查尺寸首要需求",
+            "reasons": [
+              "账号风格偏简洁信息型，此标题匹配参考样例开篇即给关键数字的节奏",
+              "明确列出长宽高三向尺寸，比'实查''速览'等虚词更具具体性和可验证感",
+              "避免同质化'宜家XX'泛称，用'LACK白边桌'锁定视觉与型号认知，降低混淆",
+              "不设问不悬念，但'55×55×45cm'本身构成小空间用户秒判依据，动机清晰",
+              "相比承重或使用场景类标题，尺寸是选购最先需确认的硬门槛，打开率基础更稳"
+            ]
+          }
+        },
+        "material_policy": "available_only",
+        "material_policy_version": "available-only-v1",
+        "operations": {
+          "platform": "xiaohongshu",
+          "account": "我的账号",
+          "account_id": "[已隐去]",
+          "hypothesis_id": null,
+          "profile": {
+            "id": "5285e961-e866-5533-b51e-87cd6014586e",
+            "name": "我的账号",
+            "platform": "xiaohongshu",
+            "aliases": [
+              "我的账号"
+            ],
+            "revision": 1,
+            "profile": {
+              "positioning": "",
+              "audience": "",
+              "tone": "",
+              "pillars": "",
+              "goal": "",
+              "resources": "",
+              "banned": "",
+              "weekly_frequency": 3
+            },
+            "revisions": []
+          },
+          "trend": null,
+          "memories": [],
+          "active_hypothesis": null,
+          "experiment_memory": [],
+          "history": [],
+          "metrics": [],
+          "competitors": [],
+          "preferences": []
+        }
+      },
+      "output": {
+        "selected_title": "LACK白边桌55×55×45cm",
+        "body": "宜家LACK白色边桌（货号104.499.09）：桌面55×55cm，高45cm，小空间靠墙、床边或沙发旁摆放刚好。\n官方标注桌面最大载重10kg——够放台灯、书本、水杯等日常物品，但非坐具，不可站立或重压受力。\n注意：不附赠35×35cm小桌，需单独选购；组装后须定期检查并重新紧固螺丝，这是官方保养要求，非可选建议。\n清洁仅用微湿布擦拭，再擦干；无耐水、抗刮或安全认证延伸说明。",
+        "cta": "收藏前请核对货号104.499.09，尺寸与保养要求以你下单时页面为准",
+        "tags": [
+          "宜家LACK",
+          "边桌尺寸",
+          "小空间家具",
+          "货号104.499.09",
+          "承重10kg",
+          "家具保养"
+        ]
+      },
+      "duration_ms": 6436,
+      "model_calls": 1,
+      "tokens": 4466,
+      "cost": null,
+      "call_id": "647d6802-8578-4828-ac26-0dda3d19cb7d",
+      "tools": [
+        "knowledge_snapshot"
+      ],
+      "memory": "读取本任务的账号与证据快照"
+    },
+    {
+      "id": "5c173991-a010-4937-9775-cb220d4ca321",
+      "agent": "reviewer",
+      "stage": "review",
+      "mode": "live",
+      "snapshot_id": "a384328b-a56f-4642-9c50-f268086d40f3",
+      "input": {
+        "brief": {
+          "topic": "宜家LACK白色边桌尺寸与使用前检查",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "tone": "清楚自然克制",
+          "allow_hypothesis": false
+        },
+        "materials": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象为货号104.499.09的白色LACK边桌，桌面长55厘米、宽55厘米，高45厘米。\nF2：官方列出的桌面最大载重是10公斤。\nF3：同系列35×35厘米小桌需要另外购买，不能把它当作本商品附赠。\nF4：官方保养说明包括湿布清洁、再擦干，并定期检查和重新紧固松动的组装件。\n【完整限制】这里没有作者家中实测、座站安全认证、长期耐水或抗刮试验记录。10公斤是该页面列出的桌面载重值，不应扩大成可坐可站或任何受力方式都安全；不要把包装尺寸当家具尺寸。不写即时库存、促销价格或环保等级认证，购买信息应由读者当时另查。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          }
+        ],
+        "current_date": "2026-11-03",
+        "date_timezone": "Asia/Shanghai",
+        "retrieved_references": [
+          {
+            "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+            "title": "虚构选购结构参考-REAL-H01",
+            "url": "",
+            "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+            "version": 1,
+            "evidence_role": "expression_reference"
+          }
+        ],
+        "creation_classification": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "creation_retrieval": {
+          "methods": [],
+          "examples": [
+            {
+              "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+              "source_type": "text",
+              "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是边桌摆放。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+              "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+              "page": 1,
+              "title": "虚构选购结构参考-REAL-H01",
+              "url": "",
+              "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+              "version": 1,
+              "location_type": "page",
+              "offset": 0,
+              "evidence_role": "expression_reference",
+              "content_kind": "text",
+              "source_scope": "current_account",
+              "case_ref": null,
+              "material_type": "example",
+              "classification": {
+                "domains": [
+                  "furniture"
+                ],
+                "channel": "xiaohongshu",
+                "format": "note",
+                "material_type": "example",
+                "origin": "user"
+              }
+            }
+          ],
+          "facts": [
+            {
+              "source_id": "user-material"
+            }
+          ],
+          "gaps": [
+            {
+              "code": "VECTOR_UNAVAILABLE",
+              "detail": "本地语义检索已关闭，使用 BM25",
+              "fallback": "bm25"
+            },
+            {
+              "code": "NO_MATCHING_METHODS",
+              "group": "methods",
+              "detail": "限定范围内无匹配材料，不使用无关资料补齐"
+            }
+          ]
+        },
+        "web_research": {
+          "status": "not_requested",
+          "reads": [],
+          "limitation": "本任务没有实际执行联网调查，不能自称已查询官网或媒体。"
+        },
+        "branches": {
+          "audience": {
+            "data": {
+              "primary_audience": "小红书上关注实用家具信息的中小创作者及普通读者，需快速获取准确参数与使用前提",
+              "sample_size": 0,
+              "confidence": "low",
+              "status": "needs_data"
+            }
+          },
+          "research": {
+            "data": {
+              "core_gap": false,
+              "gaps": [],
+              "prohibited_claims": [
+                "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：仅作表达结构参考，不可移植其虚构场景、连接选项、兼容性结论或‘效果测试’等未在user-material中出现的表述；所有事实必须严格对应user-material原文"
+              ]
+            }
+          }
+        },
+        "upstream": {},
+        "draft": {
+          "selected_title": "LACK白边桌55×55×45cm",
+          "body": "宜家LACK白色边桌（货号104.499.09）：桌面55×55cm，高45cm，小空间靠墙、床边或沙发旁摆放刚好。\n官方标注桌面最大载重10kg——够放台灯、书本、水杯等日常物品，但非坐具，不可站立或重压受力。\n注意：不附赠35×35cm小桌，需单独选购；组装后须定期检查并重新紧固螺丝，这是官方保养要求，非可选建议。\n清洁仅用微湿布擦拭，再擦干；无耐水、抗刮或安全认证延伸说明。",
+          "cta": "收藏前请核对货号104.499.09，尺寸与保养要求以你下单时页面为准",
+          "tags": [
+            "宜家LACK",
+            "边桌尺寸",
+            "小空间家具",
+            "货号104.499.09",
+            "承重10kg",
+            "家具保养"
+          ]
+        },
+        "previous_review": null,
+        "required_previous_issue_ids": [],
+        "draft_excerpt_candidates": [
+          {
+            "location": "selected_title",
+            "text": "LACK白边桌55×55×45cm"
+          },
+          {
+            "location": "body",
+            "text": "宜家LACK白色边桌（货号104.499.09）：桌面55×55cm，高45cm，小空间靠墙、床边或沙发旁摆放刚好。"
+          },
+          {
+            "location": "body",
+            "text": "官方标注桌面最大载重10kg——够放台灯、书本、水杯等日常物品，但非坐具，不可站立或重压受力。"
+          },
+          {
+            "location": "body",
+            "text": "注意：不附赠35×35cm小桌，需单独选购；组装后须定期检查并重新紧固螺丝，这是官方保养要求，非可选建议。"
+          },
+          {
+            "location": "body",
+            "text": "清洁仅用微湿布擦拭，再擦干；无耐水、抗刮或安全认证延伸说明。"
+          },
+          {
+            "location": "cta",
+            "text": "收藏前请核对货号104.499.09，尺寸与保养要求以你下单时页面为准"
+          },
+          {
+            "location": "tags",
+            "text": "宜家LACK"
+          },
+          {
+            "location": "tags",
+            "text": "边桌尺寸"
+          },
+          {
+            "location": "tags",
+            "text": "小空间家具"
+          },
+          {
+            "location": "tags",
+            "text": "货号104.499.09"
+          },
+          {
+            "location": "tags",
+            "text": "承重10kg"
+          },
+          {
+            "location": "tags",
+            "text": "家具保养"
+          }
+        ],
+        "material_policy": "available_only",
+        "material_policy_version": "available-only-v1",
+        "operations": {
+          "platform": "xiaohongshu",
+          "account": "我的账号",
+          "account_id": "[已隐去]",
+          "hypothesis_id": null,
+          "profile": {
+            "id": "5285e961-e866-5533-b51e-87cd6014586e",
+            "name": "我的账号",
+            "platform": "xiaohongshu",
+            "aliases": [
+              "我的账号"
+            ],
+            "revision": 1,
+            "profile": {
+              "positioning": "",
+              "audience": "",
+              "tone": "",
+              "pillars": "",
+              "goal": "",
+              "resources": "",
+              "banned": "",
+              "weekly_frequency": 3
+            },
+            "revisions": []
+          },
+          "trend": null,
+          "memories": [],
+          "active_hypothesis": null,
+          "experiment_memory": [],
+          "history": [],
+          "metrics": [],
+          "competitors": [],
+          "preferences": []
+        }
+      },
+      "output": {
+        "decision": "needs_human",
+        "next_action": "request_human",
+        "checks": [
+          {
+            "name": "brief_fit",
+            "result": "pass",
+            "basis": "稿件严格围绕货号104.499.09的LACK白边桌尺寸、载重、配件关系、保养与清洁等已知事实展开，无虚构、无延伸承诺，字数约280字，符合300字资料型小红书笔记要求"
+          },
+          {
+            "name": "audience_fit",
+            "result": "pass",
+            "basis": "面向中小创作者及普通读者，语言平实清晰，突出货号、尺寸、承重、组装维护等决策关键信息，规避主观体验，适配快速查阅场景"
+          },
+          {
+            "name": "usefulness_and_readability",
+            "result": "pass",
+            "basis": "每句含明确信息点：尺寸→适用位置；10kg→合理用途+明确排除坐/站；不附赠→防误购；定期紧固→非建议而是官方要求；清洁方式→仅限湿布擦干。无冗余形容词"
+          },
+          {
+            "name": "title_body_alignment",
+            "result": "pass",
+            "basis": "标题直给55×55×45cm三向尺寸，正文首句即完整复现该尺寸并标注货号，后续所有内容均服务于‘使用前需确认什么’这一资料型目标"
+          },
+          {
+            "name": "evidence_integrity",
+            "result": "pass",
+            "basis": "所有主张（尺寸、载重、无附赠、保养要求、清洁方式）均严格对应user-material中F1–F4及限制说明，claim_map可逐条映射，无未证事实"
+          },
+          {
+            "name": "experience_authenticity",
+            "result": "pass",
+            "basis": "全文未出现‘我试了’‘我家放’‘超稳’等亲历表述，所有判断均标注来源依据（如‘官方标注’‘官方保养要求’），符合allow_hypothesis=false要求"
+          },
+          {
+            "name": "originality_risk",
+            "result": "pass",
+            "basis": "参考样例仅借鉴‘分点提示+边界强调’结构，未复制其虚构场景、连接选项或测试表述；正文为基于user-material的独立重组，无近似照搬"
+          },
+          {
+            "name": "privacy_and_policy",
+            "result": "pass",
+            "basis": "未涉及用户隐私、健康疗效、环保认证、价格库存等禁止项；所有免责声明（如‘以你下单时页面为准’）符合平台合规与事实边界要求"
+          }
+        ],
+        "issues": [],
+        "previous_issue_results": [],
+        "limitations": [
+          "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：仅作表达结构参考（如分点提示+边界强调），未移植其虚构场景、兼容性结论或效果测试表述；本稿所有事实均源自user-material原文",
+          "3 条主张的引用无法与来源逐字匹配，已从引用映射剔除，不作为已核实依据",
+          "来源匹配只验证引用存在，不能证明素材真实或检查完全；最终由用户确认。"
+        ],
+        "human_questions": [
+          "请核对这些主张是否有来源支持；无法支持时删除或改写。"
+        ],
+        "claim_map": [
+          {
+            "excerpt": "宜家LACK白色边桌（货号104.499.09）：桌面55×55cm，高45cm，小空间靠墙、床边或沙发旁摆放刚好。",
+            "source_id": "user-material",
+            "quote": "F1：对象为货号104.499.09的白色LACK边桌，桌面长55厘米、宽55厘米，高45厘米。"
+          },
+          {
+            "excerpt": "注意：不附赠35×35cm小桌，需单独选购；",
+            "source_id": "user-material",
+            "quote": "F3：同系列35×35厘米小桌需要另外购买，不能把它当作本商品附赠。"
+          }
+        ],
+        "ref": "7a55ab69-f64b-4914-9bea-2d9ad465f508@1",
+        "draft_ref": "f69f4495-fd79-4527-a8a9-e98a16da9bfe@1",
+        "snapshot_id": "a384328b-a56f-4642-9c50-f268086d40f3",
+        "content_hash": "d1a7d08402035424fdf747f95c4000eee7ef6a33851a85b483dd8de8291cc5b6",
+        "policy_ref": "text-review@1",
+        "mode": "live",
+        "reference_records": {
+          "classification": {
+            "domains": [
+              "furniture"
+            ],
+            "channel": "xiaohongshu",
+            "format": "note",
+            "word_count": 300,
+            "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+            "origin": "user",
+            "ambiguities": []
+          },
+          "groups": {
+            "methods": [],
+            "examples": [
+              "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d"
+            ],
+            "facts": [
+              "user-material"
+            ]
+          },
+          "example_gap": false,
+          "adoption_notes": [
+            "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：借鉴其‘先分已知/待确认’结构与问题引导式开篇，但全部事实仅来自user-material，剔除虚构场景与兼容性结论；不移植任何未出现的测试、体验或连接描述"
+          ],
+          "claim_map": [
+            {
+              "excerpt": "宜家LACK白色边桌（货号104.499.09）：桌面55×55cm，高45cm，小空间靠墙、床边或沙发旁摆放刚好。",
+              "source_id": "user-material",
+              "quote": "F1：对象为货号104.499.09的白色LACK边桌，桌面长55厘米、宽55厘米，高45厘米。"
+            },
+            {
+              "excerpt": "注意：不附赠35×35cm小桌，需单独选购；",
+              "source_id": "user-material",
+              "quote": "F3：同系列35×35厘米小桌需要另外购买，不能把它当作本商品附赠。"
+            }
+          ],
+          "scope": "仅验证逐字引文和本任务事实组；不等同独立真实性核验或全网原创证明"
+        },
+        "account_context": {
+          "account_id": "[已隐去]",
+          "profile_revision": 1
+        },
+        "ranking_limit": "版本比较是内容评价；重要事实问题先阻断，不输出爆款概率。"
+      },
+      "duration_ms": 29526,
+      "model_calls": 1,
+      "tokens": 5898,
+      "cost": null,
+      "call_id": "a166b349-3ca2-43d6-92b0-8ab3393ed21c",
+      "tools": [
+        "knowledge_snapshot"
+      ],
+      "memory": "读取本任务的账号与证据快照"
+    }
+  ],
+  "reviews": [
+    {
+      "decision": "needs_human",
+      "next_action": "request_human",
+      "checks": [
+        {
+          "name": "brief_fit",
+          "result": "pass",
+          "basis": "稿件严格围绕货号104.499.09的LACK白边桌尺寸、载重、配件关系、保养与清洁等已知事实展开，无虚构、无延伸承诺，字数约280字，符合300字资料型小红书笔记要求"
+        },
+        {
+          "name": "audience_fit",
+          "result": "pass",
+          "basis": "面向中小创作者及普通读者，语言平实清晰，突出货号、尺寸、承重、组装维护等决策关键信息，规避主观体验，适配快速查阅场景"
+        },
+        {
+          "name": "usefulness_and_readability",
+          "result": "pass",
+          "basis": "每句含明确信息点：尺寸→适用位置；10kg→合理用途+明确排除坐/站；不附赠→防误购；定期紧固→非建议而是官方要求；清洁方式→仅限湿布擦干。无冗余形容词"
+        },
+        {
+          "name": "title_body_alignment",
+          "result": "pass",
+          "basis": "标题直给55×55×45cm三向尺寸，正文首句即完整复现该尺寸并标注货号，后续所有内容均服务于‘使用前需确认什么’这一资料型目标"
+        },
+        {
+          "name": "evidence_integrity",
+          "result": "pass",
+          "basis": "所有主张（尺寸、载重、无附赠、保养要求、清洁方式）均严格对应user-material中F1–F4及限制说明，claim_map可逐条映射，无未证事实"
+        },
+        {
+          "name": "experience_authenticity",
+          "result": "pass",
+          "basis": "全文未出现‘我试了’‘我家放’‘超稳’等亲历表述，所有判断均标注来源依据（如‘官方标注’‘官方保养要求’），符合allow_hypothesis=false要求"
+        },
+        {
+          "name": "originality_risk",
+          "result": "pass",
+          "basis": "参考样例仅借鉴‘分点提示+边界强调’结构，未复制其虚构场景、连接选项或测试表述；正文为基于user-material的独立重组，无近似照搬"
+        },
+        {
+          "name": "privacy_and_policy",
+          "result": "pass",
+          "basis": "未涉及用户隐私、健康疗效、环保认证、价格库存等禁止项；所有免责声明（如‘以你下单时页面为准’）符合平台合规与事实边界要求"
+        }
+      ],
+      "issues": [],
+      "previous_issue_results": [],
+      "limitations": [
+        "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：仅作表达结构参考（如分点提示+边界强调），未移植其虚构场景、兼容性结论或效果测试表述；本稿所有事实均源自user-material原文",
+        "3 条主张的引用无法与来源逐字匹配，已从引用映射剔除，不作为已核实依据",
+        "来源匹配只验证引用存在，不能证明素材真实或检查完全；最终由用户确认。"
+      ],
+      "human_questions": [
+        "请核对这些主张是否有来源支持；无法支持时删除或改写。"
+      ],
+      "claim_map": [
+        {
+          "excerpt": "宜家LACK白色边桌（货号104.499.09）：桌面55×55cm，高45cm，小空间靠墙、床边或沙发旁摆放刚好。",
+          "source_id": "user-material",
+          "quote": "F1：对象为货号104.499.09的白色LACK边桌，桌面长55厘米、宽55厘米，高45厘米。"
+        },
+        {
+          "excerpt": "注意：不附赠35×35cm小桌，需单独选购；",
+          "source_id": "user-material",
+          "quote": "F3：同系列35×35厘米小桌需要另外购买，不能把它当作本商品附赠。"
+        }
+      ],
+      "ref": "7a55ab69-f64b-4914-9bea-2d9ad465f508@1",
+      "draft_ref": "f69f4495-fd79-4527-a8a9-e98a16da9bfe@1",
+      "snapshot_id": "a384328b-a56f-4642-9c50-f268086d40f3",
+      "content_hash": "d1a7d08402035424fdf747f95c4000eee7ef6a33851a85b483dd8de8291cc5b6",
+      "policy_ref": "text-review@1",
+      "mode": "live",
+      "reference_records": {
+        "classification": {
+          "domains": [
+            "furniture"
+          ],
+          "channel": "xiaohongshu",
+          "format": "note",
+          "word_count": 300,
+          "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+          "origin": "user",
+          "ambiguities": []
+        },
+        "groups": {
+          "methods": [],
+          "examples": [
+            "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d"
+          ],
+          "facts": [
+            "user-material"
+          ]
+        },
+        "example_gap": false,
+        "adoption_notes": [
+          "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：借鉴其‘先分已知/待确认’结构与问题引导式开篇，但全部事实仅来自user-material，剔除虚构场景与兼容性结论；不移植任何未出现的测试、体验或连接描述"
+        ],
+        "claim_map": [
+          {
+            "excerpt": "宜家LACK白色边桌（货号104.499.09）：桌面55×55cm，高45cm，小空间靠墙、床边或沙发旁摆放刚好。",
+            "source_id": "user-material",
+            "quote": "F1：对象为货号104.499.09的白色LACK边桌，桌面长55厘米、宽55厘米，高45厘米。"
+          },
+          {
+            "excerpt": "注意：不附赠35×35cm小桌，需单独选购；",
+            "source_id": "user-material",
+            "quote": "F3：同系列35×35厘米小桌需要另外购买，不能把它当作本商品附赠。"
+          }
+        ],
+        "scope": "仅验证逐字引文和本任务事实组；不等同独立真实性核验或全网原创证明"
+      },
+      "account_context": {
+        "account_id": "[已隐去]",
+        "profile_revision": 1
+      },
+      "ranking_limit": "版本比较是内容评价；重要事实问题先阻断，不输出爆款概率。"
+    }
+  ],
+  "branches": {
+    "research": {
+      "snapshot_id": "a384328b-a56f-4642-9c50-f268086d40f3",
+      "data": {
+        "core_gap": false,
+        "gaps": [],
+        "facts": [
+          {
+            "source_id": "user-material",
+            "quote": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象为货号104.499.09的白色LACK边桌，桌面长55厘米、宽55厘米，高45厘米。\nF2：官方列出的桌面最大载重是10公斤。\nF3：同系列35×35厘米小桌需要另外购买，不能把它当作本商品附赠。\nF4：官方保养说明包括湿布清洁、再擦干，并定期检查和重新紧固松动的组装件。\n【完整限制】这里没有作者家中实测、座站安全认证、长期耐水或抗刮试验记录。10公斤是该页面列出的桌面载重值，不应扩大成可坐可站或任何受力方式都安全；不要把包装尺寸当家具尺寸。不写即时库存、促销价格或环保等级认证，购买信息应由读者当时另查。"
+          },
+          {
+            "source_id": "user-material",
+            "quote": "F1：对象为货号104.499.09的白色LACK边桌，桌面长55厘米、宽55厘米，高45厘米。"
+          },
+          {
+            "source_id": "user-material",
+            "quote": "F2：官方列出的桌面最大载重是10公斤。"
+          },
+          {
+            "source_id": "user-material",
+            "quote": "F3：同系列35×35厘米小桌需要另外购买，不能把它当作本商品附赠。"
+          },
+          {
+            "source_id": "user-material",
+            "quote": "F4：官方保养说明包括湿布清洁、再擦干，并定期检查和重新紧固松动的组装件。"
+          },
+          {
+            "source_id": "user-material",
+            "quote": "【完整限制】这里没有作者家中实测、座站安全认证、长期耐水或抗刮试验记录。10公斤是该页面列出的桌面载重值，不应扩大成可坐可站或任何受力方式都安全；不要把包装尺寸当家具尺寸。不写即时库存、促销价格或环保等级认证，购买信息应由读者当时另查。"
+          }
+        ],
+        "prohibited_claims": [
+          "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：仅作表达结构参考，不可移植其虚构场景、连接选项、兼容性结论或‘效果测试’等未在user-material中出现的表述；所有事实必须严格对应user-material原文"
+        ],
+        "sources": [
+          {
+            "source_id": "user-material",
+            "source_type": "text",
+            "text": "【公开资料与构造任务】下面是研究者为小红书中小创作者拟定的介绍任务，素材来自已读官方正文，不是用户访谈需求，也不是作者亲测。获取日2026年11月3日；网页会变化，以下只对本次读取负责。\nF1：对象为货号104.499.09的白色LACK边桌，桌面长55厘米、宽55厘米，高45厘米。\nF2：官方列出的桌面最大载重是10公斤。\nF3：同系列35×35厘米小桌需要另外购买，不能把它当作本商品附赠。\nF4：官方保养说明包括湿布清洁、再擦干，并定期检查和重新紧固松动的组装件。\n【完整限制】这里没有作者家中实测、座站安全认证、长期耐水或抗刮试验记录。10公斤是该页面列出的桌面载重值，不应扩大成可坐可站或任何受力方式都安全；不要把包装尺寸当家具尺寸。不写即时库存、促销价格或环保等级认证，购买信息应由读者当时另查。\n【写作任务】围绕读者的选择或操作问题写300字介绍，保留型号、适用条件与必要限制；不照搬营销形容词，不承诺效果，不给本次之外的新事实。",
+            "verification": "用户提供，未独立核验",
+            "page": null,
+            "material_type": "fact"
+          },
+          {
+            "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+            "source_type": "text",
+            "text": "资料标签（非正文）：家具 图文笔记 开篇 结构 表达。以下是受控自编参考。\n\n买之前，先问自己真正要解决哪一个小问题。\n\n真正的困扰是信息很多，却没有一条清楚的比较线索。\n\n下面的例子来自虚构场景，讨论范围是边桌摆放。\n\n给定清单只记录两种连接选项，不包含兼容性结论。\n\n先把资料分成已知和待确认两栏，再为每一栏安排说明。\n\n需要注意，资料没有给出效果测试，不能补写体验结论。\n\n收藏前先核对这份清单是否适合你的场景。",
+            "verification": "原文切片；事实须核验来源，样例仅供表达参考",
+            "page": 1,
+            "title": "虚构选购结构参考-REAL-H01",
+            "url": "",
+            "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+            "version": 1,
+            "location_type": "page",
+            "offset": 0,
+            "evidence_role": "expression_reference",
+            "content_kind": "text",
+            "source_scope": "current_account",
+            "case_ref": null,
+            "material_type": "example",
+            "classification": {
+              "domains": [
+                "furniture"
+              ],
+              "channel": "xiaohongshu",
+              "format": "note",
+              "material_type": "example",
+              "origin": "user"
+            }
+          }
+        ],
+        "scope": "分析用户素材与检索到的原文快照；引用逐字校验，事实未独立核实",
+        "topic_card": {
+          "topic": "宜家LACK白色边桌尺寸与使用前检查",
+          "audience": "准备在小红书发布资料型介绍的中小创作者及其普通读者",
+          "why_now": "自主选题，暂无可核验的时效依据",
+          "evidence": [],
+          "account_fit": "账号定位尚待补充",
+          "risk": [
+            "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：仅作表达结构参考，不可移植其虚构场景、连接选项、兼容性结论或‘效果测试’等未在user-material中出现的表述；所有事实必须严格对应user-material原文"
+          ],
+          "content_angles": [
+            "结合真实场景解释问题",
+            "整理可验证的尝试步骤"
+          ],
+          "limitation": "选题卡基于用户线索；没有自动抓取、热度统计或时效核实。"
+        }
+      }
+    },
+    "audience": {
+      "snapshot_id": "a384328b-a56f-4642-9c50-f268086d40f3",
+      "data": {
+        "primary_audience": "小红书上关注实用家具信息的中小创作者及普通读者，需快速获取准确参数与使用前提",
+        "basis": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：借鉴其分栏式结构（已知/待确认）与问题导向开篇，但仅复用逻辑框架，不移植虚构场景或未验证结论；所有参数严格限于user-material所列F1–F4",
+        "pain_points": [
+          "尺寸是否真适合小空间？",
+          "载重10kg能否放台灯+书+水杯？",
+          "组装后松动怎么办？",
+          "买错型号怕白跑一趟"
+        ],
+        "content_opportunities": [
+          "明确标出货号104.499.09，避免混淆同系列其他尺寸",
+          "用桌面55×55×45cm具象化小空间适配性",
+          "强调‘定期检查并重新紧固’是官方保养动作，非建议而是必要操作",
+          "划清边界：不附赠35×35cm小桌，10kg≠可坐"
+        ],
+        "observations": [],
+        "sample_size": 0,
+        "confidence": "low",
+        "status": "needs_data",
+        "account_context": {
+          "account_id": "[已隐去]",
+          "profile_revision": 1
+        },
+        "history_refs": [],
+        "competitor_observations": [],
+        "evidence_limit": "历史仅为描述性记录；偏好与传播效果分开，竞品观察未经独立核验。"
+      }
+    }
+  },
+  "branch_errors": {},
+  "drafts": [
+    {
+      "ref": "f69f4495-fd79-4527-a8a9-e98a16da9bfe@1",
+      "content": {
+        "selected_title": "LACK白边桌55×55×45cm",
+        "body": "宜家LACK白色边桌（货号104.499.09）：桌面55×55cm，高45cm，小空间靠墙、床边或沙发旁摆放刚好。\n官方标注桌面最大载重10kg——够放台灯、书本、水杯等日常物品，但非坐具，不可站立或重压受力。\n注意：不附赠35×35cm小桌，需单独选购；组装后须定期检查并重新紧固螺丝，这是官方保养要求，非可选建议。\n清洁仅用微湿布擦拭，再擦干；无耐水、抗刮或安全认证延伸说明。",
+        "cta": "收藏前请核对货号104.499.09，尺寸与保养要求以你下单时页面为准",
+        "tags": [
+          "宜家LACK",
+          "边桌尺寸",
+          "小空间家具",
+          "货号104.499.09",
+          "承重10kg",
+          "家具保养"
+        ]
+      },
+      "content_hash": "d1a7d08402035424fdf747f95c4000eee7ef6a33851a85b483dd8de8291cc5b6",
+      "snapshot_id": "a384328b-a56f-4642-9c50-f268086d40f3",
+      "actor": "content"
+    }
+  ],
+  "review": {
+    "decision": "needs_human",
+    "next_action": "request_human",
+    "checks": [
+      {
+        "name": "brief_fit",
+        "result": "pass",
+        "basis": "稿件严格围绕货号104.499.09的LACK白边桌尺寸、载重、配件关系、保养与清洁等已知事实展开，无虚构、无延伸承诺，字数约280字，符合300字资料型小红书笔记要求"
+      },
+      {
+        "name": "audience_fit",
+        "result": "pass",
+        "basis": "面向中小创作者及普通读者，语言平实清晰，突出货号、尺寸、承重、组装维护等决策关键信息，规避主观体验，适配快速查阅场景"
+      },
+      {
+        "name": "usefulness_and_readability",
+        "result": "pass",
+        "basis": "每句含明确信息点：尺寸→适用位置；10kg→合理用途+明确排除坐/站；不附赠→防误购；定期紧固→非建议而是官方要求；清洁方式→仅限湿布擦干。无冗余形容词"
+      },
+      {
+        "name": "title_body_alignment",
+        "result": "pass",
+        "basis": "标题直给55×55×45cm三向尺寸，正文首句即完整复现该尺寸并标注货号，后续所有内容均服务于‘使用前需确认什么’这一资料型目标"
+      },
+      {
+        "name": "evidence_integrity",
+        "result": "pass",
+        "basis": "所有主张（尺寸、载重、无附赠、保养要求、清洁方式）均严格对应user-material中F1–F4及限制说明，claim_map可逐条映射，无未证事实"
+      },
+      {
+        "name": "experience_authenticity",
+        "result": "pass",
+        "basis": "全文未出现‘我试了’‘我家放’‘超稳’等亲历表述，所有判断均标注来源依据（如‘官方标注’‘官方保养要求’），符合allow_hypothesis=false要求"
+      },
+      {
+        "name": "originality_risk",
+        "result": "pass",
+        "basis": "参考样例仅借鉴‘分点提示+边界强调’结构，未复制其虚构场景、连接选项或测试表述；正文为基于user-material的独立重组，无近似照搬"
+      },
+      {
+        "name": "privacy_and_policy",
+        "result": "pass",
+        "basis": "未涉及用户隐私、健康疗效、环保认证、价格库存等禁止项；所有免责声明（如‘以你下单时页面为准’）符合平台合规与事实边界要求"
+      }
+    ],
+    "issues": [],
+    "previous_issue_results": [],
+    "limitations": [
+      "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：仅作表达结构参考（如分点提示+边界强调），未移植其虚构场景、兼容性结论或效果测试表述；本稿所有事实均源自user-material原文",
+      "3 条主张的引用无法与来源逐字匹配，已从引用映射剔除，不作为已核实依据",
+      "来源匹配只验证引用存在，不能证明素材真实或检查完全；最终由用户确认。"
+    ],
+    "human_questions": [
+      "请核对这些主张是否有来源支持；无法支持时删除或改写。"
+    ],
+    "claim_map": [
+      {
+        "excerpt": "宜家LACK白色边桌（货号104.499.09）：桌面55×55cm，高45cm，小空间靠墙、床边或沙发旁摆放刚好。",
+        "source_id": "user-material",
+        "quote": "F1：对象为货号104.499.09的白色LACK边桌，桌面长55厘米、宽55厘米，高45厘米。"
+      },
+      {
+        "excerpt": "注意：不附赠35×35cm小桌，需单独选购；",
+        "source_id": "user-material",
+        "quote": "F3：同系列35×35厘米小桌需要另外购买，不能把它当作本商品附赠。"
+      }
+    ],
+    "ref": "7a55ab69-f64b-4914-9bea-2d9ad465f508@1",
+    "draft_ref": "f69f4495-fd79-4527-a8a9-e98a16da9bfe@1",
+    "snapshot_id": "a384328b-a56f-4642-9c50-f268086d40f3",
+    "content_hash": "d1a7d08402035424fdf747f95c4000eee7ef6a33851a85b483dd8de8291cc5b6",
+    "policy_ref": "text-review@1",
+    "mode": "live",
+    "reference_records": {
+      "classification": {
+        "domains": [
+          "furniture"
+        ],
+        "channel": "xiaohongshu",
+        "format": "note",
+        "word_count": 300,
+        "goal": "只据给定公开资料，说明已知信息、适用条件和未知边界，禁止虚构亲测",
+        "origin": "user",
+        "ambiguities": []
+      },
+      "groups": {
+        "methods": [],
+        "examples": [
+          "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d"
+        ],
+        "facts": [
+          "user-material"
+        ]
+      },
+      "example_gap": false,
+      "adoption_notes": [
+        "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d：借鉴其‘先分已知/待确认’结构与问题引导式开篇，但全部事实仅来自user-material，剔除虚构场景与兼容性结论；不移植任何未出现的测试、体验或连接描述"
+      ],
+      "claim_map": [
+        {
+          "excerpt": "宜家LACK白色边桌（货号104.499.09）：桌面55×55cm，高45cm，小空间靠墙、床边或沙发旁摆放刚好。",
+          "source_id": "user-material",
+          "quote": "F1：对象为货号104.499.09的白色LACK边桌，桌面长55厘米、宽55厘米，高45厘米。"
+        },
+        {
+          "excerpt": "注意：不附赠35×35cm小桌，需单独选购；",
+          "source_id": "user-material",
+          "quote": "F3：同系列35×35厘米小桌需要另外购买，不能把它当作本商品附赠。"
+        }
+      ],
+      "scope": "仅验证逐字引文和本任务事实组；不等同独立真实性核验或全网原创证明"
+    },
+    "account_context": {
+      "account_id": "[已隐去]",
+      "profile_revision": 1
+    },
+    "ranking_limit": "版本比较是内容评价；重要事实问题先阻断，不输出爆款概率。"
+  },
+  "prior_review": null,
+  "accepted_ref": null,
+  "acceptance": null,
+  "events": [
+    {
+      "schema_version": 2,
+      "event_id": "5220e91c-8b60-439e-bf0c-5637c9b562b4",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 1,
+      "occurred_at": "2026-11-03T01:37:27.534568+00:00",
+      "type": "run.queued",
+      "payload": {}
+    },
+    {
+      "schema_version": 2,
+      "event_id": "0656230a-e96c-414c-84a9-09c4a5bc208f",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 2,
+      "occurred_at": "2026-11-03T01:37:27.554682+00:00",
+      "type": "workflow.transition",
+      "payload": {
+        "run_status": "RUNNING",
+        "wait_reason": null
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "6c92d4ba-420f-4884-8c7a-9ed4c3ed6dc4",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 3,
+      "occurred_at": "2026-11-03T01:37:27.554689+00:00",
+      "type": "run.started",
+      "payload": {}
+    },
+    {
+      "schema_version": 2,
+      "event_id": "ead0d368-5269-4afd-a0f5-b9f59eb85237",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 4,
+      "occurred_at": "2026-11-03T01:37:27.555883+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "audience",
+        "stage": "audience",
+        "node_key": "15d5f3f7401961f37e2ab7ccff5847e7b758202aeff2dc7ce6183be947c0a48d",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "2a3d35e0-dd46-42e7-ab43-cf6f77298f58",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 5,
+      "occurred_at": "2026-11-03T01:37:27.557249+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "research",
+        "stage": "research",
+        "node_key": "d95a44fa4b176f8e2c077fd3a2b3953172bc4628447ce85bad7b48757e9f2c8b",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "a6f4fe21-60cd-4372-98ac-bb24dd8f6086",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 6,
+      "occurred_at": "2026-11-03T01:37:44.410195+00:00",
+      "type": "agent.completed",
+      "payload": {
+        "agent": "research",
+        "stage": "research",
+        "mode": "live",
+        "node_ref": "61d151da-a835-49f0-b6d1-694acd0e2352"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "9bc6411d-0bd0-4dc7-af6a-511f758572bb",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 7,
+      "occurred_at": "2026-11-03T01:37:44.410223+00:00",
+      "type": "branch.completed",
+      "payload": {
+        "agent": "research"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "1b4bfb9b-f7c9-4c29-a447-9825f9ce6bce",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 8,
+      "occurred_at": "2026-11-03T01:37:55.987825+00:00",
+      "type": "agent.completed",
+      "payload": {
+        "agent": "audience",
+        "stage": "audience",
+        "mode": "live",
+        "node_ref": "ffe5ff8d-f898-4b20-b75b-3fdb3ed3bcbb"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "d2b0373b-f641-4c3c-abef-3c329247faad",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 9,
+      "occurred_at": "2026-11-03T01:37:55.987866+00:00",
+      "type": "branch.completed",
+      "payload": {
+        "agent": "audience"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "16cb89e1-4e84-4b6f-95db-53766d4e85e2",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 10,
+      "occurred_at": "2026-11-03T01:37:55.991521+00:00",
+      "type": "join.completed",
+      "payload": {}
+    },
+    {
+      "schema_version": 2,
+      "event_id": "a65a0d7c-76cb-4be3-bfb0-6208385caf4b",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 11,
+      "occurred_at": "2026-11-03T01:37:55.996005+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "content",
+        "stage": "strategy",
+        "node_key": "68130e993dda4afe95979834f43fc56ac23073b98b2b4b192a133864c0dc6f22",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "2daa36a4-25b1-400b-9907-92196d3e868d",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 12,
+      "occurred_at": "2026-11-03T01:38:05.026040+00:00",
+      "type": "agent.completed",
+      "payload": {
+        "agent": "content",
+        "stage": "strategy",
+        "mode": "live",
+        "node_ref": "6dc96a42-7623-4e03-855a-13ec46791c21"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "2ecb0a30-0367-49fe-b0e6-13e75530832b",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 13,
+      "occurred_at": "2026-11-03T01:38:05.026060+00:00",
+      "type": "artifact.created",
+      "payload": {
+        "stage": "strategy",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "8b8df616-1b1a-4986-9324-f74807c80526",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 14,
+      "occurred_at": "2026-11-03T01:38:05.032601+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "content",
+        "stage": "outline",
+        "node_key": "2f12f05e18aa66a70e9c4b0df12a20e4a5e0f7e8549accf01afe8394e7af39e5",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "f8cb9f98-1350-4edd-b48a-fdaec6e813b7",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 15,
+      "occurred_at": "2026-11-03T01:38:10.082610+00:00",
+      "type": "agent.completed",
+      "payload": {
+        "agent": "content",
+        "stage": "outline",
+        "mode": "live",
+        "node_ref": "ce841c66-cb9e-4565-b184-6c0d5a3a999a"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "931a4ab2-7d6c-4bfc-8f60-d8d7db8d819a",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 16,
+      "occurred_at": "2026-11-03T01:38:10.082641+00:00",
+      "type": "artifact.created",
+      "payload": {
+        "stage": "outline",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "c3d7a621-9239-4ab3-bf91-ee59e6ff54fc",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 17,
+      "occurred_at": "2026-11-03T01:38:10.089285+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "content",
+        "stage": "hook",
+        "node_key": "9294bcc1904b3005068a628c78eccd3ad5aa2dfb5b48a14fdf7887278bc1ba39",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "4b28ceb5-1204-43da-9ef5-bf43349e9f0c",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 18,
+      "occurred_at": "2026-11-03T01:38:12.604401+00:00",
+      "type": "agent.completed",
+      "payload": {
+        "agent": "content",
+        "stage": "hook",
+        "mode": "live",
+        "node_ref": "3238170d-16e0-4aa7-a5a5-378ac5f6742e"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "85ae43c4-7d1b-43ee-a699-d6bfa9eb0330",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 19,
+      "occurred_at": "2026-11-03T01:38:12.604419+00:00",
+      "type": "artifact.created",
+      "payload": {
+        "stage": "hook",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "04ba5461-61f9-491f-9b38-c9a17f4f3577",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 20,
+      "occurred_at": "2026-11-03T01:38:12.612261+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "content",
+        "stage": "title",
+        "node_key": "4f1735af8be6aa16f6031d7c2aeca99bd10c249e8e4d7d16926358da1677b3b9",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "cd37dc32-3b3c-4d29-baaf-e197f30490f7",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 21,
+      "occurred_at": "2026-11-03T01:38:20.877347+00:00",
+      "type": "agent.completed",
+      "payload": {
+        "agent": "content",
+        "stage": "title",
+        "mode": "live",
+        "node_ref": "40956a06-b96d-4a88-861e-298a8703c16b"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "a56acd1e-d372-4be0-b7ae-72dfae15b6e7",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 22,
+      "occurred_at": "2026-11-03T01:38:20.877373+00:00",
+      "type": "artifact.created",
+      "payload": {
+        "stage": "title",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "d5624da6-aff4-491c-a188-40c1aa35a6cd",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 23,
+      "occurred_at": "2026-11-03T01:38:20.884571+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "content",
+        "stage": "body",
+        "node_key": "da236b1e885119d0c9b583f949dafd3605cf0abd54a1ca6ee87463ad062abbee",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "8ff917f8-ce05-4763-b80e-963cdba5f476",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 24,
+      "occurred_at": "2026-11-03T01:38:27.323690+00:00",
+      "type": "agent.completed",
+      "payload": {
+        "agent": "content",
+        "stage": "body",
+        "mode": "live",
+        "node_ref": "109983e6-8094-44ff-aaec-2bff2748eba8"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "8068fef5-b7d9-42e2-adc6-c27b47e0da2a",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 25,
+      "occurred_at": "2026-11-03T01:38:27.323708+00:00",
+      "type": "artifact.created",
+      "payload": {
+        "stage": "body",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "f6914f73-0c41-49d7-9f69-7a4d513e804a",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 26,
+      "occurred_at": "2026-11-03T01:38:27.323777+00:00",
+      "type": "artifact.created",
+      "payload": {
+        "artifact_ref": "f69f4495-fd79-4527-a8a9-e98a16da9bfe@1"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "b52d8a13-0c02-4c55-970e-3e5d28bc741c",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 27,
+      "occurred_at": "2026-11-03T01:38:27.332283+00:00",
+      "type": "agent.started",
+      "payload": {
+        "agent": "reviewer",
+        "stage": "review",
+        "node_key": "d047964f24ff3defdeb332a0e29df0cd9cba9637aed0d544adcb880a8f8f81c6",
+        "mode": "live"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "bbc40b15-959c-4074-a127-6d802466c17b",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 28,
+      "occurred_at": "2026-11-03T01:38:56.865108+00:00",
+      "type": "agent.completed",
+      "payload": {
+        "agent": "reviewer",
+        "stage": "review",
+        "mode": "live",
+        "node_ref": "5c173991-a010-4937-9775-cb220d4ca321"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "e58de0d9-2da0-48c8-bfe1-a73bfce098a1",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 29,
+      "occurred_at": "2026-11-03T01:38:56.865359+00:00",
+      "type": "review.completed",
+      "payload": {
+        "decision": "needs_human"
+      }
+    },
+    {
+      "schema_version": 2,
+      "event_id": "07ab0177-5323-4529-a61a-432d00ec6cc3",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "seq": 30,
+      "occurred_at": "2026-11-03T01:38:56.865374+00:00",
+      "type": "workflow.transition",
+      "payload": {
+        "run_status": "WAITING_USER",
+        "wait_reason": "final_confirmation"
+      }
+    }
+  ],
+  "workflow_type": "creation",
+  "windtunnel": {},
+  "allowed_actions": [
+    "cancel",
+    "edit",
+    "adopt_manual",
+    "request_revision"
+  ],
+  "mode": "live",
+  "usage": {
+    "model_calls": 8,
+    "tokens": 33239,
+    "unknown_calls": 0,
+    "cost": null,
+    "cost_upper_estimate_usd": 0.037987,
+    "currency": "USD"
+  },
+  "model_policy": {
+    "version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+    "routes": {
+      "audience": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "research": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "strategy": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "outline": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "hook": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "title": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "body": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "revise": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      },
+      "review": {
+        "provider": "qwen",
+        "model": "qwen-plus",
+        "rate": 1.142858e-06,
+        "connection_id": "[已隐去]",
+        "connection_version": 1,
+        "owner_id": "[已隐去]",
+        "billing_source": "user",
+        "run_budget_usd": 2,
+        "day_budget_usd": 3
+      }
+    },
+    "prompt_version": "four-role-v1.1-optin-comments-user-revision1"
+  },
+  "in_flight": false,
+  "calls": [
+    {
+      "id": "8380b4aa-9bf7-460e-8a2b-825f5c86ce0f",
+      "agent": "research",
+      "stage": "research",
+      "reserved_tokens": 16766,
+      "tokens": 3840,
+      "status": "validated",
+      "error": null,
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1",
+      "input_hash": "df90c4a60793e85da5fd5c79853cd0966a9e96f5b2e47a2fc62c4d90b5d367a1",
+      "snapshot_id": "a384328b-a56f-4642-9c50-f268086d40f3",
+      "duration_ms": 16848,
+      "request_id": "chatcmpl-1d5a6359-475f-9b3f-acdb-6d2a16e390ad",
+      "input_tokens": 3245,
+      "output_tokens": 595,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "f7af43a1a1906dcf26ff4991963159f33e9d8831d7040dfa1ce00aa9bd3e2cc2"
+        },
+        {
+          "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+          "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "bba1083e73b19acb5bc033aaf443b82039db31b2c3254c81c15219952c210018"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false
+    },
+    {
+      "id": "3cef4b25-8ff6-43b6-aae6-179c05a62943",
+      "agent": "audience",
+      "stage": "audience",
+      "reserved_tokens": 16325,
+      "tokens": 3391,
+      "status": "validated",
+      "error": null,
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1",
+      "input_hash": "15f433ee478bba879fe0589a376c61aeda089d461f67b222973fd0b07373b2f1",
+      "snapshot_id": "a384328b-a56f-4642-9c50-f268086d40f3",
+      "duration_ms": 28423,
+      "request_id": "chatcmpl-e6bb3bbb-24ad-9be8-ae7b-0d0b77e6d933",
+      "input_tokens": 3133,
+      "output_tokens": 258,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "f7af43a1a1906dcf26ff4991963159f33e9d8831d7040dfa1ce00aa9bd3e2cc2"
+        },
+        {
+          "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+          "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "bba1083e73b19acb5bc033aaf443b82039db31b2c3254c81c15219952c210018"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false
+    },
+    {
+      "id": "d06c68aa-b9ad-4105-ad19-38c6e7b0338d",
+      "agent": "content",
+      "stage": "strategy",
+      "reserved_tokens": 20363,
+      "tokens": 3728,
+      "status": "validated",
+      "error": null,
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1",
+      "input_hash": "668769f0af32a319f095bac3ba07ae31e79fe45584e5d19b39432947e0243a98",
+      "snapshot_id": "a384328b-a56f-4642-9c50-f268086d40f3",
+      "duration_ms": 9021,
+      "request_id": "chatcmpl-9c776f46-7e47-9b6d-ba0b-d4357faea409",
+      "input_tokens": 3436,
+      "output_tokens": 292,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "f7af43a1a1906dcf26ff4991963159f33e9d8831d7040dfa1ce00aa9bd3e2cc2"
+        },
+        {
+          "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+          "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "bba1083e73b19acb5bc033aaf443b82039db31b2c3254c81c15219952c210018"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false
+    },
+    {
+      "id": "cca0106e-7098-4a79-af83-704b01159098",
+      "agent": "content",
+      "stage": "outline",
+      "reserved_tokens": 18535,
+      "tokens": 3808,
+      "status": "validated",
+      "error": null,
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1",
+      "input_hash": "2cbd9784671b3d354bba4b1d481e996d2d54229e3fa80358fe41502fe836af54",
+      "snapshot_id": "a384328b-a56f-4642-9c50-f268086d40f3",
+      "duration_ms": 5042,
+      "request_id": "chatcmpl-6efe5732-5ea5-911c-aabd-36ec6aa05036",
+      "input_tokens": 3690,
+      "output_tokens": 118,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "f7af43a1a1906dcf26ff4991963159f33e9d8831d7040dfa1ce00aa9bd3e2cc2"
+        },
+        {
+          "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+          "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "bba1083e73b19acb5bc033aaf443b82039db31b2c3254c81c15219952c210018"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false
+    },
+    {
+      "id": "c9736c71-3b4a-48c2-b7c5-edd424515c66",
+      "agent": "content",
+      "stage": "hook",
+      "reserved_tokens": 18852,
+      "tokens": 3855,
+      "status": "validated",
+      "error": null,
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1",
+      "input_hash": "f9814d9d8789c64f209ec5e3545b13317371bf21c9276caebf8c7f673f214e8a",
+      "snapshot_id": "a384328b-a56f-4642-9c50-f268086d40f3",
+      "duration_ms": 2505,
+      "request_id": "chatcmpl-a4458bd8-df72-968e-9fd0-945567a58f4e",
+      "input_tokens": 3783,
+      "output_tokens": 72,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "f7af43a1a1906dcf26ff4991963159f33e9d8831d7040dfa1ce00aa9bd3e2cc2"
+        },
+        {
+          "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+          "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "bba1083e73b19acb5bc033aaf443b82039db31b2c3254c81c15219952c210018"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false
+    },
+    {
+      "id": "4d7e49eb-09d7-473a-bce7-ae979a6dd586",
+      "agent": "content",
+      "stage": "title",
+      "reserved_tokens": 19719,
+      "tokens": 4253,
+      "status": "validated",
+      "error": null,
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1",
+      "input_hash": "1c93d7047fb94b4d8a02e029f72b32635ec17cf70d8c89583d8b546d33e27ebd",
+      "snapshot_id": "a384328b-a56f-4642-9c50-f268086d40f3",
+      "duration_ms": 8256,
+      "request_id": "chatcmpl-e20ecfa4-c9fc-937c-a9ba-6086b6988268",
+      "input_tokens": 3974,
+      "output_tokens": 279,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "f7af43a1a1906dcf26ff4991963159f33e9d8831d7040dfa1ce00aa9bd3e2cc2"
+        },
+        {
+          "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+          "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "bba1083e73b19acb5bc033aaf443b82039db31b2c3254c81c15219952c210018"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false
+    },
+    {
+      "id": "647d6802-8578-4828-ac26-0dda3d19cb7d",
+      "agent": "content",
+      "stage": "body",
+      "reserved_tokens": 20261,
+      "tokens": 4466,
+      "status": "validated",
+      "error": null,
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1",
+      "input_hash": "bf7deed04c976a5113cfd26eb9da28579f28dd536cc5c7633e278d02ec8a646b",
+      "snapshot_id": "a384328b-a56f-4642-9c50-f268086d40f3",
+      "duration_ms": 6430,
+      "request_id": "chatcmpl-77f9de5f-6bf5-9345-a17f-881d17cb713f",
+      "input_tokens": 4213,
+      "output_tokens": 253,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "f7af43a1a1906dcf26ff4991963159f33e9d8831d7040dfa1ce00aa9bd3e2cc2"
+        },
+        {
+          "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+          "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "bba1083e73b19acb5bc033aaf443b82039db31b2c3254c81c15219952c210018"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false
+    },
+    {
+      "id": "a166b349-3ca2-43d6-92b0-8ab3393ed21c",
+      "agent": "reviewer",
+      "stage": "review",
+      "reserved_tokens": 22466,
+      "tokens": 5898,
+      "status": "validated",
+      "error": null,
+      "provider": "qwen",
+      "model": "qwen-plus",
+      "route_version": "bf738c1c8975021d29d95559a2a950abb51b409380aa1f7223f3799b9476b878",
+      "prompt_version": "four-role-v1.1-optin-comments-user-revision1",
+      "input_hash": "06a9898b7237778a9866732eaa3bc261f58c7de067af5668f38614f652829e3c",
+      "snapshot_id": "a384328b-a56f-4642-9c50-f268086d40f3",
+      "duration_ms": 29515,
+      "request_id": "chatcmpl-0bdad50e-d746-981b-a6a8-699f9498aeed",
+      "input_tokens": 4689,
+      "output_tokens": 1209,
+      "rate": 1.142858e-06,
+      "billing_source": "user",
+      "connection_id": "[已隐去]",
+      "sources": [
+        {
+          "id": "user-material",
+          "source_type": "user_provided",
+          "hash": "f7af43a1a1906dcf26ff4991963159f33e9d8831d7040dfa1ce00aa9bd3e2cc2"
+        },
+        {
+          "source_id": "kb:c2b8de64-93d7-4f37-92ac-bc19e7d62e4d",
+          "document_id": "1c6586de-1e93-45b8-be9c-11850d3b649e",
+          "version": 1,
+          "url": "",
+          "source_type": "text",
+          "content_hash": "bba1083e73b19acb5bc033aaf443b82039db31b2c3254c81c15219952c210018"
+        },
+        {
+          "id": "account-context",
+          "account_id": "[已隐去]",
+          "hash": "d310441ae8fd3b6ad6ea699a6e9f0c4510254e3e150a19438b096b894141af7c"
+        }
+      ],
+      "audit_legacy": false,
+      "inherited": false
+    }
+  ],
+  "testing_budget": null,
+  "background": {
+    "status": "waiting",
+    "error": null,
+    "attempts": 1,
+    "updated": 1793669936.8779368,
+    "active_seconds": 80.06257674999506,
+    "completed_nodes": 8,
+    "worker_online": true
+  },
+  "review_recovery": {
+    "available": false
+  }
+}

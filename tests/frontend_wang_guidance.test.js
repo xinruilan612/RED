@@ -17,14 +17,14 @@ test('onboarding completion belongs to exact account and accepted draft',()=>{
  const html=context.gettingStartedHTML(a,[complete]);assert.match(html,/^<details/);assert.doesNotMatch(html,/<details[^>]*\bopen\b/);
  complete.accepted_ref='missing';assert.equal(context.onboardingState(a,[],[complete]).creation,false);
 });
-test('right tools preserve exact route selection and omit retired checks',()=>{
+test('right tools preserve exact route selection and omit retired trial checks',()=>{
  const {context,host}=setup();context.renderPageTools('trends');
  assert.match(host.innerHTML,/class="active" data-go-page="trends" aria-current="page"/);
  assert.doesNotMatch(host.innerHTML,/windtunnel|trials|读者理解/);
  for(const route of ['library','connections','models']){context.renderPageTools(route);assert.equal(host.hidden,true);}
  const operations=fs.readFileSync('frontend/operations.js','utf8');
  assert.match(operations,/const active=b.dataset.page===page/);assert.doesNotMatch(operations,/navigationGroup/);
- assert.match(operations,/if\(page==='trials'\|\|page==='windtunnel'\)page='studio'/);
+ assert.match(operations,/if\(page==='trials'\)page='studio'/);
 });
 test('delegated navigation and creation respect busy and dirty checks',()=>{
  const {context,calls,listeners}=setup();
@@ -37,4 +37,8 @@ test('delegated navigation and creation respect busy and dirty checks',()=>{
 test('creation statuses distinguish pending confirmation from running',()=>{
  const {context}=setup();assert.equal(context.creationStatusText({run_status:'WAITING_USER',wait_reason:'final_confirmation'}),'成稿待你确认');
  assert.equal(context.creationStatusText({run_status:'RUNNING'}),'正在创作');
+});
+
+test('legacy material pauses are described as resumable with existing inputs',()=>{
+ const {context}=setup();for(const wait_reason of ['missing_material','hypothesis_permission'])assert.equal(context.creationStatusText({run_status:'WAITING_USER',wait_reason}),'可按现有资料继续生成');
 });

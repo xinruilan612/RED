@@ -1,0 +1,321 @@
+{
+  "cases": [
+    {
+      "case_id": "REAL-D01-E",
+      "receipt_sha256": "92b121cf501bd4be6ffa312aaf3216faac84d43cc886199c604cba10ddb77df8",
+      "schema": "youji-coverage-regression/1",
+      "planner_version": "evidence-creation-v3",
+      "scope": "固定原模型候选的离线回放；只修正计划误计，不重写原稿，不构成修后真实文章质量验证。",
+      "old": {
+        "covered_weight": 10.0,
+        "total_weight": 11.0,
+        "weighted_coverage": 0.9090909090909091,
+        "selected_module_ids": [
+          "m1",
+          "m2"
+        ],
+        "covered_requirement_ids": [
+          "r1",
+          "r2",
+          "r3",
+          "r4"
+        ]
+      },
+      "new": {
+        "covered_weight": 0,
+        "total_weight": 11.0,
+        "weighted_coverage": 0.0,
+        "selected_module_ids": [],
+        "covered_requirement_ids": []
+      },
+      "requirements": [
+        {
+          "id": "r1",
+          "question": "我的显示器带雷雳4输入，能直连2024款M4 Mac mini背面接口吗？",
+          "weight": 3,
+          "origin": "model_suggested_reader_need"
+        },
+        {
+          "id": "r2",
+          "question": "正面两个USB-C口是否支持视频输出或充电？",
+          "weight": 3,
+          "origin": "model_suggested_reader_need"
+        },
+        {
+          "id": "r3",
+          "question": "三个雷雳4接口能否同时接显示器、硬盘和扩展坞？",
+          "weight": 2,
+          "origin": "model_suggested_reader_need"
+        },
+        {
+          "id": "r4",
+          "question": "耳机孔是否支持模拟麦克风输入？",
+          "weight": 2,
+          "origin": "model_suggested_reader_need"
+        },
+        {
+          "id": "r5",
+          "question": "统一内存16GB起，是否影响外接设备识别速度？",
+          "weight": 1,
+          "origin": "model_suggested_reader_need"
+        }
+      ],
+      "rejected_candidates": [
+        {
+          "id": "candidate1",
+          "reason": "unmatched_fact_quote_or_requirement"
+        },
+        {
+          "id": "candidate2",
+          "reason": "unmatched_fact_quote_or_requirement"
+        }
+      ],
+      "new_selected_modules": [],
+      "original_snapshot_unchanged": true
+    },
+    {
+      "case_id": "REAL-D02-E",
+      "receipt_sha256": "e6343f3a2a72b51bb8ed0242b16825b3977891a33b9563efabbc744fbfd56b31",
+      "schema": "youji-coverage-regression/1",
+      "planner_version": "evidence-creation-v3",
+      "scope": "固定原模型候选的离线回放；只修正计划误计，不重写原稿，不构成修后真实文章质量验证。",
+      "old": {
+        "covered_weight": 10.0,
+        "total_weight": 13.0,
+        "weighted_coverage": 0.7692307692307693,
+        "selected_module_ids": [
+          "m2",
+          "m3",
+          "m1"
+        ],
+        "covered_requirement_ids": [
+          "r2",
+          "r3",
+          "r4",
+          "r5",
+          "r6"
+        ]
+      },
+      "new": {
+        "covered_weight": 10.0,
+        "total_weight": 13.0,
+        "weighted_coverage": 0.7692307692307693,
+        "selected_module_ids": [
+          "m2",
+          "m3",
+          "m1"
+        ],
+        "covered_requirement_ids": [
+          "r2",
+          "r3",
+          "r4",
+          "r5",
+          "r6"
+        ]
+      },
+      "requirements": [
+        {
+          "id": "r1",
+          "question": "我的手掌宽度约8.5cm，属于中小手型还是大手型？",
+          "weight": 3,
+          "origin": "model_suggested_reader_need"
+        },
+        {
+          "id": "r2",
+          "question": "MacBook M3 + iPad Air 6 能否共用同一个Logi Bolt接收器？",
+          "weight": 3,
+          "origin": "model_suggested_reader_need"
+        },
+        {
+          "id": "r3",
+          "question": "蓝牙模式下，Android手机是否支持SmartWheel快速滚动？",
+          "weight": 2,
+          "origin": "model_suggested_reader_need"
+        },
+        {
+          "id": "r4",
+          "question": "M650和M650 L的机身长度具体差多少？",
+          "weight": 2,
+          "origin": "model_suggested_reader_need"
+        },
+        {
+          "id": "r5",
+          "question": "Logi Bolt接收器是否兼容USB-C接口？需要转接吗？",
+          "weight": 2,
+          "origin": "model_suggested_reader_need"
+        },
+        {
+          "id": "r6",
+          "question": "当前系统版本（如macOS 15.1）是否在官方支持列表内？",
+          "weight": 1,
+          "origin": "model_suggested_reader_need"
+        }
+      ],
+      "rejected_candidates": [],
+      "new_selected_modules": [
+        {
+          "id": "m2",
+          "title": "连接方式包括低功耗蓝牙和Logi Bolt USB接收器",
+          "covers": [
+            "r2",
+            "r5"
+          ],
+          "length": 49,
+          "source_ids": [
+            "user-material"
+          ],
+          "quote": "连接方式包括低功耗蓝牙和Logi Bolt USB接收器。",
+          "supported": true,
+          "support_scope": "quotation_location_only",
+          "statement_type": "assertion"
+        },
+        {
+          "id": "m3",
+          "title": "官方列出Windows、macOS、Linux、iPadOS、Android等支持平台",
+          "covers": [
+            "r3",
+            "r6"
+          ],
+          "length": 64,
+          "source_ids": [
+            "user-material"
+          ],
+          "quote": "官方列出Windows、macOS、Linux、iPadOS、Android等支持平台。",
+          "supported": true,
+          "support_scope": "quotation_location_only",
+          "statement_type": "assertion"
+        },
+        {
+          "id": "m1",
+          "title": "中小手型考虑M650、大手型考虑M650 L，左利手对应M650 L Left",
+          "covers": [
+            "r4"
+          ],
+          "length": 66,
+          "source_ids": [
+            "user-material"
+          ],
+          "quote": "罗技官方建议中小手型考虑M650、大手型考虑M650 L，左利手对应M650 L Left。",
+          "supported": true,
+          "support_scope": "quotation_location_only",
+          "statement_type": "assertion"
+        }
+      ],
+      "original_snapshot_unchanged": true
+    },
+    {
+      "case_id": "REAL-H01-E",
+      "receipt_sha256": "a00c5abecabccddaec69cd000560f667b82b24cc10dade8a4a6b9548aff26317",
+      "schema": "youji-coverage-regression/1",
+      "planner_version": "evidence-creation-v3",
+      "scope": "固定原模型候选的离线回放；只修正计划误计，不重写原稿，不构成修后真实文章质量验证。",
+      "old": {
+        "covered_weight": 8.0,
+        "total_weight": 17.0,
+        "weighted_coverage": 0.47058823529411764,
+        "selected_module_ids": [
+          "m1",
+          "m2"
+        ],
+        "covered_requirement_ids": [
+          "r1",
+          "r2",
+          "r5"
+        ]
+      },
+      "new": {
+        "covered_weight": 5.0,
+        "total_weight": 17.0,
+        "weighted_coverage": 0.29411764705882354,
+        "selected_module_ids": [
+          "m1"
+        ],
+        "covered_requirement_ids": [
+          "r1",
+          "r5"
+        ]
+      },
+      "requirements": [
+        {
+          "id": "r1",
+          "question": "55×55cm的桌面放在1米宽的床边会不会太挤？",
+          "weight": 3,
+          "origin": "model_suggested_reader_need"
+        },
+        {
+          "id": "r2",
+          "question": "放一台笔记本+充电器+水杯，总重会超10公斤吗？",
+          "weight": 3,
+          "origin": "model_suggested_reader_need"
+        },
+        {
+          "id": "r3",
+          "question": "组装完发现桌腿轻微晃动，是正常现象还是必须处理？",
+          "weight": 3,
+          "origin": "model_suggested_reader_need"
+        },
+        {
+          "id": "r4",
+          "question": "能直接用厨房湿巾擦桌面吗？会不会留水痕？",
+          "weight": 2,
+          "origin": "model_suggested_reader_need"
+        },
+        {
+          "id": "r5",
+          "question": "这个型号和宜家App里显示的LACK边桌是同一个吗？货号对得上吗？",
+          "weight": 2,
+          "origin": "model_suggested_reader_need"
+        },
+        {
+          "id": "r6",
+          "question": "买回来要自己拧螺丝，多久需要复查一次紧固？",
+          "weight": 2,
+          "origin": "model_suggested_reader_need"
+        },
+        {
+          "id": "r7",
+          "question": "桌面是哑光还是亮面？容易刮花吗？",
+          "weight": 1,
+          "origin": "model_suggested_reader_need"
+        },
+        {
+          "id": "r8",
+          "question": "包装盒有多大？电梯能进吗？",
+          "weight": 1,
+          "origin": "model_suggested_reader_need"
+        }
+      ],
+      "rejected_candidates": [
+        {
+          "id": "candidate2",
+          "reason": "unmatched_fact_quote_or_requirement"
+        },
+        {
+          "id": "candidate3",
+          "reason": "unmatched_fact_quote_or_requirement"
+        }
+      ],
+      "new_selected_modules": [
+        {
+          "id": "m1",
+          "title": "尺寸：55×55×45cm（长×宽×高）",
+          "covers": [
+            "r1",
+            "r5"
+          ],
+          "length": 45,
+          "source_ids": [
+            "user-material"
+          ],
+          "quote": "F1：对象为货号104.499.09的白色LACK边桌，桌面长55厘米、宽55厘米，高45厘米。",
+          "supported": true,
+          "support_scope": "quotation_location_only",
+          "statement_type": "assertion"
+        }
+      ],
+      "original_snapshot_unchanged": true
+    }
+  ],
+  "model_calls": 0,
+  "drafts_regenerated": 0
+}

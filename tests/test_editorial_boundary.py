@@ -13,6 +13,24 @@ class EditorialBoundaryTests(unittest.TestCase):
         run.draft({'selected_title':'标题','body':body,'cta':'你怎么看？','tags':[]})
         return run
 
+    def test_verification_narration_is_flagged(self):
+        # 2026-10-19 真人盲评暴露：把资料核验过程写进正文。
+        for body in ('无持妆时长、保湿效果等未提供数据，亦无上市销售信息。',
+                     '该数据来自当前可查资料，未引申稳定性、抗风性或实拍表现。',
+                     '无负重测试、无适配机型列表、无上市状态说明。',
+                     '但未标注承重与耐水性能。',
+                     '仅列已确认规格，不作功效暗示。'):
+            with self.subTest(body=body):
+                self.assertTrue(findings({'body': body}), body)
+
+    def test_normal_spec_copy_is_not_flagged(self):
+        for body in ('桌腿可在65-85cm之间调节，因此可将桌面安装到合适的高度。',
+                     '按说明书核对整机高度，低于该值需注意能否通过。',
+                     '沙发床底净高需高于整机高度 96mm。',
+                     '这款书桌结实稳固，可以使用多年。'):
+            with self.subTest(body=body):
+                self.assertFalse(findings({'body': body}), body)
+
     def test_process_notes_are_not_approved_or_silently_deleted(self):
         body='素材里没有更细的权威顺序依据，我先不下定论。后续找到可标注来源，再补一版拆解。'
         run=self.run_value(body);raw=schema('review');original=copy.deepcopy(raw)

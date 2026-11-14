@@ -1,0 +1,34 @@
+{
+  "backend": {
+    "total": 1338,
+    "passed": 1334,
+    "skipped": 4,
+    "postgresql_isolated_schemas": true,
+    "log_sha256": "a002b2cd5a2bbff5890fc8eb0e18ee2472ce8f005467aa883fb3d5897ae9552e",
+    "log_file": "post-review-backend-20261103.log"
+  },
+  "frontend": {
+    "total": 285,
+    "passed": 285,
+    "failed": 0
+  },
+  "syntax_scripts": 12,
+  "agent_cards_consistent": true,
+  "real_model_freeze": "6f925cf",
+  "current_algorithm_version": "evidence-creation-v3",
+  "core_change_commit": "fa9e850",
+  "paid_study_real_calls": 55,
+  "human_independent_scores": 90,
+  "windows_native_tested": false,
+  "free_browser_flow_verified": true,
+  "human_independent_reviewers": 3,
+  "quality_improvement_demonstrated": false,
+  "post_review_document_checks": {
+    "passed": 33,
+    "log_file": "post-review-docs-check-20261103.log"
+  },
+  "post_review_report_checks": {
+    "passed": 3,
+    "log_file": "post-review-report-check-20261103.log"
+  }
+}

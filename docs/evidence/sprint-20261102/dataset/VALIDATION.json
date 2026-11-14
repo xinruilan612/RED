@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "scope": "fixture shape, counts, hashes, Unicode spans and empty human fields only",
+  "task_count": 20,
+  "source_count": 20,
+  "existing_fixture_sources": 3,
+  "new_fictional_sources": 17,
+  "checked_spans": 202,
+  "structure_articles": 30,
+  "annotation_segments": 156,
+  "blind_article_placeholders": 100,
+  "csv_templates": 18,
+  "actual_human_ratings": 0,
+  "actual_creator_feedback": 0,
+  "paid_model_calls": 0,
+  "verified_on": "2026-11-02"
+}

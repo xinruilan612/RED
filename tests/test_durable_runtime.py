@@ -1,5 +1,6 @@
 """Durable execution acceptance; test adapters never call paid models."""
 import json
+from dataclasses import asdict
 import os
 import tempfile
 import subprocess
@@ -8,6 +9,7 @@ import time
 import unittest
 from pathlib import Path
 from uuid import uuid4
+from unittest.mock import patch
 from backend.store import Store
 from backend.service import Service
 from backend.provider import Config
@@ -27,7 +29,7 @@ class DurableTests(unittest.TestCase):
         self.model=fixtures.FixtureModel();self.config=Config('test-only-never-sent')
         self.service=Service(self.store,self.config,self.model)
         self.owner='fictional-owner'
-        data=dict(topic='公共资料测试',audience='虚构读者',tone='朴实',material='这是一份公开资料的测试摘要。',allow_hypothesis=True,mode='live')
+        data=dict(topic='公共资料测试',audience='虚构读者',tone='朴实',material='这是一份公开资料的测试摘要。',allow_hypothesis=True,mode='live',web_research={'enabled':False,'queries':[]})
         self.run_id=self.service.create(self.owner,data)['run_id']
 
     def tearDown(self):self.tmp.cleanup()
@@ -51,9 +53,41 @@ class DurableTests(unittest.TestCase):
                     {'excerpt':'完整正文','source_id':'user-material','quote':'公开资料'}]
             return value,tokens
         self.model.complete=invalid
-        self.start();Worker(self.service).once()
+        # Simulate an already persisted blocked review from before automatic
+        # handoff; manual recovery remains necessary for these old runs.
+        with patch('backend.review_recovery.conservative_review',side_effect=DomainError('MODEL_OUTPUT_INVALID','旧版本审核阻断')):
+            self.start();Worker(self.service).once()
+        self.persist_legacy_invalid_review()
         self.assertEqual(self.job()['status'],'blocked')
         self.assertEqual(self.run_value().current_stage,'reviewer')
+
+    def persist_legacy_invalid_review(self):
+        """Construct an old worker's settled-but-uncommitted review fixture.
+
+        Current citation repair may validly hand off before conservative_review
+        is reached. Reconstruct the historical domain/job state explicitly while
+        keeping the ORIGINAL provider response and settled usage untouched.
+        """
+        run=self.run_value()
+        with self.store.connect() as db:
+            row=db.execute(f"SELECT id,response_json,actual FROM live_calls WHERE run_id=? AND stage='review' ORDER BY {self.store.order_column} DESC LIMIT 1",(self.run_id,)).fetchone()
+            self.assertIsNotNone(row);self.assertIsNotNone(row[1]);self.assertIsNotNone(row[2])
+            original_response,actual=row[1],row[2]
+            draft_ref=run.drafts[-1]['ref']
+            # A historical invalid response has no accepted domain report/node.
+            # Other drafts, prior reviews and all paid-call records stay intact.
+            run.review=None
+            run.run_status='RUNNING';run.wait_reason=None;run.current_stage='reviewer'
+            run.reviews=[r for r in run.reviews if r.get('draft_ref')!=draft_ref]
+            run.node_runs=[n for n in run.node_runs if not (
+                n.get('stage')=='review' and (n.get('output') or {}).get('draft_ref')==draft_ref)]
+            db.execute('UPDATE runs SET payload=? WHERE id=?',(json.dumps(asdict(run),ensure_ascii=False),self.run_id))
+            db.execute("UPDATE runtime_jobs SET status='blocked',error='historical invalid review fixture',token=NULL,lease_until=NULL WHERE run_id=?",(self.run_id,))
+            db.execute("UPDATE live_calls SET state='invalid' WHERE id=?",(row[0],))
+            db.execute("UPDATE model_audit SET outcome='invalid' WHERE call_id=?",(row[0],))
+            saved=db.execute('SELECT response_json,actual FROM live_calls WHERE id=?',(row[0],)).fetchone()
+            self.assertEqual(tuple(saved),(original_response,actual))
+        self.assertIsNone(self.run_value().review)
 
     def test_creator_notes_stop_for_human_without_rewriting_or_extra_model_calls(self):
         base=self.model.complete
@@ -66,7 +100,7 @@ class DurableTests(unittest.TestCase):
         self.start();Worker(self.service).once()
         run=self.run_value()
         self.assertEqual(run.run_status,'WAITING_USER')
-        self.assertEqual(run.wait_reason,'missing_material')
+        self.assertEqual(run.wait_reason,'final_confirmation')
         self.assertEqual(run.review['decision'],'needs_human')
         self.assertEqual(len(self.model.calls),8)
         self.assertIn('素材里没有',run.drafts[-1]['content']['body'])
@@ -85,7 +119,7 @@ class DurableTests(unittest.TestCase):
             text='公共资料测试：公开资料包含三项说明。',
             classification=dict(domains=['general'],channel='any',format='any',material_type='fact')))
         self.run_id=self.service.create(self.owner,dict(topic='公共资料测试',audience='读者',tone='清楚',
-            material='公开资料包含三项说明。',allow_hypothesis=True,mode='live',
+            material='公开资料包含三项说明。',allow_hypothesis=True,mode='live',web_research={'enabled':False,'queries':[]},
             creation=dict(domains=['general'],channel='xiaohongshu',format='note'),
             knowledge=dict(enabled=True,automatic_references=False),
             operations=dict(account_id=account,platform='xiaohongshu',account='测试账号')))['run_id']
@@ -120,7 +154,8 @@ class DurableTests(unittest.TestCase):
             return value,tokens
         self.model.complete=typo
         # Simulate the older validator rejecting the already-paid response.
-        with patch('backend.citation_ids.repair',side_effect=lambda stage,value,sources:(value,[])):
+        with patch('backend.citation_ids.repair',side_effect=lambda stage,value,sources,**kwargs:(value,[])), \
+             patch('backend.review_recovery.conservative_review',side_effect=DomainError('MODEL_OUTPUT_INVALID','旧版本审核阻断')):
             self.start();Worker(self.service).once()
         self.assertEqual(self.job()['status'],'blocked')
         self.assertEqual(self.model.calls.count('audience'),1)
@@ -170,7 +205,7 @@ class DurableTests(unittest.TestCase):
         self.assertEqual(json.loads(raw[0][0])['candidates'],['标题'+str(i) for i in range(6)])
         self.assertEqual(json.loads(raw[0][0])['reasons'],['理由'+str(i) for i in range(6)])
 
-    def test_unmatched_analysis_quote_stays_blocked_without_extra_call(self):
+    def test_unmatched_analysis_quote_is_dropped_disclosed_and_not_retried(self):
         base=self.model.complete
         def invalid(messages):
             value,tokens=base(messages)
@@ -179,12 +214,14 @@ class DurableTests(unittest.TestCase):
             return value,tokens
         self.model.complete=invalid
         self.start();Worker(self.service).once()
-        self.assertEqual(self.job()['status'],'blocked')
-        before=len(self.model.calls)
-        self.start();Worker(self.service).once()
-        self.assertEqual(self.job()['status'],'blocked')
-        self.assertEqual(len(self.model.calls),before)
-        self.assertFalse(self.run_value().drafts)
+        run=self.run_value()
+        self.assertEqual(self.job()['status'],'waiting')
+        self.assertEqual(run.wait_reason,'final_confirmation')
+        self.assertEqual(run.branches['audience']['data']['observations'],[])
+        self.assertIn('剔除',run.branches['audience']['data']['basis'])
+        self.assertEqual(self.model.calls.count('audience'),1)
+        self.assertEqual(len(self.model.calls),8)
+        self.assertTrue(run.drafts)
 
     def test_review_outer_whitespace_recovers_without_new_model_call(self):
         from unittest.mock import patch
@@ -195,13 +232,15 @@ class DurableTests(unittest.TestCase):
                 value['claim_map']=[{'source_id':'user-material','quote':' 这是一份公开资料的测试摘要。 ','excerpt':'完整正文'}]
             return value,tokens
         self.model.complete=padded
-        with patch('backend.citation_ids.repair',side_effect=lambda stage,value,sources:(value,[])):
+        with patch('backend.citation_ids.repair',side_effect=lambda stage,value,sources,**kwargs:(value,[])), \
+             patch('backend.review_recovery.conservative_review',side_effect=DomainError('MODEL_OUTPUT_INVALID','旧版本审核阻断')):
             self.start();Worker(self.service).once()
+        self.persist_legacy_invalid_review()
         self.assertEqual(self.job()['status'],'blocked')
-        self.start();Worker(self.service).once()
+        self.action('repair_review',{})
         self.assertEqual(self.run_value().wait_reason,'final_confirmation')
         self.assertEqual(len(self.model.calls),8)
-        self.assertEqual(self.run_value().node_runs[-1]['citation_repairs'][0]['reason'],'quote_outer_whitespace')
+        self.assertEqual(self.run_value().review['decision'],'needs_human')
 
     def test_review_attempt_limit_keeps_draft_for_human_without_error_or_approval(self):
         self.start();Worker(self.service).once()
@@ -211,7 +250,7 @@ class DurableTests(unittest.TestCase):
             self.start();Worker(self.service).once()
         run=self.run_value()
         self.assertEqual(run.run_status,'WAITING_USER')
-        self.assertEqual(run.wait_reason,'revision_limit')
+        self.assertEqual(run.wait_reason,'final_confirmation')
         self.assertIsNone(run.review)
         self.assertIsNone(run.accepted_ref)
         self.assertEqual(len(self.model.calls),10)
@@ -223,19 +262,19 @@ class DurableTests(unittest.TestCase):
         self.invalid_citation_review()
         before=self.service.view(self.run_value())
         self.assertIn('repair_review',before['allowed_actions'])
-        self.assertEqual(len(before['review_recovery']['invalid_quotes']),1)
+        self.assertEqual(len(before['review_recovery']['invalid_quotes']),2)
         with self.assertRaises(DomainError):self.step()
         self.assertEqual(len(self.model.calls),8)
         command=dict(action='repair_review',payload={},version=self.run_value().status_version,key=str(uuid4()))
         repaired=self.service.action(self.owner,self.run_id,command)
         replay=self.service.action(self.owner,self.run_id,command)
         self.assertEqual(replay['status_version'],repaired['status_version'])
-        self.assertEqual(repaired['review']['decision'],'revision_required')
+        self.assertEqual(repaired['review']['decision'],'needs_human')
         self.assertIn('edit',repaired['allowed_actions']);self.assertNotIn('accept',repaired['allowed_actions'])
         self.assertEqual(repaired['usage'],before['usage'])
         self.assertEqual(repaired['calls'],before['calls'])
-        self.assertEqual(len(repaired['review']['claim_map']),1)
-        self.assertEqual(repaired['background']['status'],'paused');self.assertIsNone(repaired['background']['error'])
+        self.assertEqual(len(repaired['review']['claim_map']),0)
+        self.assertEqual(repaired['background']['status'],'waiting');self.assertIsNone(repaired['background']['error'])
         with self.assertRaises(DomainError):self.action('accept',dict(draft_ref=repaired['drafts'][-1]['ref'],review_ref=repaired['review']['ref']))
         changed=dict(repaired['drafts'][-1]['content']);changed['body']='我按照课程建立资料文件夹。'
         edited=self.action('edit',changed)
@@ -259,14 +298,37 @@ class DurableTests(unittest.TestCase):
             call_id,raw=db.execute("SELECT id,response_json FROM live_calls WHERE run_id=? AND stage='review'",(self.run_id,)).fetchone()
             value=json.loads(raw);value['checks']=[]
             db.execute('UPDATE live_calls SET response_json=? WHERE id=?',(json.dumps(value),call_id))
-        self.assertFalse(self.service.view(self.run_value())['review_recovery']['available'])
-        with self.assertRaises(DomainError):self.service.action(self.owner,self.run_id,command)
+        self.assertTrue(self.service.view(self.run_value())['review_recovery']['available'])
+        result=self.service.action(self.owner,self.run_id,command)
+        self.assertEqual(result['review']['decision'],'needs_human')
+        self.assertNotIn('accept',result['allowed_actions'])
         self.assertEqual(len(self.model.calls),8)
+
+    def test_existing_review_recovery_handles_nonobject_missing_checks_and_unlocated_excerpt(self):
+        from backend.review_recovery import candidate
+        self.invalid_citation_review()
+        with self.store.connect() as db:
+            call_id,raw,actual=db.execute("SELECT id,response_json,actual FROM live_calls WHERE run_id=? AND stage='review'",(self.run_id,)).fetchone()
+        original=json.loads(raw)
+        bad_excerpt=dict(original,claim_map=[{'excerpt':'完 整正文','source_id':'user-material','quote':'公开资料'}])
+        for value in (None,[],{'decision':'approved'},dict(original,checks=[]),bad_excerpt):
+            with self.subTest(value=value):
+                encoded=json.dumps(value,ensure_ascii=False)
+                with self.store.connect() as db:
+                    db.execute('UPDATE live_calls SET response_json=? WHERE id=?',(encoded,call_id))
+                    report=candidate(db,self.store,self.run_value())[1]
+                    saved=db.execute('SELECT response_json,actual FROM live_calls WHERE id=?',(call_id,)).fetchone()
+                self.assertEqual(report['decision'],'needs_human')
+                self.assertEqual(report['claim_map'],[])
+                self.assertTrue(all(c['result']=='unknown' for c in report['checks']))
+                self.assertEqual(tuple(saved),(encoded,actual))
+                self.assertEqual(len(self.model.calls),8)
 
     def historical_extra_review(self):
         self.invalid_citation_review()
         self.action('repair_review',{})
         historical=self.run_value().review['issues'][0]['issue_id']
+        self.action('edit',dict(self.run_value().drafts[-1]['content']))
         base=self.model.complete
         def reviews(messages):
             value,tokens=base(messages)
@@ -279,8 +341,10 @@ class DurableTests(unittest.TestCase):
                                                      {'issue_id':historical,'result':'unresolved'}]
             return value,tokens
         self.model.complete=reviews
-        for _ in range(4):self.step();Worker(self.service).once()
-        self.assertEqual(self.run_value().iteration,2)
+        with patch('backend.review_recovery.conservative_review',side_effect=DomainError('MODEL_OUTPUT_INVALID','旧版本审核阻断')):
+            for _ in range(4):self.step();Worker(self.service).once()
+        self.persist_legacy_invalid_review()
+        self.assertEqual(self.run_value().iteration,1)
         self.assertEqual(self.job()['status'],'blocked')
         return historical
 
@@ -291,13 +355,13 @@ class DurableTests(unittest.TestCase):
         self.assertEqual(before['review_recovery']['excluded_previous_results'],[{'issue_id':historical,'result':'unresolved'}])
         repaired=self.action('repair_review',{})
         self.assertEqual(repaired['review']['previous_issue_results'],[{'issue_id':'current','result':'unresolved'}])
-        self.assertEqual(repaired['review']['decision'],'revision_required')
-        self.assertEqual(repaired['wait_reason'],'revision_limit')
+        self.assertEqual(repaired['review']['decision'],'needs_human')
+        self.assertEqual(repaired['wait_reason'],'final_confirmation')
         self.assertNotIn('accept',repaired['allowed_actions'])
         self.assertEqual(repaired['usage'],before['usage']);self.assertEqual(self.model.calls,calls)
         self.assertEqual(repaired['node_runs'][-1]['input']['excluded_previous_results'][0]['issue_id'],historical)
 
-    def test_historical_recovery_rejects_missing_duplicate_unknown_and_approval(self):
+    def test_historical_recovery_downgrades_missing_duplicate_unknown_and_approval(self):
         historical=self.historical_extra_review()
         with self.store.connect() as db:
             call_id,raw=db.execute(f"SELECT id,response_json FROM live_calls WHERE run_id=? AND stage='review' ORDER BY {self.store.order_column} DESC LIMIT 1",(self.run_id,)).fetchone()
@@ -307,10 +371,13 @@ class DurableTests(unittest.TestCase):
         for results in variants:
             value=dict(original,previous_issue_results=results)
             with self.store.connect() as db:db.execute('UPDATE live_calls SET response_json=? WHERE id=?',(json.dumps(value),call_id))
-            self.assertFalse(self.service.view(self.run_value())['review_recovery']['available'])
+            from backend.review_recovery import candidate
+            with self.store.connect() as db:report=candidate(db,self.store,self.run_value())[1]
+            self.assertEqual(report['decision'],'needs_human')
+            self.assertEqual(report['previous_issue_results'],[{'issue_id':'current','result':'unresolved'}])
         value=dict(original,decision='approved',next_action='await_user_confirmation')
         with self.store.connect() as db:db.execute('UPDATE live_calls SET response_json=? WHERE id=?',(json.dumps(value),call_id))
-        self.assertFalse(self.service.view(self.run_value())['review_recovery']['available'])
+        self.assertTrue(self.service.view(self.run_value())['review_recovery']['available'])
 
     def test_step_pauses_after_each_business_stage_and_survives_restart(self):
         for expected_calls in (2,3,4,5,6,7,8):
@@ -419,7 +486,7 @@ class DurableTests(unittest.TestCase):
         from test_original_creation_http import RoutingVectors
         self.service.knowledge.embedding_provider=RoutingVectors()
         self.service.knowledge.save(self.owner,dict(account_id=account,title=fixture['title'],text=fixture['text'],classification=dict(domains=['apparel'],channel='any',format='any',material_type='fact')),source_type='editorial_summary',source_url=fixture['url'],metadata=fixture)
-        data=dict(creation=dict(domains=['apparel'],channel='xiaohongshu',format='note'),topic='胶囊衣橱',audience='虚构读者',tone='清楚',material='',mode='live',allow_hypothesis=True,
+        data=dict(creation=dict(domains=['apparel'],channel='xiaohongshu',format='note'),topic='胶囊衣橱',audience='虚构读者',tone='清楚',material='',mode='live',allow_hypothesis=True,web_research={'enabled':False,'queries':[]},
                   operations=dict(account_id=account,platform='xiaohongshu',account='虚构账号'),knowledge={'enabled':True})
         self.run_id=self.service.create(self.owner,data)['run_id']
         self.start();Worker(self.service).once()
@@ -495,6 +562,12 @@ class DurableTests(unittest.TestCase):
         self.action('cancel',{})
         data=dict(topic='模拟测试',audience='虚构读者',tone='清楚',material='',scenario='missing',allow_hypothesis=True)
         self.run_id=self.service.create(self.owner,data)['run_id']
+        # This case exercises the retained supplement command for legacy tasks.
+        from dataclasses import asdict
+        with self.store.connect() as db:
+            legacy=self.store._get(db,self.run_id,self.owner)
+            legacy.context.pop('material_policy',None)
+            db.execute('UPDATE runs SET payload=? WHERE id=?',(json.dumps(asdict(legacy)),self.run_id))
         self.start();Worker(self.service).once()
         self.assertEqual(self.run_value().wait_reason,'missing_material',self.job())
         old=self.run_value().snapshot_id

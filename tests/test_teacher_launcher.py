@@ -23,10 +23,24 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class PortableLauncherTests(unittest.TestCase):
+    def test_user_facing_copy_uses_standard_brand_and_preserves_limits(self):
+        readme = (ROOT / 'packaging/teacher/README.txt').read_text(encoding='utf-8')
+        self.assertIn('有迹 · RED 普通版（Windows x64）', readme)
+        for relative in ('packaging/teacher/README.txt', 'packaging/teacher/THIRD_PARTY.txt',
+                         'README.md', 'scripts/teacher_launcher.py'):
+            text = (ROOT / relative).read_text(encoding='utf-8')
+            for term in ('教师', '老师', '评审版', '评审包'):
+                self.assertNotIn(term, text, relative)
+        for boundary in ('此模式不是模型生成效果证据', '自己的API Key', 'macOS不能',
+                         '停止程序不等于取消已保存任务', '不要把使用过的整个目录直接发给别人'):
+            self.assertIn(boundary, readme)
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(prefix='teacher test ')
         self.addCleanup(self.temp.cleanup)
-        self.bundle = Path(self.temp.name) / '有迹 教师版'
+        # Resolve once: macOS temp paths live under /var -> /private/var, while
+        # launcher.layout() and child_environment() return resolved paths.
+        self.bundle = Path(self.temp.name).resolve() / '有迹 教师版'
         self.app = self.bundle / 'app'
         (self.app / 'backend').mkdir(parents=True)
         (self.app / 'backend' / 'api.py').touch()
@@ -65,6 +79,11 @@ class PortableLauncherTests(unittest.TestCase):
         self.assertEqual(env['MODEL_ROUTES_JSON'], '{}')
         self.assertEqual(env['WINDTUNNEL_ALLOW_LIVE'], 'false')
         self.assertEqual(env['YOUJI_EMBEDDING_MODEL_PATH'], 'off')
+        # Connector token *path* defaults beside the bundle and stays operator-overridable.
+        self.assertEqual(env['YOUJI_XHS_TOKEN_FILE'], str(self.bundle / 'runtime' / 'xhs-local' / 'control-token'))
+        overridden = launcher.child_environment(self.bundle / 'data', 8892,
+                                                {**source, 'YOUJI_XHS_TOKEN_FILE': '/custom/control-token'})
+        self.assertEqual(overridden['YOUJI_XHS_TOKEN_FILE'], '/custom/control-token')
         self.assertEqual(env['SYSTEMROOT'], 'C:/Windows')
         self.assertFalse(any(value.startswith('old-') for value in env.values()))
         self.assertTrue({'PATH', 'PYTHONPATH', 'PYTHONHOME', 'OPENAI_API_KEY', 'XHS_COOKIE',
@@ -191,7 +210,7 @@ class PortableWindowsProcessTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(prefix='teacher process ')
         self.addCleanup(self.temp.cleanup)
-        self.folder = Path(self.temp.name)
+        self.folder = Path(self.temp.name).resolve()
 
     def wait_file(self, path, process=None):
         deadline = time.monotonic() + 10

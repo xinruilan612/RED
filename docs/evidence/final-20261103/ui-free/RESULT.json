@@ -1,0 +1,24 @@
+{
+  "scope": "真实浏览器操作的免费模拟流程；不是实际模型质量、真人商家采用或Windows测试。操作者为assistant QA。",
+  "run_status": "SUCCEEDED",
+  "draft_versions": 2,
+  "accepted_ref": "1c6b2fa1-c2b3-4300-b452-3d6a3c65e090@1",
+  "accepted_content_hash": "96d8c9a561fb4289cf282af038eaf020c84b8e8e12cd61803764a660463fd3c3",
+  "model_calls": 0,
+  "model_connections": 0,
+  "new_model_cost_cny": 0,
+  "review_ref": "bc9d7711-bce9-4ee5-89cc-3e9d4aa2b06f@1",
+  "export_sha256": "193e67d89db142d7bb02e375e9f68b03b1bd05493cf208246949ec3abced3d29",
+  "checks": [
+    "edit_created_version_2",
+    "old_review_not_reused",
+    "review_current_version",
+    "exact_version_acceptance",
+    "word_download_from_browser",
+    "export_matches_version_2",
+    "reload_kept_confirmed_version_2",
+    "export_docx_rendered_one_page_and_visually_checked"
+  ],
+  "title_bug_observed": true,
+  "title_bug_followup": "new demo title length fix covered separately by tests/test_demo_title_limits.py"
+}

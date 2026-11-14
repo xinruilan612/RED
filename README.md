@@ -1,4 +1,10 @@
+> 2026-11-05 源码交付：此分支 `release/youji-20261105` 对应当前本地可核验源码快照；`main` 保留历史版本。业务代码、前端、测试、配置模板、部署与使用文档均在仓库根目录。历史评测、工程回归与实际用户效果分别记录；新分支不表示已完成Windows原生验收或取得整体质量提升。
+>
+> 交付范围、复验结果与逐文件SHA-256见 [发布记录](docs/RELEASE_20261105.md) 与 `SOURCE_MANIFEST_20261105.json`。模型密钥、个人数据库、登录状态、虚拟环境和运行缓存不在公开源码中。
+
 # 有迹 · RED 小红书多 Agent 创作工作台
+
+**2026-11-13 本地增量：**资料库新增“上传一张图，整理产品资料”，支持免费本机包装文字提取，以及稍后自行配置的视觉模型连接。先预览校对，再确认加入资料库或带入创作。安装附加依赖 `python -m pip install -r requirements-product-image.txt`；视觉模型尚未真实接通验证，不将本机 OCR 称为按外观精确识别商品。当前源码校验使用 `SOURCE_MANIFEST_20261113.json`，原 11 月 5 日发布清单和原始 ZIP 保留。
 
 当前改版主线：**输入主题或产品资料 → 可选联网搜索 → RAG 资料库 → 四 Agent 创作 → 对话改稿 → 发布或导出 → 评论反馈改进下一篇**。
 
@@ -6,7 +12,7 @@
 
 ## 开发入口
 
-教师Windows便携包使用根目录“一键启动.cmd”；无需安装Python/PostgreSQL，首次创建独立SQLite，真实模型在网页内另配。构建入口 `scripts/package_teacher.py`，说明源文件 [评审包使用说明](packaging/teacher/README.txt)。它与下文开发用PostgreSQL启动器不同；包内不带作者密钥、已有账号库或平台登录状态。macOS不运行Windows二进制，原生Mac仍未验收。
+Windows普通版便携包使用根目录“一键启动.cmd”；无需安装Python/PostgreSQL，首次创建独立SQLite，真实模型在网页内另配。构建入口 `scripts/package_teacher.py`，说明源文件 [运行包使用说明](packaging/teacher/README.txt)。它与下文开发用PostgreSQL启动器不同；包内不带作者密钥、已有账号库或平台登录状态。macOS不运行Windows二进制，原生Mac仍未验收。
 
 - [协作与工程约束](AGENTS.md)、[参赛要求](docs/CONTEST_REQUIREMENTS.md)
 - [架构与设计](docs/design/README.md)、[统一执行协议](docs/design/AGENT_PROTOCOL.md)

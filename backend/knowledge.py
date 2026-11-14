@@ -251,7 +251,18 @@ class Knowledge:
             else:
                 count=db.execute("SELECT COUNT(*) FROM knowledge_documents WHERE owner=? AND account_id=? AND status='active'",(owner,account)).fetchone()[0]
                 require(count<100,'QUOTA_EXCEEDED','每账号首版最多 100 份有效资料')
-                duplicate=db.execute("SELECT d.id FROM knowledge_documents d JOIN knowledge_versions v ON v.document_id=d.id AND v.version=d.version WHERE d.owner=? AND d.account_id=? AND d.status='active' AND v.fingerprint=?",(owner,account,fingerprint)).fetchone()
+                matches=db.execute("SELECT d.id,d.source_type,v.metadata FROM knowledge_documents d JOIN knowledge_versions v ON v.document_id=d.id AND v.version=d.version WHERE d.owner=? AND d.account_id=? AND d.status='active' AND v.fingerprint=?",(owner,account,fingerprint)).fetchall()
+                requested_case=(metadata or {}).get('research_case',{})
+                duplicate=None
+                for match in matches:
+                    existing_case=json.loads(match[2]).get('research_case',{})
+                    # One public text can serve separate, explicitly confirmed
+                    # purposes. Keep ordinary upload deduplication unchanged.
+                    if source_type=='research_case' and match[1]=='research_case' and requested_case and existing_case:
+                        if any(requested_case.get(k)!=existing_case.get(k) for k in ('content_kind','evidence_role')):
+                            continue
+                    duplicate=match[0]
+                    break
                 require(not duplicate,'DUPLICATE','当前账号已有相同正文，请更新原资料或直接使用')
             version=row[0]+1 if row else 1
             if row:
@@ -484,8 +495,8 @@ class Knowledge:
                 tags=set(label.get('domains',[]))
                 if not (tags & domains or (group=='methods' and (not tags or 'general' in tags))):continue
                 if group!='facts':
-                    if label.get('channel')!=channel and not (group=='methods' and label.get('channel')=='any'):continue
-                    if label.get('format')!=form and not (group=='methods' and label.get('format')=='any'):continue
+                    if label.get('channel') not in (channel,'any'):continue
+                    if label.get('format') not in (form,'any'):continue
                 if group=='facts' and document_ids is not None and row[1] not in document_ids:continue
                 if group=='facts':
                     terms=set(tokens(row[7]+' '+row[5]));matched=query_terms & terms

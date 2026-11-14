@@ -1,7 +1,9 @@
 """QR validation and reconnect ownership; no external connections."""
 import base64
+import os
 import struct
 import unittest
+from unittest import mock
 import zlib
 from backend.contracts import DomainError
 from backend.xhs_local import LocalXHS
@@ -32,7 +34,52 @@ class QRTests(unittest.TestCase):
         client=LocalXHS();client.request=lambda *a:{'is_logged_in':True,'img':'SECRET','cookie':'SECRET'}
         self.assertEqual(client.reconnect(),{'is_logged_in':True,'img':None,'timeout':None})
 
+class ConnectorTokenPathTests(unittest.TestCase):
+    def test_env_overrides_the_working_directory_default(self):
+        with mock.patch.dict(os.environ,{'YOUJI_XHS_TOKEN_FILE':'/tmp/example/control-token'}):
+            self.assertEqual(str(LocalXHS().token_file),'/tmp/example/control-token')
+
+    def test_explicit_argument_wins_over_env(self):
+        with mock.patch.dict(os.environ,{'YOUJI_XHS_TOKEN_FILE':'/tmp/example/control-token'}):
+            self.assertEqual(str(LocalXHS(token_file='/other/control-token').token_file),'/other/control-token')
+
+    def test_missing_token_file_is_actionable_not_a_crash(self):
+        client=LocalXHS(token_file='/definitely/missing/control-token')
+        with self.assertRaises(DomainError) as caught:client.request('/api/v1/login/status')
+        self.assertIn('YOUJI_XHS_TOKEN_FILE',str(caught.exception))
+
+class BridgePortTests(unittest.TestCase):
+    def test_default_env_override_and_invalid_values(self):
+        from backend import xhs_sync
+        self.assertEqual(xhs_sync._bridge_port(18060),18060)
+        self.assertEqual(xhs_sync._bridge_port(None),18061)
+        with mock.patch.dict(os.environ,{'XHS_BRIDGE_PORT':'18060'}):
+            self.assertEqual(xhs_sync._bridge_port(None),18060)
+        with mock.patch.dict(os.environ,{'XHS_BRIDGE_PORT':''}):
+            self.assertEqual(xhs_sync._bridge_port(None),18061)
+        for bad in ('abc','80','70000','18061.5'):
+            with mock.patch.dict(os.environ,{'XHS_BRIDGE_PORT':bad}):
+                with self.assertRaises(DomainError):xhs_sync._bridge_port(None)
+
 class ReconnectMixin:
+    def test_unbound_account_reaches_login_before_first_binding(self):
+        """A fresh install must be able to scan a QR: bind needs login, login needed bind."""
+        with self.sync.store.connect() as db:
+            db.execute('DELETE FROM xhs_sync_links WHERE owner=? AND account_id=?',(self.owner,self.account))
+        self.fake.reconnect=lambda:{'img':png(),'timeout':'4m0s','is_logged_in':False}
+        self.assertFalse(self.sync.public(self.owner,self.account)['bound'])
+        result=self.sync.reconnect(self.owner,self.account)
+        self.assertEqual(result['img'],png())
+        # Requesting a QR must not silently create a binding; identity is checked at bind time.
+        self.assertFalse(self.sync.public(self.owner,self.account)['bound'])
+        with self.assertRaises(DomainError):self.sync.reconnect('other',self.account)
+
+    def test_bind_still_requires_a_verified_identity(self):
+        with self.sync.store.connect() as db:
+            db.execute('DELETE FROM xhs_sync_links WHERE owner=? AND account_id=?',(self.owner,self.account))
+        self.fake.identity=lambda:{'id':'','nickname':''}
+        with self.assertRaises(DomainError):self.sync.bind(self.owner,self.account)
+
     def test_reconnect_pauses_fences_and_preserves_binding(self):
         job=self.sync._claim();self.fake.reconnect=lambda:{'img':png(),'timeout':'4m0s','is_logged_in':False}
         result=self.sync.reconnect(self.owner,self.account);self.assertEqual(result['img'],png())

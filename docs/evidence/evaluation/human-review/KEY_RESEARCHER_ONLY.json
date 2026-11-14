@@ -1,0 +1,35 @@
+{
+  "note": "研究者专用，不要发给评审人",
+  "sides": [
+    {
+      "item_id": "G01",
+      "left_arm": "C",
+      "right_arm": "A"
+    },
+    {
+      "item_id": "G02",
+      "left_arm": "A",
+      "right_arm": "C"
+    },
+    {
+      "item_id": "G03",
+      "left_arm": "C",
+      "right_arm": "A"
+    },
+    {
+      "item_id": "G04",
+      "left_arm": "A",
+      "right_arm": "C"
+    },
+    {
+      "item_id": "G05",
+      "left_arm": "C",
+      "right_arm": "A"
+    },
+    {
+      "item_id": "G06",
+      "left_arm": "A",
+      "right_arm": "C"
+    }
+  ]
+}

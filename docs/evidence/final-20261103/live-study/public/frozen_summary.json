@@ -1,0 +1,248 @@
+{
+  "cases": [
+    {
+      "id": "REAL-D01-A",
+      "task_id": "REAL-D01",
+      "arm": "A",
+      "run_id": "ad8320e0-61e5-466b-97c1-1db95f23b1c3",
+      "options": {
+        "enabled": false
+      },
+      "input_sha256": "c817e6ea4b96b31eeffe27e5deddae995abb3fc356db01c132bc36916b7cab93",
+      "started": 1793669411.9610019,
+      "draft_available": true,
+      "completed": true,
+      "run_status": "WAITING_USER",
+      "background": "waiting",
+      "elapsed_seconds": 94.282,
+      "cumulative_upper_micro": 5064008,
+      "questions_status": null,
+      "review_decision": "needs_human"
+    },
+    {
+      "id": "REAL-D01-E",
+      "task_id": "REAL-D01",
+      "arm": "E",
+      "run_id": "41e42da3-c297-4e48-9409-c93130c052ae",
+      "options": {
+        "enabled": true,
+        "coverage": true,
+        "structure": true,
+        "ask_questions": true
+      },
+      "input_sha256": "c817e6ea4b96b31eeffe27e5deddae995abb3fc356db01c132bc36916b7cab93",
+      "started": 1793669506.26723,
+      "draft_available": true,
+      "completed": true,
+      "run_status": "WAITING_USER",
+      "background": "waiting",
+      "elapsed_seconds": 112.131,
+      "cumulative_upper_micro": 5404992,
+      "questions_status": null,
+      "review_decision": "needs_human"
+    },
+    {
+      "id": "REAL-D02-A",
+      "task_id": "REAL-D02",
+      "arm": "A",
+      "run_id": "178aff7d-aefb-4d3b-8f6a-26762b2abc9e",
+      "options": {
+        "enabled": false
+      },
+      "input_sha256": "7644c2aec5d97f43fbf1443c09f848e179379218526ed850ff298c854bddc918",
+      "started": 1793669618.436952,
+      "draft_available": true,
+      "completed": true,
+      "run_status": "WAITING_USER",
+      "background": "waiting",
+      "elapsed_seconds": 102.992,
+      "cumulative_upper_micro": 5698520,
+      "questions_status": null,
+      "review_decision": "approved"
+    },
+    {
+      "id": "REAL-D02-E",
+      "task_id": "REAL-D02",
+      "arm": "E",
+      "run_id": "4efdb631-e028-443a-bd87-f11ab178d255",
+      "options": {
+        "enabled": true,
+        "coverage": true,
+        "structure": true,
+        "ask_questions": true
+      },
+      "input_sha256": "7644c2aec5d97f43fbf1443c09f848e179379218526ed850ff298c854bddc918",
+      "started": 1793669721.464192,
+      "asked_questions": [
+        {
+          "id": "g2",
+          "question": "M650是否标明DPI档位或可调范围？",
+          "field": "product_version",
+          "importance": 1.0,
+          "blocks": [
+            "gap:product_version"
+          ],
+          "resolvable": 1,
+          "cost": 1,
+          "origin": "rule_ranked_model_gap",
+          "value": 1.0,
+          "new_blocks": [
+            "gap:product_version"
+          ],
+          "can_skip": true,
+          "skip_effect": "保留资料缺口，收窄写作范围，不自动补成事实"
+        }
+      ],
+      "answer_sha256": "fadaca721497d57ef0da1d3bae6343dca5b541793e67b3813be6b079df055846",
+      "draft_available": true,
+      "completed": true,
+      "run_status": "WAITING_USER",
+      "background": "waiting",
+      "elapsed_seconds": 126.038,
+      "cumulative_upper_micro": 6121144,
+      "questions_status": "answered",
+      "review_decision": "approved"
+    },
+    {
+      "id": "REAL-H01-A",
+      "task_id": "REAL-H01",
+      "arm": "A",
+      "run_id": "4956eb97-0882-42fe-91eb-f254b77780d8",
+      "options": {
+        "enabled": false
+      },
+      "input_sha256": "4a606d964af918345dc54cdb0b5ac0b0e5f857d3abaeae265e85cf8058ece856",
+      "started": 1793669847.541556,
+      "draft_available": true,
+      "completed": true,
+      "run_status": "WAITING_USER",
+      "background": "waiting",
+      "elapsed_seconds": 89.347,
+      "cumulative_upper_micro": 6387056,
+      "questions_status": null,
+      "review_decision": "needs_human"
+    },
+    {
+      "id": "REAL-H01-E",
+      "task_id": "REAL-H01",
+      "arm": "E",
+      "run_id": "43b8a370-1903-4311-8b69-be75cf409577",
+      "options": {
+        "enabled": true,
+        "coverage": true,
+        "structure": true,
+        "ask_questions": true
+      },
+      "input_sha256": "4a606d964af918345dc54cdb0b5ac0b0e5f857d3abaeae265e85cf8058ece856",
+      "started": 1793669936.935319,
+      "draft_available": true,
+      "completed": true,
+      "run_status": "WAITING_USER",
+      "background": "waiting",
+      "elapsed_seconds": 108.054,
+      "cumulative_upper_micro": 6737208,
+      "questions_status": null,
+      "review_decision": "needs_human"
+    },
+    {
+      "id": "REAL-H02-A",
+      "task_id": "REAL-H02",
+      "arm": "A",
+      "run_id": "975cd0aa-11ad-444f-9b91-acd385950cf2",
+      "options": {
+        "enabled": false
+      },
+      "input_sha256": "a60dc66061b2c7ca052d2cbb0b87a013dd1b35b5e16fe73016f6652208961a3e",
+      "started": 1793670045.0293682,
+      "draft_available": false,
+      "completed": false,
+      "run_status": "RUNNING",
+      "background": "blocked",
+      "elapsed_seconds": 36.878,
+      "cumulative_upper_micro": 7038568,
+      "questions_status": null,
+      "review_decision": null
+    }
+  ],
+  "source_model": "qwen-plus",
+  "initial_upper_micro": 4800336,
+  "experiment": {
+    "data_kind": "public-source-constructed",
+    "is_user_submission": false,
+    "has_human_quality_scores": false,
+    "groups": [
+      "A",
+      "E"
+    ],
+    "task_ids": [
+      "REAL-D01",
+      "REAL-D02",
+      "REAL-H01",
+      "REAL-H02",
+      "REAL-S01",
+      "REAL-S02"
+    ],
+    "authorized_cumulative_cny": 10.0,
+    "comparison_scope": "6个官方公开素材构造任务，同事实边界A/E流程探索；E补料仅重复已有事实或明确未知。配置差异为三算法开关，新增调用开销计入；未做人类独立盲评，不估计普遍文章质量因果增益。",
+    "evidence_scope": "官方公开资料构造任务，不是用户投稿或真实创作者试用。未完成独立人工盲评，不能报告人工质量提升。",
+    "provenance": {
+      "dataset_sha256": "4c728483710eec54d9ddf30abf6848c1e96eee9434d31b976188d21223d024fe",
+      "fixed_answers_sha256": "59c2f576fcd94dbaca28d504e640ccb1c936ec96943e49e0b6eab31dc6f9e709",
+      "initial_input_sha256": {
+        "REAL-D01": "049a5164d1d2e1f0342a6f6762718695a326859cb3335b19348ca31bb1f31b5a",
+        "REAL-D02": "c356f93d7c141e70dae0a00ee9f20deebb8f1e169e9fa8f8967b56e9061d877b",
+        "REAL-H01": "8e9cfb25781e5e3aa5066a102ad932c20597e0df11a2b1c24d8cd0d50533c6b2",
+        "REAL-H02": "ac84d02e236d88fd73007e128aad4e261d27248ea40470b3ffb548872a47eeda",
+        "REAL-S01": "2cd5488a5e8e8b9cb4e7cf71974b07f6badd4f3b62153d21be10b2d864381ddd",
+        "REAL-S02": "e4b6fed503df9454f378a71d345a63bc7605cbdb8ee82214defa942194fd3ab0"
+      },
+      "sources": {
+        "REAL-D01": {
+          "source_id": "official:REAL-D01",
+          "source_urls": [
+            "https://www.apple.com.cn/newsroom/2024/10/apples-all-new-mac-mini-is-even-more-mighty-and-more-mini/"
+          ],
+          "original_data_kind": "researcher_constructed_task_with_real_official_source"
+        },
+        "REAL-D02": {
+          "source_id": "official:REAL-D02",
+          "source_urls": [
+            "https://www.logi.com/zh-cn/shop/p/m650-signature-wireless-mouse"
+          ],
+          "original_data_kind": "researcher_constructed_task_with_real_official_source"
+        },
+        "REAL-H01": {
+          "source_id": "official:REAL-H01",
+          "source_urls": [
+            "https://www.ikea.cn/cn/zh/p/lack-side-table-white-10449909/"
+          ],
+          "original_data_kind": "researcher_constructed_task_with_real_official_source"
+        },
+        "REAL-H02": {
+          "source_id": "official:REAL-H02",
+          "source_urls": [
+            "https://www.ikea.cn/cn/zh/p/billy-bookcase-white-s89545291/"
+          ],
+          "original_data_kind": "researcher_constructed_task_with_real_official_source"
+        },
+        "REAL-S01": {
+          "source_id": "official:REAL-S01",
+          "source_urls": [
+            "https://docs.github.com/zh/pages/getting-started-with-github-pages/creating-a-github-pages-site"
+          ],
+          "original_data_kind": "researcher_constructed_task_with_real_official_source"
+        },
+        "REAL-S02": {
+          "source_id": "official:REAL-S02",
+          "source_urls": [
+            "https://support.google.com/docs/answer/6281888?hl=zh-Hans"
+          ],
+          "original_data_kind": "researcher_constructed_task_with_real_official_source"
+        }
+      }
+    }
+  },
+  "scope": "6个官方公开素材构造任务，同事实边界A/E流程探索；E补料仅重复已有事实或明确未知。配置差异为三算法开关，新增调用开销计入；未做人类独立盲评，不估计普遍文章质量因果增益。 官方公开资料构造任务，不是用户投稿或真实创作者试用。未完成独立人工盲评，不能报告人工质量提升。",
+  "cumulative_upper_micro": 7038568,
+  "stop_reason": "unknown_usage_stop"
+}

@@ -304,6 +304,28 @@ class WindtunnelDomainTests(unittest.TestCase):
                 with self.assertRaises(DomainError):
                     normalize(run, 'wt_patch', output)
 
+    def test_a_new_draft_can_be_patched_again_after_recheck(self):
+        # 采用一次修改后，稿件变了，旧提案不能再用；新的稿件必须能重新被检查、重新被改。
+        run = self.report(text='打开工具。\n\n点击导出。')
+        before = copy.deepcopy(draft(run))
+        target = conditions(run)['conditions'][0]['id']
+        run = self.action(run, 'propose_patch', condition_ids=[target])
+        run = self.step(run, self.grounded_patch(run))
+        proposal = run.windtunnel['patches'][-1]
+        run = self.action(run, 'apply_patch', patch_id=proposal['id'], item_ids=[proposal['items'][0]['id']], base_hash=before['hash'])
+        self.assertEqual(run.wait_reason, 'wt_recheck')
+        self.assertNotEqual(draft(run)['text'], before['text'])
+        with self.assertRaises(DomainError):
+            self.action(run, 'propose_patch', condition_ids=[target])
+        run = self.action(run, 'recheck', condition_set_id=conditions(run)['id'])
+        run = self.step(self.step(run))
+        self.assertIn('propose_patch', self.wind.view(run)['allowed_actions'])
+        run = self.action(run, 'propose_patch', condition_ids=[target])
+        _, data = messages_for(run, 'wt_patch')
+        self.assertEqual(data['draft']['text'], draft(run)['text'])
+        self.assertNotEqual(data['draft']['text'], before['text'])
+        self.assertTrue(data['edit_spans'])
+
     def test_material_explanation_replaces_exact_local_span_and_requires_recheck(self):
         run = self.report()
         before = copy.deepcopy(draft(run))
@@ -379,6 +401,77 @@ class WindtunnelDomainTests(unittest.TestCase):
         self.assertIn('下载目录', normalized['replacement'])
         self.assertEqual(len(edit_spans('\n\n'.join(['段'] * 100))), 121)
         self.assertEqual(edit_spans('\n\n'.join(['段'] * 100))[-1]['start'], len('\n\n'.join(['段'] * 100)))
+
+    def test_single_newline_drafts_keep_line_level_patch_targets(self):
+        # 小红书正文常用单换行；若只按空行切段，局部修改就只剩“替换整篇”。
+        text = '第一次打开工具\n选择导出\n找不到按钮时先看版本'
+        spans = edit_spans(text)
+        replacements = [s for s in spans if s['kind'] == 'replace']
+        self.assertEqual([s['original'] for s in replacements], ['第一次打开工具', '选择导出', '找不到按钮时先看版本'])
+        for target in spans:
+            self.assertEqual(text[target['start']:target['end']], target['original'])
+        self.assertEqual(spans[-1]['start'], len(text))
+        # 换一份结构不同的稿件，目标依然只覆盖对应行。
+        other = edit_spans('一句话说明。')
+        self.assertEqual([s['original'] for s in other if s['kind'] == 'replace'], ['一句话说明。'])
+
+    def test_crlf_drafts_get_clean_targets_without_stray_carriage_returns(self):
+        text = '打开工具。\r\n\r\n点击导出。\r\n\r\n保存到下载目录。'
+        spans = edit_spans(text)
+        replacements = [s for s in spans if s['kind'] == 'replace']
+        self.assertEqual([s['original'] for s in replacements], ['打开工具。', '点击导出。', '保存到下载目录。'])
+        self.assertEqual(replacements[1]['start'], len('打开工具。\r\n\r\n'))
+        for target in spans:
+            self.assertEqual(text[target['start']:target['end']], target['original'])
+        single = '打开工具。\r\n点击导出。\r\n保存到下载目录。'
+        lines = [s['original'] for s in edit_spans(single) if s['kind'] == 'replace']
+        self.assertEqual(lines, ['打开工具。', '点击导出。', '保存到下载目录。'])
+
+    def test_patch_apply_works_for_every_draft_shape_and_question_count(self):
+        cases = [('单行', '打开工具。'),
+                 ('单换行', '打开工具。\n点击导出。\n保存到下载目录。'),
+                 ('空行分段', '打开工具。\n\n点击导出。\n\n保存到下载目录。'),
+                 ('CRLF', '打开工具。\r\n\r\n点击导出。\r\n\r\n保存到下载目录。'),
+                 ('重复段落', '重复段。\n\n重复段。\n\n结尾。'),
+                 ('表情符号', '🙂打开工具。\n\n🙂点击导出。')]
+        for index, (label, text) in enumerate(cases):
+            with self.subTest(draft=label):
+                # 同一账号同时只能有一条未结束的预演，逐条换账号以便逐个稿件跑完整流程。
+                run = self.report(text=text, account_id=self.account_for(self.owner, name=f'教程{index}'))
+                before = copy.deepcopy(draft(run))
+                material = next(s for s in run.windtunnel['sources'] if s['kind'] == 'material')
+                target = conditions(run)['conditions'][0]['id']
+                run = self.action(run, 'propose_patch', condition_ids=[target])
+                _, data = messages_for(run, 'wt_patch')
+                span = next(s for s in data['edit_spans'] if s['kind'] == 'replace')
+                self.assertEqual(text[span['start']:span['end']], span['original'])
+                output = {'patches': [dict(span_id=span['span_id'], original=span['original'],
+                                           replacement=span['original'] + '（版本 1.2）', condition_ids=[target],
+                                           reason='补全可核对信息', citations=[dict(source_id=material['id'],
+                                                                                   quote='工具版本为 1.2，导出后保存至下载目录。')])]}
+                run = self.step(run, output)
+                proposal = run.windtunnel['patches'][-1]
+                run = self.action(run, 'apply_patch', patch_id=proposal['id'], item_ids=[proposal['items'][0]['id']], base_hash=before['hash'])
+                self.assertEqual(draft(run)['text'],
+                                 text[:span['start']] + span['original'] + '（版本 1.2）' + text[span['end']:], label)
+                # 收尾这条预演，避免“已有未结束的预演”挡住下一种稿件。
+                self.action(run, 'cancel')
+
+    def test_patch_accepts_several_selected_questions_at_once(self):
+        run = self.report()
+        failed = [r['condition_id'] for r in current_report(run)['results'] if r['status'] != 'pass'][:2]
+        self.assertGreaterEqual(len(failed), 2)
+        run = self.action(run, 'propose_patch', condition_ids=failed)
+        _, data = messages_for(run, 'wt_patch')
+        self.assertEqual({c['id'] for c in data['conditions']}, set(failed))
+        output = self.grounded_patch(run)
+        output['patches'][0]['condition_ids'] = failed
+        normalized = normalize(run, 'wt_patch', output)['patches'][0]
+        self.assertEqual(set(normalized['condition_ids']), set(failed))
+        only_one = copy.deepcopy(output)
+        only_one['patches'][0]['condition_ids'] = ['not-selected']
+        with self.assertRaises(DomainError):
+            normalize(run, 'wt_patch', only_one)
 
     def test_evidence_ids_preserve_unicode_whitespace_and_duplicate_identity(self):
         sources = [dict(id='material-1', kind='material', text='🙂代码\n  缩进\n\n🙂代码\n  缩进'),

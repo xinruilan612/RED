@@ -42,6 +42,14 @@ class WindtunnelApiTests(unittest.TestCase):
         self.assertEqual(response.status_code,200,response.text)
         return response.json()
 
+    def test_new_check_closes_unfinished_previous(self):
+        first=self.create()
+        second=self.create()
+        self.assertEqual(second['context']['auto_closed_windtunnels'],[first['run_id']])
+        old=self.client.get('/api/runs/'+first['run_id']).json()
+        self.assertEqual(old['run_status'],'CANCELLED')
+        self.assertIsNone(old['wait_reason'])
+
     def test_http_full_report_download_and_checklist_idempotency(self):
         run=self.advance(self.create())
         cs=run['windtunnel']['condition_sets'][-1]
@@ -90,7 +98,9 @@ class WindtunnelApiTests(unittest.TestCase):
         self.assertEqual(response.json()['error']['code'],'LIVE_DISABLED')
         for path in ('/windtunnel.js','/windtunnel.css'):
             self.assertEqual(self.client.get(path).status_code,200,path)
-        self.assertNotIn('windtunnel',self.client.get('/').text)
+        page=self.client.get('/').text
+        self.assertIn('data-page="windtunnel"',page)
+        self.assertIn('src="/windtunnel.js"',page)
         self.assertEqual(self.client.get('/.env').status_code,404)
 
     def test_recheck_cannot_export_previous_batch(self):

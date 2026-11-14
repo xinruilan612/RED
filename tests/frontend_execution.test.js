@@ -10,9 +10,9 @@ function setup(){
  const sandbox={document:{getElementById:element,addEventListener(type,listener){documentListeners.set(type,listener);},querySelector:element,querySelectorAll(){return [];}},window:{addEventListener(){},confirm(){return true;}},setInterval(){},setTimeout(){},clearTimeout(){},crypto:{randomUUID:()=> 'test-key'},websiteSession:{auth_required:true}};
  vm.createContext(sandbox);vm.runInContext(fs.readFileSync('frontend/app.js','utf8'),sandbox);
  vm.runInContext(`run={run_id:'run-1',mode:'live',current_stage:'brief',status_version:1,run_status:'RUNNING',context:{topic:'护肤',tone:'清楚',audience:'新手',web_research:{enabled:true,status:'pending',queries:['护肤']}},usage:{},drafts:[],node_runs:[],artifacts:[],events:[],snapshot_id:'snapshot',allowed_actions:['next','cancel'],background:{status:'paused'},in_flight:false};
- actualRenderDetails=renderDetails; actualRenderHuman=renderHuman; renderDetails=renderHuman=renderDraft=renderTimeline=renderCalls=()=>{};
+ actualRenderDetails=renderDetails; actualRenderHuman=renderHuman; actualRenderCalls=renderCalls; renderDetails=renderHuman=renderDraft=renderTimeline=renderCalls=()=>{};
  history=async()=>[]; currentAgent=()=> 'research'; calls=[]; confirmations=0;
- confirmLiveBudget=()=>{confirmations++;return true;};
+ actualConfirmLiveBudget=confirmLiveBudget;confirmLiveBudget=()=>{confirmations++;return true;};
  api=async(path,method,body)=>{calls.push(body);return run;};`,sandbox);
  return {sandbox,element,documentListeners,eval:code=>vm.runInContext(code,sandbox)};
 }
@@ -75,11 +75,29 @@ test('step button stays visible while paused and hides during execution',()=>{
  const s=setup();s.eval('render()');assert.equal(s.element('next').hidden,false);assert.match(s.element('next').textContent,/联网搜索/);
  s.eval("run.in_flight=true;run.background.status='running';render()");assert.equal(s.element('next').hidden,true);assert.equal(s.element('auto').textContent,'暂停执行');
 });
+test('paused step names the next stage and the next button dispatches a background step',async()=>{
+ const s=setup();
+ s.eval("run.current_stage='content';run.artifacts=[{stage:'strategy'},{stage:'outline'}];run.node_runs=[{agent:'audience',stage:'audience',snapshot_id:'snapshot'},{agent:'content',stage:'outline',snapshot_id:'snapshot'}];run.drafts=[];run.background={status:'paused'};run.context.web_research.status='complete';render()");
+ assert.match(s.element('statusLabel').textContent,/下一步：开头/);
+ assert.match(s.element('next').textContent,/执行下一步：开头/);
+ assert.equal(s.element('processDetails').open,true);
+ await s.element('next').onclick();
+ assert.equal(s.eval('calls[0].action'),'step');
+});
 test('blocked research offers same-task retry rather than repeated start',async()=>{
  const s=setup();s.eval("run.context.web_research.status='insufficient';render()");assert.equal(s.element('next').hidden,true);assert.equal(s.element('auto').hidden,true);
- assert.match(s.element('webResearchReport').innerHTML,/重新搜索这一步/);
+ assert.match(s.element('webResearchReport').innerHTML,/更新本次调查/);
  s.element('retryQuery1').value='新手 护肤 顺序';s.element('retryQuery2').value='';await s.element('retryWebResearch').onsubmit({preventDefault(){}});
  assert.equal(s.eval('calls[0].action'),'retry_research');assert.equal(s.eval('calls[0].queries[0]'),'新手 护肤 顺序');assert.equal(s.eval('confirmations'),0);
+});
+test('duplicate public searches render once and read bodies stay folded',()=>{
+ const s=setup();
+ s.eval("run.context.web_research={enabled:true,status:'complete',queries:['扫地机器人 基站'],searches:[{query:'扫地机器人 基站',results:[{url:'https://example.com/1',title:'尺寸怎么选'},{url:'https://example.com/1',title:'尺寸怎么选'}]},{query:'扫地机器人 基站 事实 资料',results:[{url:'https://example.com/1',title:'尺寸怎么选'}]}],sources:[{url:'https://example.com/1',title:'尺寸怎么选',text:'正文第一段',fetched_at:'2026-10-22T03:14:52+08:00'}],reads:[]};render()");
+ const html=s.element('webResearchReport').innerHTML;
+ assert.equal((html.match(/条搜索线索/g)||[]).length,1);
+ assert.match(html,/<details class="source-card"[^>]*><summary>/);
+ assert.doesNotMatch(html,/<details class="source-card"[^>]*\bopen\b/);
+ assert.match(html,/正文第一段/);
 });
 test('continuous execution remains an explicit separate command',async()=>{
  const s=setup();await s.eval('autoRun()');assert.equal(s.eval('calls[0].action'),'start');assert.equal(s.eval('confirmations'),1);
@@ -259,4 +277,104 @@ test('share extraction preserves encoded query and trims prose boundaries',()=>{
  for(const pasted of ['没有链接','javascript:alert(1)','https://xhslink.cn/o/one https://xhslink.cn/o/two']){
   s.sandbox.pasted=pasted;assert.throws(()=>s.eval('extractPublishedUrl(pasted)'),/作品链接|多个链接/);
  }
+});
+
+
+test('never-sent requests remain in audit history without claiming model usage or inherited call counts',()=>{
+ const s=setup();s.eval("run.calls=[{agent:'audience',stage:'audience',status:'not_sent',tokens:0,inherited:true,error:'模型域名解析失败'}];actualRenderCalls()");
+ const html=s.element('timeline').innerHTML;
+ assert.match(html,/未发送至模型，未产生用量/);assert.match(html,/原任务未发送记录/);assert.match(html,/模型域名解析失败/);
+ assert.doesNotMatch(html,/用量未知|沿用原任务计数/);assert.equal(s.eval('calls.length'),0);assert.equal(s.eval('confirmations'),0);
+});
+test('ambiguous failed requests still warn that usage is unknown and budget retained',()=>{
+ const s=setup();s.eval("run.calls=[{agent:'research',stage:'research',status:'failed',tokens:null,error:'请求超时'}];actualRenderCalls()");
+ assert.match(s.element('timeline').innerHTML,/请求失败.*用量未知，已保留预算/);
+ assert.doesNotMatch(s.element('timeline').innerHTML,/未产生用量/);
+});
+
+test('background start is not treated as failed when only the history refresh is unavailable',async()=>{
+ const s=setup();s.eval("history=async()=>{throw Error('列表暂时不可用');}");
+ assert.equal(await s.eval("backgroundCommand('start')"),true);
+ assert.equal(s.eval('calls.length'),1);assert.equal(s.eval('calls[0].action'),'start');
+ assert.match(s.element('error').textContent,/运行指令已保存.*不要重复启动/);assert.equal(s.eval('busy'),false);
+});
+
+test('old material or hypothesis stops offer an explicit continuation without mandatory supplement or implicit approval',async()=>{
+ for(const reason of ['missing_material','hypothesis_permission']){
+  const s=setup();s.sandbox.reason=reason;s.eval("run.run_status='WAITING_USER';run.wait_reason=reason;run.allowed_actions=['supplement','cancel'];run.background={status:'waiting'};run.context.web_research.status='insufficient';render();actualRenderHuman()");
+  assert.equal(s.element('supplyForm').hidden,true);assert.equal(s.element('auto').hidden,false);assert.equal(s.element('auto').disabled,false);assert.equal(s.element('auto').textContent,'按现有资料继续生成');
+  assert.equal(s.element('confirmationPending').hidden,true);assert.equal(s.element('accept').hidden,true);assert.match(s.element('humanMessage').textContent,/无需补充材料/);assert.doesNotMatch(s.element('workbenchGuide').textContent,/请先补充|选择假设权限/);
+  assert.equal(s.eval('calls.length'),0);await s.element('auto').onclick();
+  assert.equal(s.eval('confirmations'),1);assert.equal(s.eval('calls[0].action'),'start');assert.equal(s.eval('calls.length'),1);
+ }
+});
+test('declining paid continuation leaves the existing task and inputs untouched',async()=>{
+ const s=setup();s.eval("run.run_status='WAITING_USER';run.wait_reason='missing_material';confirmLiveBudget=()=>false");s.element('supply').value='尚未提交的文字';
+ await s.element('auto').onclick();assert.equal(s.eval('calls.length'),0);assert.equal(s.eval('run.wait_reason'),'missing_material');assert.equal(s.element('supply').value,'尚未提交的文字');
+});
+test('final material-limited draft retains review issues for explicit manual adoption rather than approval',()=>{
+ const s=setup();s.eval("run.run_status='WAITING_USER';run.wait_reason='final_confirmation';run.context.material_policy='available_only';run.drafts=[{ref:'d'}];run.review={decision:'needs_human',issues:[{reason:'未提供价格依据'}]};run.allowed_actions=['edit','adopt_manual','cancel'];actualRenderHuman()");
+ assert.equal(s.element('accept').hidden,true);assert.equal(s.element('adoptManual').hidden,false);assert.equal(s.element('supplyForm').hidden,true);assert.match(s.element('issues').innerHTML,/未提供价格依据/);assert.equal(s.eval('calls.length'),0);
+});
+test('new task form does not preauthorize invented audience assumptions',()=>{
+ const html=fs.readFileSync('frontend/index.html','utf8'),input=html.match(/<input\b[^>]*id="hypothesis"[^>]*>/)[0];
+ assert.match(input,/hidden/);assert.doesNotMatch(input,/checked/);assert.match(html,/缺失事实不编造/);
+});
+
+test('available-material continuation is exclusive to creation and its legacy default workflow',()=>{
+ const s=setup();s.eval("run.run_status='WAITING_USER';run.wait_reason='missing_material'");assert.equal(s.eval('availableMaterialContinuation(run)'),true);
+ s.eval("run.workflow_type='creation'");assert.equal(s.eval('availableMaterialContinuation(run)'),true);
+ s.eval("run.workflow_type='windtunnel';run.allowed_actions=['supplement','cancel'];render()");assert.equal(s.eval('availableMaterialContinuation(run)'),false);assert.equal(s.element('auto').hidden,true);
+});
+test('default creation and reviewer guidance describe final confirmation without a mandatory supplement',()=>{
+ const s=setup();assert.match(s.eval('nextStepGuidance(run)'),/连续生成并审核，最后确认稿件/);
+ assert.match(s.eval("friendly('reviewer','review',{decision:'needs_human'})"),/审核有待确认信息/);
+ const source=fs.readFileSync('frontend/app.js','utf8');assert.doesNotMatch(source,/needs_human:'需要补充信息'/);
+});
+
+test('research regeneration is offered only for eligible live creation tasks with no active job',()=>{
+ const s=setup();s.eval("run.drafts=[{ref:'d'}];run.background={status:'waiting'};render()");assert.equal(s.element('researchAndRegenerate').hidden,false);
+ for(const status of ['SUCCEEDED','FAILED','CANCELLED','EXPIRED']){s.sandbox.status=status;s.eval('run.run_status=status;render()');assert.equal(s.element('researchAndRegenerate').hidden,true);}
+ s.eval("run.run_status='WAITING_USER';run.background={status:'queued'};render()");assert.equal(s.element('researchAndRegenerate').hidden,true);
+ s.eval("run.background={status:'waiting'};run.workflow_type='windtunnel';render()");assert.equal(s.element('researchAndRegenerate').hidden,true);
+ s.eval("run.workflow_type='creation';run.drafts=[];run.wait_reason='missing_material';render()");assert.equal(s.element('researchAndRegenerate').hidden,false);
+});
+test('research regeneration requires a fresh scoped budget approval and sends no private material or implicit acceptance',async()=>{
+ const s=setup();s.eval("run.drafts=[{ref:'d'}];run.background={status:'waiting'};run.context.material='私密材料';provider={};confirmedLiveRuns.add(liveBudgetKey(run));confirmLiveBudget=actualConfirmLiveBudget");
+ await s.element('researchAndRegenerate').onclick();assert.equal(s.eval('calls.length'),0);assert.equal(s.element('liveBudgetConfirmation').hidden,false);
+ await s.element('approveLiveBudget').onclick();assert.equal(s.eval('calls.length'),1);assert.equal(s.eval('calls[0].action'),'research_and_regenerate');
+ const body=JSON.parse(s.eval('JSON.stringify(calls[0])'));assert.deepEqual(Object.keys(body).sort(),['action','key','version']);assert.equal(s.eval('run.accepted_ref'),undefined);
+});
+test('research budget approval becomes invalid when the task revision changes',async()=>{
+ const s=setup();s.eval("run.drafts=[{ref:'d'}];provider={};confirmLiveBudget=actualConfirmLiveBudget");await s.element('researchAndRegenerate').onclick();s.eval('run.status_version++');await s.element('approveLiveBudget').onclick();
+ assert.equal(s.eval('calls.length'),0);assert.match(s.element('error').textContent,/重新确认费用/);
+});
+
+
+test('public-search disclosure matches the current eight-read three-source limit',()=>{
+ const html=fs.readFileSync('frontend/index.html','utf8');assert.match(html,/最多提交 2 组搜索词、尝试读取 8 个网页，最多采用 3 份正文/);
+});
+
+test('malformed diagnostic lists cannot crash recovery or human decisions',()=>{
+ for(const value of [null,'bad',{},[null,'bad',[],{excerpt:{},reason:42,suggestion:'可人工核对'}]]){
+  const s=setup();s.sandbox.bad=value;
+  s.eval("run.current_stage='reviewer';run.drafts=[{}];run.allowed_actions=['repair_review','edit'];run.calls=[{stage:'review',status:'invalid',diagnostic_response:{issues:bad,human_questions:bad}}];renderRecovery();run.run_status='WAITING_USER';actualRenderHuman()");
+  assert.equal(s.element('humanPanel').hidden,false);
+  assert.doesNotMatch(s.element('issues').innerHTML,/\[object Object\]/);
+ }
+});
+
+test('version comparison marks changed characters inline without touching export content',()=>{
+ const s=setup();
+ const oldContent={selected_title:'旧标题',body:'第一版正文',cta:'旧引导',tags:['旧标签']};
+ const newContent={selected_title:'新标题',body:'第二版正文',cta:'新引导',tags:['新标签']};
+ s.sandbox.oldContent=oldContent;s.sandbox.newContent=newContent;
+ const left=s.eval("draftHTML({content:oldContent,ref:'old'},0,true,'left',newContent)");
+ const right=s.eval("draftHTML({content:newContent,ref:'new'},1,true,'right',oldContent)");
+ assert.match(left,/diff-del/);assert.doesNotMatch(left,/diff-add/);
+ assert.match(right,/diff-add/);assert.doesNotMatch(right,/diff-del/);
+ assert.match(left,/旧/);assert.match(left,/标题/);assert.match(right,/新/);assert.match(right,/标题/);
+ const normal=s.eval("draftHTML({content:newContent,ref:'new'},1)");
+ assert.match(normal,/新标题/);assert.match(normal,/第二版正文/);assert.match(normal,/新引导/);
+ assert.equal(newContent.body,'第二版正文');
 });

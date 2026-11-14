@@ -74,7 +74,7 @@ class ResearchJobsTests(unittest.TestCase):
         self.assertIsNone(final['reads'][0]['heat'])
         self.assertEqual(self.jobs.export('owner', job['id'])['count'], 0)
 
-    def test_six_page_and_three_document_bounds_and_url_dedup(self):
+    def test_eight_page_and_three_document_bounds_and_url_dedup(self):
         self.results = [dict(title=str(i), url='https://example.com/'+str(i)) for i in range(8)]
         packet = self.packet(); packet['queries'] = ['保湿产品', '清洁产品']
         job = self.jobs.create('owner', packet); self.jobs.once()
@@ -92,7 +92,7 @@ class ResearchJobsTests(unittest.TestCase):
         self.jobs.reader = fail
         job = self.jobs.create('owner', self.packet()); self.jobs.once()
         final = self.jobs.get('owner', job['id'])
-        self.assertEqual(len(self.reads), 6)
+        self.assertEqual(len(self.reads), 8)
         self.assertNotIn('credential', str(final))
         self.assertEqual(final['status'], 'failed')
         self.assertEqual(final['outcome'], 'detail_failed')

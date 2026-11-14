@@ -2,6 +2,7 @@
 import json
 import hashlib
 import time
+import copy
 from uuid import uuid4
 
 from backend.accounts import find_account
@@ -74,11 +75,11 @@ class ResearchJobs:
             require(count < 3, 'QUOTA_EXCEEDED', '最多同时保留 3 个待执行研究任务')
             identity, now = str(uuid4()), time.time()
             payload = dict(scope)
-            payload.update(raw_queries=raw_queries, attempts=[], items=[],
+            payload.update(raw_queries=raw_queries, attempts=[], items=[], search_results=[],
                            trace=[],phase='queued',counts={},outcome=None,error_origin=None,
                            queue_deadline_at=now+QUEUE_SECONDS,
                            document_ids=[], candidates=[], report=None, error=None,
-                           limits={'max_queries': 2, 'max_pages': 6, 'max_documents': 3})
+                           limits={'max_queries': 2, 'max_pages': 8, 'max_documents': 3})
             db.execute('INSERT INTO research_jobs VALUES(?,?,?,?,?,?,?,?,?,?,?)',
                        (identity, owner, data['account_id'], data['key'], fingerprint, 'queued',
                         json.dumps(payload, ensure_ascii=False), None, None, now, now))
@@ -101,6 +102,32 @@ class ResearchJobs:
         row = db.execute('SELECT id,account_id,status,payload,created_at,updated_at FROM research_jobs WHERE id=? AND owner=?', (identity, owner)).fetchone()
         require(row is not None, 'RESOURCE_NOT_FOUND', '研究任务不可访问')
         payload = json.loads(row[3])
+        recorded=sum(a['results'] for a in payload.get('attempts',[])
+                     if a.get('status')=='done' and type(a.get('results')) is int and a['results']>=0)
+        if 'search_results' not in payload:
+            # Old jobs saved only the count and URLs they attempted to read.
+            # Expose those surviving leads without inventing the missing rows.
+            seen=set();leads=[]
+            for item in payload.get('items',[]):
+                if item.get('url') and item['url'] not in seen:
+                    seen.add(item['url']);leads.append({k:item[k] for k in ('url','title','query') if k in item})
+            payload['search_results']=[{**s,'body_read':False,'source_type':'search_result'} for s in leads]
+            payload['search_result_retention']='legacy_partial' if recorded>len(leads) else 'legacy_reads'
+        else:payload.setdefault('search_result_retention','complete')
+        payload['search_result_count']=max(recorded,len(payload['search_results']))
+        def canonical(url):
+            try:return public_url(url)
+            except DomainError:return None
+        read_states={canonical(i.get('url')):i for i in payload.get('items',[]) if i.get('url')}
+        payload['search_results']=[{**s,'body_read':bool(read_states.get(canonical(s.get('url')),{}).get('body_read')),
+            'read_status':read_states.get(canonical(s.get('url')),{}).get('status','not_read'),
+            'read_error':read_states.get(canonical(s.get('url')),{}).get('error')}
+            for s in payload['search_results']]
+        for source in payload['search_results']:
+            lead=payload.get('lead_documents',{}).get(canonical(source.get('url')), {})
+            active=bool(lead and db.execute("SELECT 1 FROM knowledge_documents WHERE id=? AND owner=? AND account_id=? AND status='active'",
+                (lead['document_id'],owner,row[1])).fetchone())
+            source.update(lead_saved=active,lead_document_id=lead.get('document_id') if active else None)
         return dict(id=row[0], status=row[2], **payload, created_at=row[4], updated_at=row[5],
                     documents=[{'id': item['document_id'], 'title': item['title']} for item in payload['items'] if item['status']=='saved'],
                     searches=payload['attempts'], reads=payload['items'])
@@ -139,6 +166,7 @@ class ResearchJobs:
             if any(own_synced_case(meta) and not document_is_public(db,owner,account,meta,meta.get('source_url','')) for meta in candidates):
                 # Do not rewrite stored audit text; suppress the entire potentially mixed report.
                 return {**job,'items':[],'reads':[],'documents':[],'document_ids':[],
+                        'search_results':[],'search_result_count':0,
                         'attempts':[],'searches':[],'report':None,'error':'SOURCE_VISIBILITY_CHANGED',
                         'source_visibility_blocked':True}
         return job
@@ -154,6 +182,34 @@ class ResearchJobs:
             db.execute('BEGIN IMMEDIATE'); self._expire(db)
             ids = db.execute('SELECT id FROM research_jobs WHERE owner=? AND account_id=? ORDER BY created_at DESC LIMIT 30', (owner, account_id)).fetchall()
             return [self._public_view(db,owner,self._get(db, owner, row[0])) for row in ids]
+
+    def retry_reads(self,owner,identity):
+        """Re-read frozen public leads; never resubmit a paid search."""
+        operations=Operations(self.store)
+        with self.store.connect() as db:
+            db.execute('BEGIN IMMEDIATE');self._expire(db)
+            current=self._public_view(db,owner,self._get(db,owner,identity))
+            require(not current.get('source_visibility_blocked'),'FORBIDDEN','来源权限已变化，不能重读')
+            require(current['provider']!='xhs_local','INVALID_INPUT','此入口只重新读取公开网页')
+            find_account(operations.read(owner,db),current['account_id'])
+            if current['status'] in ('queued','running') and current.get('read_only_retry'):return current
+            require(current['status'] in ('failed','partial','interrupted') and not current.get('candidates'),
+                    'INVALID_TRANSITION','请先处理当前候选或等待任务完成')
+            saved_urls={i.get('url') for i in current['items'] if i.get('status')=='saved'}
+            require(any(s.get('url') not in saved_urls for s in current['search_results']),
+                    'INVALID_TRANSITION','没有已保存的未读搜索链接')
+            payload=json.loads(db.execute('SELECT payload FROM research_jobs WHERE id=? AND owner=?',(identity,owner)).fetchone()[0])
+            payload.setdefault('read_attempts_history',[]).append(copy.deepcopy(payload['items']))
+            payload['search_results']=copy.deepcopy(current['search_results'])
+            payload['search_result_retention']=current['search_result_retention']
+            payload['items']=[i for i in payload['items'] if i.get('status')=='saved']
+            payload.setdefault('prior_read_reports',[]).append({'report':payload.get('report'),'error':payload.get('error'),'outcome':payload.get('outcome')})
+            payload.update(read_only_retry=True,phase='queued',error=None,error_origin=None,outcome=None,report=None,
+                           queue_deadline_at=time.time()+QUEUE_SECONDS,read_retry_count=payload.get('read_retry_count',0)+1)
+            payload.pop('deadline_at',None)
+            db.execute("UPDATE research_jobs SET status='queued',payload=?,token=NULL,lease_until=NULL,updated_at=? WHERE id=? AND owner=?",
+                       (json.dumps(payload,ensure_ascii=False),time.time(),identity,owner))
+            return self._get(db,owner,identity)
 
     def cancel(self, owner, identity):
         with self.store.connect() as db:
@@ -183,7 +239,7 @@ class ResearchJobs:
     def _scope_report(payload):
         lines = ['', '## 任务范围与读取记录', '', '关键词：'+safe('；'.join(payload['queries'])),
                  '搜索服务：'+safe(payload['provider'])+'；范围：'+safe('、'.join(payload['targets'])),
-                 '最多读取 6 个网页、保存 3 篇正文；未读取线索不进入正文检索。热度未知，不声明爆款。', '']
+                 '最多读取 8 个网页、保存 3 篇正文；未读取线索不进入正文检索。热度未知，不声明爆款。', '']
         for attempt in payload['attempts']:
             lines.append('- 搜索 '+safe(attempt['query'])+'：'+safe(attempt['status'])+
                          ('；'+safe(attempt['error']) if attempt.get('error') else ''))
@@ -301,15 +357,19 @@ class ResearchJobs:
         if payload['provider'] == 'xhs_local':
             return self._execute_xhs(job, payload)
         candidates, seen = [], set()
-        for query in payload['queries']:
-            self._change(job, lambda p: p['attempts'].append({'query': query, 'status': 'started'}))
+        if payload.get('read_only_retry'):
+            saved_urls={i.get('url') for i in payload['items'] if i.get('status')=='saved'}
+            candidates=[{**s,'status':'lead','body_read':False,'heat':None,'source_type':'search_result'}
+                        for s in payload.get('search_results',[]) if s.get('url') not in saved_urls]
+        seen.update(public_url(c['url']) for c in payload.get('search_results',[]))
+        for query in ([] if payload.get('read_only_retry') else payload['queries']):
+            self._change(job, lambda p: p['attempts'].append({'query': query, 'status': 'started', 'provider': payload['provider']}))
             try:
                 result = self.searcher.search(job['owner'], query, payload['provider'], payload['targets'])
             except Exception as exc:
                 code = self._failure(exc)
                 self._change(job, lambda p: p['attempts'][-1].update(status='failed', error=code))
                 continue
-            self._change(job, lambda p: p['attempts'][-1].update(status='done', results=len(result.get('results', []))))
             for source in result.get('results', [])[:8]:
                 try:
                     url = public_url(source.get('url'))
@@ -322,11 +382,59 @@ class ResearchJobs:
                 seen.add(url)
                 candidates.append({'url': url, 'title': str(source.get('title') or '搜索线索')[:200],
                                    'query': query, 'status': 'lead', 'body_read': False,
-                                   'heat': None, 'source_type': 'search_result'})
+                                   'snippet':str(source.get('snippet') or '')[:2000],
+                                   'heat': None, 'source_type': 'search_result', 'provider': payload['provider']})
+            def searched(p):
+                p['attempts'][-1].update(status='done',results=len(result.get('results', [])))
+                p['search_results']=copy.deepcopy(candidates)
+                p['phase']='reading'
+            # Commit all returned leads before the first slow page request.
+            self._change(job,searched)
+        from backend.sources import official_priority
+        candidates.sort(key=official_priority,reverse=True)
         pages = 0
-        for candidate in candidates:
+        def readable_candidates():
+            yield from candidates
+            # Exhaust frozen leads first. Never replay the paid search provider.
+            if payload['provider'] == 'bing':
+                return
+            for query in payload['queries']:
+                current = self._change(job)
+                if pages >= 8 or len(current['document_ids']) + sum(c.get('importable',True) for c in current.get('candidates',[])) >= 3:
+                    return
+                if any(a.get('supplemental') and a.get('provider') == 'bing' and a.get('query') == query for a in current['attempts']):
+                    continue
+                self._change(job,lambda p:p['attempts'].append(dict(query=query,provider='bing',supplemental=True,status='started')))
+                try:
+                    result=self.searcher.search(job['owner'],query,'bing',payload['targets'])
+                except Exception as exc:
+                    if isinstance(exc,DomainError) and exc.code == 'RESEARCH_STOPPED':
+                        raise
+                    code=self._failure(exc)
+                    self._change(job,lambda p:p['attempts'][-1].update(status='failed',error=code))
+                    continue
+                extra=[]
+                for source in result.get('results',[])[:8]:
+                    try:
+                        url=public_url(source.get('url'))
+                    except DomainError:
+                        continue
+                    if url in seen:
+                        continue
+                    seen.add(url)
+                    extra.append(dict(url=url,title=str(source.get('title') or '搜索线索')[:200],
+                        query=query,status='lead',body_read=False,snippet=str(source.get('snippet') or '')[:2000],
+                        heat=None,source_type='search_result',provider='bing',supplemental=True))
+                extra.sort(key=official_priority,reverse=True)
+                def supplemented(p):
+                    p['attempts'][-1].update(status='done',results=len(result.get('results',[])))
+                    p.setdefault('search_results',[]).extend(copy.deepcopy(extra))
+                    p['phase']='reading'
+                self._change(job,supplemented)
+                yield from extra
+        for candidate in readable_candidates():
             current = self._change(job)
-            if pages >= 6 or len(current['document_ids']) + len(current.get('candidates', [])) >= 3:
+            if pages >= 8 or len(current['document_ids']) + sum(c.get('importable',True) for c in current.get('candidates', [])) >= 3:
                 self._item(job, {**candidate, 'status': 'limit_reached'})
                 continue
             try:
@@ -344,7 +452,7 @@ class ResearchJobs:
                         source_url=article['url'], platform='public_web', content_kind='text',
                         evidence_role=payload['evidence_role'], permission_confirmed=True,
                         published_at=article.get('published_at'), observed_at=article['fetched_at'])
-                    self._stage(job, packet, 'read_public_web', None, article['fetched_at'])
+                    self._stage(job, packet, 'read_public_web', {'provider':candidate.get('provider',payload['provider']), 'supplemental':bool(candidate.get('supplemental'))}, article['fetched_at'])
                     continue
                 def saved(db, identity, version):
                     updated = self._guard(db, job)
@@ -358,7 +466,9 @@ class ResearchJobs:
             except Exception as exc:
                 if isinstance(exc, DomainError) and exc.code == 'RESEARCH_STOPPED':
                     raise
-                self._item(job, {**candidate, 'status': 'failed', 'error': self._failure(exc)})
+                code=self._failure(exc)
+                self._item(job, {**candidate, 'status': 'failed', 'error': code, 'diagnostic_collapsed':True,
+                    'browser_openable':True, 'read_limitation':'程序请求被来源站点拒绝；可在浏览器查看，不代表页面不存在或浏览器无法打开' if code=='SOURCE_HTTP_403' else '程序未取得正文；保留原网页线索'})
         current = self._change(job)
         if current.get('candidates'):
             return self._await_confirmation(job)
@@ -433,7 +543,9 @@ class ResearchJobs:
         for row in rows:
             case = json.loads(row[3]).get('research_case', {})
             prior = {'packet':{'source_url':row[2], 'platform':case.get('platform')}, 'provenance':case.get('provenance',{})}
-            if self._candidate_key(prior) == key:
+            if (self._candidate_key(prior) == key and
+                    case.get('content_kind','text') == candidate['packet'].get('content_kind','text') and
+                    case.get('evidence_role','expression_reference') == candidate['packet'].get('evidence_role','expression_reference')):
                 return row[0], row[1]
         return None
 
@@ -448,45 +560,71 @@ class ResearchJobs:
             db.execute("UPDATE research_jobs SET status='awaiting_confirmation',token=NULL,lease_until=NULL WHERE id=?", (job['id'],))
 
     def confirm(self, owner, identity, data):
-        require(isinstance(data, dict) and set(data)=={'candidate_ids','key'} and
-                isinstance(data['key'], str) and 1<=len(data['key'])<=160 and
-                isinstance(data['candidate_ids'], list) and 1<=len(data['candidate_ids'])<=3 and
+        require(isinstance(data,dict) and {'candidate_ids','key'} <= set(data) <= {'candidate_ids','key','purpose','lead_urls'} and
+                isinstance(data['key'],str) and 1<=len(data['key'])<=160 and
+                isinstance(data['candidate_ids'],list) and len(data['candidate_ids'])<=3 and
                 all(isinstance(i,str) and i for i in data['candidate_ids']) and
-                len(set(data['candidate_ids']))==len(data['candidate_ids']),
-                'INVALID_INPUT', '请选择需要保存的资料并提供确认编号')
+                len(set(data['candidate_ids']))==len(data['candidate_ids']) and
+                ('purpose' not in data or data['purpose'] in ('product_fact','expression_reference')),
+                'INVALID_INPUT','请选择需要保存的资料并提供确认编号')
+        scoped=self.get(owner,identity)
+        require(not scoped.get('source_visibility_blocked'),'SOURCE_VISIBILITY_CHANGED','来源权限已变化，不能保存')
+        find_account(Operations(self.store).read(owner),scoped['account_id'])
+        if 'lead_urls' in data:
+            require(isinstance(data['lead_urls'],list),'INVALID_INPUT','线索选择格式无效')
+        if data.get('lead_urls'):
+            require(not data['candidate_ids'],'INVALID_INPUT','正文与线索请分别确认')
+            return self._confirm_leads(owner,identity,data,scoped)
+        require(data['candidate_ids'],'INVALID_INPUT','请选择需要保存的正文')
         selection=sorted(data['candidate_ids'])
-        scoped = self.get(owner, identity)
-        find_account(Operations(self.store).read(owner), scoped['account_id'])
+        purpose=data.get('purpose',scoped['evidence_role'])
+        fence={'key':data['key'],'candidate_ids':selection}
+        if 'purpose' in data:fence['purpose']=purpose
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             job=self._get(db,owner,identity)
-            prior=job.get('confirmation')
-            if prior:
-                require(prior['key']==data['key'] and prior['candidate_ids']==selection,
-                        'IDEMPOTENCY_CONFLICT','确认选择已经提交，不能改用其他资料')
-                if job['status']=='done':return self._public_view(db,owner,job)
-            require(job['status'] in ('awaiting_confirmation','confirming','cancelled','partial','interrupted','failed'), 'INVALID_TRANSITION','任务当前不能确认')
+            payload=json.loads(db.execute('SELECT payload FROM research_jobs WHERE id=? AND owner=?',(identity,owner)).fetchone()[0])
+            require(data['key'] not in payload.get('lead_confirmations',{}),'IDEMPOTENCY_CONFLICT','确认编号已用于保存线索')
+            prior=payload.get('confirmation')
+            history=payload.get('confirmed_selections',[])
+            matching=next((c for c in history if c['key']==data['key']),None)
+            known=matching or (prior if prior and prior['key']==data['key'] else None)
+            if known:
+                require(known['candidate_ids']==selection and known.get('purpose',payload['evidence_role'])==purpose,
+                        'IDEMPOTENCY_CONFLICT','相同确认编号不能改变资料或用途')
+                if matching or job['status']=='done':return self._public_view(db,owner,job)
+                # Keep old API request fences exactly shaped as originally submitted.
+                fence=prior
+            elif prior:
+                require(job['status']=='done','IDEMPOTENCY_CONFLICT','当前确认尚未完成，请先恢复原选择')
+            require(job['status'] in ('awaiting_confirmation','confirming','cancelled','partial','interrupted','failed','done'),
+                    'INVALID_TRANSITION','任务当前不能确认')
             chosen={c['id']:c for c in job.get('candidates',[])}
             require(set(selection)<=set(chosen),'INVALID_INPUT','候选资料不存在')
-            require(all(chosen[i].get('importable', bool(chosen[i]['packet'].get('text','').strip())) and
-                        len(chosen[i]['packet'].get('text','').strip()) >= 10 for i in selection),
+            require(all(chosen[i].get('importable',bool(chosen[i]['packet'].get('text','').strip())) and
+                        len(chosen[i]['packet'].get('text','').strip())>=10 for i in selection),
                     'CANDIDATE_UNREADABLE','所选资料尚无可用正文，不能加入知识库')
-            payload={k:job[k] for k in job if k not in ('id','status','created_at','updated_at','documents','searches','reads')}
-            payload['confirmation']={'key':data['key'],'candidate_ids':selection}
+            saved_ids={i.get('candidate_id') for i in payload['items'] if i['status']=='saved'}
+            require(known is not None or not (set(selection)&saved_ids),'IDEMPOTENCY_CONFLICT','已保存的资料不能换确认编号重复提交')
+            require(len(payload['document_ids'])+len(set(selection)-saved_ids)<=3,'QUOTA_EXCEEDED','本次任务最多保存三篇正文')
+            if prior and not known and not any(c['key']==prior['key'] for c in history):
+                payload.setdefault('confirmed_selections',[]).append(prior)
+            payload['confirmation']=fence
             db.execute("UPDATE research_jobs SET status='confirming',payload=?,updated_at=? WHERE id=? AND owner=?",
                        (json.dumps(payload,ensure_ascii=False),time.time(),identity,owner))
         for candidate_id in selection:
             with self.store.connect() as db:
                 current=self._get(db,owner,identity)
             if any(i.get('candidate_id')==candidate_id and i['status']=='saved' for i in current['items']):continue
-            candidate=chosen[candidate_id]
-            packet=dict(candidate['packet'])
-            provenance={**(candidate.get('provenance') or {}),'human_confirmed':True,'confirmation_job_id':identity}
+            candidate=copy.deepcopy(chosen[candidate_id])
+            packet=dict(candidate['packet']);packet['evidence_role']=purpose
+            candidate['packet']=packet
+            provenance={**(candidate.get('provenance') or {}),'human_confirmed':True,'confirmation_job_id':identity,'confirmed_purpose':purpose}
             def guard(db):
                 row=db.execute('SELECT status,payload FROM research_jobs WHERE id=? AND owner=?',(identity,owner)).fetchone()
                 require(row is not None,'RESOURCE_NOT_FOUND','研究任务不可访问')
                 value=json.loads(row[1])
-                require(value.get('confirmation')=={'key':data['key'],'candidate_ids':selection},'IDEMPOTENCY_CONFLICT','确认范围已改变')
+                require(value.get('confirmation')==fence,'IDEMPOTENCY_CONFLICT','确认范围已改变')
                 require(not any(i.get('candidate_id')==candidate_id and i['status']=='saved' for i in value['items']), 'RESEARCH_CANDIDATE_SAVED','资料已经保存')
                 require(row[0]=='confirming','RESEARCH_STOPPED','确认已取消，不保存迟到结果')
                 if candidate['source_method'].startswith('local_browser'):
@@ -529,9 +667,75 @@ class ResearchJobs:
             payload=json.loads(db.execute('SELECT payload FROM research_jobs WHERE id=? AND owner=?',(identity,owner)).fetchone()[0])
             for item in payload['items']:
                 if item['status']=='awaiting_confirmation':item['status']='not_selected'
+            if not any(c['key']==fence['key'] for c in payload.get('confirmed_selections',[])):
+                payload.setdefault('confirmed_selections',[]).append(fence)
             payload['report']=None
             db.execute("UPDATE research_jobs SET status='done',payload=?,updated_at=? WHERE id=? AND owner=?",
                        (json.dumps(payload,ensure_ascii=False),time.time(),identity,owner))
+            return self._public_view(db,owner,self._get(db,owner,identity))
+
+    def _confirm_leads(self,owner,identity,data,scoped):
+        urls=data['lead_urls']
+        require(isinstance(urls,list) and 1<=len(urls)<=8 and all(isinstance(u,str) for u in urls),
+                'INVALID_INPUT','请选择一至八个已搜索到的线索')
+        selection=sorted(public_url(u) for u in urls)
+        require(len(set(selection))==len(selection),'INVALID_INPUT','线索链接不能重复')
+        fence={'lead_urls':selection,'purpose':data.get('purpose',scoped['evidence_role'])}
+        frozen={public_url(s['url']):s for s in scoped['search_results']}
+        require(set(selection)<=set(frozen),'INVALID_INPUT','只能保存本次任务已记录的搜索线索')
+        with self.store.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            current=self._get(db,owner,identity)
+            require(current['status'] not in ('queued','running'),'INVALID_TRANSITION','请等待搜索读取完成')
+            payload=json.loads(db.execute('SELECT payload FROM research_jobs WHERE id=? AND owner=?',(identity,owner)).fetchone()[0])
+            body_keys=[c['key'] for c in payload.get('confirmed_selections',[])]+[payload.get('confirmation',{}).get('key')]
+            require(data['key'] not in body_keys,'IDEMPOTENCY_CONFLICT','确认编号已用于保存正文')
+            prior=payload.setdefault('lead_confirmations',{}).get(data['key'])
+            require(prior is None or prior['selection']==fence,'IDEMPOTENCY_CONFLICT','相同确认编号不能改变线索选择')
+            if prior and prior.get('complete'):return self._public_view(db,owner,current)
+            payload['lead_confirmations'][data['key']]={'selection':fence,'complete':False}
+            db.execute('UPDATE research_jobs SET payload=?,updated_at=? WHERE id=? AND owner=?',
+                       (json.dumps(payload,ensure_ascii=False),time.time(),identity,owner))
+        for url in selection:
+            source=frozen[url]
+            title=str(source.get('title') or '未读网页线索')[:200]
+            packet=dict(account_id=scoped['account_id'],title=title,
+                text='未读取正文的搜索线索，仅保存链接供人工查看；不可作为产品事实或正文参考。\n'+title+'\n'+url+'\n'+str(source.get('snippet') or '')[:2000],
+                source_url=url,platform='public_web',content_kind='lead',evidence_role='expression_reference',permission_confirmed=True)
+            candidate={'packet':packet}
+            def guard(db):
+                row=db.execute('SELECT payload FROM research_jobs WHERE id=? AND owner=?',(identity,owner)).fetchone()
+                require(row is not None,'RESOURCE_NOT_FOUND','研究任务不可访问')
+                value=json.loads(row[0])
+                require(value.get('lead_confirmations',{}).get(data['key'],{}).get('selection')==fence,
+                        'IDEMPOTENCY_CONFLICT','线索确认范围已改变')
+                return value
+            def saved(db,document_id,version):
+                value=guard(db)
+                value.setdefault('lead_documents',{})[url]={'document_id':document_id,'version':version}
+                db.execute('UPDATE research_jobs SET payload=?,updated_at=? WHERE id=? AND owner=?',
+                           (json.dumps(value,ensure_ascii=False),time.time(),identity,owner))
+            def unique_guard(db):
+                guard(db)
+                require(self._existing_candidate(db,owner,scoped['account_id'],candidate) is None,
+                        'RESEARCH_ALREADY_EXISTS','线索已保存')
+            try:
+                self.cases.save(owner,packet,source_method='saved_search_lead',
+                    provenance={'human_confirmed':True,'confirmation_job_id':identity,'body_read':False,
+                                'provider':source.get('provider',scoped['provider'])},
+                    transaction_guard=unique_guard,transaction_saved=saved)
+            except DomainError as exc:
+                if exc.code!='RESEARCH_ALREADY_EXISTS':raise
+                with self.store.connect() as db:
+                    db.execute('BEGIN IMMEDIATE');guard(db)
+                    existing=self._existing_candidate(db,owner,scoped['account_id'],candidate)
+                    require(existing is not None,'VERSION_CONFLICT','已有线索已移除，请重试')
+                    saved(db,*existing)
+        with self.store.connect() as db:
+            db.execute('BEGIN IMMEDIATE');value=guard(db)
+            value['lead_confirmations'][data['key']]['complete']=True
+            db.execute('UPDATE research_jobs SET payload=?,updated_at=? WHERE id=? AND owner=?',
+                       (json.dumps(value,ensure_ascii=False),time.time(),identity,owner))
             return self._public_view(db,owner,self._get(db,owner,identity))
 
     @staticmethod

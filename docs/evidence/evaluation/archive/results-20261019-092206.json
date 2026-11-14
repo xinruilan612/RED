@@ -1,0 +1,988 @@
+{
+  "schema": "youji-evaluation-results/1",
+  "gold_set_hash": "3eeb4cb986777c3d6123d32cee51c7661b7f96a8800050ae0057b95c89d3f735",
+  "origin": "http://127.0.0.1:8890",
+  "budget_authorized_usd": 1.5,
+  "account_id": "d6130df6-e7db-4e06-9d42-a68aa29f0ada",
+  "records": [
+    {
+      "arm": "A",
+      "item_id": "R01",
+      "status": "done",
+      "retrieval_mode": "none",
+      "attempts": 1,
+      "draft": {
+        "selected_title": "宜家BEKANT贝肯特书桌｜120×80cm，65-85cm可调高，¥399起",
+        "body": "宜家BEKANT贝肯特书桌（货号392.825.84），尺寸120×80cm，高度可在65-85cm间无级调节，适配坐姿与站姿双模式办公；最大承重100kg，桌面下设电线整理装置，兼顾实用与整洁。弧形前缘设计，为手腕和前臂提供自然支撑。桌面材质为刨花板基材+白蜡木贴面，表面覆亮光漆与丙烯酸清漆，饰以纸制贴膜及塑料封边。享10年品质保证。保养建议：用中性皂液擦拭后，以干净抹布擦干；定期检查组装配件是否紧固。",
+        "cta": "需要稳定、可调、带理线功能的入门级升降书桌？这款基础款值得纳入备选清单。",
+        "tags": [
+          "#宜家书桌",
+          "#BEKANT",
+          "#升降书桌推荐",
+          "#小户型办公家具",
+          "#家居好物"
+        ]
+      },
+      "calls": 1,
+      "references": [
+        "宜家 BEKANT 贝肯特书桌，货号392.825.84，价格 ¥399。商品尺寸：长度 120 厘米，深度 80 厘米，最小高度 65 厘米，最大高度 85 厘米，最大可承重 100 公斤。桌腿可在 65-85cm 之间调节，因此可将桌面安装到合适的高度。桌面下的电线整理装置便于保持书桌整洁有序。弧形桌面可在书写时为手腕和前臂提供支撑。享有 10 年品质保证。桌面材质为刨花板、白蜡木贴面、亮光漆、丙烯酸清漆、纸制贴膜、塑料封边。保养：请用中性皂液擦拭，再用干净的抹布擦干；请定期检查所有组装配件是否紧固。"
+      ],
+      "arm_a_tokens": 685,
+      "cost_usd": 0.000783,
+      "arm_a_request_id": "chatcmpl-93968ff0-f0fb-971c-abb7-16c17feaa4af",
+      "score": {
+        "chars": 204,
+        "fact_support": {
+          "total": 3,
+          "supported": 3,
+          "rate": 1.0,
+          "evidence": [
+            {
+              "sentence": "宜家BEKANT贝肯特书桌｜120×80cm，65-85cm可调高，¥399起",
+              "best_overlap": 0.714286,
+              "reference_index": 0,
+              "literal_token": "85cm",
+              "supported": true
+            },
+            {
+              "sentence": "宜家BEKANT贝肯特书桌（货号392.825.84），尺寸120×80cm，高度可在65-85cm间无级调节，适配坐姿与站姿双模式办公；最大承重100kg，桌面下设电线整理装置，兼顾实用与整洁",
+              "best_overlap": 0.519231,
+              "reference_index": 0,
+              "literal_token": "85cm",
+              "supported": true
+            },
+            {
+              "sentence": "享10年品质保证",
+              "best_overlap": 0.833333,
+              "reference_index": 0,
+              "literal_token": null,
+              "supported": true
+            }
+          ]
+        },
+        "forbidden": {
+          "hits": [],
+          "disclaimed": [],
+          "any_hit": false,
+          "patterns": 6
+        },
+        "coverage": {
+          "total": 6,
+          "covered": 2,
+          "rate": 0.333333,
+          "evidence": [
+            {
+              "point": "长度120厘米",
+              "best_overlap": 0.333333,
+              "sentence": "宜家BEKANT贝肯特书桌｜120×80cm，65-85cm可调高，¥399起",
+              "covered": false
+            },
+            {
+              "point": "深度80厘米",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "高度65-85厘米可调",
+              "best_overlap": 0.333333,
+              "sentence": "宜家BEKANT贝肯特书桌｜120×80cm，65-85cm可调高，¥399起",
+              "covered": false
+            },
+            {
+              "point": "最大承重100公斤",
+              "best_overlap": 0.6,
+              "sentence": "宜家BEKANT贝肯特书桌（货号392.825.84），尺寸120×80cm，高度可在65-85cm间无级调节，适配坐姿与站姿双模式办公；最大承重100kg，桌面下设电线整理装置，兼顾实用与整洁",
+              "covered": true
+            },
+            {
+              "point": "价格399元",
+              "best_overlap": 0.333333,
+              "sentence": "宜家BEKANT贝肯特书桌｜120×80cm，65-85cm可调高，¥399起",
+              "covered": false
+            },
+            {
+              "point": "10年品质保证",
+              "best_overlap": 1.0,
+              "sentence": "享10年品质保证",
+              "covered": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "A",
+      "item_id": "R02",
+      "status": "done",
+      "retrieval_mode": "none",
+      "attempts": 1,
+      "draft": {
+        "selected_title": "宜家BILLY毕利书柜（80×237cm）适配指南：小户型也能装下整面墙的收纳",
+        "body": "✅直接结论：宜家BILLY毕利书柜（带加高装置，仿橡木款），尺寸80×237×28cm，¥649；适合层高≥2.4m的小客厅/书房/卧室；单层搁板承重30kg，含2个包装。\n\n📌关键参数：\n- 深度仅28cm，贴墙不占地，对小空间友好；\n- 加高后总高237cm，可充分利用垂直空间；\n- 宽度80cm，单组不显臃肿，多组并列也易对齐；\n- 表面为仿橡木饰面，日常清洁用中性清洁剂+干布擦拭即可。\n\n⚠️选购提醒：\n- 需自行安装，建议预留墙面固定配件（含在包装内）；\n- 承重以均匀放置为前提，避免单侧集中堆叠过重物品；\n- 两包装需同步签收，便于核对配件完整性。",
+        "cta": "你家的层高和墙面宽度够装下它吗？评论区聊聊你的摆放计划～",
+        "tags": [
+          "宜家好物",
+          "小户型收纳",
+          "毕利书柜",
+          "家居尺寸指南",
+          "BILLY"
+        ]
+      },
+      "calls": 1,
+      "references": [
+        "宜家 BILLY 毕利书柜，带加高装置，仿橡木，价格 ¥649。商品尺寸：深度 28 厘米，高度 237 厘米，宽度 80 厘米，每块搁板最大可承重 30 公斤。此商品包含 2 个包装。保养：用布块沾中性清洁剂充分擦洗，再用干净的抹布擦干。"
+      ],
+      "arm_a_tokens": 649,
+      "cost_usd": 0.000742,
+      "arm_a_request_id": "chatcmpl-f78ef886-2fd3-936b-be4e-9233a000e628",
+      "score": {
+        "chars": 283,
+        "fact_support": {
+          "total": 5,
+          "supported": 1,
+          "rate": 0.2,
+          "evidence": [
+            {
+              "sentence": "宜家BILLY毕利书柜（80×237cm）适配指南：小户型也能装下整面墙的收纳",
+              "best_overlap": 0.272727,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "✅直接结论：宜家BILLY毕利书柜（带加高装置，仿橡木款），尺寸80×237×28cm，¥649；适合层高≥2.4m的小客厅/书房/卧室；单层搁板承重30kg，含2个包装",
+              "best_overlap": 0.512821,
+              "reference_index": 0,
+              "literal_token": null,
+              "supported": true
+            },
+            {
+              "sentence": "- 深度仅28cm，贴墙不占地，对小空间友好；",
+              "best_overlap": 0.083333,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "- 加高后总高237cm，可充分利用垂直空间；",
+              "best_overlap": 0.153846,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "- 宽度80cm，单组不显臃肿，多组并列也易对齐；",
+              "best_overlap": 0.071429,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            }
+          ]
+        },
+        "forbidden": {
+          "hits": [],
+          "disclaimed": [],
+          "any_hit": false,
+          "patterns": 5
+        },
+        "coverage": {
+          "total": 5,
+          "covered": 0,
+          "rate": 0.0,
+          "evidence": [
+            {
+              "point": "深度28厘米",
+              "best_overlap": 0.333333,
+              "sentence": "- 深度仅28cm，贴墙不占地，对小空间友好；",
+              "covered": false
+            },
+            {
+              "point": "高度237厘米",
+              "best_overlap": 0.333333,
+              "sentence": "✅直接结论：宜家BILLY毕利书柜（带加高装置，仿橡木款），尺寸80×237×28cm，¥649；适合层高≥2.4m的小客厅/书房/卧室；单层搁板承重30kg，含2个包装",
+              "covered": false
+            },
+            {
+              "point": "宽度80厘米",
+              "best_overlap": 0.333333,
+              "sentence": "宜家BILLY毕利书柜（80×237cm）适配指南：小户型也能装下整面墙的收纳",
+              "covered": false
+            },
+            {
+              "point": "每块搁板承重30公斤",
+              "best_overlap": 0.428571,
+              "sentence": "✅直接结论：宜家BILLY毕利书柜（带加高装置，仿橡木款），尺寸80×237×28cm，¥649；适合层高≥2.4m的小客厅/书房/卧室；单层搁板承重30kg，含2个包装",
+              "covered": false
+            },
+            {
+              "point": "价格649元",
+              "best_overlap": 0.333333,
+              "sentence": "✅直接结论：宜家BILLY毕利书柜（带加高装置，仿橡木款），尺寸80×237×28cm，¥649；适合层高≥2.4m的小客厅/书房/卧室；单层搁板承重30kg，含2个包装",
+              "covered": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "A",
+      "item_id": "R03",
+      "status": "done",
+      "retrieval_mode": "none",
+      "attempts": 1,
+      "draft": {
+        "selected_title": "宜家POÄNG波昂扶手椅｜699元蓝调桦木款，小户型坐感友好尺寸参考",
+        "body": "宜家POÄNG波昂单人扶手椅（刚纳瑞德蓝色/桦木贴面）售价¥699，尺寸：宽68cm × 深83cm × 高100cm，座宽55cm、座深53cm、座高41cm。适配小客厅、书房角落、卧室阅读区等紧凑空间。\n\n关键参数：\n• 座高41cm，符合多数人自然坐姿；\n• 座深53cm，对身高155–175cm人群支撑较友好；\n• 整体宽度仅68cm，不占过道，靠墙摆放后仍留有活动余量。\n\n注意：商品分2个包装——框架+坐垫，需自行组装；享宜家10年品质保证。\n\n蓝调配色沉稳耐看，桦木贴面纹理清晰，风格简约但不冷硬。",
+        "cta": "逛宜家时可优先试坐对比座深与座高，确认是否契合自己习惯的坐姿角度～",
+        "tags": [
+          "宜家家居",
+          "POÄNG波昂",
+          "单人扶手椅",
+          "小户型家具",
+          "客厅好物"
+        ]
+      },
+      "calls": 1,
+      "references": [
+        "宜家 POÄNG 波昂单人沙发/扶手椅，桦木贴面/刚纳瑞德 蓝色，价格 ¥699。商品尺寸：宽度 68 厘米，深度 83 厘米，高度 100 厘米，座宽 55 厘米，座深 53 厘米，座高 41 厘米。享有 10 年品质保证。此商品包含 2 个包装，分别为扶手椅框架与扶手椅垫。"
+      ],
+      "arm_a_tokens": 641,
+      "cost_usd": 0.000733,
+      "arm_a_request_id": "chatcmpl-09446288-f6c9-9c39-9686-d9e7f4640336",
+      "score": {
+        "chars": 257,
+        "fact_support": {
+          "total": 6,
+          "supported": 2,
+          "rate": 0.333333,
+          "evidence": [
+            {
+              "sentence": "宜家POÄNG波昂扶手椅｜699元蓝调桦木款，小户型坐感友好尺寸参考",
+              "best_overlap": 0.391304,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "宜家POÄNG波昂单人扶手椅（刚纳瑞德蓝色/桦木贴面）售价¥699，尺寸：宽68cm × 深83cm × 高100cm，座宽55cm、座深53cm、座高41cm",
+              "best_overlap": 0.625,
+              "reference_index": 0,
+              "literal_token": null,
+              "supported": true
+            },
+            {
+              "sentence": "• 座高41cm，符合多数人自然坐姿；",
+              "best_overlap": 0.1,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "• 座深53cm，对身高155–175cm人群支撑较友好；",
+              "best_overlap": 0.083333,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "• 整体宽度仅68cm，不占过道，靠墙摆放后仍留有活动余量",
+              "best_overlap": 0.052632,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "注意：商品分2个包装——框架+坐垫，需自行组装；享宜家10年品质保证",
+              "best_overlap": 0.578947,
+              "reference_index": 0,
+              "literal_token": null,
+              "supported": true
+            }
+          ]
+        },
+        "forbidden": {
+          "hits": [],
+          "disclaimed": [],
+          "any_hit": false,
+          "patterns": 5
+        },
+        "coverage": {
+          "total": 7,
+          "covered": 1,
+          "rate": 0.142857,
+          "evidence": [
+            {
+              "point": "宽度68厘米",
+              "best_overlap": 0.333333,
+              "sentence": "• 整体宽度仅68cm，不占过道，靠墙摆放后仍留有活动余量",
+              "covered": false
+            },
+            {
+              "point": "深度83厘米",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "座宽55厘米",
+              "best_overlap": 0.333333,
+              "sentence": "宜家POÄNG波昂单人扶手椅（刚纳瑞德蓝色/桦木贴面）售价¥699，尺寸：宽68cm × 深83cm × 高100cm，座宽55cm、座深53cm、座高41cm",
+              "covered": false
+            },
+            {
+              "point": "座深53厘米",
+              "best_overlap": 0.333333,
+              "sentence": "宜家POÄNG波昂单人扶手椅（刚纳瑞德蓝色/桦木贴面）售价¥699，尺寸：宽68cm × 深83cm × 高100cm，座宽55cm、座深53cm、座高41cm",
+              "covered": false
+            },
+            {
+              "point": "座高41厘米",
+              "best_overlap": 0.333333,
+              "sentence": "宜家POÄNG波昂单人扶手椅（刚纳瑞德蓝色/桦木贴面）售价¥699，尺寸：宽68cm × 深83cm × 高100cm，座宽55cm、座深53cm、座高41cm",
+              "covered": false
+            },
+            {
+              "point": "价格699元",
+              "best_overlap": 0.333333,
+              "sentence": "宜家POÄNG波昂扶手椅｜699元蓝调桦木款，小户型坐感友好尺寸参考",
+              "covered": false
+            },
+            {
+              "point": "10年品质保证",
+              "best_overlap": 1.0,
+              "sentence": "注意：商品分2个包装——框架+坐垫，需自行组装；享宜家10年品质保证",
+              "covered": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "B",
+      "item_id": "R01",
+      "status": "done",
+      "attempts": 1,
+      "run_id": "0520289e-649e-458e-90e6-21be55d06a90",
+      "run_status": "WAITING_USER",
+      "draft": {
+        "selected_title": "BEKANT书桌120×80：65–85cm升降+100kg承重，值不值得现在买？",
+        "body": "宜家BEKANT贝肯特书桌（货号392.825.84），¥399。桌面120×80cm，占地明确，小户型靠墙摆放后仍留约60cm通行空间。升降范围65–85cm，适配常见坐姿高度（参考身高155–185cm）。承重100kg，含10年质保；弧形桌沿护腕，底部理线装置保持整洁。桌面为刨花板+白蜡木贴面，日常用中性皂液擦拭即可。",
+        "cta": "你家层高和常用坐姿高度是多少？评论区聊聊，帮你粗估适配性",
+        "tags": [
+          "宜家书桌",
+          "BEKANT",
+          "升降书桌",
+          "小户型家具",
+          "办公家具",
+          "书桌推荐",
+          "家居好物",
+          "性价比书桌"
+        ]
+      },
+      "retrieval_mode": "disabled",
+      "calls": 8,
+      "references": [
+        "宜家 BEKANT 贝肯特书桌，货号392.825.84，价格 ¥399。商品尺寸：长度 120 厘米，深度 80 厘米，最小高度 65 厘米，最大高度 85 厘米，最大可承重 100 公斤。桌腿可在 65-85cm 之间调节，因此可将桌面安装到合适的高度。桌面下的电线整理装置便于保持书桌整洁有序。弧形桌面可在书写时为手腕和前臂提供支撑。享有 10 年品质保证。桌面材质为刨花板、白蜡木贴面、亮光漆、丙烯酸清漆、纸制贴膜、塑料封边。保养：请用中性皂液擦拭，再用干净的抹布擦干；请定期检查所有组装配件是否紧固。"
+      ],
+      "slot_released": true,
+      "score": {
+        "chars": 163,
+        "fact_support": {
+          "total": 5,
+          "supported": 3,
+          "rate": 0.6,
+          "evidence": [
+            {
+              "sentence": "BEKANT书桌120×80：65–85cm升降+100kg承重，值不值得现在买",
+              "best_overlap": 0.466667,
+              "reference_index": 0,
+              "literal_token": "85cm",
+              "supported": true
+            },
+            {
+              "sentence": "宜家BEKANT贝肯特书桌（货号392.825.84），¥399",
+              "best_overlap": 1.0,
+              "reference_index": 0,
+              "literal_token": null,
+              "supported": true
+            },
+            {
+              "sentence": "桌面120×80cm，占地明确，小户型靠墙摆放后仍留约60cm通行空间",
+              "best_overlap": 0.1,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "升降范围65–85cm，适配常见坐姿高度（参考身高155–185cm）",
+              "best_overlap": 0.176471,
+              "reference_index": 0,
+              "literal_token": "85cm",
+              "supported": true
+            },
+            {
+              "sentence": "承重100kg，含10年质保；弧形桌沿护腕，底部理线装置保持整洁",
+              "best_overlap": 0.4,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            }
+          ]
+        },
+        "forbidden": {
+          "hits": [],
+          "disclaimed": [],
+          "any_hit": false,
+          "patterns": 6
+        },
+        "coverage": {
+          "total": 6,
+          "covered": 0,
+          "rate": 0.0,
+          "evidence": [
+            {
+              "point": "长度120厘米",
+              "best_overlap": 0.333333,
+              "sentence": "BEKANT书桌120×80：65–85cm升降+100kg承重，值不值得现在买",
+              "covered": false
+            },
+            {
+              "point": "深度80厘米",
+              "best_overlap": 0.333333,
+              "sentence": "BEKANT书桌120×80：65–85cm升降+100kg承重，值不值得现在买",
+              "covered": false
+            },
+            {
+              "point": "高度65-85厘米可调",
+              "best_overlap": 0.333333,
+              "sentence": "升降范围65–85cm，适配常见坐姿高度（参考身高155–185cm）",
+              "covered": false
+            },
+            {
+              "point": "最大承重100公斤",
+              "best_overlap": 0.2,
+              "sentence": "BEKANT书桌120×80：65–85cm升降+100kg承重，值不值得现在买",
+              "covered": false
+            },
+            {
+              "point": "价格399元",
+              "best_overlap": 0.333333,
+              "sentence": "宜家BEKANT贝肯特书桌（货号392.825.84），¥399",
+              "covered": false
+            },
+            {
+              "point": "10年品质保证",
+              "best_overlap": 0.4,
+              "sentence": "承重100kg，含10年质保；弧形桌沿护腕，底部理线装置保持整洁",
+              "covered": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "B",
+      "item_id": "R02",
+      "status": "done",
+      "attempts": 2,
+      "run_id": "d49ec447-81f6-41e7-ae2c-f6c550a667ff",
+      "run_status": "WAITING_USER",
+      "draft": {
+        "selected_title": "宜家BILLY毕利80×237书柜：宽80深28高237，含加高件，2箱到家",
+        "body": "宜家BILLY毕利书柜80×237cm（含加高装置），净尺寸宽80cm、深28cm、高237cm，可直接比对门洞宽度与墙面高度。每层搁板承重30kg，适合书籍、摆件等常规收纳。含2个包装，需预留搬运与组装空间。仿橡木饰面，¥649，日常用中性清洁剂擦拭即可。",
+        "cta": "你家门洞或墙面尺寸是多少？评论区告诉我，帮你快速比对适配性",
+        "tags": [
+          "宜家",
+          "BILLY",
+          "毕利书柜",
+          "收纳实测",
+          "家居尺寸",
+          "小户型收纳",
+          "宜家攻略",
+          "装修避坑"
+        ]
+      },
+      "retrieval_mode": "disabled",
+      "calls": 8,
+      "references": [
+        "宜家 BILLY 毕利书柜，带加高装置，仿橡木，价格 ¥649。商品尺寸：深度 28 厘米，高度 237 厘米，宽度 80 厘米，每块搁板最大可承重 30 公斤。此商品包含 2 个包装。保养：用布块沾中性清洁剂充分擦洗，再用干净的抹布擦干。"
+      ],
+      "slot_released": true,
+      "last_retry_status": "no_draft",
+      "score": {
+        "chars": 129,
+        "fact_support": {
+          "total": 5,
+          "supported": 1,
+          "rate": 0.2,
+          "evidence": [
+            {
+              "sentence": "宜家BILLY毕利80×237书柜：宽80深28高237，含加高件，2箱到家",
+              "best_overlap": 0.5625,
+              "reference_index": 0,
+              "literal_token": null,
+              "supported": true
+            },
+            {
+              "sentence": "宜家BILLY毕利书柜80×237cm（含加高装置），净尺寸宽80cm、深28cm、高237cm，可直接比对门洞宽度与墙面高度",
+              "best_overlap": 0.387097,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "每层搁板承重30kg，适合书籍、摆件等常规收纳",
+              "best_overlap": 0.133333,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "含2个包装，需预留搬运与组装空间",
+              "best_overlap": 0.230769,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "仿橡木饰面，¥649，日常用中性清洁剂擦拭即可",
+              "best_overlap": 0.4375,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            }
+          ]
+        },
+        "forbidden": {
+          "hits": [],
+          "disclaimed": [],
+          "any_hit": false,
+          "patterns": 5
+        },
+        "coverage": {
+          "total": 5,
+          "covered": 1,
+          "rate": 0.2,
+          "evidence": [
+            {
+              "point": "深度28厘米",
+              "best_overlap": 0.333333,
+              "sentence": "宜家BILLY毕利80×237书柜：宽80深28高237，含加高件，2箱到家",
+              "covered": false
+            },
+            {
+              "point": "高度237厘米",
+              "best_overlap": 0.333333,
+              "sentence": "宜家BILLY毕利80×237书柜：宽80深28高237，含加高件，2箱到家",
+              "covered": false
+            },
+            {
+              "point": "宽度80厘米",
+              "best_overlap": 0.666667,
+              "sentence": "宜家BILLY毕利书柜80×237cm（含加高装置），净尺寸宽80cm、深28cm、高237cm，可直接比对门洞宽度与墙面高度",
+              "covered": true
+            },
+            {
+              "point": "每块搁板承重30公斤",
+              "best_overlap": 0.428571,
+              "sentence": "每层搁板承重30kg，适合书籍、摆件等常规收纳",
+              "covered": false
+            },
+            {
+              "point": "价格649元",
+              "best_overlap": 0.333333,
+              "sentence": "仿橡木饰面，¥649，日常用中性清洁剂擦拭即可",
+              "covered": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "B",
+      "item_id": "R03",
+      "status": "done",
+      "attempts": 1,
+      "run_id": "7d8c696c-81c2-42d7-b105-2190da4a804d",
+      "run_status": "WAITING_USER",
+      "draft": {
+        "selected_title": "POÄNG波昂扶手椅三个关键尺寸：座宽55cm/座深53cm/座高41cm",
+        "body": "POÄNG波昂扶手椅座宽55cm、座深53cm、座高41cm——这三个数，直接决定你坐得稳不稳、靠得舒不舒服、茶几搭不搭。\n\n座宽55cm适配多数成人肩背，不卡肩也不空荡；座深53cm支撑大腿又留出膝弯活动余量；座高41cm匹配常规茶几（高度约40cm），脚可自然着地。\n\n总尺寸68×83×100cm，注意83cm含扶手深度，靠墙摆放建议预留≥10cm散热与清洁空间。\n\n¥699，桦木贴面+刚纳瑞德蓝色，含框架与坐垫共2个包装，享宜家少见的10年品质保证。",
+        "cta": "你家沙发位宽多少？评论区晒图帮你估",
+        "tags": [
+          "宜家",
+          "POÄNG",
+          "波昂扶手椅",
+          "家居尺寸",
+          "小户型家具",
+          "人体工学座椅",
+          "宜家好物",
+          "沙发选购",
+          "单人扶手椅",
+          "宜家质保"
+        ]
+      },
+      "retrieval_mode": "disabled",
+      "calls": 8,
+      "references": [
+        "宜家 POÄNG 波昂单人沙发/扶手椅，桦木贴面/刚纳瑞德 蓝色，价格 ¥699。商品尺寸：宽度 68 厘米，深度 83 厘米，高度 100 厘米，座宽 55 厘米，座深 53 厘米，座高 41 厘米。享有 10 年品质保证。此商品包含 2 个包装，分别为扶手椅框架与扶手椅垫。"
+      ],
+      "slot_released": true,
+      "score": {
+        "chars": 230,
+        "fact_support": {
+          "total": 5,
+          "supported": 2,
+          "rate": 0.4,
+          "evidence": [
+            {
+              "sentence": "POÄNG波昂扶手椅三个关键尺寸：座宽55cm/座深53cm/座高41cm",
+              "best_overlap": 0.5,
+              "reference_index": 0,
+              "literal_token": null,
+              "supported": true
+            },
+            {
+              "sentence": "POÄNG波昂扶手椅座宽55cm、座深53cm、座高41cm——这三个数，直接决定你坐得稳不稳、靠得舒不舒服、茶几搭不搭",
+              "best_overlap": 0.235294,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "座宽55cm适配多数成人肩背，不卡肩也不空荡；座深53cm支撑大腿又留出膝弯活动余量；座高41cm匹配常规茶几（高度约40cm），脚可自然着地",
+              "best_overlap": 0.090909,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "总尺寸68×83×100cm，注意83cm含扶手深度，靠墙摆放建议预留≥10cm散热与清洁空间",
+              "best_overlap": 0.2,
+              "reference_index": null,
+              "literal_token": null,
+              "supported": false
+            },
+            {
+              "sentence": "¥699，桦木贴面+刚纳瑞德蓝色，含框架与坐垫共2个包装，享宜家少见的10年品质保证",
+              "best_overlap": 0.678571,
+              "reference_index": 0,
+              "literal_token": null,
+              "supported": true
+            }
+          ]
+        },
+        "forbidden": {
+          "hits": [],
+          "disclaimed": [],
+          "any_hit": false,
+          "patterns": 5
+        },
+        "coverage": {
+          "total": 7,
+          "covered": 2,
+          "rate": 0.285714,
+          "evidence": [
+            {
+              "point": "宽度68厘米",
+              "best_overlap": 0.333333,
+              "sentence": "总尺寸68×83×100cm，注意83cm含扶手深度，靠墙摆放建议预留≥10cm散热与清洁空间",
+              "covered": false
+            },
+            {
+              "point": "深度83厘米",
+              "best_overlap": 0.666667,
+              "sentence": "总尺寸68×83×100cm，注意83cm含扶手深度，靠墙摆放建议预留≥10cm散热与清洁空间",
+              "covered": true
+            },
+            {
+              "point": "座宽55厘米",
+              "best_overlap": 0.333333,
+              "sentence": "POÄNG波昂扶手椅三个关键尺寸：座宽55cm/座深53cm/座高41cm",
+              "covered": false
+            },
+            {
+              "point": "座深53厘米",
+              "best_overlap": 0.333333,
+              "sentence": "POÄNG波昂扶手椅三个关键尺寸：座宽55cm/座深53cm/座高41cm",
+              "covered": false
+            },
+            {
+              "point": "座高41厘米",
+              "best_overlap": 0.333333,
+              "sentence": "POÄNG波昂扶手椅三个关键尺寸：座宽55cm/座深53cm/座高41cm",
+              "covered": false
+            },
+            {
+              "point": "价格699元",
+              "best_overlap": 0.333333,
+              "sentence": "¥699，桦木贴面+刚纳瑞德蓝色，含框架与坐垫共2个包装，享宜家少见的10年品质保证",
+              "covered": false
+            },
+            {
+              "point": "10年品质保证",
+              "best_overlap": 1.0,
+              "sentence": "¥699，桦木贴面+刚纳瑞德蓝色，含框架与坐垫共2个包装，享宜家少见的10年品质保证",
+              "covered": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "C",
+      "item_id": "R01",
+      "status": "no_draft",
+      "attempts": 4,
+      "run_id": "b282e57b-2038-4ac6-9741-77bf15025fd1",
+      "run_status": "RUNNING",
+      "draft": {},
+      "retrieval_mode": "filtered-bm25-zh-bigram-v1",
+      "calls": 0,
+      "references": [
+        "通用原创产品介绍方法：围绕读者实际选择问题开篇，把已知规格分成易读段落；根据图文、口播或详情形式调整段长与节奏，结尾按任务目标选择提问或核对提示。只用本次产品资料，不把参考作者的经历和测试数字写成自己的事实，不承诺必爆。",
+        "宜家 BEKANT 贝肯特书桌，货号392.825.84，价格 ¥399。商品尺寸：长度 120 厘米，深度 80 厘米，最小高度 65 厘米，最大高度 85 厘米，最大可承重 100 公斤。桌腿可在 65-85cm 之间调节，因此可将桌面安装到合适的高度。桌面下的电线整理装置便于保持书桌整洁有序。弧形桌面可在书写时为手腕和前臂提供支撑。享有 10 年品质保证。桌面材质为刨花板、白蜡木贴面、亮光漆、丙烯酸清漆、纸制贴膜、塑料封边。保养：请用中性皂液擦拭，再用干净的抹布擦干；请定期检查所有组装配件是否紧固。"
+      ],
+      "slot_released": true,
+      "last_retry_status": "no_draft",
+      "score": {
+        "chars": 0,
+        "fact_support": {
+          "total": 0,
+          "supported": 0,
+          "rate": null,
+          "evidence": []
+        },
+        "forbidden": {
+          "hits": [],
+          "disclaimed": [],
+          "any_hit": false,
+          "patterns": 6
+        },
+        "coverage": {
+          "total": 6,
+          "covered": 0,
+          "rate": 0.0,
+          "evidence": [
+            {
+              "point": "长度120厘米",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "深度80厘米",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "高度65-85厘米可调",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "最大承重100公斤",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "价格399元",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "10年品质保证",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "C",
+      "item_id": "R02",
+      "status": "no_draft",
+      "attempts": 4,
+      "run_id": "4cd35612-8656-4586-8512-fd2a7b4b4eb5",
+      "run_status": "RUNNING",
+      "draft": {},
+      "retrieval_mode": "filtered-bm25-zh-bigram-v1",
+      "calls": 0,
+      "references": [
+        "通用原创产品介绍方法：围绕读者实际选择问题开篇，把已知规格分成易读段落；根据图文、口播或详情形式调整段长与节奏，结尾按任务目标选择提问或核对提示。只用本次产品资料，不把参考作者的经历和测试数字写成自己的事实，不承诺必爆。",
+        "宜家 BILLY 毕利书柜，带加高装置，仿橡木，价格 ¥649。商品尺寸：深度 28 厘米，高度 237 厘米，宽度 80 厘米，每块搁板最大可承重 30 公斤。此商品包含 2 个包装。保养：用布块沾中性清洁剂充分擦洗，再用干净的抹布擦干。"
+      ],
+      "slot_released": true,
+      "last_retry_status": "no_draft",
+      "score": {
+        "chars": 0,
+        "fact_support": {
+          "total": 0,
+          "supported": 0,
+          "rate": null,
+          "evidence": []
+        },
+        "forbidden": {
+          "hits": [],
+          "disclaimed": [],
+          "any_hit": false,
+          "patterns": 5
+        },
+        "coverage": {
+          "total": 5,
+          "covered": 0,
+          "rate": 0.0,
+          "evidence": [
+            {
+              "point": "深度28厘米",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "高度237厘米",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "宽度80厘米",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "每块搁板承重30公斤",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "价格649元",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "arm": "C",
+      "item_id": "R03",
+      "status": "no_draft",
+      "attempts": 4,
+      "run_id": "051f6d2e-7cd1-41a3-8857-9ff31408f5c7",
+      "run_status": "RUNNING",
+      "draft": {},
+      "retrieval_mode": "filtered-bm25-zh-bigram-v1",
+      "calls": 0,
+      "references": [
+        "通用原创产品介绍方法：围绕读者实际选择问题开篇，把已知规格分成易读段落；根据图文、口播或详情形式调整段长与节奏，结尾按任务目标选择提问或核对提示。只用本次产品资料，不把参考作者的经历和测试数字写成自己的事实，不承诺必爆。",
+        "宜家 POÄNG 波昂单人沙发/扶手椅，桦木贴面/刚纳瑞德 蓝色，价格 ¥699。商品尺寸：宽度 68 厘米，深度 83 厘米，高度 100 厘米，座宽 55 厘米，座深 53 厘米，座高 41 厘米。享有 10 年品质保证。此商品包含 2 个包装，分别为扶手椅框架与扶手椅垫。"
+      ],
+      "slot_released": true,
+      "last_retry_status": "no_draft",
+      "score": {
+        "chars": 0,
+        "fact_support": {
+          "total": 0,
+          "supported": 0,
+          "rate": null,
+          "evidence": []
+        },
+        "forbidden": {
+          "hits": [],
+          "disclaimed": [],
+          "any_hit": false,
+          "patterns": 5
+        },
+        "coverage": {
+          "total": 7,
+          "covered": 0,
+          "rate": 0.0,
+          "evidence": [
+            {
+              "point": "宽度68厘米",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "深度83厘米",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "座宽55厘米",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "座深53厘米",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "座高41厘米",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "价格699元",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            },
+            {
+              "point": "10年品质保证",
+              "best_overlap": 0.0,
+              "sentence": null,
+              "covered": false
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "gold_set_path": "docs/evidence/evaluation/gold_set_real.json",
+  "notes": [
+    "真实模型调用；A 组为单次直写，直接在默认模型连接上执行、不经运行账本，其费用按 token 估算并记入 arm_a_spent_usd"
+  ],
+  "arm_a_spent_usd": 0.002257,
+  "cost_estimate_usd": 0.096152,
+  "summary": {
+    "A": {
+      "n": 3,
+      "fact_support_rate": 0.511111,
+      "expected_point_coverage": 0.15873,
+      "forbidden_hit_rate": 0.0,
+      "mean_body_chars": 248.0
+    },
+    "B": {
+      "n": 3,
+      "fact_support_rate": 0.4,
+      "expected_point_coverage": 0.161905,
+      "forbidden_hit_rate": 0.0,
+      "mean_body_chars": 174.0
+    },
+    "C": {
+      "n": 3,
+      "fact_support_rate": null,
+      "expected_point_coverage": 0.0,
+      "forbidden_hit_rate": 0.0,
+      "mean_body_chars": 0.0
+    }
+  }
+}
